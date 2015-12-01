@@ -1,0 +1,30 @@
+{
+  "name": "c2-ng_modeler",
+  "scripts": {
+    "start": "node app.js",
+    "test": "node ./node_modules/mocha/bin/mocha --recursive test"
+  },
+  "version": "0.0.1",
+  "dependencies": {
+    "webgme": "^1.1.0"
+  },
+  "devDependencies": {
+    "mocha": "^2.2.5",
+    "rimraf": "^2.4.0",
+    "chai": "^3.0.0"
+  },
+  "description": "C2-NG modeling environment in WebGME",
+  "main": "app.js",
+  "directories": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://git.vulcan.isis.vanderbilt.edu/projects/c2wtng/c2wtng-meta"
+  },
+  "keywords": [
+    "C2-NG"
+  ],
+  "author": "Andras Nadas",
+  "license": "ISC"
+}
