@@ -8,14 +8,16 @@ var config = require('webgme/config/config.default'),
 
 
 // The paths can be loaded from the webgme-setup.json
+config.plugin.basePaths.push('src/plugins');
 
 
 // Visualizer descriptors
 
 // Add requirejs paths
+config.requirejsPaths['C2Core'] = './src/plugins/C2Core';
+config.requirejsPaths['C2Federates'] = './src/plugins/C2Federates';
 
 
-
-config.mongo.uri = 'mongodb://127.0.0.1:27017/c2_ng_modeler';
+config.mongo.uri = 'mongodb://127.0.0.1:27017/c2_ng_modeler'
 validateConfig(config);
 module.exports = config;

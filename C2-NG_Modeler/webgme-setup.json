@@ -1,4 +1,17 @@
 {
-  "components": {},
-  "dependencies": {}
+  "components": {
+    "plugins": {
+      "FederatesExporter": {
+        "src": "src/plugins/FederatesExporter",
+        "test": "test/plugins/FederatesExporter"
+      },
+      "DeploymentExporter": {
+        "src": "src/plugins/DeploymentExporter",
+        "test": "test/plugins/DeploymentExporter"
+      }
+    }
+  },
+  "dependencies": {
+    "plugins": {}
+  }
 }
