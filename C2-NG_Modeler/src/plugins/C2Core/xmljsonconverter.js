@@ -219,7 +219,8 @@ define(['C2Core/sax'], function (sax) {
         var subKeys,
             elemTag = '',
             i,
-            content = '';
+            content = '',
+            textContent = '';
         if (value instanceof Array) {
             for (i = 0; i < value.length; i += 1) {
                 content += this._convertToStringRec(key, value[i], indentStr);
@@ -239,7 +240,7 @@ define(['C2Core/sax'], function (sax) {
                             elemTag += ' ' + subKeys[i].substr(this.attrTagIndex) + '="' + value[subKeys[i]].toString() + '"';
                         }
                     } else if (subKeys[i] === this.textTag) {
-                        content += value[subKeys[i]].toString();
+                        textContent += value[subKeys[i]].toString();
                     } else {
                         content += this._convertToStringRec(subKeys[i], value[subKeys[i]] , indentStr + this.indent);
                     }
@@ -249,8 +250,9 @@ define(['C2Core/sax'], function (sax) {
             content += indentStr + this.indent
             content += '<' + value.toString() + '></' + value.toString() + '>\n';
         }
-
-        if (content) {
+        if(textContent){
+            return indentStr + '<' + key + elemTag + '>' + textContent +'</' + key + '>\n';
+        }else if (content) {
             return indentStr + '<' + key + elemTag + '>\n' + content + indentStr +'</' + key + '>\n';
         }
 

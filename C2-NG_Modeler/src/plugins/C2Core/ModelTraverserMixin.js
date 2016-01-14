@@ -178,7 +178,11 @@ define([], function () {
                 }
 
             }catch(err){
-                self.logger.debug('No visitor function for ' + nodeType);
+                if(err.message == 'self[self.getVisitorFuncName(...)] is not a function'){
+                    self.logger.debug('No visitor function for ' + nodeType);
+                }else{
+                    callback(err);
+                }
             }
             callback(null, context);
             return;
@@ -202,7 +206,12 @@ define([], function () {
                 }
 
             }catch(err){
-                self.logger.debug('No post visitor function for ' + nodeType);
+                if(err.message == 'self[self.getPostVisitorFuncName(...)] is not a function'){
+                     self.logger.debug('No post visitor function for ' + nodeType);
+                }else{
+                    callback(err);
+                }
+               
             }
             callback(null, context);
             return;

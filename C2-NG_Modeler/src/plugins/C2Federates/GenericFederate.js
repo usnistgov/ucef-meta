@@ -42,6 +42,8 @@ define([], function () {
                     self.logger.debug('No post-visitor function for ' + nodeType);
                 }
             }
+            
+            return ret;
         }
     };
     return GenericFederateExporter;

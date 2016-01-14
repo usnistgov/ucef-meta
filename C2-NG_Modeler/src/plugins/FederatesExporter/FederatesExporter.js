@@ -8,16 +8,24 @@
 define([
     'plugin/PluginConfig',
     'plugin/PluginBase',
+    'common/util/ejs',
     'C2Core/ModelTraverserMixin',
     'C2Core/xmljsonconverter',
+    'C2Core/MavenPOM',
+    'C2Federates/Templates/Templates',
     'C2Federates/GenericFederate',
+    'C2Federates/JavaRTIFederate',
     'C2Federates/CPNFederate'
 ], function (
     PluginConfig,
     PluginBase,
+    ejs,
     ModelTraverserMixin,
     JSON2XMLConverter,
+    MavenPOM,
+    TEMPLATES,
     GenericFederate,
+    JavaFederate,
     CPNFederate
     ) {
     'use strict';
@@ -37,7 +45,10 @@ define([
         PluginBase.call(this);
         ModelTraverserMixin.call(this);
         GenericFederate.call(this);
+        JavaFederate.call(this);
         CPNFederate.call(this);
+
+        this.mainPom = new MavenPOM();
         this._jsonToXml = new JSON2XMLConverter.Json2xml();
     };
 
@@ -98,7 +109,7 @@ define([
                 value: allFederateTypes,
                 valueType: 'string',
                 readOnly: false
-            },{
+            /*},{
                 name: 'urlBase',
                 displayName: 'URL Base',
                 description: 'The base address of webGME where the model is accessible',
@@ -132,8 +143,8 @@ define([
                 description: 'The password for GIT Repository where the artifacts are deposited.<br> WARNING: The password may be submitted through a non ecncripted channel.',
                 value: '',
                 valueType: 'string',
-                readOnly: false
-            },
+                readOnly: false*/
+            }
         ];
     };
 
@@ -154,9 +165,13 @@ define([
             finishExport,
             generateFiles;
 
+        self.fileGerenrators = [];
+
         self.fom_sheets = {};
         self.interactions = {};
+        self.interactionRoots = [];
         self.objects      = {};
+        self.objectRoots = [];
         self.attributes   = {};
         self.federates = {};
 
@@ -166,6 +181,8 @@ define([
             }
         });
 
+        self.projectName = self.core.getAttribute(self.rootNode, 'name');
+
         // Using the logger.
         //self.logger.debug('This is a debug message.');
         //self.logger.info('This is an info message.');
@@ -174,7 +191,67 @@ define([
 
         // Using the coreAPI to make changes.
 
-        self.fileGerenrators = [];
+
+        self.mainPom.artifactId = self.projectName;
+
+        //Add POM generator
+        self.fileGerenrators.push(function(artifact, callback){
+            artifact.addFile('pom.xml', self._jsonToXml.convertToString( self.mainPom.toJSON() ), function (err) {
+                if (err) {
+                    callback(err);
+                    return;
+                }else{
+                    callback();
+                }
+            });
+        });
+
+        self.fomModel = {
+            federationname: self.projectName,
+            objects: [],
+            interactions: []
+        };
+
+        //Add FED generator
+        self.fileGerenrators.push(function(artifact, callback){
+            
+            var interactionTraverser = function(interaction){
+                var intModel = {
+                    interaction:interaction,
+                    parameters:interaction.parameters,
+                    children:[]
+                };
+                interaction.children.forEach(function(child){
+                    intModel.children.push(interactionTraverser(child));
+                });
+                return ejs.render(TEMPLATES["fedfile_siminteraction.ejs"], intModel);
+            }
+
+            self.fomModel.interactions = interactionTraverser(self.interactionRoots[0]);
+
+            var objectTraverser = function(object){
+                var objModel = {
+                    name:object.name,
+                    attributes:object.attributes,
+                    children:[]
+                };
+                object.children.forEach(function(child){
+                    objModel.children.push(objectTraverser(child));
+                });
+                return ejs.render(TEMPLATES["fedfile_simobject.ejs"], objModel);
+            }
+
+            self.fomModel.objects = objectTraverser(self.objectRoots[0]);
+
+            artifact.addFile(self.projectName + '.fed', ejs.render(TEMPLATES['fedfile.fed.ejs'], self.fomModel), function (err) {
+                if (err) {
+                    callback(err);
+                    return;
+                }else{
+                    callback();
+                }
+            });
+        });
 
         generateFiles = function(artifact, doneBack){
             if(numberOfFilesToGenerate > 0){ 
@@ -338,27 +415,71 @@ define([
 
         self.fom_sheets[self.core.getPath(node)] = node;
         context['parent'] = {};
+        context['pubsubs'] = [];
+        return {context:context};
+    }
+
+    FederatesExporter.prototype.post_visit_FOMSheet = function(node, context){
+        var self = this;
+        for(var i = 0; i < context['pubsubs'].length; i++){
+            if(self.federates[context['pubsubs'][i]['federate']] && self.interactions[context['pubsubs'][i]['interaction']]){
+                if(context['pubsubs'][i]['handler']){
+                    context['pubsubs'][i]['handler'](self.federates[context['pubsubs'][i]['federate']], self.interactions[context['pubsubs'][i]['interaction']]);
+                }
+            }
+        }
         return {context:context};
     }
     
     FederatesExporter.prototype.visit_Interaction = function(node, parent, context){
         var self = this,
         nodeType = self.core.getAttribute( self.getMetaType( node ), 'name' ),
-        nodeBase = self.core.getAttribute( self.core.getBase( node ), 'name' ),
+        nodeBaseName = self.core.getAttribute( node.base, 'name' ),
+        nodeBasePath = self.core.getPointerPath(node, 'base'),
         nodeName = self.core.getAttribute( node, 'name' ),
-        interaction = {};
+        nodePath = self.core.getPath(node),
+        interaction = {},
+        nameFragments = [nodeName];
 
-        self.logger.debug('Node ' + nodeName + " is based on " + nodeBase + " with meta " + nodeType);
-        self.interactions[self.core.getPath(node)] = interaction;
+        self.logger.debug('Node ' + nodeName + " is based on " + nodeBaseName + " with meta " + nodeType);
+       
         
+        if(self.interactions[nodePath]){
+            interaction = self.interactions[nodePath];
+        }else{
+              self.interactions[nodePath] = interaction;
+        }
+
         interaction['name'] = self.core.getAttribute(node, 'name');
+        interaction['id'] = nodePath;
+        interaction['basePath'] = self.core.getPointerPath(node, 'base');
         interaction['delivery'] = self.core.getAttribute(node, 'Delivery');
         interaction['order'] = self.core.getAttribute(node, 'Order');
         interaction['inputPlaceName'] = "";
         interaction['outputPlaceName'] = "";
         interaction['mapperPublished'] = false;
         interaction['parameters'] = [];
+        interaction['children'] = interaction['children'] || [];
 
+        var nextBase = node.base;
+        while(nextBase != self.META['Interaction']){
+            nameFragments.push(self.core.getAttribute(nextBase, 'name'));
+            nextBase = nextBase.base;
+        }
+
+        interaction.fullName = nameFragments.reverse().join('.');
+
+        if(self.interactions[nodeBasePath]){
+            self.interactions[nodeBasePath]['children'].push(interaction);
+        }else{
+            if(node.base != self.META['Interaction']){
+                self.interactions[nodeBasePath] = {
+                    children:[interaction]
+                };
+            }else{
+                self.interactionRoots.push(interaction);
+            }
+        }
 
         if(context.hasOwnProperty('interactions')){
             context['interactions'].push(interaction)
@@ -388,15 +509,34 @@ define([
 
     FederatesExporter.prototype.visit_Object = function(node, parent, context){
         var self = this,
-        object = {};
+        object = {},
+        nodeBasePath = self.core.getPointerPath(node, 'base');
         self.logger.debug('Visiting Object');
 
+        if(self.objects[self.core.getPath(node)]){
+            object = self.objects[self.core.getPath(node)];
+        }else{
+             self.objects[self.core.getPath(node)] = object;
+        }
+
         object['name'] = self.core.getAttribute(node, 'name');
+        object['id'] = self.core.getPath(node);
         object['delivery'] = self.core.getAttribute(node, 'Delivery');
         object['order'] = self.core.getAttribute(node, 'Order');
         object['attributes'] = [];
+        object['children'] = object['children'] || [];
 
-        self.objects[self.core.getPath(node)] = object;
+        if(self.objects[nodeBasePath]){
+            self.objects[nodeBasePath]['children'].push(object);
+        }else{
+            if(node.base != self.META['Object']){
+                self.objects[nodeBasePath] = {
+                    children:[object]
+                };
+            }else{
+                self.objectRoots.push(object);
+            }
+        }
 
         if(context.hasOwnProperty('objects')){
             context['objects'].push(object)
@@ -427,5 +567,12 @@ define([
     * TRAVERSAL CODE - END
     *
     */
+
+    FederatesExporter.prototype.calculateParentPath = function(path){
+        var pathElements = path.split('/');
+        pathElements.pop();
+        return pathElements.join('/');
+    }
+
     return FederatesExporter;
 });
