@@ -1,0 +1,31 @@
+<% /*federatertifactory( melderpackagename, classname, allinteractiondata, allobjectdata ) ::= <<*/%>
+package <%= melderpackagename %>;
+
+public class <%=classname %> {
+
+	<%/* allinteractiondata:interfacemember() */%>
+	private <%=allinteractiondata.name %>Interface _<%=allinteractiondata.name %>_var;
+	
+	<%/*  allobjectdata:interfacemember() */%>
+	private <%=allobjectdata.name %>Interface _<%=allobjectdata.name %>_var;
+	
+	<%/*  allinteractiondata:setinterfacemember() */%>
+	public void set_<%= allinteractiondata.name  %>Interface( <%= allinteractiondata.name  %>Interface interface_var ) {
+		_<%= allinteractiondata.name %>_var = interface_var;
+	}
+
+	<%/*  allobjectdata:setinterfacemember() */%>
+	public void set_<%= allobjectdata.name  %>Interface( <%= allobjectdata.name  %>Interface interface_var ) {
+		_<%= allobjectdata.name %>_var = interface_var;
+	}
+
+	<%/*  allinteractiondata:getinterfacemember() */%>
+	public <%= allinteractiondata.name %>Interface get_<%= allinteractiondata.name %>Interface() {
+		return _<%= allinteractiondata.name %>_var;
+	}
+	
+	<%/*  allobjectdata:getinterfacemember() */%>
+	public <%= allobjectdata.name %>Interface get_<%= allobjectdata.name %>Interface() {
+		return _<%= allobjectdata.name %>_var;
+	}
+}
