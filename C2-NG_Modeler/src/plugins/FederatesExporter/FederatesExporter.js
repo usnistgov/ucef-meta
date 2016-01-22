@@ -14,7 +14,7 @@ define([
     'C2Core/MavenPOM',
     'C2Federates/Templates/Templates',
     'C2Federates/GenericFederate',
-    'C2Federates/JavaRTIFederate',
+    'C2Federates/JavaFederate',
     'C2Federates/CPNFederate'
 ], function (
     PluginConfig,
@@ -175,13 +175,16 @@ define([
         self.attributes   = {};
         self.federates = {};
 
+        self.projectName = self.core.getAttribute(self.rootNode, 'name');
+
         self.getCurrentConfig().includedFederateTypes.trim().split(" ").forEach(function(e){
             if(self.federateTypes.hasOwnProperty(e)){
                 self.federateTypes[e].includeInExport = true;
+                if(self.federateTypes[e].hasOwnProperty('init')){
+                   self.federateTypes[e].init.call(self); 
+                }
             }
         });
-
-        self.projectName = self.core.getAttribute(self.rootNode, 'name');
 
         // Using the logger.
         //self.logger.debug('This is a debug message.');
@@ -190,7 +193,6 @@ define([
         //self.logger.error('This is an error message.');
 
         // Using the coreAPI to make changes.
-
 
         self.mainPom.artifactId = self.projectName;
 
@@ -453,6 +455,7 @@ define([
         interaction['name'] = self.core.getAttribute(node, 'name');
         interaction['id'] = nodePath;
         interaction['basePath'] = self.core.getPointerPath(node, 'base');
+        interaction['basename'] = nodeBaseName;
         interaction['delivery'] = self.core.getAttribute(node, 'Delivery');
         interaction['order'] = self.core.getAttribute(node, 'Order');
         interaction['inputPlaceName'] = "";
@@ -460,6 +463,7 @@ define([
         interaction['mapperPublished'] = false;
         interaction['parameters'] = [];
         interaction['children'] = interaction['children'] || [];
+        interaction['isroot'] = node.base == self.META['Interaction'];
 
         var nextBase = node.base;
         while(nextBase != self.META['Interaction']){
@@ -472,7 +476,7 @@ define([
         if(self.interactions[nodeBasePath]){
             self.interactions[nodeBasePath]['children'].push(interaction);
         }else{
-            if(node.base != self.META['Interaction']){
+            if(!interaction['isroot']){
                 self.interactions[nodeBasePath] = {
                     children:[interaction]
                 };
@@ -510,7 +514,10 @@ define([
     FederatesExporter.prototype.visit_Object = function(node, parent, context){
         var self = this,
         object = {},
-        nodeBasePath = self.core.getPointerPath(node, 'base');
+        nodeBasePath = self.core.getPointerPath(node, 'base'),
+        nodeBaseName = self.core.getAttribute( node.base, 'name' ),
+        nodeName = self.core.getAttribute( node, 'name' ),
+        nameFragments = [nodeName];
         self.logger.debug('Visiting Object');
 
         if(self.objects[self.core.getPath(node)]){
@@ -524,12 +531,15 @@ define([
         object['delivery'] = self.core.getAttribute(node, 'Delivery');
         object['order'] = self.core.getAttribute(node, 'Order');
         object['attributes'] = [];
+        object['parameters'] = object['attributes'];
         object['children'] = object['children'] || [];
+        object['isroot'] = node.base == self.META['Object'];
+        object['basename'] = nodeBaseName;
 
         if(self.objects[nodeBasePath]){
             self.objects[nodeBasePath]['children'].push(object);
         }else{
-            if(node.base != self.META['Object']){
+            if(!object['isroot']){
                 self.objects[nodeBasePath] = {
                     children:[object]
                 };
@@ -537,6 +547,14 @@ define([
                 self.objectRoots.push(object);
             }
         }
+
+        var nextBase = node.base;
+        while(nextBase != self.META['Object']){
+            nameFragments.push(self.core.getAttribute(nextBase, 'name'));
+            nextBase = nextBase.base;
+        }
+
+        object.fullName = nameFragments.reverse().join('.');
 
         if(context.hasOwnProperty('objects')){
             context['objects'].push(object)

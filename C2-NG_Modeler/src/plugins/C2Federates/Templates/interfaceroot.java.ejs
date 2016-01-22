@@ -1,0 +1,212 @@
+<% /* classrootinterface(isinteraction)*/ %>
+package c2w.hla;
+
+import java.util.*;
+import hla.rti.*;
+
+public interface <%=isinteraction?"Interaction":"Object"%>RootInterface
+{
+    public int getUniqueID();
+
+    <%-ejs.render(
+        TEMPLATES["interfacecommon.java.ejs"],{
+            isinteraction: isinteraction,
+            classname: isinteraction?"InteractionRoot":"ObjectRoot",
+            parentclassname: "",
+            hlaclassname: isinteraction?"InteractionRoot":"ObjectRoot",
+            datamembers: [],
+            alldatamembers: []
+    })%>
+
+    
+<% if(isinteraction){ %><%}else{%>
+    /**
+    * Requests an attribute update for this object instance from the federate that
+    * has modification rights on these attributes.
+    *
+    * @param rti handle to the RTI, usu. obtained through the
+    * {@link SynchronizedFederate#getRTI()} call
+    */
+    public void requestUpdate( RTIambassador rti );
+
+    /**
+    * Returns the handle (RTI assigned) the corresponds to this object class
+    * instance.  This handle is the instance's unique identifier to the RTI.
+    *
+    * @return the handle (RTI assigned) of this object class instance.
+    */
+    public int getObjectHandle();
+<%}%>
+
+    /**
+    * Returns the timestamp for this <%=isinteraction?"interaction":"object"%>.  "receive order" <%=isinteraction?"interaction":"object"%>s
+    * should have a timestamp of -1.
+    *
+    * @return timestamp for this <%=isinteraction?"interaction":"object"%>
+    */
+    public double getTime();
+    
+    /**
+    * Sets the timestamp of this <%=isinteraction?"interaction":"object"%> to "time".
+    *
+    * @param time new timestamp for this <%=isinteraction?"interaction":"object"%>
+    */
+    public void setTime( double time );
+
+    /**
+    * Sets the timestamp of this <%=isinteraction?"interaction":"object"%> to "logicalTime".
+    *
+    * @param logicalTime new timestamp for this <%=isinteraction?"interaction":"object"%>
+    */
+    public void setTime( LogicalTime logicalTime );
+
+    /**
+    * Returns the value of the <%=isinteraction?"parameter":"attribute"%> named "datamemberName" for this
+    * <%=isinteraction?"interaction":"object"%>.
+    *
+    * @param datamemberName name of <%=isinteraction?"parameter":"attribute"%> whose value to retrieve
+    * @return the value of the <%=isinteraction?"parameter":"attribute"%> whose name is "datamemberName"
+    */
+    public Object get<%=isinteraction?"Parameter":"Attribute"%>( String datamemberName );
+
+    /**
+    * Returns the value of the <%=isinteraction?"parameter":"attribute"%> whose handle is "datamemberHandle"
+    * (RTI assigned) for this <%=isinteraction?"interaction":"object"%>.
+    *
+    * @param datamemberHandle handle (RTI assigned) of <%=isinteraction?"parameter":"attribute"%> whose
+    * value to retrieve
+    * @return the value of the <%=isinteraction?"parameter":"attribute"%> whose handle is "datamemberHandle"
+    */
+    public Object get<%=isinteraction?"Parameter":"Attribute"%>( int datamemberHandle );
+        
+    /**
+    * Set the values of the <%=isinteraction?"parameter":"attribute"%>s in this <%=isinteraction?"interaction":"object"%> using
+    * "datamemberMap".  "datamemberMap" is usually acquired as an argument to
+    * an RTI federate callback method such as "receiveInteraction".
+    *
+    * @param datamemberMap  contains new values for the <%=isinteraction?"parameter":"attribute"%>s of
+    * this <%=isinteraction?"interaction":"object"%>
+    */
+    public void set<%=isinteraction?"Parameter":"Attribute"%>s( <%=isinteraction?"ReceivedInteraction":"ReflectedAttributes"%> datamemberMap );
+
+    /**
+    * Sets the value of the <%=isinteraction?"parameter":"attribute"%> named "datamemberName" to "value"
+    * in this <%=isinteraction?"interaction":"object"%>.  "value" is converted to data type of "datamemberName"
+    * if needed.
+    * This action can also be affected by calling the set_<datamemberName>( value )
+    * method on the <%=isinteraction?"interaction":"object"%> using a reference to the <%=isinteraction?"interaction":"object"%>'s actual
+    * class.
+    *
+    * @param datamemberName name of <%=isinteraction?"parameter":"attribute"%> whose value is to be set
+    * to "value"
+    * @param value new value of <%=isinteraction?"parameter":"attribute"%> called "datamemberName"
+    */
+    public void set<%=isinteraction?"Parameter":"Attribute"%>( String datamemberName, String value );
+
+    /**
+    * Sets the value of the <%=isinteraction?"parameter":"attribute"%> named "datamemberName" to "value"
+    * in this <%=isinteraction?"interaction":"object"%>.  "value" should have the same data type as that of
+    * the "datamemberName" <%=isinteraction?"parameter":"attribute"%>.
+    * This action can also be affected by calling the set_<datamemberName>( value )
+    * method on the <%=isinteraction?"interaction":"object"%> using a reference to the <%=isinteraction?"interaction":"object"%>'s actual
+    * class.
+    *
+    * @param datamemberName name of <%=isinteraction?"parameter":"attribute"%> whose value is to be set
+    * to "value"
+    * @param value new value of <%=isinteraction?"parameter":"attribute"%> called "datamemberName"
+    */
+    public void set<%=isinteraction?"Parameter":"Attribute"%>( String datamemberName, Object value );
+
+<% if(isinteraction){ %>
+    /**
+    * Sends this interaction to the RTI, with the specified timestamp "time".
+    * This method should be used to send interactions that have "timestamp"
+    * ordering.
+    *
+    * @param rti handle to the RTI, usu. obtained through the
+    * {@link SynchronizedFederate#getRTI()} call
+    * @param time timestamp for this interaction.  The timestamp should be no
+    * less than the current federation time + the LOOKAHEAD value of the federate
+    * sending this interaction.
+    */
+    public void sendInteraction( RTIambassador rti, double time ) throws Exception;
+
+    /**
+    * Sends this interaction to the RTI (without a timestamp).
+    * This method should be used to send interactions that have "receive"
+    * ordering.
+    *
+    * @param rti handle to the RTI, usu. obtained through the
+    * {@link SynchronizedFederate#getRTI()} call
+    */
+    public void sendInteraction( RTIambassador rti ) throws Exception ;
+<%}else{%>
+    /**
+    * Registers this object with the RTI.  This method is usually called by a
+    * federate who "owns" this object, i.e. the federate that created it and
+    * has write-privileges to its attributes (so, it is responsible for updating
+    * these attribute and conveying their updated values to the RTI).
+    *
+    * @param rti handle to the RTI, usu. obtained through the
+    * {@link SynchronizedFederate#getRTI()} call
+    */ 
+    public void registerObject( RTIambassador rti );
+    
+    /**
+    * Unregisters this object with the RTI.  The RTI will destroy all information
+    * it contains regarding this object as a result.  This method is usually
+    * called by a federate who "owns" this object, i.e. the federate that created
+    * it and has write-privileges to its attributes.
+    *
+    * @param rti handle to the RTI, usu. obtained through the
+    * {@link SynchronizedFederate#getRTI()} call
+    */ 
+    public void unregisterObject( RTIambassador rti );
+
+    /**
+    * Broadcasts the attributes of this object and their values to the RTI, where
+    * the values have "time" as their timestamp.  This call should be used for
+    * objects whose attributes have "timestamp" ordering.
+    *
+    * @param rti handle to the RTI, usu. obtained through the
+    * {@link SynchronizedFederate#getRTI()} call
+    * @param time timestamp on attribute values of this object
+    * @param force if "false", only the attributes whose values have changed since
+    * the last call to "updateAttributeValues" will be broadcast to the RTI.  If
+    * "true", all attributes and their values are broadcast to the RTI.
+    */
+    public void updateAttributeValues( RTIambassador rti, double time, boolean force );
+
+    /**
+    * Like {@link #updateAttributeValues( RTIambassador rti, double time, boolean force )},
+    * except "force" is always false.
+    *
+    * @param rti handle to the RTI, usu. obtained through the
+    * {@link SynchronizedFederate#getRTI()} call
+    * @param time timestamp on attribute values of this object
+    */
+    public void updateAttributeValues( RTIambassador rti, double time );
+
+    /**
+    * Broadcasts the attributes of this object and their values to the RTI (with
+    * no timestamp).  This call should be used for objects whose attributes have
+    * "receive" ordering.
+    *
+    * @param rti handle to the RTI, usu. obtained through the
+    * {@link SynchronizedFederate#getRTI()} call
+    * @param force if "false", only the attributes whose values have changed since
+    * the last call to "updateAttributeValues" will be broadcast to the RTI.  If
+    * "true", all attributes and their values are broadcast to the RTI.
+    */
+    public void updateAttributeValues( RTIambassador rti, boolean force );
+
+    /**
+    * Like {@link #updateAttributeValues( RTIambassador rti, boolean force )},
+    * except "force" is always false.
+    *
+    * @param rti handle to the RTI, usu. obtained through the
+    * {@link SynchronizedFederate#getRTI()} call
+    */
+    public void updateAttributeValues( RTIambassador rti );    
+<%}%>    
+}

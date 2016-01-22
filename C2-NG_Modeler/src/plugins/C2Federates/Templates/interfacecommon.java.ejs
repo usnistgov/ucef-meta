@@ -1,0 +1,85 @@
+<% /*interfacecommon(isinteraction,classname,parentclassname,hlaclassname,datamembers,alldatamembers) */ %>
+
+/**
+* Returns the handle (RTI assigned) of this instance's <%=isinteraction?"interaction":"object"%> class .
+* 
+* @return the handle (RTI assigned) if this instance's <%=isinteraction?"interaction":"object"%> class
+*/
+public int getClassHandle();
+
+/**
+* Returns the fully-qualified (dot-delimited) name of this instance's <%=isinteraction?"interaction":"object"%> class.
+* 
+* @return the fully-qualified (dot-delimited) name of this instance's <%=isinteraction?"interaction":"object"%> class
+*/
+public String getClassName();
+
+/**
+* Returns the simple name (last name in its fully-qualified dot-delimited name)
+* of this instance's <%=isinteraction?"interaction":"object"%> class.
+* 
+* @return the simple name of this instance's <%=isinteraction?"interaction":"object"%> class 
+*/
+public String getSimpleClassName();
+
+/**
+* Returns a set containing the names of all of the non-hidden<%=isinteraction?"parameter":"attribute"%>s of an
+* <%=isinteraction?"interaction":"object"%> class instance.
+*
+* @return set containing the names of all of the <%=isinteraction?"parameter":"attribute"%>s of an
+* <%=isinteraction?"interaction":"object"%> class instance
+*/
+public Set< String > get<%=isinteraction?"Parameter":"Attribute"%>Names();
+
+/**
+* Returns a set containing the names of all of the <%=isinteraction?"parameter":"attribute"%>s of an
+* <%=isinteraction?"interaction":"object"%> class instance.
+*
+* @return set containing the names of all of the <%=isinteraction?"parameter":"attribute"%>s of an
+* <%=isinteraction?"interaction":"object"%> class instance
+*/
+public Set< String > getAll<%=isinteraction?"Parameter":"Attribute"%>Names();
+
+/**
+* Publishes the <%=isinteraction?"interaction":"object"%> class of this instance of the class for a federate.
+*
+* @param rti handle to the RTI, usu. obtained through the
+* {@link SynchronizedFederate#getRTI()} call
+*/
+public void publish<%=isinteraction?"Interaction":"Object"%>( RTIambassador rti );
+
+/**
+* Unpublishes the <%=isinteraction?"interaction":"object"%> class of this instance of this class for a federate.
+*
+* @param rti handle to the RTI, usu. obtained through the
+* {@link SynchronizedFederate#getRTI()} call
+*/
+public void unpublish<%=isinteraction?"Interaction":"Object"%>( RTIambassador rti );
+
+/**
+* Subscribes a federate to the <%=isinteraction?"interaction":"object"%> class of this instance of this class.
+*
+* @param rti handle to the RTI, usu. obtained through the
+* {@link SynchronizedFederate#getRTI()} call
+*/
+public void subscribe<%=isinteraction?"Interaction":"Object"%>( RTIambassador rti );
+
+/**
+* Unsubscribes a federate from the <%=isinteraction?"interaction":"object"%> class of this instance of this class.
+*
+* @param rti handle to the RTI, usu. obtained through the
+* {@link SynchronizedFederate#getRTI()} call
+*/
+public void unsubscribe<%=isinteraction?"Interaction":"Object"%>( RTIambassador rti );
+
+<% if(isinteraction){ %><% }else{ %>
+/**
+* Returns a data structure containing the handles of all attributes for this object
+* class that are currently marked for subscription.  To actually subscribe to these
+* attributes, a federate must call <objectclassname>.subscribe( RTIambassador rti ).
+*
+* @return data structure containing the handles of all attributes for this object
+* class that are currently marked for subscription
+*/
+public AttributeHandleSet getSubscribedAttributeHandleSet();
+<%}%>

@@ -1,0 +1,441 @@
+<% /*classcommon(isinteraction,classname,parentclassname,hlaclassname,datamembers,alldatamembers) */ %>
+private static boolean _isInitialized = false;
+
+private static int _handle;
+
+/**
+* Returns the handle (RTI assigned) of the <%= classname %> <%=isinteraction?"interaction":"object"%> class.
+* Note: As this is a static method, it is NOT polymorphic, and so, if called on
+* a reference will return the handle of the class pertaining to the reference,\
+* rather than the handle of the class for the instance referred to by the reference.
+* For the polymorphic version of this method, use {@link #getClassHandle()}.
+*/
+public static int get_handle() { return _handle; }
+
+/**
+* Returns the fully-qualified (dot-delimited) name of the <%= classname %>
+* <%=isinteraction?"interaction":"object"%> class.
+* Note: As this is a static method, it is NOT polymorphic, and so, if called on
+* a reference will return the name of the class pertaining to the reference,\
+* rather than the name of the class for the instance referred to by the reference.
+* For the polymorphic version of this method, use {@link #getClassName()}.
+*/
+public static String get_class_name() { return "<%=hlaclassname%>"; }
+
+/**
+* Returns the simple name (the last name in the dot-delimited fully-qualified
+* class name) of the <%= classname %> <%=isinteraction?"interaction":"object"%> class.
+*/
+public static String get_simple_class_name() { return "<%= classname %>"; }
+
+private static Set< String > _datamemberNames = new HashSet< String >();
+private static Set< String > _allDatamemberNames = new HashSet< String >();
+
+/**
+* Returns a set containing the names of all of the non-hidden <%=isinteraction?"parameter":"attribute"%>s in the
+* <%= classname %> <%=isinteraction?"interaction":"object"%> class.
+* Note: As this is a static method, it is NOT polymorphic, and so, if called on
+* a reference will return a set of parameter names pertaining to the reference,\
+* rather than the parameter names of the class for the instance referred to by
+* the reference.  For the polymorphic version of this method, use
+* {@link #get<%=isinteraction?"Parameter":"Attribute"%>Names()}.
+*/
+public static Set< String > get_<%=isinteraction?"parameter":"attribute"%>_names() {
+	return new HashSet< String >( _datamemberNames );
+}
+
+
+/**
+* Returns a set containing the names of all of the <%=isinteraction?"parameter":"attribute"%>s in the
+* <%= classname %> <%=isinteraction?"interaction":"object"%> class.
+* Note: As this is a static method, it is NOT polymorphic, and so, if called on
+* a reference will return a set of parameter names pertaining to the reference,\
+* rather than the parameter names of the class for the instance referred to by
+* the reference.  For the polymorphic version of this method, use
+* {@link #get<%=isinteraction?"Parameter":"Attribute"%>Names()}.
+*/
+public static Set< String > get_all_<%=isinteraction?"parameter":"attribute"%>_names() {
+	return new HashSet< String >( _allDatamemberNames );
+}
+
+
+<% if(isinteraction){ %><% }else{ %>
+private static AttributeHandleSet _publishedAttributeHandleSet;
+private static Set< String > _publishAttributeNameSet = new HashSet< String >();
+
+private static AttributeHandleSet _subscribedAttributeHandleSet; 
+private static Set< String > _subscribeAttributeNameSet = new HashSet< String >();
+
+<%}%>
+
+static {
+	_classNameSet.add( "<%= hlaclassname %>" );
+	_classNameClassMap.put( "<%= hlaclassname %>", <%= classname %>.class );
+	
+	_datamemberClassNameSetMap.put( "<%= hlaclassname %>", _datamemberNames );
+	_allDatamemberClassNameSetMap.put( "<%= hlaclassname %>", _allDatamemberNames );
+
+	<%/*alldatamembers:initDatamemberNameSet()*/%>
+	<% alldatamembers.forEach(function(datamember){%>
+	<% if(!datamember.hidden){ %>_datamemberNames.add( "<%=datamember.name%>" );<%}%><%}); %>
+	<%/*alldatamembers:initAllDatamemberNameSet()*/%>
+	<% alldatamembers.forEach(function(datamember){%>
+	_allDatamemberNames.add( "<%=datamember.name%>" );<%}); %>
+	<%/*datamembers:initDatamemberTypeMap()*/%>
+	<% datamembers.forEach(function(datamember){%>
+	_datamemberTypeMap.put( "<%=datamember.name%>", "<%=datamember.parameterType%>" );<%}); %>
+<% if(isinteraction){ %>
+<% }else{ %>
+
+	_classNamePublishAttributeNameMap.put( "<%= hlaclassname %>", _publishAttributeNameSet );
+	_publishedAttributeHandleSet = _factory.createAttributeHandleSet();
+	_classNamePublishedAttributeMap.put( "<%= hlaclassname %>", _publishedAttributeHandleSet );
+
+	_classNameSubscribeAttributeNameMap.put( "<%= hlaclassname %>", _subscribeAttributeNameSet );
+	_subscribedAttributeHandleSet = _factory.createAttributeHandleSet();
+	_classNameSubscribedAttributeMap.put( "<%= hlaclassname %>", _subscribedAttributeHandleSet );
+<%}%>
+
+}
+
+
+private static String initErrorMessage = "Error:  <%= hlaclassname %>:  could not initialize:  ";
+protected static void init( RTIambassador rti ) {
+	if ( _isInitialized ) return;
+	_isInitialized = true;
+	
+	<% if(parentclassname){ %><%=parentclassname%>.init( rti );<%}%>
+	
+	boolean isNotInitialized = true;
+	while( isNotInitialized ) {
+		try {
+			_handle = rti.get<%=isinteraction?"Interaction":"Object"%>ClassHandle( "<%= hlaclassname %>" );
+			isNotInitialized = false;
+		} catch ( FederateNotExecutionMember f ) {
+			System.err.println( initErrorMessage + "Federate Not Execution Member" );
+			f.printStackTrace();
+			return;				
+		} catch ( NameNotFound n ) {
+			System.err.println( initErrorMessage + "Name Not Found" );
+			n.printStackTrace();
+			return;				
+		} catch ( Exception e ) {
+			e.printStackTrace();
+			try { Thread.sleep( 50 ); } catch( Exception e1 ) { }					
+		}
+	}
+
+	_classNameHandleMap.put( "<%= hlaclassname %>", get_handle() );
+	_classHandleNameMap.put( get_handle(), "<%= hlaclassname %>" );
+	_classHandleSimpleNameMap.put( get_handle(), "<%= classname %>" );
+
+	<% if(datamembers && datamembers.length > 0){ %>
+	isNotInitialized = true;
+	while( isNotInitialized ) {
+		try {<%/*datamembers:handle_init()*/%>
+			<% datamembers.forEach(function(datamember){%>			
+			_<%=datamember.name%>_handle = rti.get<%=isinteraction?"Parameter":"Attribute"%>Handle( "<%=datamember.name%>", get_handle() );<%}); %>
+			isNotInitialized = false;
+		} catch ( FederateNotExecutionMember f ) {
+			System.err.println( initErrorMessage + "Federate Not Execution Member" );
+			f.printStackTrace();
+			return;				
+		} catch ( <%=isinteraction?"Interaction":"Object"%>ClassNotDefined i ) {
+			System.err.println( initErrorMessage + "<%=isinteraction?"Interaction":"Object"%> Class Not Defined" );
+			i.printStackTrace();
+			return;				
+		} catch ( NameNotFound n ) {
+			System.err.println( initErrorMessage + "Name Not Found" );
+			n.printStackTrace();
+			return;				
+		} catch ( Exception e ) {
+			e.printStackTrace();
+			try { Thread.sleep( 50 ); } catch( Exception e1 ) { }					
+		}
+	}
+		<%/*  datamembers: { d |<initDatamemberNameHandleMap(hlaclassname=hlaclassname,datamember=d)>}  */%>
+		<% datamembers.forEach(function(datamember){%>
+	_datamemberNameHandleMap.put( "<%=hlaclassname%>,<%=datamember.name%>", get_<%=datamember.name%>_handle() );<%}); %>
+		<%/*datamembers:initDatamemberHandleNameMap()*/%>
+		<% datamembers.forEach(function(datamember){%>
+	_datamemberHandleNameMap.put( get_<%=datamember.name%>_handle(), "<%=datamember.name%>" );<%}); %>
+	<%}%>
+}
+
+
+private static boolean _isPublished = false;
+private static String publishErrorMessage = "Error:  <%= hlaclassname %>:  could not publish:  ";
+
+/**
+* Publishes the <%= classname %> <%=isinteraction?"interaction":"object"%> class for a federate.
+*
+* @param rti handle to the RTI, usu. obtained through the
+* {@link SynchronizedFederate#getRTI()} call
+*/
+public static void publish( RTIambassador rti ) {
+	if ( _isPublished ) return;
+	
+	init( rti );
+
+<% if(isinteraction){ %><% }else{ %>	
+	_publishedAttributeHandleSet.empty();
+	for( String attributeName : _publishAttributeNameSet ) {
+		try {
+			_publishedAttributeHandleSet.add(  _datamemberNameHandleMap.get( "<%= hlaclassname %>," + attributeName )  );
+		} catch ( Exception e ) {
+			System.err.println( publishErrorMessage + "Could not publish \"" + attributeName + "\" attribute." );
+		}
+	}
+<%}%>
+
+	synchronized( rti ) {
+		boolean isNotPublished = true;
+		while( isNotPublished ) {
+			try {
+				rti.publish<%=isinteraction?"Interaction":"Object"%>Class( get_handle()<% if(isinteraction){ %><% }else{ %>, _publishedAttributeHandleSet<%}%> );
+				isNotPublished = false;
+			} catch ( FederateNotExecutionMember f ) {
+				System.err.println( publishErrorMessage + "Federate Not Execution Member" );
+				f.printStackTrace();
+				return;
+			} catch ( <%=isinteraction?"Interaction":"Object"%>ClassNotDefined i ) {
+				System.err.println( publishErrorMessage + "<%=isinteraction?"Interaction":"Object"%> Class Not Defined" );
+				i.printStackTrace();
+				return;
+			} catch ( Exception e ) {
+				e.printStackTrace();
+				try { Thread.sleep( 50 ); } catch( Exception e1 ) { }
+			}
+		}
+	}
+	
+	_isPublished = true;
+}
+
+private static String unpublishErrorMessage = "Error:  <%= hlaclassname %>:  could not unpublish:  ";
+/**
+* Unpublishes the <%= classname %> <%=isinteraction?"interaction":"object"%> class for a federate.
+*
+* @param rti handle to the RTI, usu. obtained through the
+* {@link SynchronizedFederate#getRTI()} call
+*/
+public static void unpublish( RTIambassador rti ) {
+	if ( !_isPublished ) return;
+	
+	init( rti );
+	synchronized( rti ) {
+		boolean isNotUnpublished = true;
+		while( isNotUnpublished ) {
+			try {
+				rti.unpublish<%=isinteraction?"Interaction":"Object"%>Class( get_handle() );
+				isNotUnpublished = false;
+			} catch ( FederateNotExecutionMember f ) {
+				System.err.println( unpublishErrorMessage + "Federate Not Execution Member" );
+				f.printStackTrace();
+				return;
+			} catch ( <%=isinteraction?"Interaction":"Object"%>ClassNotDefined i ) {
+				System.err.println( unpublishErrorMessage + "<%=isinteraction?"Interaction":"Object"%> Class Not Defined" );
+				i.printStackTrace();
+				return;
+			} catch ( <%=isinteraction?"Interaction":"Object"%>ClassNotPublished i ) {
+				System.err.println( unpublishErrorMessage + "<%=isinteraction?"Interaction":"Object"%> Class Not Published" );
+				i.printStackTrace();
+				return;
+			} catch ( Exception e ) {
+				e.printStackTrace();
+				try { Thread.sleep( 50 ); } catch( Exception e1 ) { }
+			}
+		}
+	}
+	
+	_isPublished = false;
+}
+
+private static boolean _isSubscribed = false;
+private static String subscribeErrorMessage = "Error:  <%= hlaclassname %>:  could not subscribe:  ";
+/**
+* Subscribes a federate to the <%= classname %> <%=isinteraction?"interaction":"object"%> class.
+*
+* @param rti handle to the RTI, usu. obtained through the
+* {@link SynchronizedFederate#getRTI()} call
+*/
+public static void subscribe( RTIambassador rti ) {
+	if ( _isSubscribed ) return;
+	
+	init( rti );
+<% if(isinteraction){ %><% }else{ %>	
+	_subscribedAttributeHandleSet.empty();
+	for( String attributeName : _subscribeAttributeNameSet ) {
+		try {
+			_subscribedAttributeHandleSet.add(  _datamemberNameHandleMap.get( "<%= hlaclassname %>," + attributeName )  );
+		} catch ( Exception e ) {
+			System.err.println( subscribeErrorMessage + "Could not subscribe to \"" + attributeName + "\" attribute." );
+		}
+	}
+<%}%>
+	
+	synchronized( rti ) {
+		boolean isNotSubscribed = true;
+		while( isNotSubscribed ) {
+			try {
+				rti.subscribe<% if(isinteraction){ %>InteractionClass( get_handle() )<% }else{ %>ObjectClassAttributes( get_handle(), _subscribedAttributeHandleSet )<%}%>;
+				isNotSubscribed = false;
+			} catch ( FederateNotExecutionMember f ) {
+				System.err.println( subscribeErrorMessage + "Federate Not Execution Member" );
+				f.printStackTrace();
+				return;
+			} catch ( <%=isinteraction?"Interaction":"Object"%>ClassNotDefined i ) {
+				System.err.println( subscribeErrorMessage + "<%=isinteraction?"Interaction":"Object"%> Class Not Defined" );
+				i.printStackTrace();
+				return;
+			} catch ( Exception e ) {
+				e.printStackTrace();
+				try { Thread.sleep( 50 ); } catch( Exception e1 ) { }
+			}
+		}
+	}
+	
+	_isSubscribed = true;
+}
+
+private static String unsubscribeErrorMessage = "Error:  <%= hlaclassname %>:  could not unsubscribe:  ";
+/**
+* Unsubscribes a federate from the <%= classname %> <%=isinteraction?"interaction":"object"%> class.
+*
+* @param rti handle to the RTI, usu. obtained through the
+* {@link SynchronizedFederate#getRTI()} call
+*/
+public static void unsubscribe( RTIambassador rti ) {
+	if ( !_isSubscribed ) return;
+
+	init( rti );
+	synchronized( rti ) {
+		boolean isNotUnsubscribed = true;
+		while( isNotUnsubscribed ) {
+			try {
+				rti.unsubscribe<%=isinteraction?"Interaction":"Object"%>Class( get_handle() );
+				isNotUnsubscribed = false;
+			} catch ( FederateNotExecutionMember f ) {
+				System.err.println( unsubscribeErrorMessage + "Federate Not Execution Member" );
+				f.printStackTrace();
+				return;
+			} catch ( <%=isinteraction?"Interaction":"Object"%>ClassNotDefined i ) {
+				System.err.println( unsubscribeErrorMessage + "<%=isinteraction?"Interaction":"Object"%> Class Not Defined" );
+				i.printStackTrace();
+				return;
+			} catch ( <%=isinteraction?"Interaction":"Object"%>ClassNotSubscribed i ) {
+				System.err.println( unsubscribeErrorMessage + "<%=isinteraction?"Interaction":"Object"%> Class Not Subscribed" );
+				i.printStackTrace();
+				return;
+			} catch ( Exception e ) {
+				e.printStackTrace();
+				try { Thread.sleep( 50 ); } catch( Exception e1 ) { }
+			}
+		}
+	}
+	
+	_isSubscribed = false;
+}
+
+/**
+* Return true if "handle" is equal to the handle (RTI assigned) of this class
+* (that is, the <%= classname %> <%=isinteraction?"interaction":"object"%> class).
+*
+* @param handle handle to compare to the value of the handle (RTI assigned) of
+* this class (the <%= classname %> <%=isinteraction?"interaction":"object"%> class).
+* @return "true" if "handle" matches the value of the handle of this class
+* (that is, the <%= classname %> <%=isinteraction?"interaction":"object"%> class).
+*/
+public static boolean match( int handle ) { return handle == get_handle(); }
+
+/**
+* Returns the handle (RTI assigned) of this instance's <%=isinteraction?"interaction":"object"%> class .
+* 
+* @return the handle (RTI assigned) if this instance's <%=isinteraction?"interaction":"object"%> class
+*/
+public int getClassHandle() { return get_handle(); }
+
+/**
+* Returns the fully-qualified (dot-delimited) name of this instance's <%=isinteraction?"interaction":"object"%> class.
+* 
+* @return the fully-qualified (dot-delimited) name of this instance's <%=isinteraction?"interaction":"object"%> class
+*/
+public String getClassName() { return get_class_name(); }
+
+/**
+* Returns the simple name (last name in its fully-qualified dot-delimited name)
+* of this instance's <%=isinteraction?"interaction":"object"%> class.
+* 
+* @return the simple name of this instance's <%=isinteraction?"interaction":"object"%> class 
+*/
+public String getSimpleClassName() { return get_simple_class_name(); }
+
+/**
+* Returns a set containing the names of all of the non-hidden<%=isinteraction?"parameter":"attribute"%>s of an
+* <%=isinteraction?"interaction":"object"%> class instance.
+*
+* @return set containing the names of all of the <%=isinteraction?"parameter":"attribute"%>s of an
+* <%=isinteraction?"interaction":"object"%> class instance
+*/
+public Set< String > get<%=isinteraction?"Parameter":"Attribute"%>Names() { return get_<%=isinteraction?"parameter":"attribute"%>_names(); }
+
+/**
+* Returns a set containing the names of all of the <%=isinteraction?"parameter":"attribute"%>s of an
+* <%=isinteraction?"interaction":"object"%> class instance.
+*
+* @return set containing the names of all of the <%=isinteraction?"parameter":"attribute"%>s of an
+* <%=isinteraction?"interaction":"object"%> class instance
+*/
+public Set< String > getAll<%=isinteraction?"Parameter":"Attribute"%>Names() { return get_all_<%=isinteraction?"parameter":"attribute"%>_names(); }
+
+/**
+* Publishes the <%=isinteraction?"interaction":"object"%> class of this instance of the class for a federate.
+*
+* @param rti handle to the RTI, usu. obtained through the
+* {@link SynchronizedFederate#getRTI()} call
+*/
+public void publish<%=isinteraction?"Interaction":"Object"%>( RTIambassador rti ) { publish( rti ); }
+
+/**
+* Unpublishes the <%=isinteraction?"interaction":"object"%> class of this instance of this class for a federate.
+*
+* @param rti handle to the RTI, usu. obtained through the
+* {@link SynchronizedFederate#getRTI()} call
+*/
+public void unpublish<%=isinteraction?"Interaction":"Object"%>( RTIambassador rti ) { unpublish( rti ); }
+
+/**
+* Subscribes a federate to the <%=isinteraction?"interaction":"object"%> class of this instance of this class.
+*
+* @param rti handle to the RTI, usu. obtained through the
+* {@link SynchronizedFederate#getRTI()} call
+*/
+public void subscribe<%=isinteraction?"Interaction":"Object"%>( RTIambassador rti ) { subscribe( rti ); }
+
+/**
+* Unsubscribes a federate from the <%=isinteraction?"interaction":"object"%> class of this instance of this class.
+*
+* @param rti handle to the RTI, usu. obtained through the
+* {@link SynchronizedFederate#getRTI()} call
+*/
+public void unsubscribe<%=isinteraction?"Interaction":"Object"%>( RTIambassador rti ) { unsubscribe( rti ); }
+
+<% if(isinteraction){ %><% }else{ %>
+/**
+* Returns a data structure containing the handles of all attributes for this object
+* class that are currently marked for subscription.  To actually subscribe to these
+* attributes, a federate must call <objectclassname>.subscribe( RTIambassador rti ).
+*
+* @return data structure containing the handles of all attributes for this object
+* class that are currently marked for subscription
+*/
+public AttributeHandleSet getSubscribedAttributeHandleSet() { return _subscribedAttributeHandleSet; }
+<%}%>
+
+public String toString() {
+	return "<%= classname %>("
+		<%/*datamembers:stringValue(); separator="+ \",\""*/%>
+		<%var separator = false; datamembers.forEach(function(datamember){%>
+		<%if(separator){%>+ "," <%}else{separator=true;}%>+ "<%=datamember.name%>:" + get_<%=datamember.name%>()<%});%>
+		+ ")";
+}

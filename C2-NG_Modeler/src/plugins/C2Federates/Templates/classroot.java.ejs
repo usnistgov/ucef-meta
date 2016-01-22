@@ -143,7 +143,15 @@ public class <%=isinteraction?"Interaction":"Object"%>Root implements <%=isinter
 <%}%>	
 	
 	<% /*classcommon(classname=%=isinteraction?"Interaction":"Object"%+"Root",hlaclassname=%=isinteraction?"Interaction":"Object"%+"Root",...)*/%>
-
+	<%-ejs.render(
+		TEMPLATES["classcommon.java.ejs"],{
+			isinteraction: isinteraction,
+			classname: isinteraction?"InteractionRoot":"ObjectRoot",
+			parentclassname: "",
+			hlaclassname: isinteraction?"InteractionRoot":"ObjectRoot",
+			datamembers: [],
+			alldatamembers: []
+	})%>
 	/**
 	* Returns a set of strings containing the names of all of the <%=isinteraction?"interaction":"object"%>
 	* classes in the current federation.

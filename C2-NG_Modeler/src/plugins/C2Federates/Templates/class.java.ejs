@@ -5,7 +5,7 @@
 package <%=simname%>;
 
 import java.util.HashSet;
-import java.util.Set;apap
+import java.util.Set;
 
 import hla.rti.*;
 import c2w.hla.*;
@@ -36,6 +36,15 @@ public class <%=classname%> extends <%=parentclassname%> {
 	public static int get_<%=datamember.name%>_handle() { return _<%=datamember.name%>_handle; }
 	<%});%>
 	<% /*classcommon(...)*/ %>
+	<%-ejs.render(
+		TEMPLATES["classcommon.java.ejs"],{
+			isinteraction: isinteraction,
+			classname: classname,
+			parentclassname: parentclassname,
+			hlaclassname: hlaclassname,
+			datamembers: datamembers,
+			alldatamembers: alldatamembers
+	})%>
 	
 <% if(isc2winteractionroot){%>
 	@Override
@@ -216,7 +225,7 @@ public class <%=classname%> extends <%=parentclassname%> {
 		set_<%=datamember.name%>( <%=classname%>_var.get_<%=datamember.name%>() );<%});%>
 	}
 
-<% if(datamembers){ %>
+<% if(datamembers && datamembers.length > 0){ %>
 	/**
 	* Returns the value of the <%=isinteraction?"parameter":"attribute"%> whose name is "datamemberName"
 	* for this <%=isinteraction?"interaction":"object"%>.
