@@ -1,9 +1,11 @@
 define([
     'common/util/ejs',
+    'C2Core/MavenPOM',
 	'C2Federates/Templates/Templates',
     'C2Federates/JavaRTI'
 ], function (
     ejs,
+    MavenPOM,
 	TEMPLATES,
     JavaRTI
 ) {
@@ -21,6 +23,31 @@ define([
     		longName: 'JavaFederate',
             init: function(){
                 self.initRTI();
+
+                self.federateBasePOM = new MavenPOM();
+                self.federateBasePOM.groupId = 'org.c2w'
+                self.federateBasePOM.artifactId = 'federate-base';
+                self.federateBasePOM.version = "0.0.1" + (self.getCurrentConfig().isRelease ? "" : "-SNAPSHOT");    
+
+                self.basePOM = new MavenPOM(self.mainPom);
+                self.basePOM.artifactId = self.projectName + '_base';
+                self.basePOM.version = "0.0.1" + self.getCurrentConfig().isRelease ? "" : "-SNAPSHOT";
+                self.basePOM.packaging = "jar";
+                self.basePOM.dependencies.push(self.rtiPOM);
+                self.basePOM.dependencies.push(self.federateBasePOM);
+                self.mainPom.projects.push(self.basePOM);
+
+                //Add base POM generator
+                self.fileGerenrators.push(function(artifact, callback){
+                    artifact.addFile(self.projectName + '_base/pom.xml', self._jsonToXml.convertToString( self.basePOM.toJSON() ), function (err) {
+                        if (err) {
+                            callback(err);
+                            return;
+                        }else{
+                            callback();
+                        }
+                    });
+                });
             }
     	};
 
@@ -31,17 +58,25 @@ define([
             self.logger.info('Visiting a JavaFederate');
 
             context['javafedspec'] = self.createCodeModeTemplate();
-            context['javafedspec']['classname'] =  self.core.getAttribute(node, 'name');
+            context['javafedspec']['classname'] = self.core.getAttribute(node, 'name');
+            context['javafedspec']['simname'] = self.projectName;
+            context['javafedspec']['timeconstrained'] = self.core.getAttribute(node, 'TimeConstrained');
+            context['javafedspec']['timeregulating'] = self.core.getAttribute(node, 'TimeRegulating');
+            context['javafedspec']['lookahead'] = self.core.getAttribute(node, 'Lookahead');
+            context['javafedspec']['asynchronousdelivery'] = self.core.getAttribute(node, 'EnableROAsynchronousDelivery');
+
+            self.federates[self.core.getPath(node)] = context['javafedspec'];
 
             return {context:context};
         };
 
         this.post_visit_JavaFederate = function(node, context){
             var self = this,
-                outFileName = "src/java/"+ self.core.getAttribute(node, 'name') + ".java",
-                renderContext = context['javafedspec'];
+                renderContext = context['javafedspec'],
+                outFileName = self.projectName + "_base/src/main/java/"+ renderContext['simname'] + "/" + self.core.getAttribute(node, 'name') + "Base.java";
+            
             self.fileGerenrators.push(function(artifact, callback){
-                artifact.addFile(outFileName, ejs.render(TEMPLATES['class.java.ejs'], renderContext), function (err) {
+                artifact.addFile(outFileName, ejs.render(TEMPLATES['javafederate.java.ejs'], renderContext), function (err) {
                     if (err) {
                         callback(err);
                         return;
@@ -55,111 +90,22 @@ define([
         };
 
         this.createCodeModeTemplate = function(){
-            /*return {
+            return {
                 simname: "",
-                melderpackagename: "",
+                melderpackagename: null,
                 classname: "",
                 isnonmapperfed: false,
                 timeconstrained: false,
                 timeregulating: false,
-                lookahead: {},
+                lookahead: null,
                 asynchronousdelivery: false,
-                publishedinteractiondata: {},
-                subscribedinteractiondata: {},
-                allinteractiondata: {},
-                publishedobjectdata: {
-                    publishedAttributeData: [],
-                    logPublishedAttributeData: [],
-                    publishedAttributeData: []},
-                subscribedobjectdata: {
-                    subscribedAttributeData:[],
-                    logSubscribedAttributeData:[],
-                    subscribedAttributeData: []},
-                allobjectdata: {},
-                helpers:{}
-            };*/
-            return {
-                simname: "",
-                classname: "",
-                parentclassname: "",
-                hlaclassname: "",
-                isinteraction: false,
-                isc2winteractionroot: false,
-                datamembers: [],
-                alldatamembers: [],
-                
-                helpers:{
-                    primitive2object: function(type){
-                        var typeMap = {
-                            "String"  : "String",
-                            "int"     : "Integer",
-                            "long"    : "Long",
-                            "short"   : "Short",
-                            "byte"    : "Byte",
-                            "char"    : "Character",
-                            "double"  : "Double",
-                            "float"   : "Float",
-                            "boolean" : "Boolean"};
-                        return typeMap[type];
-                    },
-                    supplied: function(type, name){
-                        var typeMap = {
-                            "String"  : "get_" + name + "()",
-                            "int"     : "Integer.toString( get_" + name +"() )",
-                            "long"    : "Long.toString( get_" + name +"() )",
-                            "short"   : "Short.toString( get_" + name +"() )",
-                            "byte"    : "Byte.toString( get_" + name +"() )",
-                            "char"    : "Character.toString( get_" + name +"() )",
-                            "double"  : "Double.toString( get_" + name +"() )",
-                            "float"   : "Float.toString( get_" + name +"() )",
-                            "boolean" : "Boolean.toString( get_" + name +"() )"
-                        }
-                        return typeMap[type];
-                    },
-                    set: function(type){
-                        var typeMap = {
-                            "String"  : "val",
-                            "int"     : "Integer.parseInt( val )",
-                            "long"    : "Long.parseLong( val )",
-                            "short"   : "Short.parseShort( val )",
-                            "byte"    : "Byte.parseByte( val )",
-                            "char"    : "val.charAt( 0 )",
-                            "double"  : "Double.parseDouble( val )",
-                            "float"   : "Float.parseFloat( val )",
-                            "boolean" : "Boolean.parseBoolean( val )"
-                        }
-                        return typeMap[type];
-                    },
-                    get: function(type, name){
-                        var typeMap = {
-                            "String"  : "get_" + name + "()",
-                            "int"     : "new Integer( get_" + name +"() )",
-                            "long"    : "new Long( get_" + name +"() )",
-                            "short"   : "new Short( get_" + name +"() )",
-                            "byte"    : "new Byte( get_" + name +"() )",
-                            "char"    : "new Character( get_" + name +"() )",
-                            "double"  : "new Double( get_" + name +"() )",
-                            "float"   : "new Float( get_" + name +"() )",
-                            "boolean" : "new Boolean( get_" + name +"() )"
-                        }
-                        return typeMap[type];
-                    },
-                    initialvalue: function(type){
-                        var typeMap = {
-                            "String"  : '""',
-                            "int"     : "0",
-                            "long"    : "0",
-                            "short"   : "0",
-                            "byte"    : "0",
-                            "char"    : "\\000",
-                            "double"  : "0",
-                            "float"   : "0",
-                            "boolean" : "false",
-                            default   : ""
-                        }
-                        return typeMap[type];
-                    }
-                },
+                publishedinteractiondata: [],
+                subscribedinteractiondata: [],
+                allinteractiondata: [],
+                publishedobjectdata: [],
+                subscribedobjectdata: [],
+                allobjectdata: [],
+                helpers:{},
                 ejs:ejs, 
                 TEMPLATES:TEMPLATES
             };

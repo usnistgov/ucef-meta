@@ -8,8 +8,9 @@ import java.util.HashSet;
 import java.util.Set;
 
 import hla.rti.*;
+<% if(simname !== 'c2w.hla'){ %>
 import c2w.hla.*;
-
+<% } %>
 /**
 * The <%=classname%> class implements the <%=classname%> <%=isinteraction?"interaction":"object"%> in the
 * <%=simname%> simulation.

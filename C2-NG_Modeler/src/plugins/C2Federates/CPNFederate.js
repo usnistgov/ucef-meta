@@ -6,7 +6,8 @@ define([], function () {
     	this.federateTypes = this.federateTypes || {};
     	this.federateTypes['CPNFederate'] = {
     		includeInExport: false,
-    		longName: 'CPNFederate'
+    		longName: 'CPNFederate',
+            dependencies: []
     	};
 
         this.cpnPlaces = {};
@@ -34,7 +35,6 @@ define([], function () {
 
             context['CPNDoc'] = cpn_doc;
             context['parent'] = cpn['monitor'];
-
 
 	        return {context:context};
 	    };

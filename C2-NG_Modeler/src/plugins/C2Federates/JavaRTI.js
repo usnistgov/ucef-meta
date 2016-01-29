@@ -1,8 +1,10 @@
 define([
     'common/util/ejs',
+    'C2Core/MavenPOM',
 	'C2Federates/Templates/Templates'
 ], function (
     ejs,
+    MavenPOM,
 	TEMPLATES
 ) {
 
@@ -13,8 +15,8 @@ define([
         this.initRTI = function(){
             var self = this,
             corePackagePath = ["c2w","hla"],
-            coreOutFilePath = "core/src/java/",
-            simOutFilePath = self.projectName + "/src/java/", 
+            coreOutFilePath = "core/src/main/java/",
+            simOutFilePath = self.projectName + "_rti/src/main/java/", 
             renderContext = {
                 ejs:ejs, 
                 TEMPLATES:TEMPLATES
@@ -34,6 +36,37 @@ define([
                 'LowPrio': corePackagePath,
                 'VeryLowPrio': corePackagePath
             };
+
+            var porticoPOM = new MavenPOM();
+            porticoPOM.artifactId = "portico";
+            porticoPOM.groupId = "org.porticoproject";
+            porticoPOM.version = "2.0.2";
+
+            var C2WLoggingPOM = new MavenPOM();
+            C2WLoggingPOM.artifactId = "logging";
+            C2WLoggingPOM.groupId = "org.c2w";
+            C2WLoggingPOM.version = "0.0.1" + (self.getCurrentConfig().isRelease ? "" : "-SNAPSHOT");
+
+            self.corePOM = new MavenPOM(self.mainPom);
+            self.corePOM.artifactId = "core";
+            self.corePOM.version = "0.0.1" + (self.getCurrentConfig().isRelease ? "" : "-SNAPSHOT");
+            self.corePOM.packaging = "jar";
+            self.corePOM.dependencies.push(porticoPOM);
+            self.corePOM.dependencies.push(C2WLoggingPOM);
+            self.mainPom.projects.push(self.corePOM);
+
+            //Add core POM generator
+            self.fileGerenrators.push(function(artifact, callback){
+                artifact.addFile('core/pom.xml', self._jsonToXml.convertToString( self.corePOM.toJSON() ), function (err) {
+                    if (err) {
+                        callback(err);
+                        return;
+                    }else{
+                        callback();
+                    }
+                });
+            });
+
 
             self.fileGerenrators.push(function(artifact, callback){
                 var fullPath = coreOutFilePath + corePackagePath.join("/") + "/" + 'InteractionRoot.java';
@@ -100,6 +133,25 @@ define([
                 self.logger.debug('Rendering template to file: ' + outFilePath + model.name +'.java');
                 artifact.addFile( packagePath + '/' + model.name +'.java', ejs.render(TEMPLATES['class.java.ejs'], context), callback);
             }
+
+            self.rtiPOM = new MavenPOM(self.mainPom);
+            self.rtiPOM.artifactId = self.projectName + "_rti";
+            self.rtiPOM.version = "0.0.1" + (self.getCurrentConfig().isRelease ? "" : "-SNAPSHOT");
+            self.rtiPOM.packaging = "jar";
+            self.rtiPOM.dependencies.push(self.corePOM);
+            self.mainPom.projects.push(self.rtiPOM);
+
+            //Add sim POM generator
+            self.fileGerenrators.push(function(artifact, callback){
+                artifact.addFile(self.projectName + '_rti/pom.xml', self._jsonToXml.convertToString( self.rtiPOM.toJSON() ), function (err) {
+                    if (err) {
+                        callback(err);
+                        return;
+                    }else{
+                        callback();
+                    }
+                });
+            });
 
             self.fileGerenrators.push(function(artifact, callback){
                 var objToRender = [],

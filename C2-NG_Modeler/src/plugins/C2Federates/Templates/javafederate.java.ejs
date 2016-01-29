@@ -40,19 +40,21 @@ import <%= melderpackagename %>.<%= classname %>RTIFactory;
 
 <% } %>
 
-public class <% classname %>Base extends <% if(melderpackagename) { %><%= classname %><% }else{ %>SynchronizedFederate<% } %> {
+public class <%= classname %>Base extends <% if(melderpackagename) { %><%= classname %><% }else{ %>SynchronizedFederate<% } %> {
 
 <% if(melderpackagename){ %>
 	static {
 		<%= classname %>RTIFactory rtiFactory = new <%= classname %>RTIFactory();
-		rtiFactory.set_<% allinteractiondata.name %>Interface( new <% allinteractiondata.name %>Melder() );
-		rtiFactory.set_<% allobjectdata.name %>Interface( new <% allobjectdata.name %>Melder() );	
+		<% /*allinteractiondata:setfactoryvar()*/ %>
+		<% allinteractiondata.forEach(function(rticlass){ %>
+		rtiFactory.set_<%= rticlass.name %>Interface( new <%= rticlass.name %>Melder() );<%});%>
+		<% /*allobjectdata:setfactoryvar()*/ %>
+		<% allobjectdata.forEach(function(rticlass){ %>
+		rtiFactory.set_<%= rticlass.name %>Interface( new <%= rticlass.name %>Melder() );<%});%>	
 
 		<%= classname %>.set<%= classname %>RTIFactory( rtiFactory );
 	}
-	
 <% } %>
-
 	private SubscribedInteractionFilter _subscribedInteractionFilter = new SubscribedInteractionFilter();
 	
 	// constructor
@@ -60,7 +62,6 @@ public class <% classname %>Base extends <% if(melderpackagename) { %><%= classn
 	
 <% if(isnonmapperfed){ %>
 		setLookahead( <%= lookahead %> );
-
 <% } %>
 		createRTI();
 		joinFederation( federation_id, federate_id );
@@ -68,43 +69,40 @@ public class <% classname %>Base extends <% if(melderpackagename) { %><%= classn
 <% if(timeconstrained){ %>
 		enableTimeConstrained();
 <% } %>
-
 <% if(timeregulating){ %>
 		enableTimeRegulation( getLookahead() );
 <% } %>
-
 <% if(asynchronousdelivery){ %>
 		enableAsynchronousDelivery();
 <% } %>
-
-
         // interaction pubsub
-        <%/* publishedinteractiondata:p
-        ubinter() */%>
-        <% publishedinteractiondata.name %>.publish( getRTI() );
-        
-        <%/* subscribedinteractiondata:subinter() */%>
-        <%subscribedinteractiondata.name %>.subscribe( getRTI() );
-		_subscribedInteractionFilter.setFedFilters( 
-			<% subscribedinteractiondata.name %>.get_handle(), 
-			SubscribedInteractionFilter.OriginFedFilter.<%= subscribedinteractiondata.originFedFilter %>, 
-			SubscribedInteractionFilter.SourceFedFilter.<%= subscribedinteractiondata.srcFedFilter %> 
+        <% /* publishedinteractiondata:pubinter() */ %>
+        <% publishedinteractiondata.forEach(function(interactiondata){ %>
+        <%= interactiondata.name %>.publish( getRTI() );
+        <%});%>
+        <% /* subscribedinteractiondata:subinter() */ %>
+        <% subscribedinteractiondata.forEach(function(interactiondata){ %>
+        <%= interactiondata.name %>.subscribe( getRTI() );
+        _subscribedInteractionFilter.setFedFilters( 
+			<%= interactiondata.name %>.get_handle(), 
+			SubscribedInteractionFilter.OriginFedFilter.<%= interactiondata.originFedFilter %>, 
+			SubscribedInteractionFilter.SourceFedFilter.<%= interactiondata.srcFedFilter %> 
 		);
+		<%});%>
 		
 		// object pubsub
         <%/* publishedobjectdata:pubobjectdata() */%>
-        <% for(var i=0; i<publishedobjectdata.publishedAttributeData.length; i++){ %>
-        	<%= publishedobjectdata.name %>.publish_<%= publishedobjectdata.publishedAttributeData[i].name %>();
-        <% } %>
-        <%= publishedobjectdata.name %>.publish( getRTI() );
-
+        <% publishedobjectdata.forEach(function(objectdata){ %>
+        	<% objectdata.publishedAttributeData.forEach(function(a){ %>
+        <%= objectdata.name %>.publish_<%= a.name %>();<%});%>
+        <%= objectdata.name %>.publish( getRTI() );
+        <%});%>
         <%/* subscribedobjectdata:subobjectdata() */%>
-       	<% for(var i=0; i<subscribedobjectdata.subscribedAttributeData.length; i++){ %>
-        	<%= subscribedobjectdata.name %>.subscribe_<%= subscribedobjectdata.subscribedAttributeData[i].name %>();
-        <% } %>
-        <%= subscribedobjectdata.name %>.subscribe( getRTI() );
-
-
+        <% subscribedobjectdata.forEach(function(objectdata){ %>
+        	<% objectdata.subscribedAttributeData.forEach(function(a){ %>
+        <%= objectdata.name %>.subscribe_<%= a.name %>();<%});%>
+        <%= objectdata.name %>.subscribe( getRTI() );
+        <%}); %>
         }
         
        // constructor
@@ -141,64 +139,75 @@ public class <% classname %>Base extends <% if(melderpackagename) { %><%= classn
 
         // interaction pubsub
         <%/* publishedinteractiondata:pubinter() */%>
-        <% publishedinteractiondata.name %>.publish( getRTI() );
-
+        <%publishedinteractiondata.forEach(function(interactiondata){%>
+        <%= interactiondata.name %>.publish( getRTI() );
+        <%}); %>
         <%/* subscribedinteractiondata:subinter() */%>
+        <%subscribedinteractiondata.forEach(function(interactiondata){%>
+        <%= interactiondata.name %>.subscribe( getRTI() );
         _subscribedInteractionFilter.setFedFilters( 
-			<% subscribedinteractiondata.name %>.get_handle(), 
-			SubscribedInteractionFilter.OriginFedFilter.<%= subscribedinteractiondata.originFedFilter %>, 
-			SubscribedInteractionFilter.SourceFedFilter.<%= subscribedinteractiondata.srcFedFilter %> 
+			<%= interactiondata.name %>.get_handle(), 
+			SubscribedInteractionFilter.OriginFedFilter.<%= interactiondata.originFedFilter %>, 
+			SubscribedInteractionFilter.SourceFedFilter.<%= interactiondata.srcFedFilter %> 
 		);
+		<%}); %>
 		
 		// object pubsub
         <%/* publishedobjectdata:pubobjectdata() */%>
-        <% for(var i=0; i<publishedobjectdata.publishedAttributeData.length; i++){ %>
-        	<%= publishedobjectdata.name %>.publish_<%= publishedobjectdata.publishedAttributeData[i].name %>();
-        <% } %>
-        <%= publishedobjectdata.name %>.publish( getRTI() );
-
-        <%/* subscribedobjectdata:subobjectdata() */%>    
-		<% for(var i=0; i<subscribedobjectdata.subscribedAttributeData.length; i++){ %>
-        	<%= subscribedobjectdata.name %>.subscribe_<%= subscribedobjectdata.subscribedAttributeData[i].name %>();
-        <% } %>
-        <%= subscribedobjectdata.name %>.subscribe( getRTI() );
+        <%publishedobjectdata.forEach(function(objectdata){%>
+        	<%objectdata.publishedAttributeData.forEach(function(a){%>
+        <%= objectdata.name %>.publish_<%= a.name %>();<% }); %>
+        <%= objectdata.name %>.publish( getRTI() );
+        <%}); %>
+        <%/* subscribedobjectdata:subobjectdata() */%>
+        <%subscribedobjectdata.forEach(function(objectdata){%>
+        	<%objectdata.subscribedAttributeData.forEach(function(a){%>
+        <%= objectdata.name %>.subscribe_<%= a.name %>();<% }); %>
+        <%= objectdata.name %>.subscribe( getRTI() );
+        <%}); %>
+        
 
 		// enable pubsub log
 		if(federationInfo.length  > 2) {
 			<%/* publishedinteractiondata:publoginter() */%>
-			<% publishedinteractiondata.name %>.enablePublishLog(
-			"<% publishedinteractiondata.name %>",
-			"<% classname %>",
-			"<% publishedinteractiondata.publishedLoglevel %>",
-			loglevel);
-
-			<%/* subscribedinteractiondata:subloginter() */%>
-			<% subscribedinteractiondata.name %>.enableSubscribeLog(
-				"<% subscribedinteractiondata.name %>",
-				"<% classname %>", 
-				"<% subscribedinteractiondata.subscribedLoglevel %>", 
+			<%publishedinteractiondata.forEach(function(interactiondata){%>
+			<%= interactiondata.name %>.enablePublishLog(
+				"<%= interactiondata.name %>",
+				"<%= classname %>",
+				"<%= interactiondata.publishedLoglevel %>",
 				loglevel);
-
+			<%}); %>
+			<%/* subscribedinteractiondata:subloginter() */%>
+			<%subscribedinteractiondata.forEach(function(interactiondata){%>
+			<%= interactiondata.name %>.enableSubscribeLog(
+				"<%= interactiondata.name %>",
+				"<%= classname %>", 
+				"<%= interactiondata.subscribedLoglevel %>", 
+				loglevel);
+			<%}); %>	
 			<%/* publishedobjectdata:pubobjectinter() */%>
-			<% for(var i=0; i<publishedobjectdata.logPublishedAttributeData.length; i++){ %>
-	        	<%= publishedobjectdata.name %>.enablePublishLog<%= publishedobjectdata.logPublishedAttributeData[i] %>();
-	        <% } %>
-
+			<%publishedobjectdata.forEach(function(objectdata){%>
+	        	<%objectdata.logPublishedAttributeData.forEach(function(a){%>
+	        <%= objectdata.name %>.enablePublishLog<%= a %>();<% }); %>
+	        <%}); %>
 			<%/* subscribedobjectdata:subobjectinter() */%>
-			<% for(var i=0; i<subscribedobjectdata.logSubscribedAttributeData.length; i++){ %>
-	        	<%= subscribedobjectdata.name %>.enableSubscribeLog<%= subscribedobjectdata.logSubscribedAttributeData[i] %>();
-	        <% } %>
+			<%subscribedobjectdata.forEach(function(objectdata){%>
+        		<%objectdata.logSubscribedAttributeData.forEach(function(a){%>
+	        	<%= subscribedobjectdata.name %>.enableSubscribeLog<%= a %>();<% }); %>
+	        <%}); %>
 		}
 		
 	}
 	
 	<%/* publishedinteractiondata:create_interaction() */%>
-	public <%= publishedinteractiondata.name %> create_<%= publishedinteractiondata.name %>() {
-	   <%= publishedinteractiondata.name%> interaction = new <%= publishedinteractiondata.name %>();
+	<%publishedinteractiondata.forEach(function(interaction_data){%>
+	public <%= interaction_data.name %> create_<%= interaction_data.name %>() {
+	   <%= interaction_data.name%> interaction = new <%= interaction_data.name %>();
 	   interaction.set_sourceFed( getFederateId() );
 	   interaction.set_originFed( getFederateId() );
 	   return interaction;
 	}
+	<%}); %>
 	
 	<%/* filter_interaction() */%>
 	@Override

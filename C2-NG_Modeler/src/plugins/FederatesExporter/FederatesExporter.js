@@ -109,6 +109,20 @@ define([
                 value: allFederateTypes,
                 valueType: 'string',
                 readOnly: false
+            },{
+                name: 'groupId',
+                displayName: 'Maven GroupID',
+                description: 'The group ID to be included in the Maven POMs',
+                value: 'org.webgme.' + usernameDefault,
+                valueType: 'string',
+                readOnly: false
+            },{
+                name: 'isRelease',
+                displayName: 'release',
+                description: 'Is the model a release version?   ',
+                value: false,
+                valueType: 'boolean',
+                readOnly: false
             /*},{
                 name: 'urlBase',
                 displayName: 'URL Base',
@@ -175,7 +189,19 @@ define([
         self.attributes   = {};
         self.federates = {};
 
+        self.fedFilterMap = {};
+        self.fedFilterMap["MAPPER_FEDERATES"] = "MAPPER";
+        self.fedFilterMap["NON-MAPPER_FEDERATES"] = "NON_MAPPER";
+        self.fedFilterMap["BOTH"] = "ORIGIN_FILTER_DISABLED";
+        self.fedFilterMap["SELF"] = "SELF";
+        self.fedFilterMap["NON-SELF"] = "NON_SELF";
+
         self.projectName = self.core.getAttribute(self.rootNode, 'name');
+
+        self.mainPom.artifactId = self.projectName + "_root";
+        self.mainPom.version = "0.0.1" + (self.getCurrentConfig().isRelease ? "" : "-SNAPSHOT");
+        self.mainPom.packaging = "pom";
+        self.mainPom.groupId = self.getCurrentConfig().groupId.trim();
 
         self.getCurrentConfig().includedFederateTypes.trim().split(" ").forEach(function(e){
             if(self.federateTypes.hasOwnProperty(e)){
@@ -191,10 +217,6 @@ define([
         //self.logger.info('This is an info message.');
         //self.logger.warn('This is a warning message.');
         //self.logger.error('This is an error message.');
-
-        // Using the coreAPI to make changes.
-
-        self.mainPom.artifactId = self.projectName;
 
         //Add POM generator
         self.fileGerenrators.push(function(artifact, callback){
@@ -424,9 +446,14 @@ define([
     FederatesExporter.prototype.post_visit_FOMSheet = function(node, context){
         var self = this;
         for(var i = 0; i < context['pubsubs'].length; i++){
-            if(self.federates[context['pubsubs'][i]['federate']] && self.interactions[context['pubsubs'][i]['interaction']]){
-                if(context['pubsubs'][i]['handler']){
-                    context['pubsubs'][i]['handler'](self.federates[context['pubsubs'][i]['federate']], self.interactions[context['pubsubs'][i]['interaction']]);
+            var pubsub = context['pubsubs'][i];
+            if(self.federates[pubsub.federate] && self.interactions[pubsub.interaction]){
+                if(pubsub.handler){
+                    pubsub.handler(self.federates[pubsub.federate], self.interactions[pubsub.interaction]);
+                }
+            }else if(self.federates[pubsub.federate] && self.objects[pubsub.object]){
+                if(pubsub.handler){
+                    pubsub.handler(self.federates[pubsub.federate], self.objects[pubsub.object]);
                 }
             }
         }
@@ -502,7 +529,7 @@ define([
             context['parentInteraction']['parameters'].push({
                 name: self.core.getAttribute(node,'name'),
                 parameterType: self.core.getAttribute(node,'ParameterType'),
-                hidden: self.core.getAttribute(node,'Hidden'),
+                hidden: self.core.getAttribute(node,'Hidden') === 'true',
                 position: self.core.getOwnRegistry(node, 'position')
             });
         }
@@ -572,11 +599,145 @@ define([
             context['parentObject']['attributes'].push({
                 name: self.core.getAttribute(node,'name'),
                 parameterType: self.core.getAttribute(node,'ParameterType'),
-                hidden: self.core.getAttribute(node,'Hidden'),
+                hidden: self.core.getAttribute(node,'Hidden') === 'true',
                 position: self.core.getOwnRegistry(node, 'position')
             });
         }
         
+        return {context:context};
+    }
+
+    FederatesExporter.prototype.visit_StaticInteractionPublish = function(node, parent, context){
+        var self = this,
+        publication = {
+            interaction: self.core.getPointerPath(node,'dst'),
+            federate: self.core.getPointerPath(node,'src')
+        },
+        nodeAttrNames = self.core.getAttributeNames(node);
+
+        for ( var i = 0; i < nodeAttrNames.length; i += 1 ) {
+            publication[nodeAttrNames[i]] = self.core.getAttribute( node, nodeAttrNames[i]);
+        }   
+        
+        publication['handler'] = function(federate, interaction){
+            var interactiondata = {
+                name: interaction.name,
+                publishedLoglevel: publication['LogLevel'],
+            };
+
+            if(federate['publishedinteractiondata']){
+                federate['publishedinteractiondata'].push(interactiondata);
+            }
+        }
+
+        if(context['pubsubs']){
+            context['pubsubs'].push(publication);
+        }
+        return {context:context};
+    }
+
+    FederatesExporter.prototype.visit_StaticInteractionSubscribe = function(node, parent, context){
+        var self = this,
+        subscription = {
+            interaction: self.core.getPointerPath(node,'src'),
+            federate: self.core.getPointerPath(node,'dst')
+        },
+        nodeAttrNames = self.core.getAttributeNames(node);
+
+        for ( var i = 0; i < nodeAttrNames.length; i += 1 ) {
+            subscription[nodeAttrNames[i]] = self.core.getAttribute( node, nodeAttrNames[i]);
+        }   
+        
+        subscription['handler'] = function(federate, interaction){
+            var interactiondata = {
+                name: interaction.name,
+                subscribedLoglevel: subscription['LogLevel'],
+                originFedFilter: self.fedFilterMap[subscription['OriginFedFilter']],
+                srcFedFilter: self.fedFilterMap[subscription['SrcFedFilter']],
+            };
+
+            if(federate['subscribedinteractiondata']){
+                federate['subscribedinteractiondata'].push(interactiondata);
+            }
+        }
+
+        if(context['pubsubs']){
+            context['pubsubs'].push(subscription);
+        }
+        return {context:context};
+    }
+
+    FederatesExporter.prototype.visit_StaticObjectPublish = function(node, parent, context){
+        var self = this,
+        publication = {
+            object: self.core.getPointerPath(node,'dst'),
+            federate: self.core.getPointerPath(node,'src')
+        },
+        nodeAttrNames = self.core.getAttributeNames(node);
+
+        for ( var i = 0; i < nodeAttrNames.length; i += 1 ) {
+            publication[nodeAttrNames[i]] = self.core.getAttribute( node, nodeAttrNames[i]);
+        }   
+        
+        publication['handler'] = function(federate, object){
+            var objectdata = {
+                name: object.name
+            };
+            objectdata['publishedAttributeData']=[];
+            objectdata['logPublishedAttributeData']=[];
+
+            object['attributes'].forEach(function(a){
+                objectdata['publishedAttributeData'].push(a);
+                 if(publication['EnableLogging']){
+                    objectdata['logPublishedAttributeData'].push(a);
+                }
+            });
+
+            if(federate['publishedobjectdata']){
+                federate['publishedobjectdata'].push(objectdata);
+            }
+        }
+
+        if(context['pubsubs']){
+            context['pubsubs'].push(publication);
+        }
+        return {context:context};
+    }
+
+    FederatesExporter.prototype.visit_StaticObjectSubscribe = function(node, parent, context){
+        var self = this,
+        subscription = {
+            object: self.core.getPointerPath(node,'src'),
+            federate: self.core.getPointerPath(node,'dst')
+        },
+        nodeAttrNames = self.core.getAttributeNames(node);
+
+        for ( var i = 0; i < nodeAttrNames.length; i += 1 ) {
+            subscription[nodeAttrNames[i]] = self.core.getAttribute( node, nodeAttrNames[i]);
+        }   
+        
+        subscription['handler'] = function(federate, object){
+            var objectdata = {
+                name: object.name
+            };
+            objectdata['subscribedAttributeData']=[];
+            objectdata['logSubscribedAttributeData']=[];
+
+            object['attributes'].forEach(function(a){
+                objectdata['subscribedAttributeData'].push(a);
+                 if(subscription['EnableLogging']){
+                    objectdata['logSubscribedAttributeData'].push(a);
+                }
+            });
+
+            if(federate['subscribedobjectdata']){
+                federate['subscribedobjectdata'].push(objectdata);
+            }
+        }
+
+        if(context['pubsubs']){
+            context['pubsubs'].push(subscription);
+        }
         return {context:context};
     }
 
