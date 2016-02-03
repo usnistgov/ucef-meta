@@ -9,9 +9,15 @@
         "src": "src/plugins/DeploymentExporter",
         "test": "test/plugins/DeploymentExporter"
       }
-    }
+    },
+    "decorators": {},
+    "seeds": {},
+    "visualizers": {}
   },
   "dependencies": {
-    "plugins": {}
+    "plugins": {},
+    "decorators": {},
+    "seeds": {},
+    "visualizers": {}
   }
 }
