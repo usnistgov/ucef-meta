@@ -103,17 +103,10 @@ define([
 
         return [
             {
-                name: 'includedFederateTypes',
-                displayName: 'include',
-                description: 'The Types of federates included in this export',
-                value: allFederateTypes,
-                valueType: 'string',
-                readOnly: false
-            },{
-                name: 'groupId',
-                displayName: 'Maven GroupID',
-                description: 'The group ID to be included in the Maven POMs',
-                value: 'org.webgme.' + usernameDefault,
+                name: 'exportVersion',
+                displayName: 'version',
+                description: 'The version of the model to be exported',
+                value: '0.0.1',
                 valueType: 'string',
                 readOnly: false
             },{
@@ -123,6 +116,34 @@ define([
                 value: false,
                 valueType: 'boolean',
                 readOnly: false
+            },{
+                name: 'groupId',
+                displayName: 'Maven GroupID',
+                description: 'The group ID to be included in the Maven POMs',
+                value: 'org.webgme.' + usernameDefault,
+                valueType: 'string',
+                readOnly: false
+            },{
+                name: 'repositoryUrlSnapshot',
+                displayName: 'Repository URL for snapshots',
+                description: 'The URL of the repository where the packaged components should be deployed.',
+                value: 'http://c2w-cdi.isis.vanderbilt.edu:8088/repository/snapshots/',
+                valueType: 'string',
+                readOnly: false
+            },{
+                name: 'repositoryUrlRelease',
+                displayName: 'Repository URL for releases',
+                description: 'The URL of the repository where the packaged components should be deployed.',
+                value: 'http://c2w-cdi.isis.vanderbilt.edu:8088/repository/internal/',
+                valueType: 'string',
+                readOnly: false
+            },{
+                name: 'includedFederateTypes',
+                displayName: 'include',
+                description: 'The Types of federates included in this export',
+                value: allFederateTypes,
+                valueType: 'string',
+                readOnly: true            
             /*},{
                 name: 'urlBase',
                 displayName: 'URL Base',
@@ -202,6 +223,17 @@ define([
         self.mainPom.version = "0.0.1" + (self.getCurrentConfig().isRelease ? "" : "-SNAPSHOT");
         self.mainPom.packaging = "pom";
         self.mainPom.groupId = self.getCurrentConfig().groupId.trim();
+        self.mainPom.addRepository({
+            'id': 'archiva.internal',
+            'name': 'Internal Release Repository',
+            'url': self.getCurrentConfig().repositoryUrlRelease.trim()
+        });
+        
+        self.mainPom.addSnapshotRepository({
+            'id': 'archiva.snapshots',
+            'name': 'Internal Snapshot Repository',
+            'url': self.getCurrentConfig().repositoryUrlSnapshot.trim()
+        });
 
         self.getCurrentConfig().includedFederateTypes.trim().split(" ").forEach(function(e){
             if(self.federateTypes.hasOwnProperty(e)){
@@ -300,7 +332,7 @@ define([
         finishExport = function(err){
 
             //var outFileName = self.projectName + '.json'
-            var artifact = self.blobClient.createArtifact('generatedFiles');
+            var artifact = self.blobClient.createArtifact('generated_' +self.projectName.trim().replace(/\s+/g,'_') +'_Files');
 
             numberOfFilesToGenerate = self.fileGerenrators.length;
             if(numberOfFilesToGenerate > 0){
@@ -530,7 +562,8 @@ define([
                 name: self.core.getAttribute(node,'name'),
                 parameterType: self.core.getAttribute(node,'ParameterType'),
                 hidden: self.core.getAttribute(node,'Hidden') === 'true',
-                position: self.core.getOwnRegistry(node, 'position')
+                position: self.core.getOwnRegistry(node, 'position'),
+                inherited: self.core.getBase(node) != self.core.getMetaType(node)
             });
         }
         
@@ -600,7 +633,8 @@ define([
                 name: self.core.getAttribute(node,'name'),
                 parameterType: self.core.getAttribute(node,'ParameterType'),
                 hidden: self.core.getAttribute(node,'Hidden') === 'true',
-                position: self.core.getOwnRegistry(node, 'position')
+                position: self.core.getOwnRegistry(node, 'position'),
+                inherited: self.core.getBase(node) != self.core.getMetaType(node)
             });
         }
         

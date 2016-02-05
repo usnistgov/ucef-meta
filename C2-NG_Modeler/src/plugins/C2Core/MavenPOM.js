@@ -10,6 +10,7 @@ define([], function () {
     	this.parent = null;
     	this.projects = [];
         this.dependencies = [];
+        this.repositories = null;
         if(parentPom){
             this.parent = parentPom;
             this.groupId = parentPom.groupId;
@@ -17,6 +18,16 @@ define([], function () {
     }
 
     MavenPOM.prototype.constructor = MavenPOM;    
+
+    MavenPOM.prototype.addRepository = function(params){
+        this.repositories = this.repositories || {};
+        this.repositories['repository'] = params;
+    }
+
+    MavenPOM.prototype.addSnapshotRepository = function(params){
+        this.repositories = this.repositories || {};
+        this.repositories['snapshotRepository'] = params;
+    }
 
     MavenPOM.prototype.toJSON = function(verbose){
     	var model = {
@@ -73,6 +84,19 @@ define([], function () {
                     'version': {'#text': dependency.version}
                 });
             });
+        }
+
+        if(this.repositories){
+            model['distributionManagement']={};
+            for(var repoId in this.repositories){
+                var repo = this.repositories[repoId];
+                model['distributionManagement'][repoId]=[];
+                model['distributionManagement'][repoId].push({
+                    'id': {'#text': repo.id || ''},
+                    'name': {'#text': repo.name || ''},
+                    'url': {'#text': repo.url || ''} 
+                });
+            }
         }
 
     	return {

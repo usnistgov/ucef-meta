@@ -123,13 +123,22 @@ define([
                 context.hlaclassname = model.fullName;
                 context.parentclassname = model.isroot ? "" : model.basename;
                 context.isc2winteractionroot = model.isroot && isinteraction;
-                
-                model['parameters'].forEach(function(param){
-                    context.alldatamembers.push(param);
-                    if(!param.hidden){
-                        context.datamembers.push(param);
+                var datamemeberList = [];
+                if(isinteraction){
+                    datamemeberList = model['parameters'];
+                }else{
+                    datamemeberList = model['attributes'];
+                }
+
+                datamemeberList.forEach(function(param){
+                    if(!param.inherited){
+                        context.alldatamembers.push(param);
+                        if(!param.hidden){
+                            context.datamembers.push(param);
+                        }
                     }
                 });
+
                 self.logger.debug('Rendering template to file: ' + outFilePath + model.name +'.java');
                 artifact.addFile( packagePath + '/' + model.name +'.java', ejs.render(TEMPLATES['class.java.ejs'], context), callback);
             }
