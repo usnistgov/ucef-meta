@@ -100,6 +100,8 @@ define([], function () {
         this.visitAllChildrenRec = function ( node, context, counter, callback ) {
              var self = this;
 
+              
+
             if (self.excludeFromVisit(node)){
                 callback(null, context);
                 return;
@@ -109,55 +111,75 @@ define([], function () {
                 var i,
                     atModelNodeCallback,
                     doneModelNodeCallback,
+                    doneVisitChildCallback,
                     nodeType,
-                    sorterFunc;
+                    sorterFunc,
+                    childsToVisit = children.length;
                 if ( err ) {
                     callback( 'loadChildren failed for ' + self.core.getAttribute( node, 'name' ) );
                     return;
                 }
 
-                doneModelNodeCallback = function ( childNode ) {
-                    return function ( err, ctx ) {
-                        if ( err ) {
-                            callback( err );
-                            return;
-                        }
-                    };
+                counter.visits -= 1;
+            
+                doneModelNodeCallback = function ( err, ctx ) {
+                    if ( err ) {
+                        callback( err );
+                    }else{
+                        callback(null);
+                    }
+                    return
                 };
 
-                if ( children.length === 0 ) {
-                    self.doneModelNode(node,context,doneModelNodeCallback);
-                    callback( null );
+                if ( childsToVisit === 0 ) {
+                    if(node !== self.rootNode){
+                        self.doneModelNode(node,context,doneModelNodeCallback);
+                    }else{
+                        doneModelNodeCallback(null);
+                    }
                     return;
-                } 
+                }
+
                 counter.visits += children.length;
-                counter.visits -= 1;
+
+                if(node !== self.rootNode){
+                    nodeType = self.core.getAttribute( self.getMetaType( node ), 'name' );
+                }
+
+                sorterFunc = self.getChildSorterFunc(nodeType, self);
+                if(sorterFunc){
+                    children.sort(sorterFunc);
+                }
+
+                doneVisitChildCallback = function(err){
+                    if(err){
+                        callback( err );
+                        return; 
+                    }
+
+                    childsToVisit -= 1;
+                    if ( childsToVisit === 0 ) {
+                        if(node !== self.rootNode){
+                            self.doneModelNode(node,context,doneModelNodeCallback);
+                        }else{
+                            doneModelNodeCallback(null);
+                        }
+                        return;
+                    } 
+                }
+
                 atModelNodeCallback = function ( childNode ) {
                     return function ( err, ctx ) {
                         if ( err ) {
                             callback( err );
                             return;
                         }
-                        self.visitAllChildrenRec( childNode, ctx, counter, callback );
+                        self.visitAllChildrenRec( childNode, ctx, counter, doneVisitChildCallback );
                     };
                 };
-                if(node !== self.rootNode){
-                    nodeType = self.core.getAttribute( self.getMetaType( node ), 'name' );
-                }
-                sorterFunc = self.getChildSorterFunc(nodeType, self);
-                if(sorterFunc){
-                    children.sort(sorterFunc);
-                }
                 for ( i = 0; i < children.length; i += 1 ) {
                     self.atModelNode( children[ i ], node, self.cloneCtx(context), atModelNodeCallback( children[ i ] ) );
                 }
-
-                
-
-                if(node !== self.rootNode){
-                    self.doneModelNode(node,context,doneModelNodeCallback);
-                }
-                
             } );
         };
 
@@ -168,9 +190,10 @@ define([], function () {
                 ret = null;
 
             try{
+                self.logger.debug('atNode: ' + nodeName);
                 ret = self[self.getVisitorFuncName(nodeType)](node, parent, context);
                 if(ret['error']){
-                    callback( error === '' ? undefined : error );
+                    callback( ret['error'] === '' ? undefined : ret['error'] );
                     return;
                 }else{
                     callback(null, ret['context']);
@@ -179,7 +202,7 @@ define([], function () {
 
             }catch(err){
                 if(err.message == 'self[self.getVisitorFuncName(...)] is not a function'){
-                    self.logger.debug('No visitor function for ' + nodeType);
+                    //self.logger.debug('No visitor function for ' + nodeType);
                 }else{
                     callback(err);
                 }
@@ -196,9 +219,10 @@ define([], function () {
                 ret = null;
 
             try{
+                self.logger.debug('doneNode: ' + nodeName);
                 ret = self[self.getPostVisitorFuncName(nodeType)](node, context);
                 if(ret['error']){
-                    callback( error === '' ? undefined : error );
+                    callback( ret['error'] === '' ? undefined : ret['error'] );
                     return;
                 }else{
                     callback(null, ret['context']);
@@ -207,7 +231,7 @@ define([], function () {
 
             }catch(err){
                 if(err.message == 'self[self.getPostVisitorFuncName(...)] is not a function'){
-                     self.logger.debug('No post visitor function for ' + nodeType);
+                     //self.logger.debug('No post visitor function for ' + nodeType);
                 }else{
                     callback(err);
                 }

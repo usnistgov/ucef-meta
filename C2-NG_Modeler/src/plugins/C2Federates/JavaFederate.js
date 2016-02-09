@@ -57,7 +57,7 @@ define([
 
             self.logger.info('Visiting a JavaFederate');
 
-            context['javafedspec'] = self.createCodeModeTemplate();
+            context['javafedspec'] = self.createCodeModelTemplate();
             context['javafedspec']['classname'] = self.core.getAttribute(node, 'name');
             context['javafedspec']['simname'] = self.projectName;
             context['javafedspec']['timeconstrained'] = self.core.getAttribute(node, 'TimeConstrained');
@@ -89,12 +89,12 @@ define([
             return {context:context};
         };
 
-        this.createCodeModeTemplate = function(){
+        this.createCodeModelTemplate = function(){
             return {
                 simname: "",
                 melderpackagename: null,
                 classname: "",
-                isnonmapperfed: false,
+                isnonmapperfed: true,
                 timeconstrained: false,
                 timeregulating: false,
                 lookahead: null,
@@ -110,7 +110,7 @@ define([
                 TEMPLATES:TEMPLATES
             };
         }
-        this.javaCodeModel = this.createCodeModeTemplate();
+        this.javaCodeModel = this.createCodeModelTemplate();
 
     }
 

@@ -1,7 +1,7 @@
-<% /*siminteraction(interaction,parameters,children) */ %>
+<% /*siminteraction(interaction,parameters,children) */ -%>
 (class <%= interaction.name %> <%= interaction.delivery %> <%= interaction.order %> <%if(!parameters && !children){%>)<%}else{%>
-  <% parameters.forEach(function(param){ %>
-  	(parameter <%= param.name %>)<% }); %>
-  <% children.forEach(function(child){ %>
-  	<%= child %><% }); %>
+<% parameters.forEach(function(param){ %>  (parameter <%= param.name %>)
+<% }); -%>
+<% children.forEach(function(child){ %><%= child %>
+<% }); -%>
 )<% } %>

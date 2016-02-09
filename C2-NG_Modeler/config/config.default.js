@@ -7,6 +7,7 @@ var config = require('./config.webgme'),
 
 // Add/overwrite any additional settings here
 config.server.port = 8088;
+//config.server.port = 80
 config.mongo.uri = 'mongodb://127.0.0.1:27017/c2webgme';
 
 config.visualization.decoratorPaths.push('./src/decorators');
