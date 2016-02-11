@@ -11,6 +11,15 @@ define([], function () {
     	this.projects = [];
         this.dependencies = [];
         this.repositories = null;
+        this.plugins =[{
+            'groupId': {'#text': 'org.apache.maven.plugins'},
+            'artifactId': {'#text': 'maven-compiler-plugin'},
+            'version': {'#text': '3.5.1'},
+            'configuration':{
+                'source': {'#text': '1.5'},
+                'target': {'#text': '1.5'},
+            }
+        }];
         if(parentPom){
             this.parent = parentPom;
             this.groupId = parentPom.groupId;
@@ -97,6 +106,10 @@ define([], function () {
                     'url': {'#text': repo.url || ''} 
                 });
             }
+        }
+
+        if(this.plugins){
+            model['build'] = {'plugins': {'plugin': this.plugins}};
         }
 
     	return {
