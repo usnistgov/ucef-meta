@@ -16,6 +16,7 @@ config.plugin.basePaths.push('src/plugins');
 // Add requirejs paths
 config.requirejsPaths['C2Core'] = './src/plugins/C2Core';
 config.requirejsPaths['C2Federates'] = './src/plugins/C2Federates';
+config.requirejsPaths['DeploymentExporter'] = './src/plugins/DeploymentExporter';
 
 
 config.mongo.uri = 'mongodb://127.0.0.1:27017/c2_ng_modeler'

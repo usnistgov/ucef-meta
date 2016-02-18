@@ -8,11 +8,15 @@
 define([
     'plugin/PluginConfig',
     'plugin/PluginBase',
-    'C2Core/ModelTraverserMixin'
+    'common/util/ejs',
+    'C2Core/ModelTraverserMixin',
+    'DeploymentExporter/Templates/Templates',
 ], function (
     PluginConfig,
     PluginBase,
-    ModelTraverserMixin) {
+    ejs,
+    ModelTraverserMixin,
+    TEMPLATES) {
     'use strict';
 
     /**
@@ -51,6 +55,73 @@ define([
     };
 
     /**
+     * Gets the configuration structure for the DeploymentExporter.
+     * The ConfigurationStructure defines the configuration for the plugin
+     * and will be used to populate the GUI when invoking the plugin from webGME.
+     * @returns {object} The version of the plugin.
+     * @public
+     */
+    DeploymentExporter.prototype.getConfigStructure = function () {
+        var baseURLDefault = 'https://editor.webgme.org',
+            usernameDefault = 'guest',
+            allFederateTypes = '';
+
+        if(window){
+            baseURLDefault = window.location.protocol + window.location.pathname + window.location.pathname + window.location.host;
+        }
+
+        if(WebGMEGlobal && WebGMEGlobal.Client){
+            usernameDefault = WebGMEGlobal.Client.getUserId();
+        }
+
+        if(this.federateTypes){
+            for(var typeKey in this.federateTypes){
+                allFederateTypes+=typeKey + ' '
+            }
+            allFederateTypes.trim();
+        }
+
+        return [
+            {
+                name: 'exportVersion',
+                displayName: 'version',
+                description: 'The version of the model to be exported',
+                value: '0.0.1',
+                valueType: 'string',
+                readOnly: false
+            },{
+                name: 'isRelease',
+                displayName: 'release',
+                description: 'Is the model a release version?   ',
+                value: false,
+                valueType: 'boolean',
+                readOnly: false
+            },{
+                name: 'groupId',
+                displayName: 'Maven GroupID',
+                description: 'The group ID to be included in the Maven POMs',
+                value: 'org.webgme.' + usernameDefault,
+                valueType: 'string',
+                readOnly: false
+            },{
+                name: 'repositoryUrlSnapshot',
+                displayName: 'Repository URL for snapshots',
+                description: 'The URL of the repository where the packaged components should be deployed.',
+                value: 'http://c2w-cdi.isis.vanderbilt.edu:8088/repository/snapshots/',
+                valueType: 'string',
+                readOnly: false
+            },{
+                name: 'repositoryUrlRelease',
+                displayName: 'Repository URL for releases',
+                description: 'The URL of the repository where the packaged components should be deployed.',
+                value: 'http://c2w-cdi.isis.vanderbilt.edu:8088/repository/internal/',
+                valueType: 'string',
+                readOnly: false       
+            }
+        ];
+    };
+
+    /**
      * Main function for the plugin to execute. This will perform the execution.
      * Notes:
      * - Always log with the provided logger.[error,warning,info,debug].
@@ -63,29 +134,98 @@ define([
         // Use self to access core, project, result, logger etc from PluginBase.
         // These are all instantiated at this point.
         var self = this,
-            finishExport;
+            generateFiles,
+            numberOfFilesToGenerate,
+            finishExport,
+            pomModel = {};
 
+        self.fileGerenrators = [];
+        self.fom_sheets = {};
+        self.federates = [];
 
-        // Using the logger.
-        //self.logger.debug('This is a debug message.');
-        //self.logger.info('This is an info message.');
-        //self.logger.warn('This is a warning message.');
-        s//elf.logger.error('This is an error message.');
+        self.projectName = self.core.getAttribute(self.rootNode, 'name');
 
-        // Using the coreAPI to make changes.
+        pomModel.projectName = self.projectName;
+        pomModel.groupId = self.getCurrentConfig().groupId.trim();
+        pomModel.projectVersion = "0.0.1" + (self.getCurrentConfig().isRelease ? "" : "-SNAPSHOT");
+        pomModel.repositoryUrlSnapshot = self.getCurrentConfig().repositoryUrlSnapshot;
+        pomModel.repositoryUrlRelease = self.getCurrentConfig().repositoryUrlRelease;
+        pomModel.federates = self.federates;
 
-        finishExport = function(){
-
-            // This will save the changes. If you don't want to save;
-            // exclude self.save and call callback directly from this scope.
-            self.save('DeploymentExporter updated model.', function (err) {
+        //Add POM generator
+        self.fileGerenrators.push(function(artifact, callback){
+            artifact.addFile('pom.xml', ejs.render(TEMPLATES['execution_pom.xml.ejs'], pomModel), function (err) {
                 if (err) {
-                    callback(err, self.result);
+                    callback(err);
                     return;
+                }else{
+                    callback();
                 }
+            });
+        });
+
+        generateFiles = function(artifact, doneBack){
+            if(numberOfFilesToGenerate > 0){ 
+                self.fileGerenrators[self.fileGerenrators.length - numberOfFilesToGenerate](artifact, function(err){
+                    if (err) {
+                        callback(err, self.result);
+                        return;
+                    }
+                    numberOfFilesToGenerate--;
+                    if(numberOfFilesToGenerate > 0){
+
+                        generateFiles(artifact, doneBack);
+                    }else{
+                        doneBack();
+                     }
+                });                
+            }else{
+                doneBack();
+            }
+        }
+
+        finishExport = function(err){
+
+            //var outFileName = self.projectName + '.json'
+            var artifact = self.blobClient.createArtifact(self.projectName.trim().replace(/\s+/g,'_') +'_Deployment_Files');
+
+            numberOfFilesToGenerate = self.fileGerenrators.length;
+            if(numberOfFilesToGenerate > 0){
+                generateFiles(artifact, function(err){
+                    if (err) {
+                        callback(err, self.result);
+                        return;
+                    }
+
+                    self.blobClient.saveAllArtifacts(function (err, hashes) {
+                        if (err) {
+                            callback(err, self.result);
+                            return;
+                        }
+                        self.createMessage(null, 'Deployment artifact generated with id:[' + hashes[0] + ']');
+
+                        // This will add a download hyperlink in the result-dialog.
+                        self.result.addArtifact(hashes[0]);
+
+                        
+                        // This will save the changes. If you don't want to save;
+                        // exclude self.save and call callback directly from this scope.
+                        self.save('DeploymentExporter updated model.', function (err) {
+                            if (err) {
+                                callback(err, self.result);
+                                return;
+                            }
+                            self.result.setSuccess(true);
+                            callback(null, self.result);
+                        });
+                    });
+                })
+
+            }else{
                 self.result.setSuccess(true);
                 callback(null, self.result);
-            });
+            }
+            
         }
 
         self.visitAllChildrenFromRootContainer(self.rootNode, function(err){
@@ -96,6 +236,60 @@ define([
         });
 
     };
+
+    DeploymentExporter.prototype.visit_Federate = function(node, parent, context){
+        var self = this,
+            ret = {context:context},
+            nodeType = self.core.getAttribute( self.getMetaType( node ), 'name' ),
+            fed = {name:self.core.getAttribute(node, 'name')},
+            nodeAttrNames;
+        self.logger.info('Visiting a Federate');
+
+        nodeAttrNames = self.core.getAttributeNames(node);
+        for ( var i = 0; i < nodeAttrNames.length; i += 1 ) {
+            fed[nodeAttrNames[i]] = self.core.getAttribute( node, nodeAttrNames[i]);
+        }   
+
+        self.federates.push(fed);
+
+        if(nodeType != 'Federate'){
+            try{
+                ret = self['visit_' + nodeType](node, parent, context);
+            }catch(err){
+                self.logger.debug('No visitor function for ' + nodeType);
+            }
+        }
+
+        return ret;
+    };
+
+    DeploymentExporter.prototype.getVisitorFuncName = function(nodeType){
+        var self = this,
+            visitorName = 'generalVisitor';
+        if(nodeType){
+            visitorName = 'visit_'+ nodeType;
+            if(nodeType.endsWith('Federate')){
+                visitorName = 'visit_' + 'Federate';
+            }
+            
+        }
+        //self.logger.debug('Genarated visitor Name: ' + visitorName);
+        return visitorName;   
+    }
+
+    DeploymentExporter.prototype.getPostVisitorFuncName = function(nodeType){
+        var self = this,
+            visitorName = 'generalPostVisitor';
+        if(nodeType){
+            visitorName = 'post_visit_'+ nodeType;
+            if(nodeType.endsWith('Federate')){
+                visitorName = 'post_visit_' + 'Federate';
+            }
+        }
+        //self.logger.debug('Genarated post-visitor Name: ' + visitorName);
+        return visitorName;
+        
+    }
 
     DeploymentExporter.prototype.getChildSorterFunc = function(nodeType, self){
         var self = this,

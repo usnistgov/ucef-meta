@@ -220,7 +220,7 @@ define([
         self.projectName = self.core.getAttribute(self.rootNode, 'name');
 
         self.mainPom.artifactId = self.projectName + "_root";
-        self.mainPom.version = "0.0.1" + (self.getCurrentConfig().isRelease ? "" : "-SNAPSHOT");
+        self.mainPom.version = self.getCurrentConfig().exportVersion + (self.getCurrentConfig().isRelease ? "" : "-SNAPSHOT");
         self.mainPom.packaging = "pom";
         self.mainPom.groupId = self.getCurrentConfig().groupId.trim();
         self.mainPom.addRepository({
@@ -354,6 +354,9 @@ define([
                             callback(err, self.result);
                             return;
                         }
+
+                         self.createMessage(null, 'Code artifact generated with id:[' + hashes[0] + ']');
+
                         // This will add a download hyperlink in the result-dialog.
                         self.result.addArtifact(hashes[0]);
                         
