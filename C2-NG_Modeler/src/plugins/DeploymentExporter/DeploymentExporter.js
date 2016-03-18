@@ -104,6 +104,13 @@ define([
                 valueType: 'string',
                 readOnly: false
             },{
+                name: 'c2wVersion',
+                displayName: 'C2W version',
+                description: 'The version of the C2W foundation to be used',
+                value: '0.0.1-SNAPSHOT',
+                valueType: 'string',
+                readOnly: false
+            },{
                 name: 'repositoryUrlSnapshot',
                 displayName: 'Repository URL for snapshots',
                 description: 'The URL of the repository where the packaged components should be deployed.',
@@ -139,7 +146,7 @@ define([
             finishExport,
             pomModel = {};
 
-        self.fileGerenrators = [];
+        self.fileGenerators = [];
         self.fom_sheets = {};
         self.federates = [];
 
@@ -148,12 +155,13 @@ define([
         pomModel.projectName = self.projectName;
         pomModel.groupId = self.getCurrentConfig().groupId.trim();
         pomModel.projectVersion = "0.0.1" + (self.getCurrentConfig().isRelease ? "" : "-SNAPSHOT");
+        pomModel.c2wVersion = self.getCurrentConfig().c2wVersion;
         pomModel.repositoryUrlSnapshot = self.getCurrentConfig().repositoryUrlSnapshot;
         pomModel.repositoryUrlRelease = self.getCurrentConfig().repositoryUrlRelease;
         pomModel.federates = self.federates;
 
         //Add POM generator
-        self.fileGerenrators.push(function(artifact, callback){
+        self.fileGenerators.push(function(artifact, callback){
             artifact.addFile('pom.xml', ejs.render(TEMPLATES['execution_pom.xml.ejs'], pomModel), function (err) {
                 if (err) {
                     callback(err);
@@ -166,7 +174,7 @@ define([
 
         generateFiles = function(artifact, doneBack){
             if(numberOfFilesToGenerate > 0){ 
-                self.fileGerenrators[self.fileGerenrators.length - numberOfFilesToGenerate](artifact, function(err){
+                self.fileGenerators[self.fileGenerators.length - numberOfFilesToGenerate](artifact, function(err){
                     if (err) {
                         callback(err, self.result);
                         return;
@@ -189,7 +197,7 @@ define([
             //var outFileName = self.projectName + '.json'
             var artifact = self.blobClient.createArtifact(self.projectName.trim().replace(/\s+/g,'_') +'_Deployment_Files');
 
-            numberOfFilesToGenerate = self.fileGerenrators.length;
+            numberOfFilesToGenerate = self.fileGenerators.length;
             if(numberOfFilesToGenerate > 0){
                 generateFiles(artifact, function(err){
                     if (err) {

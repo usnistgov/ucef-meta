@@ -1,0 +1,212 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+<% if (parent){ %>
+  <parent>
+    <groupId><%=parent.groupId%></groupId>
+    <artifactId><%=parent.artifactId%></artifactId>
+    <version><%=parent.version%></version>
+  </parent>
+<%} -%>
+  <groupId><%=groupId%></groupId>
+  <artifactId><%=artifactId%></artifactId>
+  <version><%=version%></version>
+  <packaging><%=packaging%></packaging>
+  <name><%=name%></name>
+  <description><%=description%></description>
+
+<% if(projects && projects.length > 0){ %> 
+    <modules>
+      <% projects.forEach(function(project){ %>
+      <module><%= project.directory ? project.directory : project.artifactId %></module><%}); %> 
+    </modules>  
+<%}%>
+    <properties>
+        <boost.version>1.57.0+nar.10</boost.version>
+        <nar-plugin.version>3.3.0</nar-plugin.version>
+        <compiler-name>g++</compiler-name>
+        <linker-name>g++</linker-name>
+    </properties>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>com.github.maven-nar</groupId>
+                <artifactId>nar-maven-plugin</artifactId>
+                <version>${nar-plugin.version}</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <libraries>
+                        <library> 
+                            <type>static</type>
+                        </library>
+                    </libraries>
+                    <cpp>
+                        <name>${compiler-name}</name>
+                        <debug>false</debug>
+                        <includes>
+                            <include>**/*.hpp</include>
+                            <include>**/*.h</include>
+                            <include>**/*.cpp</include>
+                            <include>**/*.c</include>
+                        </includes>
+                        <options combine.children="append">
+                            <!--option>-std=c++11</option-->
+                            <option>-ftemplate-depth-128</option>
+                            <option>-fno-inline</option>
+                            <option>-Wall</option>
+                            <option>-pedantic</option>
+                            <option>-Wno-long-long</option>
+                            <option>-Wno-variadic-macros</option>
+                        </options>
+                        <defines>
+                          <!--define>USE_MYSQL_LOGGING</define-->
+                          <define>RTI_USES_STD_FSTREAM</define>
+                        </defines>
+                        <systemIncludePaths>
+                          <systemIncludePath>${build.BOOST_INC_DIR}</systemIncludePath>
+                        </systemIncludePaths>
+                    </cpp>
+                    <linker>
+                        <name>${linker-name}</name>
+                        <incremental>false</incremental>
+                        <libs>
+                          <lib>
+                            <name>RTI-NG64</name>
+                            <type>shared</type>
+                            <directory>${build.RTI_LIB_DIR}</directory>
+                          </lib>
+                          <lib>
+                            <name>FedTime64</name>
+                            <type>shared</type>
+                            <directory>${build.RTI_LIB_DIR}</directory>
+                          </lib>
+                          <lib>
+                            <name>boost_thread</name>
+                            <type>shared</type>
+                            <directory>${build.BOOST_LIB_DIR}</directory>
+                          </lib>
+                          <lib>
+                            <name>boost_system</name>
+                            <type>shared</type>
+                            <directory>${build.BOOST_LIB_DIR}</directory>
+                          </lib>
+                          <lib>
+                            <name>mysqlcppconn</name>
+                            <type>shared</type>
+                            <directory>${build.MYSQL_LIB_DIR}</directory>
+                          </lib>
+                        </libs>
+                        
+                    </linker>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+
+    <profiles>
+        <profile>
+          <id>include-generated</id>
+          <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+          <modules>
+              <module>HelloWorld_base-cpp</module>   
+          </modules>  
+        </profile>
+
+        <profile>
+            <id>windows-common</id>
+            <activation>
+                <os>
+                    <family>windows</family>
+                </os>
+            </activation>
+            <properties>
+              <build.RTI_LIB_DIR>${env.RTI_LIB_DIR}</build.RTI_LIB_DIR>
+              <build.BOOST_INC_DIR>${env.BOOST_INC_DIR}</build.BOOST_INC_DIR>
+              <build.BOOST_LIB_DIR>${env.BOOST_LIB_DIR}</build.BOOST_LIB_DIR>
+              <build.MYSQL_LIB_DIR>${env.MYSQL_LIB_DIR}</build.MYSQL_LIB_DIR>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>com.github.maven-nar</groupId>
+                        <artifactId>nar-maven-plugin</artifactId>
+                        <extensions>true</extensions>
+                        <configuration>
+                            <cpp>
+                                <options combine.children="append">
+                                    <option>-mthreads</option>
+                                </options>
+                            </cpp>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <profile>
+            <id>linux-common</id>
+            <activation>
+                <os>
+                    <family>linux</family>
+                </os>
+            </activation>
+            <properties>
+              <build.RTI_LIB_DIR>${env.RTI_HOME}/lib/gcc4</build.RTI_LIB_DIR>
+              <build.BOOST_INC_DIR>/usr/include/boost</build.BOOST_INC_DIR>
+              <build.BOOST_LIB_DIR>/usr/lib/x86_64-linux-gnu</build.BOOST_LIB_DIR>
+              <build.MYSQL_LIB_DIR>/usr/lib/</build.MYSQL_LIB_DIR>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>com.github.maven-nar</groupId>
+                        <artifactId>nar-maven-plugin</artifactId>
+                        <extensions>true</extensions>
+                        <configuration>
+                            <cpp>
+                                <options combine.children="append">
+                                    <option>-pthread</option>
+                                </options>
+                            </cpp>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <profile>
+            <id>mac-common</id>
+            <activation>
+                <os>
+                    <family>mac</family>
+                </os>
+            </activation>
+            <properties>
+              <build.RTI_LIB_DIR>${env.RTI_LIB_DIR}</build.RTI_LIB_DIR>
+              <build.BOOST_INC_DIR>${env.BOOST_INC_DIR}</build.BOOST_INC_DIR>
+              <build.BOOST_LIB_DIR>${env.BOOST_LIB_DIR}</build.BOOST_LIB_DIR>
+              <build.MYSQL_LIB_DIR>${env.MYSQL_LIB_DIR}</build.MYSQL_LIB_DIR>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>com.github.maven-nar</groupId>
+                        <artifactId>nar-maven-plugin</artifactId>
+                        <extensions>true</extensions>
+                        <configuration>
+                            <cpp>
+                                <options combine.children="append">
+                                    <option>-pthread</option>
+                                </options>
+                            </cpp>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+  
+</project>

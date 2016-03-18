@@ -13,7 +13,8 @@ define([
     'use strict';
 
     var JavaFederateExporter  = function () {
-    	var self = this;
+    	var self = this,
+            baseOutFilePath;
         
         JavaRTI.call(this);
 
@@ -22,24 +23,50 @@ define([
     		includeInExport: false,
     		longName: 'JavaFederate',
             init: function(){
-                self.initRTI();
+                self.initJavaRTI();
 
-                self.federateBasePOM = new MavenPOM();
-                self.federateBasePOM.groupId = 'org.c2w'
-                self.federateBasePOM.artifactId = 'federate-base';
-                self.federateBasePOM.version = "0.0.1" + (self.getCurrentConfig().isRelease ? "" : "-SNAPSHOT");    
+                var baseDirBasePath = 'java-federates/',
+                baseDirSpec = {federation_name: self.projectName, artifact_name: "base", language:"java"},
+                baseDirPath =  baseDirBasePath + ejs.render(self.directoryNameTemplate, baseDirSpec);
 
-                self.basePOM = new MavenPOM(self.mainPom);
-                self.basePOM.artifactId = self.projectName + '_base';
-                self.basePOM.version = "0.0.1" + self.getCurrentConfig().isRelease ? "" : "-SNAPSHOT";
-                self.basePOM.packaging = "jar";
-                self.basePOM.dependencies.push(self.rtiPOM);
-                self.basePOM.dependencies.push(self.federateBasePOM);
-                self.mainPom.projects.push(self.basePOM);
+                baseOutFilePath = baseDirPath + MavenPOM.mavenJavaPath; 
+
+                self.java_federateBasePOM = new MavenPOM();
+                self.java_federateBasePOM.groupId = 'org.c2w'
+                self.java_federateBasePOM.artifactId = 'federate-base';
+                self.java_federateBasePOM.version = self.c2w_version;   
+
+                if(!self.javaPOM){
+                    self.javaPOM = new MavenPOM(self.mainPom);
+                    self.javaPOM.artifactId = self.projectName + "-java";
+                    self.javaPOM.directory = "java-federates";
+                    self.javaPOM.version = self.project_version;
+                    self.javaPOM.addMavenCompiler('1.5');
+                    self.javaPOM.packaging = "pom";
+
+                    //Add sim POM generator
+                    self.fileGenerators.push(function(artifact, callback){
+                        artifact.addFile( self.javaPOM.directory + '/pom.xml', self._jsonToXml.convertToString( self.javaPOM.toJSON() ), function (err) {
+                            if (err) {
+                                callback(err);
+                                return;
+                            }else{
+                                callback();
+                            }
+                        });
+                    });
+                }
+
+                self.java_basePOM = new MavenPOM(self.javaPOM);
+                self.java_basePOM.artifactId = ejs.render(self.directoryNameTemplate, baseDirSpec);
+                self.java_basePOM.version = self.project_version;
+                self.java_basePOM.packaging = "jar";
+                self.java_basePOM.dependencies.push(self.java_rtiPOM);
+                self.java_basePOM.dependencies.push(self.java_federateBasePOM);
 
                 //Add base POM generator
-                self.fileGerenrators.push(function(artifact, callback){
-                    artifact.addFile(self.projectName + '_base/pom.xml', self._jsonToXml.convertToString( self.basePOM.toJSON() ), function (err) {
+                self.fileGenerators.push(function(artifact, callback){
+                    artifact.addFile(baseDirPath + '/pom.xml', self._jsonToXml.convertToString( self.java_basePOM.toJSON() ), function (err) {
                         if (err) {
                             callback(err);
                             return;
@@ -57,7 +84,7 @@ define([
 
             self.logger.info('Visiting a JavaFederate');
 
-            context['javafedspec'] = self.createCodeModelTemplate();
+            context['javafedspec'] = self.createJavaFederateCodeModel();
             context['javafedspec']['classname'] = self.core.getAttribute(node, 'name');
             context['javafedspec']['simname'] = self.projectName;
             context['javafedspec']['timeconstrained'] = self.core.getAttribute(node, 'TimeConstrained');
@@ -73,10 +100,14 @@ define([
         this.post_visit_JavaFederate = function(node, context){
             var self = this,
                 renderContext = context['javafedspec'],
-                outFileName = self.projectName + "_base/src/main/java/"+ renderContext['simname'] + "/" + self.core.getAttribute(node, 'name') + "Base.java";
+                outFileName = baseOutFilePath + "/" +renderContext['simname'] + "/" + self.core.getAttribute(node, 'name') + "Base.java";
             
-            self.fileGerenrators.push(function(artifact, callback){
-                artifact.addFile(outFileName, ejs.render(TEMPLATES['javafederate.java.ejs'], renderContext), function (err) {
+            self.fileGenerators.push(function(artifact, callback){
+                renderContext['allobjectdata'] = renderContext['publishedobjectdata'].concat(renderContext['subscribedobjectdata']);
+                renderContext['allinteractiondata'] = renderContext['publishedinteractiondata'].concat(renderContext['subscribedinteractiondata'])
+                
+                self.logger.debug('Rendering template to file: ' + outFileName);
+                artifact.addFile(outFileName, ejs.render(TEMPLATES['federate.java.ejs'], renderContext), function (err) {
                     if (err) {
                         callback(err);
                         return;
@@ -89,7 +120,7 @@ define([
             return {context:context};
         };
 
-        this.createCodeModelTemplate = function(){
+        this.createJavaFederateCodeModel = function(){
             return {
                 simname: "",
                 melderpackagename: null,
@@ -110,7 +141,7 @@ define([
                 TEMPLATES:TEMPLATES
             };
         }
-        this.javaCodeModel = this.createCodeModelTemplate();
+        this.javaCodeModel = this.createJavaFederateCodeModel();
 
     }
 

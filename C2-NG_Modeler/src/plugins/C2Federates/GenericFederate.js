@@ -9,6 +9,33 @@ define([], function () {
     		longName: 'Federate'
     	};
 
+        
+       this.visit_FOMSheet = function(node, parent, context){
+            var self = this;
+
+            self.fom_sheets[self.core.getPath(node)] = node;
+            context['parent'] = {};
+            context['pubsubs'] = [];
+            return {context:context};
+        }
+
+        this.post_visit_FOMSheet = function(node, context){
+            var self = this;
+            for(var i = 0; i < context['pubsubs'].length; i++){
+                var pubsub = context['pubsubs'][i];
+                if(self.federates[pubsub.federate] && self.interactions[pubsub.interaction]){
+                    if(pubsub.handler){
+                        pubsub.handler(self.federates[pubsub.federate], self.interactions[pubsub.interaction]);
+                    }
+                }else if(self.federates[pubsub.federate] && self.objects[pubsub.object]){
+                    if(pubsub.handler){
+                        pubsub.handler(self.federates[pubsub.federate], self.objects[pubsub.object]);
+                    }
+                }
+            }
+            return {context:context};
+        }
+
 	    this.visit_Federate = function(node, parent, context){
 	    	var self = this,
 	    		ret = {context:context},

@@ -59,7 +59,7 @@ define([], function () {
             self.logger.debug(self._jsonToXml.convertToString( context['CPNDoc']));
             outFileName = "CPN/" + self.core.getAttribute(node, 'name') + ".xml"
 
-            self.fileGerenrators.push(function(artifact, callback){
+            self.fileGenerators.push(function(artifact, callback){
                 artifact.addFile(outFileName, self._jsonToXml.convertToString( context['CPNDoc']), function (err) {
                     if (err) {
                         callback(err);

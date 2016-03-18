@@ -16,6 +16,7 @@ config.plugin.basePaths.push('src/plugins');
 // Add requirejs paths
 config.requirejsPaths['C2Core'] = './src/plugins/C2Core';
 config.requirejsPaths['C2Federates'] = './src/plugins/C2Federates';
+config.requirejsPaths['FederatesExporter'] = './src/plugins/FederatesExporter';
 config.requirejsPaths['DeploymentExporter'] = './src/plugins/DeploymentExporter';
 
 

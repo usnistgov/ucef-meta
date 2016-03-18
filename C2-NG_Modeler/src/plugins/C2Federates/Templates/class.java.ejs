@@ -37,15 +37,14 @@ public class <%=classname%> extends <%=parentclassname%> {
 	public static int get_<%=datamember.name%>_handle() { return _<%=datamember.name%>_handle; }
 	<%});%>
 	<% /*classcommon(...)*/ %>
-	<%-ejs.render(
-		TEMPLATES["classcommon.java.ejs"],{
-			isinteraction: isinteraction,
+	<%- ejs.render(TEMPLATES["classcommon.java.ejs"],
+		{	isinteraction: isinteraction,
 			classname: classname,
 			parentclassname: parentclassname,
 			hlaclassname: hlaclassname,
 			datamembers: datamembers,
 			alldatamembers: alldatamembers
-	})%>
+	}) %>
 	
 <% if(isc2winteractionroot){%>
 	@Override
@@ -239,7 +238,7 @@ public class <%=classname%> extends <%=parentclassname%> {
 	public Object get<%= isinteraction ? "Parameter" : "Attribute" %>( String datamemberName ) {
 		<% /*first(datamembers):startgetbyname()*/ %>
 		<% /*rest(datamembers):continuegetbyname()*/ %>
-		<% for(var i = 0; i<datamembers.length; i++ ){%>
+		<% for(var i = 0; i<datamembers.length; i++ ){ %>
 		<%= i == 0  ? 'if' : 'else if'%> (  "<%=datamembers[i].name%>".equals( datamemberName )  ) return <%=helpers.get(datamembers[i].parameterType, datamembers[i].name)%>;<%}%>
 		else return super.get<%= isinteraction ? "Parameter" : "Attribute" %>( datamemberName );
 	}
@@ -256,7 +255,7 @@ public class <%=classname%> extends <%=parentclassname%> {
 	public Object get<%= isinteraction ? "Parameter" : "Attribute" %>( int datamemberHandle ) {
 		<% /*first(datamembers):startgetbyhandle()*/ %>
 		<% /*rest(datamembers):continuegetbyhandle()*/ %>		
-		<% for(var i = 0; i<datamembers.length; i++ ){%>
+		<% for(var i = 0; i<datamembers.length; i++ ){ %>
 		<%= i == 0  ? 'if' : 'else if'%> ( get_<%=datamembers[i].name%>_handle() == datamemberHandle ) return <%=helpers.get(datamembers[i].parameterType, datamembers[i].name)%>;<%}%>
 		else return super.get<%= isinteraction ? "Parameter" : "Attribute" %>( datamemberHandle );
 	}
@@ -265,7 +264,7 @@ public class <%=classname%> extends <%=parentclassname%> {
 		boolean retval = true;		
 		<% /*first(datamembers):startif()*/ %>
 		<% /*rest(datamembers):continueif()*/ %>	
-		<% for(var i = 0; i<datamembers.length; i++ ){%>
+		<% for(var i = 0; i<datamembers.length; i++ ){ %>
 		<%= i == 0  ? 'if' : 'else if'%> ( param_handle == get_<%=datamembers[i].name%>_handle() ) set_<%=datamembers[i].name%>( <%=helpers.set(datamembers[i].parameterType)%> );<%}%>
 		else retval = super.set<%= isinteraction ? "Parameter" : "Attribute" %>Aux( param_handle, val );
 		
@@ -276,7 +275,7 @@ public class <%=classname%> extends <%=parentclassname%> {
 		boolean retval = true;
 		<% /*first(datamembers):startifstring()*/ %>
 		<% /*rest(datamembers):continueifstring()*/ %>	
-		<% for(var i = 0; i<datamembers.length; i++ ){%>
+		<% for(var i = 0; i<datamembers.length; i++ ){ %>
 		<%= i == 0  ? 'if' : 'else if'%> (  "<%=datamembers[i].name%>".equals( datamemberName )  ) set_<%=datamembers[i].name%>( <%=helpers.set(datamembers[i].parameterType)%> );<%}%>	
 		else retval = super.set<%= isinteraction ? "Parameter" : "Attribute" %>Aux( datamemberName, val );
 		
@@ -287,7 +286,7 @@ public class <%=classname%> extends <%=parentclassname%> {
 		boolean retval = true;
 		<% /*first(datamembers):startifname()*/ %>
 		<% /*rest(datamembers):continueifname()*/ %>
-		<% for(var i = 0; i<datamembers.length; i++ ){%>
+		<% for(var i = 0; i<datamembers.length; i++ ){ %>
 		<%= i == 0  ? 'if' : 'else if'%> (  "<%=datamembers[i].name%>".equals( datamemberName )  ) set_<%=datamembers[i].name%>( (<%= helpers.primitive2object(datamembers[i].parameterType)%>)val );<%}%>		
 		else retval = super.set<%= isinteraction ? "Parameter" : "Attribute" %>Aux( datamemberName, val );
 		

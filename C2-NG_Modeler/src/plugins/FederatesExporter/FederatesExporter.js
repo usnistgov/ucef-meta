@@ -12,9 +12,12 @@ define([
     'C2Core/ModelTraverserMixin',
     'C2Core/xmljsonconverter',
     'C2Core/MavenPOM',
+    'FederatesExporter/PubSubVisitors',
+    'FederatesExporter/RTIVisitors',
     'C2Federates/Templates/Templates',
     'C2Federates/GenericFederate',
     'C2Federates/JavaFederate',
+    'C2Federates/CppFederate',
     'C2Federates/CPNFederate'
 ], function (
     PluginConfig,
@@ -23,9 +26,12 @@ define([
     ModelTraverserMixin,
     JSON2XMLConverter,
     MavenPOM,
+    PubSubVisitors,
+    RTIVisitors,
     TEMPLATES,
     GenericFederate,
     JavaFederate,
+    CppFederate,
     CPNFederate
     ) {
     'use strict';
@@ -44,8 +50,11 @@ define([
 
         PluginBase.call(this);
         ModelTraverserMixin.call(this);
+        PubSubVisitors.call(this);
+        RTIVisitors.call(this);
         GenericFederate.call(this);
         JavaFederate.call(this);
+        CppFederate.call(this);
         CPNFederate.call(this);
 
         this.mainPom = new MavenPOM();
@@ -138,45 +147,39 @@ define([
                 valueType: 'string',
                 readOnly: false
             },{
+                name: 'projectNameTemplate',
+                displayName: 'Project Name Template',
+                description: 'EJS Template for naming the maven projects',
+                value: '<%=federation_name%><%=artifact_name?"-"+artifact_name:""%><%=language?"-"+language:""%>',
+                valueType: 'string',
+                readOnly: false        
+            },{
                 name: 'includedFederateTypes',
                 displayName: 'include',
                 description: 'The Types of federates included in this export',
                 value: allFederateTypes,
                 valueType: 'string',
-                readOnly: true            
+                readOnly: true
+            },{
+                name: 'c2wVersion',
+                displayName: 'C2W version',
+                description: 'The version of the C2W foundation to be used',
+                value: '0.0.1-SNAPSHOT',
+                valueType: 'string',
+                readOnly: false
+            },{
+                name: 'generateCorePackage',
+                displayName: 'generate "core" package',
+                description: 'Generate the org.c2w core/foundation packages?   ',
+                value: false,
+                valueType: 'boolean',
+                readOnly: false
+                    
             /*},{
                 name: 'urlBase',
                 displayName: 'URL Base',
                 description: 'The base address of webGME where the model is accessible',
                 value: baseURLDefault,
-                valueType: 'string',
-                readOnly: false
-            },{
-                name: 'useGit',
-                displayName: 'Check into Git',
-                description: 'Check into GIT version control instead of download',
-                value: false,
-                valueType: 'boolean',
-                readOnly: false
-            },{
-                name: 'gitURL',
-                displayName: 'Repository URL',
-                description: 'The address of GIT Repository where the artifacts are deposited',
-                value: baseURLDefault,
-                valueType: 'string',
-                readOnly: false
-            },{
-                name: 'gitUser',
-                displayName: 'GIT Username',
-                description: 'The username for GIT Repository where the artifacts are deposited',
-                value: usernameDefault,
-                valueType: 'string',
-                readOnly: false
-            },{
-                name: 'gitPass',
-                displayName: 'GIT Password',
-                description: 'The password for GIT Repository where the artifacts are deposited.<br> WARNING: The password may be submitted through a non ecncripted channel.',
-                value: '',
                 valueType: 'string',
                 readOnly: false*/
             }
@@ -198,9 +201,11 @@ define([
         var self = this,
             numberOfFilesToGenerate,
             finishExport,
-            generateFiles;
+            generateFiles,
+            saveAndReturn;
 
-        self.fileGerenrators = [];
+        self.fileGenerators = [];
+        self.corefileGenerators = [];
 
         self.fom_sheets = {};
         self.interactions = {};
@@ -218,9 +223,12 @@ define([
         self.fedFilterMap["NON-SELF"] = "NON_SELF";
 
         self.projectName = self.core.getAttribute(self.rootNode, 'name');
+        self.project_version = self.getCurrentConfig().exportVersion.trim() + (self.getCurrentConfig().isRelease ? "" : "-SNAPSHOT");
+        self.c2w_version = self.getCurrentConfig().c2wVersion.trim();
+        self.directoryNameTemplate = self.getCurrentConfig().projectNameTemplate.trim();
 
         self.mainPom.artifactId = self.projectName + "_root";
-        self.mainPom.version = self.getCurrentConfig().exportVersion + (self.getCurrentConfig().isRelease ? "" : "-SNAPSHOT");
+        self.mainPom.version = self.project_version;
         self.mainPom.packaging = "pom";
         self.mainPom.groupId = self.getCurrentConfig().groupId.trim();
         self.mainPom.addRepository({
@@ -251,7 +259,7 @@ define([
         //self.logger.error('This is an error message.');
 
         //Add POM generator
-        self.fileGerenrators.push(function(artifact, callback){
+        self.fileGenerators.push(function(artifact, callback){
             artifact.addFile('pom.xml', self._jsonToXml.convertToString( self.mainPom.toJSON() ), function (err) {
                 if (err) {
                     callback(err);
@@ -269,7 +277,7 @@ define([
         };
 
         //Add FED generator
-        self.fileGerenrators.push(function(artifact, callback){
+        self.fileGenerators.push(function(artifact, callback){
             
             var interactionTraverser = function(interaction){
                 var intModel = {
@@ -316,9 +324,9 @@ define([
             });
         });
 
-        generateFiles = function(artifact, doneBack){
+        generateFiles = function(artifact, fileGerenrators, doneBack){
             if(numberOfFilesToGenerate > 0){ 
-                self.fileGerenrators[self.fileGerenrators.length - numberOfFilesToGenerate](artifact, function(err){
+                fileGerenrators[fileGerenrators.length - numberOfFilesToGenerate](artifact, function(err){
                     if (err) {
                         callback(err, self.result);
                         return;
@@ -326,7 +334,7 @@ define([
                     numberOfFilesToGenerate--;
                     if(numberOfFilesToGenerate > 0){
 
-                        generateFiles(artifact, doneBack);
+                        generateFiles(artifact, fileGerenrators, doneBack);
                     }else{
                         doneBack();
                      }
@@ -336,43 +344,63 @@ define([
             }
         }
 
+        saveAndReturn = function(err){
+            self.blobClient.saveAllArtifacts(function (err, hashes) {
+                if (err) {
+                    callback(err, self.result);
+                    return;
+                }
+
+                
+                self.createMessage(null, 'Code artifact generated with id:[' + hashes[0] + ']');
+
+                // This will add a download hyperlink in the result-dialog.
+                self.result.addArtifact(hashes[0]);
+                self.result.addArtifact(hashes[1]);
+                
+                // This will save the changes. If you don't want to save;
+                // exclude self.save and call callback directly from this scope.
+                self.save('FederatesExporter updated model.', function (err) {
+                    if (err) {
+                        callback(err, self.result);
+                        return;
+                    }
+                    self.result.setSuccess(true);
+                    callback(null, self.result);
+                    return;
+                });
+            });
+        }
+
         finishExport = function(err){
 
             //var outFileName = self.projectName + '.json'
             var artifact = self.blobClient.createArtifact('generated_' +self.projectName.trim().replace(/\s+/g,'_') +'_Files');
-
-            numberOfFilesToGenerate = self.fileGerenrators.length;
+            var coreArtifact = self.blobClient.createArtifact('generated_Core_Files');
+            
+            numberOfFilesToGenerate = self.fileGenerators.length;
             if(numberOfFilesToGenerate > 0){
-                generateFiles(artifact, function(err){
+                generateFiles(artifact, self.fileGenerators, function(err){
                     if (err) {
                         callback(err, self.result);
                         return;
                     }
 
-                    self.blobClient.saveAllArtifacts(function (err, hashes) {
-                        if (err) {
-                            callback(err, self.result);
-                            return;
-                        }
-
-                         self.createMessage(null, 'Code artifact generated with id:[' + hashes[0] + ']');
-
-                        // This will add a download hyperlink in the result-dialog.
-                        self.result.addArtifact(hashes[0]);
-                        
-                        // This will save the changes. If you don't want to save;
-                        // exclude self.save and call callback directly from this scope.
-                        self.save('FederatesExporter updated model.', function (err) {
+                    numberOfFilesToGenerate = self.corefileGenerators.length;
+                    if(numberOfFilesToGenerate > 0){
+                        generateFiles(coreArtifact, self.corefileGenerators, function(err){
                             if (err) {
                                 callback(err, self.result);
                                 return;
                             }
-                            self.result.setSuccess(true);
-                            callback(null, self.result);
+                            saveAndReturn();
+                            return;
                         });
-                    });
-                })
-
+                    }else{
+                        saveAndReturn();
+                        return;
+                    } 
+                });
             }else{
                 self.result.setSuccess(true);
                 callback(null, self.result);
@@ -419,6 +447,7 @@ define([
             var nodeTypeName = self.core.getAttribute(self.getMetaType(node),'name');
             exclude = exclude 
             || self.isMetaTypeOf(node, self.META['Language [CASIM]'])
+            || self.isMetaTypeOf(node, self.META['Language [C2WT]'])
             || (self.federateTypes.hasOwnProperty(nodeTypeName) && !self.federateTypes[nodeTypeName].includeInExport);
         }
         if(exclude){
@@ -457,9 +486,10 @@ define([
     }
 
     /*
-    *
-    * TRAVERSAL CODE - BEGIN
-    *
+    * Rest of TRAVERSAL CODE:
+    * - PubSubVisitors.js
+    * - RTIVisitors.js
+    * - C2Federates folder for Federate specific vistors
     */
 
     FederatesExporter.prototype.ROOT_visitor = function(node){
@@ -475,427 +505,7 @@ define([
 
         return {context:{parent: root}};
     }
-
-    FederatesExporter.prototype.visit_FOMSheet = function(node, parent, context){
-        var self = this;
-
-        self.fom_sheets[self.core.getPath(node)] = node;
-        context['parent'] = {};
-        context['pubsubs'] = [];
-        return {context:context};
-    }
-
-    FederatesExporter.prototype.post_visit_FOMSheet = function(node, context){
-        var self = this;
-        for(var i = 0; i < context['pubsubs'].length; i++){
-            var pubsub = context['pubsubs'][i];
-            if(self.federates[pubsub.federate] && self.interactions[pubsub.interaction]){
-                if(pubsub.handler){
-                    pubsub.handler(self.federates[pubsub.federate], self.interactions[pubsub.interaction]);
-                }
-            }else if(self.federates[pubsub.federate] && self.objects[pubsub.object]){
-                if(pubsub.handler){
-                    pubsub.handler(self.federates[pubsub.federate], self.objects[pubsub.object]);
-                }
-            }
-        }
-        return {context:context};
-    }
     
-    FederatesExporter.prototype.visit_Interaction = function(node, parent, context){
-        var self = this,
-        nodeType = self.core.getAttribute( self.getMetaType( node ), 'name' ),
-        nodeBaseName = self.core.getAttribute( node.base, 'name' ),
-        nodeBasePath = self.core.getPointerPath(node, 'base'),
-        nodeName = self.core.getAttribute( node, 'name' ),
-        nodePath = self.core.getPath(node),
-        interaction = {},
-        nameFragments = [nodeName];
-
-        self.logger.debug('Node ' + nodeName + " is based on " + nodeBaseName + " with meta " + nodeType);
-       
-        
-        if(self.interactions[nodePath]){
-            interaction = self.interactions[nodePath];
-        }else{
-              self.interactions[nodePath] = interaction;
-        }
-
-        interaction['name'] = self.core.getAttribute(node, 'name');
-        interaction['id'] = nodePath;
-        interaction['basePath'] = self.core.getPointerPath(node, 'base');
-        interaction['basename'] = nodeBaseName;
-        interaction['delivery'] = self.core.getAttribute(node, 'Delivery');
-        interaction['order'] = self.core.getAttribute(node, 'Order');
-        interaction['inputPlaceName'] = "";
-        interaction['outputPlaceName'] = "";
-        interaction['mapperPublished'] = false;
-        interaction['parameters'] = [];
-        interaction['children'] = interaction['children'] || [];
-        interaction['isroot'] = node.base == self.META['Interaction'];
-        interaction['isMapperPublished'] = false;
-
-        var nextBase = node.base;
-        while(nextBase != self.META['Interaction']){
-            nameFragments.push(self.core.getAttribute(nextBase, 'name'));
-            nextBase = nextBase.base;
-        }
-
-        interaction.fullName = nameFragments.reverse().join('.');
-
-        if(self.interactions[nodeBasePath]){
-            self.interactions[nodeBasePath]['children'].push(interaction);
-        }else{
-            if(!interaction['isroot']){
-                self.interactions[nodeBasePath] = {
-                    children:[interaction]
-                };
-            }else{
-                self.interactionRoots.push(interaction);
-            }
-        }
-
-        if(context.hasOwnProperty('interactions')){
-            context['interactions'].push(interaction)
-        }
-
-        context['parentInteraction'] = interaction;
-
-        return {context:context};
-    }
-
-
-    FederatesExporter.prototype.visit_Parameter = function(node, parent, context){
-        var self = this;
-        self.logger.debug('Visiting Parameter');
-        if(context.hasOwnProperty('parentInteraction')){
-            context['parentInteraction']['parameters'].push({
-                name: self.core.getAttribute(node,'name'),
-                parameterType: self.core.getAttribute(node,'ParameterType'),
-                hidden: self.core.getAttribute(node,'Hidden') === 'true',
-                position: self.core.getOwnRegistry(node, 'position'),
-                inherited: self.core.getBase(node) != self.core.getMetaType(node)
-            });
-        }
-        
-        return {context:context};
-    }
-
-
-    FederatesExporter.prototype.visit_Object = function(node, parent, context){
-        var self = this,
-        object = {},
-        nodeBasePath = self.core.getPointerPath(node, 'base'),
-        nodeBaseName = self.core.getAttribute( node.base, 'name' ),
-        nodeName = self.core.getAttribute( node, 'name' ),
-        nameFragments = [nodeName];
-        self.logger.debug('Visiting Object');
-
-        if(self.objects[self.core.getPath(node)]){
-            object = self.objects[self.core.getPath(node)];
-        }else{
-             self.objects[self.core.getPath(node)] = object;
-        }
-
-        object['name'] = self.core.getAttribute(node, 'name');
-        object['id'] = self.core.getPath(node);
-        object['attributes'] = [];
-        object['parameters'] = object['attributes'];
-        object['children'] = object['children'] || [];
-        object['isroot'] = node.base == self.META['Object'];
-        object['basename'] = nodeBaseName;
-
-        if(self.objects[nodeBasePath]){
-            self.objects[nodeBasePath]['children'].push(object);
-        }else{
-            if(!object['isroot']){
-                self.objects[nodeBasePath] = {
-                    children:[object]
-                };
-            }else{
-                self.objectRoots.push(object);
-            }
-        }
-
-        var nextBase = node.base;
-        while(nextBase != self.META['Object']){
-            nameFragments.push(self.core.getAttribute(nextBase, 'name'));
-            nextBase = nextBase.base;
-        }
-
-        object.fullName = nameFragments.reverse().join('.');
-
-        if(context.hasOwnProperty('objects')){
-            context['objects'].push(object)
-        }
-
-        context['parentObject'] = object;
-
-        return {context:context};
-    }
-
-    FederatesExporter.prototype.visit_Attribute = function(node, parent, context){
-        var self = this,      
-        attribute = {
-            name: self.core.getAttribute(node,'name'),
-            parameterType: self.core.getAttribute(node,'ParameterType'),
-            hidden: self.core.getAttribute(node,'Hidden') === 'true',
-            position: self.core.getOwnRegistry(node, 'position'),
-            delivery: self.core.getAttribute(node, 'Delivery'),
-            order: self.core.getAttribute(node, 'Order'),
-            inherited: self.core.getBase(node) != self.core.getMetaType(node)
-        };
-        if(context.hasOwnProperty('parentObject')){
-            context['parentObject']['attributes'].push(attribute);
-        }
-        self.attributes[self.core.getPath(node)] = attribute;
-        
-        return {context:context};
-    }
-
-    FederatesExporter.prototype.visit_StaticInteractionPublish = function(node, parent, context){
-        var self = this,
-        publication = {
-            interaction: self.core.getPointerPath(node,'dst'),
-            federate: self.core.getPointerPath(node,'src')
-        },
-        nodeAttrNames = self.core.getAttributeNames(node);
-
-        for ( var i = 0; i < nodeAttrNames.length; i += 1 ) {
-            publication[nodeAttrNames[i]] = self.core.getAttribute( node, nodeAttrNames[i]);
-        }   
-        
-        publication['handler'] = function(federate, interaction){
-            var interactiondata = {
-                name: interaction.name,
-                publishedLoglevel: publication['LogLevel']
-            };
-
-            if(federate['publishedinteractiondata']){
-                federate['publishedinteractiondata'].push(interactiondata);
-            }
-        }
-
-        if(context['pubsubs']){
-            context['pubsubs'].push(publication);
-        }
-        return {context:context};
-    }
-
-    FederatesExporter.prototype.visit_StaticInteractionSubscribe = function(node, parent, context){
-        var self = this,
-        subscription = {
-            interaction: self.core.getPointerPath(node,'src'),
-            federate: self.core.getPointerPath(node,'dst')
-        },
-        nodeAttrNames = self.core.getAttributeNames(node);
-
-        for ( var i = 0; i < nodeAttrNames.length; i += 1 ) {
-            subscription[nodeAttrNames[i]] = self.core.getAttribute( node, nodeAttrNames[i]);
-        }   
-        
-        subscription['handler'] = function(federate, interaction){
-            var interactiondata = {
-                name: interaction.name,
-                subscribedLoglevel: subscription['LogLevel'],
-                originFedFilter: self.fedFilterMap[subscription['OriginFedFilter']],
-                srcFedFilter: self.fedFilterMap[subscription['SrcFedFilter']]
-            };
-
-            if(!interaction['isMapperPublished']){
-                interactiondata['srcFedFilter'] = 'SOURCE_FILTER_DISABLED';
-            }
-
-            if(federate['subscribedinteractiondata']){
-                federate['subscribedinteractiondata'].push(interactiondata);
-            }
-        }
-
-        if(context['pubsubs']){
-            context['pubsubs'].push(subscription);
-        }
-        return {context:context};
-    }
-
-    FederatesExporter.prototype.visit_StaticObjectPublish = function(node, parent, context){
-        var self = this,
-        publication = {
-            object: self.core.getPointerPath(node,'dst'),
-            federate: self.core.getPointerPath(node,'src')
-        },
-        nodeAttrNames = self.core.getAttributeNames(node);
-
-        for ( var i = 0; i < nodeAttrNames.length; i += 1 ) {
-            publication[nodeAttrNames[i]] = self.core.getAttribute( node, nodeAttrNames[i]);
-        }   
-        
-        publication['handler'] = function(federate, object){
-            var objectdata = {
-                name: object.name,
-                publishedLoglevel: publication['LogLevel']
-            };
-            objectdata['publishedAttributeData']=[];
-            objectdata['logPublishedAttributeData']=[];
-
-            object['attributes'].forEach(function(a){
-                objectdata['publishedAttributeData'].push(a);
-                if(publication['EnableLogging']){
-                    objectdata['logPublishedAttributeData'].push(a);
-                }
-            });
-
-            if(federate['publishedobjectdata']){
-                federate['publishedobjectdata'].push(objectdata);
-            }
-        }
-
-        if(context['pubsubs']){
-            context['pubsubs'].push(publication);
-        }
-        return {context:context};
-    }
-
-    FederatesExporter.prototype.visit_StaticObjectSubscribe = function(node, parent, context){
-        var self = this,
-        subscription = {
-            object: self.core.getPointerPath(node,'src'),
-            federate: self.core.getPointerPath(node,'dst')
-        },
-        nodeAttrNames = self.core.getAttributeNames(node);
-
-        for ( var i = 0; i < nodeAttrNames.length; i += 1 ) {
-            subscription[nodeAttrNames[i]] = self.core.getAttribute( node, nodeAttrNames[i]);
-        }   
-        
-        subscription['handler'] = function(federate, object){
-            var objectdata = {
-                name: object.name,
-                subscribedLoglevel: subscription['LogLevel'],
-            };
-            objectdata['subscribedAttributeData']=[];
-            objectdata['logSubscribedAttributeData']=[];
-
-            object['attributes'].forEach(function(a){
-                objectdata['subscribedAttributeData'].push(a);
-                 if(subscription['EnableLogging']){
-                    objectdata['logSubscribedAttributeData'].push(a);
-                }
-            });
-
-            if(federate['subscribedobjectdata']){
-                federate['subscribedobjectdata'].push(objectdata);
-            }
-        }
-
-        if(context['pubsubs']){
-            context['pubsubs'].push(subscription);
-        }
-        return {context:context};
-    }
-
-    FederatesExporter.prototype.visit_StaticObjectAttributePublish = function(node, parent, context){
-        var self = this,
-        publication = {
-            object: self.calculateParentPath(self.core.getPointerPath(node,'dst')),
-            attribute: self.core.getPointerPath(node,'dst'),
-            federate: self.core.getPointerPath(node,'src')
-        },
-        nodeAttrNames = self.core.getAttributeNames(node);
-
-        for ( var i = 0; i < nodeAttrNames.length; i += 1 ) {
-            publication[nodeAttrNames[i]] = self.core.getAttribute( node, nodeAttrNames[i]);
-        }   
-        
-        publication['handler'] = function(federate, object){
-            var objectdata = {
-                name: object.name,
-                publishedLoglevel: publication['LogLevel'],
-                publishedAttributeData: [],
-                logPublishedAttributeData: []
-            };
-
-            if(federate['publishedobjectdata']){
-                var alreadyRegistered = false;
-                federate['publishedobjectdata'].forEach(function(odata){
-                    if(odata.name === objectdata.name){
-                        alreadyRegistered = true;
-                        objectdata = odata;
-                    }
-                });
-                if(!alreadyRegistered){
-                    federate['publishedobjectdata'].push(objectdata);
-                }
-            }
-
-            if(self.attributes[publication.attribute]){
-                var a = self.attributes[publication.attribute];
-                objectdata['publishedAttributeData'].push(a);
-                if(publication['EnableLogging']){
-                    objectdata['logPublishedAttributeData'].push(a);
-                }
-            };
-        }
-
-        if(context['pubsubs']){
-            context['pubsubs'].push(publication);
-        }
-        return {context:context};
-    }
-
-    FederatesExporter.prototype.visit_StaticObjectAttributeSubscribe = function(node, parent, context){
-        var self = this,
-        subscription = {
-            object: self.calculateParentPath(self.core.getPointerPath(node,'src')),
-            attribute: self.core.getPointerPath(node,'src'),
-            federate: self.core.getPointerPath(node,'dst')
-        },
-        nodeAttrNames = self.core.getAttributeNames(node);
-
-        for ( var i = 0; i < nodeAttrNames.length; i += 1 ) {
-            subscription[nodeAttrNames[i]] = self.core.getAttribute( node, nodeAttrNames[i]);
-        }   
-        
-        subscription['handler'] = function(federate, object){
-            var objectdata = {
-                name: object.name,
-                subscribedLoglevel: subscription['LogLevel'],
-                subscribedAttributeData: [],
-                logSubscribedAttributeData: []
-            };
-
-            if(federate['subscribedobjectdata']){
-                var alreadyRegistered = false;
-                federate['subscribedobjectdata'].forEach(function(odata){
-                    if(odata.name === objectdata.name){
-                        alreadyRegistered = true;
-                        objectdata = odata;
-                    }
-                });
-                if(!alreadyRegistered){
-                    federate['subscribedobjectdata'].push(objectdata);
-                }
-            }
-
-            if(self.attributes[subscription.attribute]){
-                var a = self.attributes[subscription.attribute];
-                objectdata['subscribedAttributeData'].push(a);
-                 if(subscription['EnableLogging']){
-                    objectdata['logSubscribedAttributeData'].push(a);
-                }
-            };    
-        }
-
-        if(context['pubsubs']){
-            context['pubsubs'].push(subscription);
-        }
-        return {context:context};
-    }
-
-    /*
-    *
-    * TRAVERSAL CODE - END
-    *
-    */
 
     FederatesExporter.prototype.calculateParentPath = function(path){
         var pathElements = path.split('/');
