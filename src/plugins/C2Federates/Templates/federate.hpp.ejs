@@ -91,7 +91,7 @@ protected:
         <% /*subscribedinteractiondata:subinter()*/ %>  
         <% subscribedinteractiondata.forEach(function(interactiondata){ %>  
         <%=interactiondata.name%>::subscribe( getRTI() );
-		_subscribedInteractionFilter.setFedFilters( <%=interactiondata.name%>::get_handle(), SubscribedInteractionFilter::<%=interactiondata.originFedFilter%>, SubscribedInteractionFilter::<%=interactiondata.srcFedFilter%> );<%});%>  
+		_subscribedInteractionFilter.setFedFilters( <%=interactiondata.name%>::get_handle(), SubscribedInteractionFilter::<%=interactiondata.originFedFilter()%>, SubscribedInteractionFilter::<%=interactiondata.srcFedFilter()%> );<%});%>  
 		
 		// object pubsub
         <% /*publishedobjectdata:pubobjectdata()*/ %>

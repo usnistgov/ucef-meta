@@ -17,7 +17,9 @@ define([
     'C2Federates/Templates/Templates',
     'C2Federates/GenericFederate',
     'C2Federates/JavaFederate',
+    'C2Federates/MapperFederate',
     'C2Federates/CppFederate',
+    'C2Federates/OmnetFederate',
     'C2Federates/CPNFederate'
 ], function (
     PluginConfig,
@@ -31,7 +33,9 @@ define([
     TEMPLATES,
     GenericFederate,
     JavaFederate,
+    MapperFederate,
     CppFederate,
+    OmnetFederate,
     CPNFederate
     ) {
     'use strict';
@@ -54,7 +58,9 @@ define([
         RTIVisitors.call(this);
         GenericFederate.call(this);
         JavaFederate.call(this);
+        MapperFederate.call(this);
         CppFederate.call(this);
+        OmnetFederate.call(this);
         CPNFederate.call(this);
 
         this.mainPom = new MavenPOM();
@@ -100,7 +106,7 @@ define([
         }
 
         if(WebGMEGlobal && WebGMEGlobal.Client){
-            usernameDefault = WebGMEGlobal.Client.getUserId();
+            usernameDefault =WebGMEGlobal.userInfo._id;
         }
 
         if(this.federateTypes){
@@ -345,31 +351,44 @@ define([
         }
 
         saveAndReturn = function(err){
-            self.blobClient.saveAllArtifacts(function (err, hashes) {
-                if (err) {
-                    callback(err, self.result);
-                    return;
+            var errorRaised = false;
+            for(var i = 0; i < self.result.getMessages().length; i++){
+                var msg = self.result.getMessages()[i];
+                if(msg.severity == 'error'){
+                    errorRaised = true;
                 }
-
-                
-                self.createMessage(null, 'Code artifact generated with id:[' + hashes[0] + ']');
-
-                // This will add a download hyperlink in the result-dialog.
-                self.result.addArtifact(hashes[0]);
-                self.result.addArtifact(hashes[1]);
-                
-                // This will save the changes. If you don't want to save;
-                // exclude self.save and call callback directly from this scope.
-                self.save('FederatesExporter updated model.', function (err) {
+            }
+            if(!errorRaised){
+                self.blobClient.saveAllArtifacts(function (err, hashes) {
                     if (err) {
                         callback(err, self.result);
                         return;
                     }
-                    self.result.setSuccess(true);
-                    callback(null, self.result);
-                    return;
+
+                    
+                    self.createMessage(null, 'Code artifact generated with id:[' + hashes[0] + ']');
+
+                    // This will add a download hyperlink in the result-dialog.
+                    self.result.addArtifact(hashes[0]);
+                    self.result.addArtifact(hashes[1]);
+                    
+                    // This will save the changes. If you don't want to save;
+                    // exclude self.save and call callback directly from this scope.
+                    self.save('FederatesExporter updated model.', function (err) {
+                        if (err) {
+                            callback(err, self.result);
+                            return;
+                        }
+                        self.result.setSuccess(true);
+                        callback(null, self.result);
+                        return;
+                    });
                 });
-            });
+            }else{
+                self.result.setSuccess(false);
+                callback(null, self.result);
+                return;
+            }
         }
 
         finishExport = function(err){
@@ -409,10 +428,14 @@ define([
         }
 
         self.visitAllChildrenFromRootContainer(self.rootNode, function(err){
-            if(err)
+            if(err){
                 self.logger.error(err);
-            else
+                self.createMessage(null, err, 'error');
+                self.result.setSuccess(false);
+                callback(null, self.result);
+            }else{
                 finishExport(err);
+            }
         });
 
     };

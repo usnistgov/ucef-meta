@@ -48,13 +48,15 @@ define([], function () {
                 var interactiondata = {
                     name: interaction.name,
                     subscribedLoglevel: subscription['LogLevel'],
-                    originFedFilter: self.fedFilterMap[subscription['OriginFedFilter']],
-                    srcFedFilter: self.fedFilterMap[subscription['SrcFedFilter']]
+                    //* Interaction might get connected to a Mapper on a different FOMSheet. 
+                    //* Resolve correct filter at render time.
+                    originFedFilter: function(){
+                        return self.fedFilterMap[subscription['OriginFedFilter']]
+                    },
+                    srcFedFilter: function(){
+                        return interaction['isMapperPublished']?self.fedFilterMap[subscription['SrcFedFilter']]:'SOURCE_FILTER_DISABLED'
+                    }
                 };
-
-                if(!interaction['isMapperPublished']){
-                    interactiondata['srcFedFilter'] = 'SOURCE_FILTER_DISABLED';
-                }
 
                 if(federate['subscribedinteractiondata']){
                     federate['subscribedinteractiondata'].push(interactiondata);

@@ -22,6 +22,10 @@ define([
                 package: coreNamespace
             };
 
+            if(self.cppRTIInitDone){
+                return;
+            }
+
             self.cppCorePackageOISpecs = {
                 'C2WInteractionRoot': coreNamespace,
                 'SimulationControl': coreNamespace,
@@ -306,6 +310,8 @@ define([
             //
             // SIM RTI - End
             // 
+
+            self.cppRTIInitDone = true;
         }
 
         this.createCppRTICodeModel = function(){

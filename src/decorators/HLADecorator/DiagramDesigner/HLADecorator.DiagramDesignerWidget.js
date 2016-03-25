@@ -157,23 +157,24 @@ define([
             entryBase = $('<div class='+cls+'" data-name="__ID__"><span class="n"></span><span class="t"></span></div>');
         
         $list.empty();
+        try{
+            nodeObj.getChildrenIds().forEach(function(childId){
+                var child = client.getNode(childId),
+                    name = child.getAttribute(nodePropertyNames.Attributes.name),
+                    type = child.getAttribute('ParameterType'),
+                    $entry = entryBase.clone();
 
-        nodeObj.getChildrenIds().forEach(function(childId){
-            var child = client.getNode(childId),
-                name = child.getAttribute(nodePropertyNames.Attributes.name),
-                type = child.getAttribute('ParameterType'),
-                $entry = entryBase.clone();
+                $entry.attr({
+                    'data-name': name,
+                    title: name
+                });
+                $entry.find('.n').text(name + ':');
+                $entry.find('.t').text(type);
 
-            $entry.attr({
-                'data-name': name,
-                title: name
+                $list.append(
+                    listLIBase.clone().append($entry));
             });
-            $entry.find('.n').text(name + ':');
-            $entry.find('.t').text(type);
-
-            $list.append(
-                listLIBase.clone().append($entry));
-        });
+        }catch(err){}
     }
 
     HLADecorator.prototype.getConnectionAreas = function (id /*, isEnd, connectionMetaInfo*/) {
@@ -235,6 +236,30 @@ define([
 
         return result;
     };
+
+    /**** Override from *Widget.DecoratorBase ****/
+    /*
+     * Specifies the territory rule for the decorator
+     * By default the Decorator that displays ports needs to have the children of the node loaded
+     * NOTE: can be overridden
+     */
+    HLADecorator.prototype.getTerritoryQuery = function () {
+        var territoryRule = {},
+            gmeID = this._metaInfo[CONSTANTS.GME_ID],
+            client = this._control._client,
+            hasAspect = this._aspect && this._aspect !== CONSTANTS.ASPECT_ALL &&
+                client.getMetaAspectNames(gmeID).indexOf(this._aspect) !== -1;
+
+        if (hasAspect) {
+            territoryRule[gmeID] = client.getAspectTerritoryPattern(gmeID, this._aspect);
+            territoryRule[gmeID].children = 1;
+        } else {
+            territoryRule[gmeID] = {children: 1};
+        }
+
+        return territoryRule;
+    };
+
 
     /**************** EDIT NODE TITLE ************************/
 

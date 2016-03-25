@@ -30,7 +30,6 @@ define([], function () {
             interaction['order'] = self.core.getAttribute(node, 'Order');
             interaction['inputPlaceName'] = "";
             interaction['outputPlaceName'] = "";
-            interaction['mapperPublished'] = false;
             interaction['parameters'] = [];
             interaction['children'] = interaction['children'] || [];
             interaction['isroot'] = node.base == self.META['Interaction'];
@@ -40,6 +39,11 @@ define([], function () {
             while(nextBase != self.META['Interaction']){
                 nameFragments.push(self.core.getAttribute(nextBase, 'name'));
                 nextBase = nextBase.base;
+            }
+
+            //Check: Interaction is derived form C2WInteractionRoot
+            if(nameFragments.length > 1 && !nameFragments.includes('C2WInteractionRoot')){
+                self.createMessage(node, '[ERROR] ' + nodeName + ' is not deriverd from C2WInteractionRoot!', 'error');
             }
 
             interaction.fullName = nameFragments.reverse().join('.');

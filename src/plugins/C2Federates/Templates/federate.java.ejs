@@ -83,8 +83,8 @@ public class <%= classname %>Base extends <% if(melderpackagename) { %><%= class
         <%= interactiondata.name %>.subscribe( getRTI() );
         _subscribedInteractionFilter.setFedFilters( 
 			<%= interactiondata.name %>.get_handle(), 
-			SubscribedInteractionFilter.OriginFedFilter.<%= interactiondata.originFedFilter %>, 
-			SubscribedInteractionFilter.SourceFedFilter.<%= interactiondata.srcFedFilter %> 
+			SubscribedInteractionFilter.OriginFedFilter.<%= interactiondata.originFedFilter() %>, 
+			SubscribedInteractionFilter.SourceFedFilter.<%= interactiondata.srcFedFilter() %> 
 		);<%}); -%>
 		
 		// object pubsub
@@ -139,8 +139,8 @@ public class <%= classname %>Base extends <% if(melderpackagename) { %><%= class
         <%= interactiondata.name %>.subscribe( getRTI() );
         _subscribedInteractionFilter.setFedFilters( 
 			<%= interactiondata.name %>.get_handle(), 
-			SubscribedInteractionFilter.OriginFedFilter.<%= interactiondata.originFedFilter %>, 
-			SubscribedInteractionFilter.SourceFedFilter.<%= interactiondata.srcFedFilter %> 
+			SubscribedInteractionFilter.OriginFedFilter.<%= interactiondata.originFedFilter() %>, 
+			SubscribedInteractionFilter.SourceFedFilter.<%= interactiondata.srcFedFilter() %> 
 		);<%}); -%>
 		// object pubsub
 <%/* publishedobjectdata:pubobjectdata() */ -%>

@@ -88,6 +88,7 @@
 #include <boost/shared_ptr.hpp>
 
 #include <TypeMedley.hpp>
+#include <StringCollections.hpp>
 
 #include "RTI.hh"
 #include "fedtime.hh"
@@ -105,7 +106,6 @@
 #endif 
 
 #include "<%=isinteraction?"Interaction":"Object"%>If.hpp"
-
 
 class <%=isinteraction?"Interaction":"Object"%>Root : public <%=isinteraction?"Interaction":"Object"%>If{
 public:
@@ -500,6 +500,7 @@ public:
 
 private:
 	double _time;
+	static C2WLogger* _logger;
 
 public:	
 	double getTime( void ) { return _time; }

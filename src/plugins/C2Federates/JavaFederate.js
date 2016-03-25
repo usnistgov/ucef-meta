@@ -25,17 +25,21 @@ define([
             init: function(){
                 self.initJavaRTI();
 
+                if(self.javaFedInitDone){
+                    return;
+                }
+
                 var baseDirBasePath = 'java-federates/',
                 baseDirSpec = {federation_name: self.projectName, artifact_name: "base", language:"java"},
                 baseDirPath =  baseDirBasePath + ejs.render(self.directoryNameTemplate, baseDirSpec);
 
                 baseOutFilePath = baseDirPath + MavenPOM.mavenJavaPath; 
-
-                self.java_federateBasePOM = new MavenPOM();
-                self.java_federateBasePOM.groupId = 'org.c2w'
-                self.java_federateBasePOM.artifactId = 'federate-base';
-                self.java_federateBasePOM.version = self.c2w_version;   
-
+                if(!self.java_federateBasePOM){
+                    self.java_federateBasePOM = new MavenPOM();
+                    self.java_federateBasePOM.groupId = 'org.c2w'
+                    self.java_federateBasePOM.artifactId = 'federate-base';
+                    self.java_federateBasePOM.version = self.c2w_version;   
+                }
                 if(!self.javaPOM){
                     self.javaPOM = new MavenPOM(self.mainPom);
                     self.javaPOM.artifactId = self.projectName + "-java";
@@ -56,14 +60,14 @@ define([
                         });
                     });
                 }
-
-                self.java_basePOM = new MavenPOM(self.javaPOM);
-                self.java_basePOM.artifactId = ejs.render(self.directoryNameTemplate, baseDirSpec);
-                self.java_basePOM.version = self.project_version;
-                self.java_basePOM.packaging = "jar";
-                self.java_basePOM.dependencies.push(self.java_rtiPOM);
-                self.java_basePOM.dependencies.push(self.java_federateBasePOM);
-
+                if(!self.java_basePOM){
+                    self.java_basePOM = new MavenPOM(self.javaPOM);
+                    self.java_basePOM.artifactId = ejs.render(self.directoryNameTemplate, baseDirSpec);
+                    self.java_basePOM.version = self.project_version;
+                    self.java_basePOM.packaging = "jar";
+                    self.java_basePOM.dependencies.push(self.java_rtiPOM);
+                    self.java_basePOM.dependencies.push(self.java_federateBasePOM);
+                }
                 //Add base POM generator
                 self.fileGenerators.push(function(artifact, callback){
                     artifact.addFile(baseDirPath + '/pom.xml', self._jsonToXml.convertToString( self.java_basePOM.toJSON() ), function (err) {
@@ -75,6 +79,8 @@ define([
                         }
                     });
                 });
+
+                self.javaFedInitDone = true;
             }
     	};
 

@@ -23,6 +23,10 @@ define([
                     package: corePackagePath.join(".")
                 };
 
+            if(self.javaRTIInitDone){
+                return;
+            }
+
             self.javaCorePackageOISpecs = {
                 'C2WInteractionRoot': {simname: corePackagePathStr},
                 'SimulationControl': {simname: corePackagePathStr},
@@ -344,6 +348,8 @@ define([
             //
             // SIM RTI - End
             // 
+
+            self.javaRTIInitDone = true;
         }
 
         this.createJavaRTICodeModel = function(){
