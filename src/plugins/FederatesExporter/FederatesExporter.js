@@ -139,6 +139,13 @@ define([
                 valueType: 'string',
                 readOnly: false
             },{
+                name: 'c2wVersion',
+                displayName: 'C2W version',
+                description: 'The version of the C2W foundation to be used',
+                value: '0.0.1-SNAPSHOT',
+                valueType: 'string',
+                readOnly: false
+            },{
                 name: 'repositoryUrlSnapshot',
                 displayName: 'Repository URL for snapshots',
                 description: 'The URL of the repository where the packaged components should be deployed.',
@@ -153,12 +160,19 @@ define([
                 valueType: 'string',
                 readOnly: false
             },{
+                name: 'generateCorePackage',
+                displayName: 'generate "core" package',
+                description: 'Generate the org.c2w core/foundation packages?   ',
+                value: false,
+                valueType: 'boolean',
+                readOnly: false
+            },{
                 name: 'projectNameTemplate',
                 displayName: 'Project Name Template',
                 description: 'EJS Template for naming the maven projects',
                 value: '<%=federation_name%><%=artifact_name?"-"+artifact_name:""%><%=language?"-"+language:""%>',
                 valueType: 'string',
-                readOnly: false        
+                readOnly: true        
             },{
                 name: 'includedFederateTypes',
                 displayName: 'include',
@@ -166,20 +180,7 @@ define([
                 value: allFederateTypes,
                 valueType: 'string',
                 readOnly: true
-            },{
-                name: 'c2wVersion',
-                displayName: 'C2W version',
-                description: 'The version of the C2W foundation to be used',
-                value: '0.0.1-SNAPSHOT',
-                valueType: 'string',
-                readOnly: false
-            },{
-                name: 'generateCorePackage',
-                displayName: 'generate "core" package',
-                description: 'Generate the org.c2w core/foundation packages?   ',
-                value: false,
-                valueType: 'boolean',
-                readOnly: false
+            
                     
             /*},{
                 name: 'urlBase',

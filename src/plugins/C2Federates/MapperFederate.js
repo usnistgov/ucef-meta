@@ -75,8 +75,14 @@ define([
                 self.java_mapperPOM.dependencies.push(self.java_federateBasePOM);
                 self.java_mapperPOM.dependencies.push(self.java_basePOM);
 
+                self.mapperInFed = false; //will be set by model visitor
                 //Add base POM generator
                 self.fileGenerators.push(function(artifact, callback){
+                    if(!self.mapperInFed){
+                        callback();
+                        return;
+                    }
+
                     artifact.addFile(mapperDirPath + '/pom.xml', self._jsonToXml.convertToString( self.java_mapperPOM.toJSON() ), function (err) {
                         if (err) {
                             callback(err);
@@ -94,6 +100,8 @@ define([
                 nodeType = self.core.getAttribute( self.getMetaType( node ), 'name' );
 
             self.logger.info('Visiting a MaperFederate');
+
+            self.mapperInFed = true;
 
             context['mapperfedspec'] = self.createMapperFederateCodeModel();
             context['mapperfedspec']['classname'] = self.core.getAttribute(node, 'name');

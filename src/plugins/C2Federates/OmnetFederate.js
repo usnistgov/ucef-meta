@@ -64,8 +64,14 @@ define([
                 self.omnet_basePOM.dependencies.push(self.cpp_rtiPOM);
                 self.omnet_basePOM.dependencies.push(self.cpp_federateBasePOM);
 
+                self.omnetInFed = false; //will be set by model visitor
                 //Add base POM generator
                 self.fileGenerators.push(function(artifact, callback){
+                    if(!self.omnetInFed){
+                        callback();
+                        return;
+                    }
+
                     artifact.addFile(omnetDirPath + '/pom.xml', self._jsonToXml.convertToString( self.omnet_basePOM.toJSON() ), function (err) {
                         if (err) {
                             callback(err);
@@ -85,7 +91,8 @@ define([
                 nodeType = self.core.getAttribute( self.getMetaType( node ), 'name' );
 
             self.logger.info('Visiting a OmnetFederate');
-
+            self.omnetInFed = true;
+            
             context['omnetfedspec'] = self.createOmnetFederateCodeModel();
             context['omnetfedspec']['classname'] = self.core.getAttribute(node, 'name');
             context['omnetfedspec']['simname'] = self.projectName;

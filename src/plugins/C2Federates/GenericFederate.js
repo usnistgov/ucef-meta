@@ -36,6 +36,14 @@ define([], function () {
             return {context:context};
         }
 
+        this.visit_FedIntPackage = function(node, parent, context){
+            return {context:context};
+        }
+
+        this.post_visit_FedIntPackage = function(node, context){
+            return {context:context};
+        }
+
 	    this.visit_Federate = function(node, parent, context){
 	    	var self = this,
 	    		ret = {context:context},
