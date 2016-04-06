@@ -57,17 +57,10 @@ define([
                     });
                 }
 
-                self.omnet_basePOM = new MavenPOM(self.cppPOM);
-                self.omnet_basePOM.artifactId = ejs.render(self.directoryNameTemplate, omnetDirSpec);
-                self.omnet_basePOM.version = self.project_version;
-                self.omnet_basePOM.packaging = "nar";
-                self.omnet_basePOM.dependencies.push(self.cpp_rtiPOM);
-                self.omnet_basePOM.dependencies.push(self.cpp_federateBasePOM);
-
-                self.omnetInFed = false; //will be set by model visitor
+                self.omnet_basePOM = null; //will be set by model visitor
                 //Add base POM generator
                 self.fileGenerators.push(function(artifact, callback){
-                    if(!self.omnetInFed){
+                    if(!self.omnet_basePOM){
                         callback();
                         return;
                     }
@@ -91,7 +84,15 @@ define([
                 nodeType = self.core.getAttribute( self.getMetaType( node ), 'name' );
 
             self.logger.info('Visiting a OmnetFederate');
-            self.omnetInFed = true;
+            
+            if(!self.omnet_basePOM){
+                self.omnet_basePOM = new MavenPOM(self.cppPOM);
+                self.omnet_basePOM.artifactId = ejs.render(self.directoryNameTemplate, omnetDirSpec);
+                self.omnet_basePOM.version = self.project_version;
+                self.omnet_basePOM.packaging = "nar";
+                self.omnet_basePOM.dependencies.push(self.cpp_rtiPOM);
+                self.omnet_basePOM.dependencies.push(self.cpp_federateBasePOM);
+            }
             
             context['omnetfedspec'] = self.createOmnetFederateCodeModel();
             context['omnetfedspec']['classname'] = self.core.getAttribute(node, 'name');

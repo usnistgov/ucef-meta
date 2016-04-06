@@ -67,18 +67,11 @@ define([
                     });
                 }
 
-                self.java_mapperPOM = new MavenPOM(self.javaPOM);
-                self.java_mapperPOM.artifactId = ejs.render(self.directoryNameTemplate, mapperDirSpec);
-                self.java_mapperPOM.version = self.project_version;
-                self.java_mapperPOM.packaging = "jar";
-                self.java_mapperPOM.dependencies.push(self.java_rtiPOM);
-                self.java_mapperPOM.dependencies.push(self.java_federateBasePOM);
-                self.java_mapperPOM.dependencies.push(self.java_basePOM);
+                self.java_mapperPOM = null; //will be set by model visitor
 
-                self.mapperInFed = false; //will be set by model visitor
                 //Add base POM generator
                 self.fileGenerators.push(function(artifact, callback){
-                    if(!self.mapperInFed){
+                    if(!self.java_mapperPOM){
                         callback();
                         return;
                     }
@@ -101,7 +94,15 @@ define([
 
             self.logger.info('Visiting a MaperFederate');
 
-            self.mapperInFed = true;
+            if(!self.java_mapperPOM){
+                self.java_mapperPOM = new MavenPOM(self.javaPOM);
+                self.java_mapperPOM.artifactId = ejs.render(self.directoryNameTemplate, mapperDirSpec);
+                self.java_mapperPOM.version = self.project_version;
+                self.java_mapperPOM.packaging = "jar";
+                self.java_mapperPOM.dependencies.push(self.java_rtiPOM);
+                self.java_mapperPOM.dependencies.push(self.java_federateBasePOM);
+                self.java_mapperPOM.dependencies.push(self.java_basePOM);
+            }
 
             context['mapperfedspec'] = self.createMapperFederateCodeModel();
             context['mapperfedspec']['classname'] = self.core.getAttribute(node, 'name');

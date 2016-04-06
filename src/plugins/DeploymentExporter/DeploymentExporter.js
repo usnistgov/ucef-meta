@@ -71,7 +71,7 @@ define([
         }
 
         if(WebGMEGlobal && WebGMEGlobal.Client){
-            usernameDefault = WebGMEGlobal.Client.getUserId();
+            usernameDefault =WebGMEGlobal.userInfo._id;
         }
 
         if(this.federateTypes){
@@ -325,8 +325,8 @@ define([
         var self = this,
             exclude = false;
 
-        exclude = exclude || self.isMetaTypeOf(node, self.META['Language [CASIM]']);
-        return exclude;
+        exclude = exclude || self.isMetaTypeOf(node, self.META['Language [CASIM]']) || self.isMetaTypeOf(node, self.META['Language [C2WT]']);
+        return exclude; 
 
     }
 
