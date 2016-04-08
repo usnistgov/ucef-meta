@@ -40,27 +40,6 @@ define([
                 'FederateObject': coreNamespace
             };
 
-            if(!self.cppPOM){
-                self.cppPOM = new MavenPOM(self.mainPom);
-                self.cppPOM.artifactId = self.projectName + "-cpp";
-                self.cppPOM.directory = "cpp-federates";
-                self.cppPOM.version = self.project_version;
-                self.cppPOM.packaging = "pom";
-                self.cppPOM.name = self.projectName + ' C++ root'
-
-                //Add sim POM generator
-                self.fileGenerators.push(function(artifact, callback){
-                    artifact.addFile( self.cppPOM.directory + '/pom.xml', ejs.render(TEMPLATES['cppfedbase_pom.xml.ejs'], self.cppPOM), function (err) {
-                        if (err) {
-                            callback(err);
-                            return;
-                        }else{
-                            callback();
-                        }
-                    });
-                });
-            }
-
             var renderToFile = function(outFilePath, isinteraction, model, artifact, callback){
                 var context = self.createCppRTICodeModel();
                 context.isinteraction = isinteraction;
@@ -103,6 +82,7 @@ define([
             //
             // FOUNDATION RTI - Begin
             // 
+            
             var foundationDirBasePath = 'cpp/',
                 coreDirSpec = {federation_name: "rti-base", artifact_name: "", language:""},
                 coreDirPath = foundationDirBasePath + ejs.render(self.directoryNameTemplate, coreDirSpec),
@@ -129,105 +109,107 @@ define([
             self.cpp_corePOM.dependencies.push(porticoPOM);
             self.cpp_corePOM.dependencies.push(C2WLoggingPOM);
 
-            //Add core POM generator
-            self.corefileGenerators.push(function(artifact, callback){
-                artifact.addFile(coreDirPath + '/pom.xml', self._jsonToXml.convertToString( self.cpp_corePOM.toJSON() ), function (err) {
-                    if (err) {
-                        callback(err);
-                        return;
-                    }else{
-                        callback();
-                    }
+            if(self.generateExportPackages){
+                //Add core POM generator
+                self.corefileGenerators.push(function(artifact, callback){
+                    artifact.addFile(coreDirPath + '/pom.xml', self._jsonToXml.convertToString( self.cpp_corePOM.toJSON() ), function (err) {
+                        if (err) {
+                            callback(err);
+                            return;
+                        }else{
+                            callback();
+                        }
+                    });
                 });
-            });
 
-            self.corefileGenerators.push(function(artifact, callback){
-                var fullPath = coreOutSrcFilePath + '/InteractionRoot.cpp';
-                renderContext['isinteraction'] = true;
-                self.logger.debug('Rendering template to file: ' + fullPath);
-                artifact.addFile(fullPath, ejs.render(TEMPLATES['classroot.cpp.ejs'], renderContext), function (err) {
-                    if (err) {
-                        callback(err);
-                        return;
-                    }else{
-                        fullPath = coreOutIncFilePath + '/InteractionRoot.hpp';
-                        self.logger.debug('Rendering template to file: ' + fullPath);
-                        artifact.addFile(fullPath, ejs.render(TEMPLATES['classroot.hpp.ejs'], renderContext), function (err) {
-                            if (err) {
-                                callback(err);
-                                return;
+                self.corefileGenerators.push(function(artifact, callback){
+                    var fullPath = coreOutSrcFilePath + '/InteractionRoot.cpp';
+                    renderContext['isinteraction'] = true;
+                    self.logger.debug('Rendering template to file: ' + fullPath);
+                    artifact.addFile(fullPath, ejs.render(TEMPLATES['classroot.cpp.ejs'], renderContext), function (err) {
+                        if (err) {
+                            callback(err);
+                            return;
+                        }else{
+                            fullPath = coreOutIncFilePath + '/InteractionRoot.hpp';
+                            self.logger.debug('Rendering template to file: ' + fullPath);
+                            artifact.addFile(fullPath, ejs.render(TEMPLATES['classroot.hpp.ejs'], renderContext), function (err) {
+                                if (err) {
+                                    callback(err);
+                                    return;
+                                }else{
+                                    callback();
+                                    return;
+                                }
+                            });
+                        }
+                    });
+                });
+                
+                
+                self.corefileGenerators.push(function(artifact, callback){
+                    var fullPath = coreOutSrcFilePath + '/ObjectRoot.cpp';
+                    renderContext['isinteraction'] = false;
+                    artifact.addFile(fullPath, ejs.render(TEMPLATES['classroot.cpp.ejs'], renderContext), function (err) {
+                        if (err) {
+                            callback(err);
+                            return;
+                        }else{
+                            fullPath = coreOutIncFilePath + '/ObjectRoot.hpp';
+                            artifact.addFile(fullPath, ejs.render(TEMPLATES['classroot.hpp.ejs'], renderContext), function (err) {
+                                if (err) {
+                                    callback(err);
+                                    return;
+                                }else{
+                                    callback();
+                                    return;
+                                }
+                            });
+                        }
+                    });
+                });
+                self.corefileGenerators.push(function(artifact, callback){
+                    var objToRender = [],
+                    renderNextObject = function(err){
+                        if(err){
+                            callback(err);
+                        }else{
+                            var nextObj = objToRender.pop();
+                            if(nextObj){
+                                renderToFile(coreDirPath, false, nextObj, artifact, renderNextObject);                                    
                             }else{
                                 callback();
                                 return;
                             }
-                        });
-                    }
+                        }
+                    };
+                    renderNextObject();
                 });
-            });
-            
-            
-            self.corefileGenerators.push(function(artifact, callback){
-                var fullPath = coreOutSrcFilePath + '/ObjectRoot.cpp';
-                renderContext['isinteraction'] = false;
-                artifact.addFile(fullPath, ejs.render(TEMPLATES['classroot.cpp.ejs'], renderContext), function (err) {
-                    if (err) {
-                        callback(err);
-                        return;
-                    }else{
-                        fullPath = coreOutIncFilePath + '/ObjectRoot.hpp';
-                        artifact.addFile(fullPath, ejs.render(TEMPLATES['classroot.hpp.ejs'], renderContext), function (err) {
-                            if (err) {
-                                callback(err);
-                                return;
+
+                self.corefileGenerators.push(function(artifact, callback){
+                    var intToRender = [],
+                    renderNextInteraction = function(err){
+                        if(err){
+                            callback(err);
+                        }else{
+                            var nextInteraction = intToRender.pop();
+                            if(nextInteraction){
+                                renderToFile(coreDirPath, true, nextInteraction, artifact, renderNextInteraction);                                    
                             }else{
                                 callback();
                                 return;
                             }
-                        });
+                        }
+                    };
+
+                    for(var iid in self.interactions){
+                        if(self.interactions[iid].name != "InteractionRoot" && self.cppCorePackageOISpecs.hasOwnProperty(self.interactions[iid].name) ){
+                            intToRender.push(self.interactions[iid]);
+                        }
                     }
+                    renderNextInteraction();
                 });
-            });
-            self.corefileGenerators.push(function(artifact, callback){
-                var objToRender = [],
-                renderNextObject = function(err){
-                    if(err){
-                        callback(err);
-                    }else{
-                        var nextObj = objToRender.pop();
-                        if(nextObj){
-                            renderToFile(coreDirPath, false, nextObj, artifact, renderNextObject);                                    
-                        }else{
-                            callback();
-                            return;
-                        }
-                    }
-                };
-                renderNextObject();
-            });
-
-            self.corefileGenerators.push(function(artifact, callback){
-                var intToRender = [],
-                renderNextInteraction = function(err){
-                    if(err){
-                        callback(err);
-                    }else{
-                        var nextInteraction = intToRender.pop();
-                        if(nextInteraction){
-                            renderToFile(coreDirPath, true, nextInteraction, artifact, renderNextInteraction);                                    
-                        }else{
-                            callback();
-                            return;
-                        }
-                    }
-                };
-
-                for(var iid in self.interactions){
-                    if(self.interactions[iid].name != "InteractionRoot" && self.cppCorePackageOISpecs.hasOwnProperty(self.interactions[iid].name) ){
-                        intToRender.push(self.interactions[iid]);
-                    }
-                }
-                renderNextInteraction();
-            });
+            }
             //
             // FOUNDATION RTI - End
             // 
@@ -238,16 +220,20 @@ define([
 
             var simDirBasePath = 'cpp-federates/',
                 simDirSpec = {federation_name: self.projectName, artifact_name: "rti", language:"cpp"},
-                simDirPath =  simDirBasePath + ejs.render(self.directoryNameTemplate, simDirSpec);             
-
-            self.cpp_rtiPOM = new MavenPOM(self.cppPOM);
-            self.cpp_rtiPOM.artifactId = ejs.render(self.directoryNameTemplate, simDirSpec)
-            self.cpp_rtiPOM.version = self.c2w_version;
-            self.cpp_rtiPOM.packaging = "nar";
-            self.cpp_rtiPOM.dependencies.push(self.cpp_corePOM);
+                simDirPath =  simDirBasePath + ejs.render(self.directoryNameTemplate, simDirSpec);  
 
             //Add sim POM generator
             self.fileGenerators.push(function(artifact, callback){
+                if(!self.cppPOM){
+                    callback();
+                    return;
+                }
+                self.cpp_rtiPOM = new MavenPOM(self.cppPOM);
+                self.cpp_rtiPOM.artifactId = ejs.render(self.directoryNameTemplate, simDirSpec)
+                self.cpp_rtiPOM.version = self.c2w_version;
+                self.cpp_rtiPOM.packaging = "nar";
+                self.cpp_rtiPOM.dependencies.push(self.cpp_corePOM);
+
                 artifact.addFile(simDirPath + '/pom.xml', self._jsonToXml.convertToString( self.cpp_rtiPOM.toJSON() ), function (err) {
                     if (err) {
                         callback(err);
@@ -259,6 +245,10 @@ define([
             });
 
             self.fileGenerators.push(function(artifact, callback){
+                if(!self.cppPOM){
+                    callback();
+                    return;
+                }
                 var objToRender = [],
                 renderNextObject = function(err){
                     if(err){
@@ -284,6 +274,10 @@ define([
             });
 
             self.fileGenerators.push(function(artifact, callback){
+                if(!self.cppPOM){
+                    callback();
+                    return;
+                }
                 var intToRender = [],
                 renderNextInteraction = function(err){
                     if(err){

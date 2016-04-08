@@ -14,7 +14,8 @@ define([
 
     var JavaFederateExporter  = function () {
     	var self = this,
-            baseOutFilePath;
+            baseOutFilePath,
+            baseDirSpec;
         
         JavaRTI.call(this);
 
@@ -29,9 +30,9 @@ define([
                     return;
                 }
 
-                var baseDirBasePath = 'java-federates/',
-                baseDirSpec = {federation_name: self.projectName, artifact_name: "base", language:"java"},
-                baseDirPath =  baseDirBasePath + ejs.render(self.directoryNameTemplate, baseDirSpec);
+                var baseDirBasePath = 'java-federates/';
+                baseDirSpec = {federation_name: self.projectName, artifact_name: "base", language:"java"};
+                var baseDirPath =  baseDirBasePath + ejs.render(self.directoryNameTemplate, baseDirSpec);
 
                 baseOutFilePath = baseDirPath + MavenPOM.mavenJavaPath; 
                 if(!self.java_federateBasePOM){
@@ -40,36 +41,30 @@ define([
                     self.java_federateBasePOM.artifactId = 'federate-base';
                     self.java_federateBasePOM.version = self.c2w_version;   
                 }
-                if(!self.javaPOM){
-                    self.javaPOM = new MavenPOM(self.mainPom);
-                    self.javaPOM.artifactId = self.projectName + "-java";
-                    self.javaPOM.directory = "java-federates";
-                    self.javaPOM.version = self.project_version;
-                    self.javaPOM.addMavenCompiler('1.5');
-                    self.javaPOM.packaging = "pom";
-
-                    //Add sim POM generator
-                    self.fileGenerators.push(function(artifact, callback){
-                        artifact.addFile( self.javaPOM.directory + '/pom.xml', self._jsonToXml.convertToString( self.javaPOM.toJSON() ), function (err) {
-                            if (err) {
-                                callback(err);
-                                return;
-                            }else{
-                                callback();
-                            }
-                        });
+                
+                //Add sim POM generator
+                self.fileGenerators.push(function(artifact, callback){
+                    if(!self.javaPOM){
+                        callback();
+                        return;
+                    }
+                    artifact.addFile( self.javaPOM.directory + '/pom.xml', self._jsonToXml.convertToString( self.javaPOM.toJSON() ), function (err) {
+                        if (err) {
+                            callback(err);
+                            return;
+                        }else{
+                            callback();
+                        }
                     });
-                }
-                if(!self.java_basePOM){
-                    self.java_basePOM = new MavenPOM(self.javaPOM);
-                    self.java_basePOM.artifactId = ejs.render(self.directoryNameTemplate, baseDirSpec);
-                    self.java_basePOM.version = self.project_version;
-                    self.java_basePOM.packaging = "jar";
-                    self.java_basePOM.dependencies.push(self.java_rtiPOM);
-                    self.java_basePOM.dependencies.push(self.java_federateBasePOM);
-                }
+                });
+                
+                
                 //Add base POM generator
                 self.fileGenerators.push(function(artifact, callback){
+                    if(!self.java_basePOM){
+                        callback();
+                        return;
+                    }
                     artifact.addFile(baseDirPath + '/pom.xml', self._jsonToXml.convertToString( self.java_basePOM.toJSON() ), function (err) {
                         if (err) {
                             callback(err);
@@ -89,6 +84,24 @@ define([
                 nodeType = self.core.getAttribute( self.getMetaType( node ), 'name' );
 
             self.logger.info('Visiting a JavaFederate');
+
+            if(!self.javaPOM){
+                self.javaPOM = new MavenPOM(self.mainPom);
+                self.javaPOM.artifactId = self.projectName + "-java";
+                self.javaPOM.directory = "java-federates";
+                self.javaPOM.version = self.project_version;
+                self.javaPOM.addMavenCompiler('1.5');
+                self.javaPOM.packaging = "pom";
+            }   
+
+            if(!self.java_basePOM){
+                self.java_basePOM = new MavenPOM(self.javaPOM);
+                self.java_basePOM.artifactId = ejs.render(self.directoryNameTemplate, baseDirSpec);
+                self.java_basePOM.version = self.project_version;
+                self.java_basePOM.packaging = "jar";
+                self.java_basePOM.dependencies.push(self.java_rtiPOM);
+                self.java_basePOM.dependencies.push(self.java_federateBasePOM);
+            }
 
             context['javafedspec'] = self.createJavaFederateCodeModel();
             context['javafedspec']['classname'] = self.core.getAttribute(node, 'name');

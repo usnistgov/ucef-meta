@@ -16,10 +16,7 @@ define([], function () {
         this.repositories = null;
         this.plugins =[];
         if(parentPom){
-            this.parent = parentPom;
-            this.groupId = parentPom.groupId;
-            this.version = parentPom.version;
-            parentPom.projects.push(this);
+            this.setParentPom(parentPom);
         }
     }
 
@@ -28,6 +25,15 @@ define([], function () {
     MavenPOM.mavenIncludePath = "/src/main/include";
 
     MavenPOM.prototype.constructor = MavenPOM;    
+
+    MavenPOM.prototype.setParentPom = function(parentPom){
+        if(parentPom){
+            this.parent = parentPom;
+            this.groupId = parentPom.groupId;
+            this.version = parentPom.version;
+            parentPom.projects.push(this);
+        }
+    }
 
     MavenPOM.prototype.addMavenCompiler = function(javaversion){
         this.plugins.push({

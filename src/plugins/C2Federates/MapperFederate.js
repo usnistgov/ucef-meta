@@ -46,27 +46,6 @@ define([
                     self.java_federateBasePOM.version = self.c2w_version;  
                 } 
 
-                if(!self.javaPOM){
-                    self.javaPOM = new MavenPOM(self.mainPom);
-                    self.javaPOM.artifactId = self.projectName + "-java";
-                    self.javaPOM.directory = "java-federates";
-                    self.javaPOM.version = self.project_version;
-                    self.javaPOM.addMavenCompiler('1.5');
-                    self.javaPOM.packaging = "pom";
-
-                    //Add sim POM generator
-                    self.fileGenerators.push(function(artifact, callback){
-                        artifact.addFile( self.javaPOM.directory + '/pom.xml', self._jsonToXml.convertToString( self.javaPOM.toJSON() ), function (err) {
-                            if (err) {
-                                callback(err);
-                                return;
-                            }else{
-                                callback();
-                            }
-                        });
-                    });
-                }
-
                 self.java_mapperPOM = null; //will be set by model visitor
 
                 //Add base POM generator
@@ -93,6 +72,15 @@ define([
                 nodeType = self.core.getAttribute( self.getMetaType( node ), 'name' );
 
             self.logger.info('Visiting a MaperFederate');
+
+            if(!self.javaPOM){
+                self.javaPOM = new MavenPOM(self.mainPom);
+                self.javaPOM.artifactId = self.projectName + "-java";
+                self.javaPOM.directory = "java-federates";
+                self.javaPOM.version = self.project_version;
+                self.javaPOM.addMavenCompiler('1.5');
+                self.javaPOM.packaging = "pom";
+            }
 
             if(!self.java_mapperPOM){
                 self.java_mapperPOM = new MavenPOM(self.javaPOM);
@@ -167,7 +155,14 @@ define([
             }
 
             mapping['rhs'] = self.core.getPointerPath(node,'dst');
-            mapping['lhs'] = self.core.getPointerPath(node,'src');            
+            mapping['lhs'] = self.core.getPointerPath(node,'src');  
+
+            if(!mapping['lhs'] ){
+                self.createMessage(node, '[ERROR] Invalid src pointer in MappingConnection!', 'error');
+            }
+            if(!mapping['rhs']){
+                self.createMessage(node, '[ERROR] Invalid dst pointer in MappingConnection!', 'error');
+            }          
 
             // Get LHS and RHS interaction classes
             mapping['handler'] = function(linteraction, rinteraction){
@@ -321,13 +316,15 @@ define([
             
             for(var i = 0; i < context['mappings'].length; i++){
                 var mapping = context['mappings'][i];
-                if(self.interactions[mapping.lhs] && self.interactions[mapping.rhs]){
-                    if(mapping.handler){
-                        mapping.handler(self.interactions[mapping.lhs], self.interactions[mapping.rhs]);
-                    }
-                }else if(self.objects[mapping.lhs] && self.objects[mapping.rhs]){
-                    if(mapping.handler){
-                        mapping.handler(self.objects[mapping.lhs], self.objects[mapping.rhs]);
+                if(mapping.lhs && mapping.rhs){
+                    if(self.interactions[mapping.lhs] && self.interactions[mapping.rhs]){
+                        if(mapping.handler){
+                            mapping.handler(self.interactions[mapping.lhs], self.interactions[mapping.rhs]);
+                        }
+                    }else if(self.objects[mapping.lhs] && self.objects[mapping.rhs]){
+                        if(mapping.handler){
+                            mapping.handler(self.objects[mapping.lhs], self.objects[mapping.rhs]);
+                        }
                     }
                 }
             }

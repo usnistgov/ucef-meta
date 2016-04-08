@@ -23,13 +23,17 @@ define([], function () {
             var self = this;
             for(var i = 0; i < context['pubsubs'].length; i++){
                 var pubsub = context['pubsubs'][i];
-                if(self.federates[pubsub.federate] && self.interactions[pubsub.interaction]){
-                    if(pubsub.handler){
-                        pubsub.handler(self.federates[pubsub.federate], self.interactions[pubsub.interaction]);
+                if(pubsub.federate && pubsub.interaction){
+                    if(self.federates[pubsub.federate] && self.interactions[pubsub.interaction]){
+                        if(pubsub.handler){
+                            pubsub.handler(self.federates[pubsub.federate], self.interactions[pubsub.interaction]);
+                        }
                     }
-                }else if(self.federates[pubsub.federate] && self.objects[pubsub.object]){
-                    if(pubsub.handler){
-                        pubsub.handler(self.federates[pubsub.federate], self.objects[pubsub.object]);
+                }else if(pubsub.federate && pubsub.object){
+                     if(self.federates[pubsub.federate] && self.objects[pubsub.object]){
+                        if(pubsub.handler){
+                            pubsub.handler(self.federates[pubsub.federate], self.objects[pubsub.object]);
+                        }
                     }
                 }
             }

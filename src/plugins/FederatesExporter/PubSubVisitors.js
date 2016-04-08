@@ -11,6 +11,13 @@ define([], function () {
             },
             nodeAttrNames = self.core.getAttributeNames(node);
 
+            if(!publication.interaction ){
+                self.createMessage(node, '[ERROR] Invalid dst pointer in StaticInteractionPublish!', 'error');
+            }
+            if(!publication.federate){
+                self.createMessage(node, '[ERROR] Invalid src pointer in StaticInteractionPublish!', 'error');
+            }
+
             for ( var i = 0; i < nodeAttrNames.length; i += 1 ) {
                 publication[nodeAttrNames[i]] = self.core.getAttribute( node, nodeAttrNames[i]);
             }   
@@ -39,6 +46,13 @@ define([], function () {
                 federate: self.core.getPointerPath(node,'dst')
             },
             nodeAttrNames = self.core.getAttributeNames(node);
+
+            if(!subscription.interaction ){
+                self.createMessage(node, '[ERROR] Invalid src pointer in StaticInteractionSubscribe!', 'error');
+            }
+            if(!subscription.federate){
+                self.createMessage(node, '[ERROR] Invalid dst pointer in StaticInteractionSubscribe!', 'error');
+            }
 
             for ( var i = 0; i < nodeAttrNames.length; i += 1 ) {
                 subscription[nodeAttrNames[i]] = self.core.getAttribute( node, nodeAttrNames[i]);
@@ -76,6 +90,13 @@ define([], function () {
                 federate: self.core.getPointerPath(node,'src')
             },
             nodeAttrNames = self.core.getAttributeNames(node);
+
+            if(!publication.object ){
+                self.createMessage(node, '[ERROR] Invalid dst pointer in StaticObjectPublish!', 'error');
+            }
+            if(!publication.federate){
+                self.createMessage(node, '[ERROR] Invalid src pointer in StaticObjectPublish!', 'error');
+            }
 
             for ( var i = 0; i < nodeAttrNames.length; i += 1 ) {
                 publication[nodeAttrNames[i]] = self.core.getAttribute( node, nodeAttrNames[i]);
@@ -115,6 +136,13 @@ define([], function () {
             },
             nodeAttrNames = self.core.getAttributeNames(node);
 
+            if(!subscription.object ){
+                self.createMessage(node, '[ERROR] Invalid src pointer in StaticObjectSubscribe!', 'error');
+            }
+            if(!subscription.federate){
+                self.createMessage(node, '[ERROR] Invalid dst pointer in StaticObjectSubscribe!', 'error');
+            }
+
             for ( var i = 0; i < nodeAttrNames.length; i += 1 ) {
                 subscription[nodeAttrNames[i]] = self.core.getAttribute( node, nodeAttrNames[i]);
             }   
@@ -153,6 +181,16 @@ define([], function () {
                 federate: self.core.getPointerPath(node,'src')
             },
             nodeAttrNames = self.core.getAttributeNames(node);
+
+            if(!publication.object ){
+                self.createMessage(node, '[ERROR] Invalid dst pointer in StaticObjectAttributePublish!', 'error');
+            }
+            if(!publication.attribute ){
+                self.createMessage(node, '[ERROR] Invalid dst pointer in StaticObjectAttributePublish!', 'error');
+            }
+            if(!publication.federate){
+                self.createMessage(node, '[ERROR] Invalid src pointer in StaticObjectAttributePublish!', 'error');
+            }
 
             for ( var i = 0; i < nodeAttrNames.length; i += 1 ) {
                 publication[nodeAttrNames[i]] = self.core.getAttribute( node, nodeAttrNames[i]);
@@ -202,6 +240,16 @@ define([], function () {
                 federate: self.core.getPointerPath(node,'dst')
             },
             nodeAttrNames = self.core.getAttributeNames(node);
+
+            if(!subscription.object ){
+                self.createMessage(node, '[ERROR] Invalid src pointer in StaticObjectAttributeSubscribe!', 'error');
+            }
+            if(!subscription.attribute ){
+                self.createMessage(node, '[ERROR] Invalid src pointer in StaticObjectAttributeSubscribe!', 'error');
+            }
+            if(!subscription.federate){
+                self.createMessage(node, '[ERROR] Invalid dst pointer in StaticObjectAttributeSubscribe!', 'error');
+            }
 
             for ( var i = 0; i < nodeAttrNames.length; i += 1 ) {
                 subscription[nodeAttrNames[i]] = self.core.getAttribute( node, nodeAttrNames[i]);

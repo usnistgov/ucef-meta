@@ -35,28 +35,6 @@ define([
                 self.cpp_federateBasePOM.version = self.c2w_version;   
                 self.cpp_federateBasePOM.packaging = "nar";
 
-                if(!self.cppPOM){
-                    self.cppPOM = new MavenPOM(self.mainPom);
-                    self.cppPOM.artifactId = self.projectName + "-cpp";
-                    self.cppPOM.directory = "cpp-federates";
-                    self.cppPOM.version = self.project_version;
-                    self.cppPOM.packaging = "pom";
-                    self.cppPOM.name = self.projectName + ' C++ root'
-
-                    //Add sim POM generator
-                    self.fileGenerators.push(function(artifact, callback){
-                        artifact.addFile( self.cppPOM.directory + '/pom.xml', ejs.render(TEMPLATES['cppfedbase_pom.xml.ejs'], self.cppPOM), function (err) {
-                            if (err) {
-                                callback(err);
-                                return;
-                            }else{
-                                callback();
-                                return;
-                            }
-                        });
-                    });
-                }
-
                 self.omnet_basePOM = null; //will be set by model visitor
                 //Add base POM generator
                 self.fileGenerators.push(function(artifact, callback){
@@ -85,6 +63,15 @@ define([
 
             self.logger.info('Visiting a OmnetFederate');
             
+            if(!self.cppPOM){
+                self.cppPOM = new MavenPOM(self.mainPom);
+                self.cppPOM.artifactId = self.projectName + "-cpp";
+                self.cppPOM.directory = "cpp-federates";
+                self.cppPOM.version = self.project_version;
+                self.cppPOM.packaging = "pom";
+                self.cppPOM.name = self.projectName + ' C++ root'
+            }
+
             if(!self.omnet_basePOM){
                 self.omnet_basePOM = new MavenPOM(self.cppPOM);
                 self.omnet_basePOM.artifactId = ejs.render(self.directoryNameTemplate, omnetDirSpec);

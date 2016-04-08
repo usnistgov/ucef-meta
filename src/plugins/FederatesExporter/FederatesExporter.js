@@ -160,19 +160,19 @@ define([
                 valueType: 'string',
                 readOnly: false
             },{
-                name: 'generateCorePackage',
-                displayName: 'generate "core" package',
-                description: 'Generate the org.c2w core/foundation packages?   ',
+                name: 'generateExportPackages',
+                displayName: 'Generate exports packages',
+                description: 'Generate the packages marked as export?   ',
                 value: false,
                 valueType: 'boolean',
                 readOnly: false
-            },{
+            /*},{
                 name: 'projectNameTemplate',
                 displayName: 'Project Name Template',
                 description: 'EJS Template for naming the maven projects',
                 value: '<%=federation_name%><%=artifact_name?"-"+artifact_name:""%><%=language?"-"+language:""%>',
                 valueType: 'string',
-                readOnly: true        
+                readOnly: true*/        
             },{
                 name: 'includedFederateTypes',
                 displayName: 'include',
@@ -232,7 +232,9 @@ define([
         self.projectName = self.core.getAttribute(self.rootNode, 'name');
         self.project_version = self.getCurrentConfig().exportVersion.trim() + (self.getCurrentConfig().isRelease ? "" : "-SNAPSHOT");
         self.c2w_version = self.getCurrentConfig().c2wVersion.trim();
-        self.directoryNameTemplate = self.getCurrentConfig().projectNameTemplate.trim();
+        //self.directoryNameTemplate = self.getCurrentConfig().projectNameTemplate.trim();
+        self.directoryNameTemplate= '<%=federation_name%><%=artifact_name?"-"+artifact_name:""%><%=language?"-"+language:""%>';
+        self.generateExportPackages = self.getCurrentConfig().generateExportPackages;
 
         self.mainPom.artifactId = self.projectName + "_root";
         self.mainPom.version = self.project_version;
@@ -370,8 +372,9 @@ define([
                     self.createMessage(null, 'Code artifact generated with id:[' + hashes[0] + ']');
 
                     // This will add a download hyperlink in the result-dialog.
-                    self.result.addArtifact(hashes[0]);
-                    self.result.addArtifact(hashes[1]);
+                    for (var idx = 0; idx < hashes.length; idx++) {
+                        self.result.addArtifact(hashes[idx]);
+                    };
                     
                     // This will save the changes. If you don't want to save;
                     // exclude self.save and call callback directly from this scope.
@@ -396,8 +399,10 @@ define([
 
             //var outFileName = self.projectName + '.json'
             var artifact = self.blobClient.createArtifact('generated_' +self.projectName.trim().replace(/\s+/g,'_') +'_Files');
-            var coreArtifact = self.blobClient.createArtifact('generated_Core_Files');
-            
+            if(self.generateExportPackages){
+                var coreArtifact = self.blobClient.createArtifact('generated_Core_Files');
+            }
+
             numberOfFilesToGenerate = self.fileGenerators.length;
             if(numberOfFilesToGenerate > 0){
                 generateFiles(artifact, self.fileGenerators, function(err){
@@ -407,7 +412,7 @@ define([
                     }
 
                     numberOfFilesToGenerate = self.corefileGenerators.length;
-                    if(numberOfFilesToGenerate > 0){
+                    if(self.generateExportPackages && numberOfFilesToGenerate > 0){
                         generateFiles(coreArtifact, self.corefileGenerators, function(err){
                             if (err) {
                                 callback(err, self.result);
@@ -532,6 +537,9 @@ define([
     
 
     FederatesExporter.prototype.calculateParentPath = function(path){
+        if(!path){
+            return null;
+        }
         var pathElements = path.split('/');
         pathElements.pop();
         return pathElements.join('/');

@@ -14,6 +14,7 @@ define([
 
     var CppFederateExporter  = function () {
     	var self = this,
+            baseDirSpec,
             baseOutFilePath;
         CppRTI.call(this);
 
@@ -24,9 +25,9 @@ define([
             init: function(){
                 self.initCppRTI();
 
-                var baseDirBasePath = 'cpp-federates/',
-                baseDirSpec = {federation_name: self.projectName, artifact_name: "base", language:"cpp"},
-                baseDirPath =  baseDirBasePath + ejs.render(self.directoryNameTemplate, baseDirSpec);
+                var baseDirBasePath = 'cpp-federates/';
+                baseDirSpec = {federation_name: self.projectName, artifact_name: "base", language:"cpp"};
+                var baseDirPath =  baseDirBasePath + ejs.render(self.directoryNameTemplate, baseDirSpec);
                 baseOutFilePath = baseDirPath;
 
                 self.cpp_federateBasePOM = new MavenPOM();
@@ -35,37 +36,37 @@ define([
                 self.cpp_federateBasePOM.version = self.c2w_version;   
                 self.cpp_federateBasePOM.packaging = "nar";
 
-                if(!self.cppPOM){
-                    self.cppPOM = new MavenPOM(self.mainPom);
-                    self.cppPOM.artifactId = self.projectName + "-cpp";
-                    self.cppPOM.directory = "cpp-federates";
-                    self.cppPOM.version = self.project_version;
-                    self.cppPOM.packaging = "pom";
-                    self.cppPOM.name = self.projectName + ' C++ root'
-
-                    //Add sim POM generator
-                    self.fileGenerators.push(function(artifact, callback){
-                        artifact.addFile( self.cppPOM.directory + '/pom.xml', ejs.render(TEMPLATES['cppfedbase_pom.xml.ejs'], self.cppPOM), function (err) {
-                            if (err) {
-                                callback(err);
-                                return;
-                            }else{
-                                callback();
-                                return;
-                            }
-                        });
+                
+                //Add sim POM generator
+                self.fileGenerators.push(function(artifact, callback){
+                    if(!self.cppPOM){
+                        callback();
+                        return;
+                    }
+                    artifact.addFile( self.cppPOM.directory + '/pom.xml', ejs.render(TEMPLATES['cppfedbase_pom.xml.ejs'], self.cppPOM), function (err) {
+                        if (err) {
+                            callback(err);
+                            return;
+                        }else{
+                            callback();
+                            return;
+                        }
                     });
-                }
-
-                self.cpp_basePOM = new MavenPOM(self.cppPOM);
-                self.cpp_basePOM.artifactId = ejs.render(self.directoryNameTemplate, baseDirSpec);
-                self.cpp_basePOM.version = self.project_version;
-                self.cpp_basePOM.packaging = "nar";
-                self.cpp_basePOM.dependencies.push(self.cpp_rtiPOM);
-                self.cpp_basePOM.dependencies.push(self.cpp_federateBasePOM);
+                });
 
                 //Add base POM generator
                 self.fileGenerators.push(function(artifact, callback){
+                    if(!self.cppPOM){
+                        callback();
+                        return;
+                    }
+                    self.cpp_basePOM = new MavenPOM(self.cppPOM);
+                    self.cpp_basePOM.artifactId = ejs.render(self.directoryNameTemplate, baseDirSpec);
+                    self.cpp_basePOM.version = self.project_version;
+                    self.cpp_basePOM.packaging = "nar";
+                    self.cpp_basePOM.dependencies.push(self.cpp_rtiPOM);
+                    self.cpp_basePOM.dependencies.push(self.cpp_federateBasePOM);
+
                     artifact.addFile(baseDirPath + '/pom.xml', self._jsonToXml.convertToString( self.cpp_basePOM.toJSON() ), function (err) {
                         if (err) {
                             callback(err);
@@ -78,6 +79,10 @@ define([
                 });
 
                 self.fileGenerators.push(function(artifact, callback){
+                    if(!self.cppPOM){
+                        callback();
+                        return;
+                    }
                     var renderContext = {
                         simname: self.projectName,
                         version: self.project_version
@@ -104,6 +109,14 @@ define([
                 nodeType = self.core.getAttribute( self.getMetaType( node ), 'name' );
 
             self.logger.info('Visiting a CppFederate');
+            if(!self.cppPOM){
+                self.cppPOM = new MavenPOM(self.mainPom);
+                self.cppPOM.artifactId = self.projectName + "-cpp";
+                self.cppPOM.directory = "cpp-federates";
+                self.cppPOM.version = self.project_version;
+                self.cppPOM.packaging = "pom";
+                self.cppPOM.name = self.projectName + ' C++ root'
+            }
 
             context['cppfedspec'] = self.createCppFederateCodeModel();
             context['cppfedspec']['classname'] = self.core.getAttribute(node, 'name');

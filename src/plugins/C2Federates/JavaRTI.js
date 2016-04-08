@@ -41,26 +41,6 @@ define([
                 'FederateObject': {simname: corePackagePathStr, hlaclassname: 'ObjectRoot.Manager.Federate'},
             };
 
-            if(!self.javaPOM){
-                self.javaPOM = new MavenPOM(self.mainPom);
-                self.javaPOM.artifactId = self.projectName + "-java";
-                self.javaPOM.directory = "java-federates";
-                self.javaPOM.version = self.project_version;
-                self.javaPOM.addMavenCompiler('1.5');
-                self.javaPOM.packaging = "pom";
-
-                //Add sim POM generator
-                self.fileGenerators.push(function(artifact, callback){
-                    artifact.addFile( self.javaPOM.directory + '/pom.xml', self._jsonToXml.convertToString( self.javaPOM.toJSON() ), function (err) {
-                        if (err) {
-                            callback(err);
-                            return;
-                        }else{
-                            callback();
-                        }
-                    });
-                });
-            }
 
             var renderToFile = function(outFilePath, isinteraction, model, artifact, callback){
                 var context = self.createJavaRTICodeModel(),
@@ -105,7 +85,7 @@ define([
             //
             // FOUNDATION RTI - Begin
             //        
-    
+            
             var foundationDirBasePath = 'java/',
                 coreDirSpec = {federation_name: "root", artifact_name: "", language:""},
                 coreDirPath = foundationDirBasePath + ejs.render(self.directoryNameTemplate, coreDirSpec),
@@ -129,6 +109,7 @@ define([
             foundationPOM.groupId = "org.c2w";
             foundationPOM.version  = self.c2w_version;
 
+
             self.corePOM = new MavenPOM(foundationPOM);
             self.corePOM.artifactId = "root";
             self.corePOM.groupId = "org.c2w";
@@ -137,133 +118,155 @@ define([
             self.corePOM.dependencies.push(porticoPOM);
             self.corePOM.dependencies.push(C2WLoggingPOM);
 
-            //Add core POM generator
-            self.corefileGenerators.push(function(artifact, callback){
-                artifact.addFile(coreDirPath + '/pom.xml', self._jsonToXml.convertToString( self.corePOM.toJSON() ), function (err) {
-                    if (err) {
-                        callback(err);
-                        return;
-                    }else{
-                        callback();
-                    }
-                });
-            });
-
             self.java_core_rtiPOM = new MavenPOM(foundationPOM);
             self.java_core_rtiPOM.artifactId = "base-events";
             self.java_core_rtiPOM.version = self.c2w_version;
             self.java_core_rtiPOM.packaging = "jar";
             self.java_core_rtiPOM.dependencies.push(self.corePOM);
 
-            //Add sim POM generator
-            self.corefileGenerators.push(function(artifact, callback){
-                artifact.addFile(eventsDirPath + '/pom.xml', self._jsonToXml.convertToString( self.java_core_rtiPOM.toJSON() ), function (err) {
-                    if (err) {
-                        callback(err);
-                        return;
-                    }else{
-                        callback();
-                    }
-                });
-            });
 
-            self.corefileGenerators.push(function(artifact, callback){
-                var fullPath = coreOutFilePath + "/" + corePackagePath.join("/") + "/" + 'InteractionRoot.java';
-                renderContext['isinteraction'] = true;
-                self.logger.debug('Rendering template to file: ' + fullPath);
-                artifact.addFile(fullPath, ejs.render(TEMPLATES['classroot.java.ejs'], renderContext), function (err) {
-                    if (err) {
-                        callback(err);
-                        return;
-                    }else{
-                        fullPath = coreOutFilePath + "/" + corePackagePath.join("/") + "/" + 'InteractionRootInterface.java';
-                        self.logger.debug('Rendering template to file: ' + fullPath);
-                        artifact.addFile(fullPath, ejs.render(TEMPLATES['interfaceroot.java.ejs'], renderContext), function (err) {
-                            if (err) {
-                                callback(err);
-                                return;
-                            }else{
-                                callback();
-                                return;
-                            }
-                        });
-                    }
-                });
-            });          
             
-            self.corefileGenerators.push(function(artifact, callback){
-                var fullPath = coreOutFilePath + "/" + corePackagePath.join("/") + "/" + 'ObjectRoot.java';
-                renderContext['isinteraction'] = false;
-                self.logger.debug('Rendering template to file: ' + fullPath);
-                artifact.addFile(fullPath, ejs.render(TEMPLATES['classroot.java.ejs'], renderContext), function (err) {
-                    if (err) {
-                        callback(err);
+            if(self.generateExportPackages){
+
+                //Add core POM generator
+                self.corefileGenerators.push(function(artifact, callback){
+                    artifact.addFile(coreDirPath + '/pom.xml', self._jsonToXml.convertToString( self.corePOM.toJSON() ), function (err) {
+                        if (err) {
+                            callback(err);
+                            return;
+                        }else{
+                            callback();
+                        }
+                    });
+                });
+
+                //Add sim POM generator
+                self.corefileGenerators.push(function(artifact, callback){
+                    artifact.addFile(eventsDirPath + '/pom.xml', self._jsonToXml.convertToString( self.java_core_rtiPOM.toJSON() ), function (err) {
+                        if (err) {
+                            callback(err);
+                            return;
+                        }else{
+                            callback();
+                        }
+                    });
+                });
+
+                self.corefileGenerators.push(function(artifact, callback){
+                    if(!self.javaPOM){
+                        callback();
                         return;
-                    }else{
-                        fullPath = coreOutFilePath + "/" + corePackagePath.join("/") + "/" + 'ObjectRootInterface.java';
-                        self.logger.debug('Rendering template to file: ' + fullPath);
-                        artifact.addFile(fullPath, ejs.render(TEMPLATES['interfaceroot.java.ejs'], renderContext), function (err) {
-                            if (err) {
-                                callback(err);
-                                return;
+                    }
+                    var fullPath = coreOutFilePath + "/" + corePackagePath.join("/") + "/" + 'InteractionRoot.java';
+                    renderContext['isinteraction'] = true;
+                    self.logger.debug('Rendering template to file: ' + fullPath);
+                    artifact.addFile(fullPath, ejs.render(TEMPLATES['classroot.java.ejs'], renderContext), function (err) {
+                        if (err) {
+                            callback(err);
+                            return;
+                        }else{
+                            fullPath = coreOutFilePath + "/" + corePackagePath.join("/") + "/" + 'InteractionRootInterface.java';
+                            self.logger.debug('Rendering template to file: ' + fullPath);
+                            artifact.addFile(fullPath, ejs.render(TEMPLATES['interfaceroot.java.ejs'], renderContext), function (err) {
+                                if (err) {
+                                    callback(err);
+                                    return;
+                                }else{
+                                    callback();
+                                    return;
+                                }
+                            });
+                        }
+                    });
+                });          
+                
+                self.corefileGenerators.push(function(artifact, callback){
+                    if(!self.javaPOM){
+                        callback();
+                        return;
+                    }
+
+                    var fullPath = coreOutFilePath + "/" + corePackagePath.join("/") + "/" + 'ObjectRoot.java';
+                    renderContext['isinteraction'] = false;
+                    self.logger.debug('Rendering template to file: ' + fullPath);
+                    artifact.addFile(fullPath, ejs.render(TEMPLATES['classroot.java.ejs'], renderContext), function (err) {
+                        if (err) {
+                            callback(err);
+                            return;
+                        }else{
+                            fullPath = coreOutFilePath + "/" + corePackagePath.join("/") + "/" + 'ObjectRootInterface.java';
+                            self.logger.debug('Rendering template to file: ' + fullPath);
+                            artifact.addFile(fullPath, ejs.render(TEMPLATES['interfaceroot.java.ejs'], renderContext), function (err) {
+                                if (err) {
+                                    callback(err);
+                                    return;
+                                }else{
+                                    callback();
+                                    return;
+                                }
+                            });
+                        }
+                    });
+                });
+
+                self.corefileGenerators.push(function(artifact, callback){
+                    if(!self.javaPOM){
+                        callback();
+                        return;
+                    }
+
+                    var objToRender = [],
+                    renderNextObject = function(err){
+                        if(err){
+                            callback(err);
+                        }else{
+                            var nextObj = objToRender.pop();
+                            if(nextObj){
+                                renderToFile(eventsOutFilePath, false, nextObj, artifact, renderNextObject);                                    
                             }else{
                                 callback();
                                 return;
                             }
-                        });
+                        }
+                    };
+
+                    for(var oid in self.objects){
+                        if(self.objects[oid].name != "ObjectRoot" && self.javaCorePackageOISpecs.hasOwnProperty(self.objects[oid].name) ){
+                            objToRender.push(self.objects[oid]);
+                        }
                     }
+
+                    renderNextObject();
                 });
-            });
 
-            self.corefileGenerators.push(function(artifact, callback){
-                var objToRender = [],
-                renderNextObject = function(err){
-                    if(err){
-                        callback(err);
-                    }else{
-                        var nextObj = objToRender.pop();
-                        if(nextObj){
-                            renderToFile(eventsOutFilePath, false, nextObj, artifact, renderNextObject);                                    
+                self.corefileGenerators.push(function(artifact, callback){
+                    if(!self.javaPOM){
+                        callback();
+                        return;
+                    }
+                    var intToRender = [],
+                    renderNextInteraction = function(err){
+                        if(err){
+                            callback(err);
                         }else{
-                            callback();
-                            return;
+                            var nextInteraction = intToRender.pop();
+                            if(nextInteraction){
+                                renderToFile(eventsOutFilePath, true, nextInteraction, artifact, renderNextInteraction);                                    
+                            }else{
+                                callback();
+                                return;
+                            }
+                        }
+                    };
+
+                    for(var iid in self.interactions){
+                        if(self.interactions[iid].name != "InteractionRoot" && self.javaCorePackageOISpecs.hasOwnProperty(self.interactions[iid].name) ){
+                            intToRender.push(self.interactions[iid]);
                         }
                     }
-                };
-
-                for(var oid in self.objects){
-                    if(self.objects[oid].name != "ObjectRoot" && self.javaCorePackageOISpecs.hasOwnProperty(self.objects[oid].name) ){
-                        objToRender.push(self.objects[oid]);
-                    }
-                }
-
-                renderNextObject();
-            });
-
-            self.corefileGenerators.push(function(artifact, callback){
-                var intToRender = [],
-                renderNextInteraction = function(err){
-                    if(err){
-                        callback(err);
-                    }else{
-                        var nextInteraction = intToRender.pop();
-                        if(nextInteraction){
-                            renderToFile(eventsOutFilePath, true, nextInteraction, artifact, renderNextInteraction);                                    
-                        }else{
-                            callback();
-                            return;
-                        }
-                    }
-                };
-
-                for(var iid in self.interactions){
-                    if(self.interactions[iid].name != "InteractionRoot" && self.javaCorePackageOISpecs.hasOwnProperty(self.interactions[iid].name) ){
-                        intToRender.push(self.interactions[iid]);
-                    }
-                }
-                renderNextInteraction();
-            });
-
+                    renderNextInteraction();
+                });
+            }
             //
             // FOUNDATION RTI - End
             //
@@ -277,7 +280,7 @@ define([
                 simDirPath =  simDirBasePath + ejs.render(self.directoryNameTemplate, simDirSpec),
                 simOutFilePath = simDirPath + MavenPOM.mavenJavaPath; 
         
-            self.java_rtiPOM = new MavenPOM(self.javaPOM);
+            self.java_rtiPOM = new MavenPOM(); //Parent to be set serialization time.
             self.java_rtiPOM.artifactId = ejs.render(self.directoryNameTemplate, simDirSpec);
             self.java_rtiPOM.version = self.project_version;
             self.java_rtiPOM.packaging = "jar";
@@ -285,6 +288,13 @@ define([
 
             //Add sim POM generator
             self.fileGenerators.push(function(artifact, callback){
+                if(!self.javaPOM){
+                    callback();
+                    return;
+                }
+                //Set the parent now that it exists
+                self.java_rtiPOM.setParentPom(self.javaPOM);
+
                 artifact.addFile(simDirPath + '/pom.xml', self._jsonToXml.convertToString( self.java_rtiPOM.toJSON() ), function (err) {
                     if (err) {
                         callback(err);
@@ -296,6 +306,10 @@ define([
             });
 
             self.fileGenerators.push(function(artifact, callback){
+                if(!self.javaPOM){
+                    callback();
+                    return;
+                }
                 var objToRender = [], 
                 renderNextObject = function(err){
                     if(err){
@@ -322,6 +336,10 @@ define([
             });
 
             self.fileGenerators.push(function(artifact, callback){
+                if(!self.javaPOM){
+                    callback();
+                    return;
+                }
                 var intToRender = [],
                 renderNextInteraction = function(err){
                     if(err){
