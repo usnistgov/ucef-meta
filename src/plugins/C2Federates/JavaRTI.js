@@ -70,12 +70,10 @@ define([
                 }
 
                 datamemeberList.forEach(function(param){
-                    //if(!param.inherited){
-                        context.alldatamembers.push(param);
-                        if(!param.hidden){
-                            context.datamembers.push(param);
-                        }
-                    //}
+                    context.alldatamembers.push(param);
+                    if(!param.inherited){
+                        context.datamembers.push(param);
+                    }
                 });
 
                 self.logger.debug('Rendering template to file: ' + fullPath);

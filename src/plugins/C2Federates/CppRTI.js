@@ -57,12 +57,11 @@ define([
                 }
 
                 datamemeberList.forEach(function(param){
-                    //if(!param.inherited){
-                        context.alldatamembers.push(param);
-                        if(!param.hidden){
-                            context.datamembers.push(param);
-                        }
-                    //}
+                    context.alldatamembers.push(param);
+                    if(!param.inherited){
+                        context.datamembers.push(param);
+                    }
+
                 });
 
                 var fullPath = outFilePath + MavenPOM.mavenCppPath + '/' + model.name +'.cpp'

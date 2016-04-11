@@ -77,7 +77,7 @@ define([], function () {
                 context['parentInteraction']['parameters'].push({
                     name: self.core.getAttribute(node,'name'),
                     parameterType: self.core.getAttribute(node,'ParameterType'),
-                    hidden: self.core.getAttribute(node,'Hidden') === 'true',
+                    hidden: self.core.getAttribute(node,'Hidden') === true,
                     position: self.core.getOwnRegistry(node, 'position'),
                     inherited: self.core.getBase(node) != self.core.getMetaType(node)
                 });
@@ -144,7 +144,7 @@ define([], function () {
             attribute = {
                 name: self.core.getAttribute(node,'name'),
                 parameterType: self.core.getAttribute(node,'ParameterType'),
-                hidden: self.core.getAttribute(node,'Hidden') === 'true',
+                hidden: self.core.getAttribute(node,'Hidden') === true,
                 position: self.core.getOwnRegistry(node, 'position'),
                 delivery: self.core.getAttribute(node, 'Delivery'),
                 order: self.core.getAttribute(node, 'Order'),

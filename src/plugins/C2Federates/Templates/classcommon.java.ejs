@@ -77,7 +77,7 @@
 
 		<%/*alldatamembers:initDatamemberNameSet()*/%>
 		<% alldatamembers.forEach(function(datamember){%>
-		<% if(!datamember.hidden){ %>_datamemberNames.add( "<%=datamember.name%>" );<%}%><%}); %>
+		<% if(!datamember.hidden && !datamember.inherited){ %>_datamemberNames.add( "<%=datamember.name%>" );<%}%><%}); %>
 		<%/*alldatamembers:initAllDatamemberNameSet()*/%>
 		<% alldatamembers.forEach(function(datamember){%>
 		_allDatamemberNames.add( "<%=datamember.name%>" );<%}); %>

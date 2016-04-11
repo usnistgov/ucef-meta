@@ -279,59 +279,7 @@ define([
             });
         });
 
-        self.fomModel = {
-            federationname: self.projectName,
-            objects: [],
-            interactions: []
-        };
-
-        //Add FED generator
-        self.fileGenerators.push(function(artifact, callback){
-            
-            var interactionTraverser = function(interaction){
-                var intModel = {
-                    interaction:interaction,
-                    parameters:interaction.parameters,
-                    children:[]
-                };
-                interaction.children.forEach(function(child){
-                    intModel.children.push(interactionTraverser(child));
-                });
-                return ejs.render(TEMPLATES["fedfile_siminteraction.ejs"], intModel);
-            }
-
-            self.fomModel.interactions = [];
-            self.interactionRoots[0].children.forEach(function(inta){
-                self.fomModel.interactions.push(interactionTraverser(inta));
-            });
-            
-
-            var objectTraverser = function(object){
-                var objModel = {
-                    name:object.name,
-                    attributes:object.attributes,
-                    children:[]
-                };
-                object.children.forEach(function(child){
-                    objModel.children.push(objectTraverser(child));
-                });
-                return ejs.render(TEMPLATES["fedfile_simobject.ejs"], objModel);
-            }
-
-            self.fomModel.objects = []
-            self.objectRoots[0].children.forEach(function(obj){
-                self.fomModel.objects.push(objectTraverser(obj));
-            });
-
-            artifact.addFile(self.projectName + '.fed', ejs.render(TEMPLATES['fedfile.fed.ejs'], self.fomModel), function (err) {
-                if (err) {
-                    callback(err);
-                    return;
-                }else{
-                    callback();
-                }
-            });
-        });
+        
 
         generateFiles = function(artifact, fileGerenrators, doneBack){
             if(numberOfFilesToGenerate > 0){ 

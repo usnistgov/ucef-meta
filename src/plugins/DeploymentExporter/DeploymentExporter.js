@@ -9,14 +9,21 @@ define([
     'plugin/PluginConfig',
     'plugin/PluginBase',
     'common/util/ejs',
+    'C2Core/xmljsonconverter',
     'C2Core/ModelTraverserMixin',
     'DeploymentExporter/Templates/Templates',
+    'FederatesExporter/RTIVisitors',
+    'FederatesExporter/PubSubVisitors',
 ], function (
     PluginConfig,
     PluginBase,
     ejs,
+    JSON2XMLConverter,
     ModelTraverserMixin,
-    TEMPLATES) {
+    TEMPLATES,
+    RTIVisitors,
+    PubSubVisitors
+    ) {
     'use strict';
 
     /**
@@ -30,6 +37,10 @@ define([
         // Call base class' constructor.
         PluginBase.call(this);
         ModelTraverserMixin.call(this);
+        PubSubVisitors.call(this);
+        RTIVisitors.call(this);
+
+        this._jsonToXml = new JSON2XMLConverter.Json2xml();
     };
 
     // Prototypal inheritance from PluginBase.
@@ -149,6 +160,11 @@ define([
         self.fileGenerators = [];
         self.fom_sheets = {};
         self.federates = [];
+        self.interactions = {};
+        self.interactionRoots = [];
+        self.objects      = {};
+        self.objectRoots = [];
+        self.attributes   = {};
 
         self.projectName = self.core.getAttribute(self.rootNode, 'name');
 
@@ -163,6 +179,82 @@ define([
         //Add POM generator
         self.fileGenerators.push(function(artifact, callback){
             artifact.addFile('pom.xml', ejs.render(TEMPLATES['execution_pom.xml.ejs'], pomModel), function (err) {
+                if (err) {
+                    callback(err);
+                    return;
+                }else{
+                    callback();
+                }
+            });
+        });
+
+        self.fomModel = {
+            federationname: self.projectName,
+            objects: [],
+            interactions: []
+        };
+
+        //Add FED generator
+        self.fileGenerators.push(function(artifact, callback){
+            
+            var interactionTraverser = function(interaction){
+                var intModel = {
+                    interaction:interaction,
+                    parameters:interaction.parameters,
+                    children:[]
+                };
+                interaction.children.forEach(function(child){
+                    intModel.children.push(interactionTraverser(child));
+                });
+                return ejs.render(TEMPLATES["fedfile_siminteraction.ejs"], intModel);
+            }
+
+            self.fomModel.interactions = [];
+            self.interactionRoots[0].children.forEach(function(inta){
+                self.fomModel.interactions.push(interactionTraverser(inta));
+            });
+            
+
+            var objectTraverser = function(object){
+                var objModel = {
+                    name:object.name,
+                    attributes:object.attributes,
+                    children:[]
+                };
+                object.children.forEach(function(child){
+                    objModel.children.push(objectTraverser(child));
+                });
+                return ejs.render(TEMPLATES["fedfile_simobject.ejs"], objModel);
+            }
+
+            self.fomModel.objects = []
+            self.objectRoots[0].children.forEach(function(obj){
+                self.fomModel.objects.push(objectTraverser(obj));
+            });
+
+            artifact.addFile('src/fom/' + self.projectName + '.fed', ejs.render(TEMPLATES['fedfile.fed.ejs'], self.fomModel), function (err) {
+                if (err) {
+                    callback(err);
+                    return;
+                }else{
+                    callback();
+                }
+            });
+        });
+    
+        self.scriptModel = {
+            'script': {
+                'expect': []
+            }
+        };
+            
+        //Add basic script xml for testing
+        self.fileGenerators.push(function(artifact, callback){
+            self.federates.forEach(function (fed){
+                self.scriptModel.script.expect.push({'@federateType':fed.name});
+            });
+            
+            artifact.addFile('src/experiments/' + 'default' + '/' + 'script.xml', self._jsonToXml.convertToString( self.scriptModel ) , function (err) {
                 if (err) {
                     callback(err);
                     return;
@@ -328,6 +420,37 @@ define([
         exclude = exclude || self.isMetaTypeOf(node, self.META['Language [CASIM]']) || self.isMetaTypeOf(node, self.META['Language [C2WT]']);
         return exclude; 
 
+    }
+
+        /*
+    * Rest of TRAVERSAL CODE:
+    * - PubSubVisitors.js
+    * - RTIVisitors.js
+    * - C2Federates folder for Federate specific vistors
+    */
+
+    DeploymentExporter.prototype.ROOT_visitor = function(node){
+        var self = this;
+        self.logger.info('Visiting the ROOT');
+
+        var root = {
+            "@id": 'model:' + '/root',
+            "@type": "gme:root",
+            "model:name": self.projectName,
+            "gme:children": []
+        };
+
+        return {context:{parent: root}};
+    }
+    
+
+    DeploymentExporter.prototype.calculateParentPath = function(path){
+        if(!path){
+            return null;
+        }
+        var pathElements = path.split('/');
+        pathElements.pop();
+        return pathElements.join('/');
     }
 
     return DeploymentExporter;

@@ -1,0 +1,6 @@
+<% /*simobject(name,attributes,children) */ -%>
+(class <%= name %><% for(var i=0; i<attributes.length; i++){ %>
+  (attribute <%= attributes[i].name %> <%= attributes[i].delivery %> <%= attributes[i].order %>)<% } -%>
+<% children.forEach(function(child){ %>  <%= child %>
+<% }); -%> 
+)

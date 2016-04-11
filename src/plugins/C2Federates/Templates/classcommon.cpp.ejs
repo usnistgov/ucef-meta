@@ -211,7 +211,7 @@ bool <%=classname%>::static_init( void ) {
 	
 	<% /*datamembers:initDatamemberNameSet()*/ %>
 	<% datamembers.forEach(function(datamember){ %>
-	<% if(!datamember.hidden){%>getDatamemberNames().push_back( "<%=datamember.name%>" );<%}%><%});%>
+	<% if(!datamember.hidden && !datamember.inherited){%>getDatamemberNames().push_back( "<%=datamember.name%>" );<%}%><%});%>
 	<% /*alldatamembers:initAllDatamemberNameSet()*/ %>
 	<% datamembers.forEach(function(datamember){ %>
 	getAllDatamemberNames().push_back( "<%=datamember.name%>" );<%});%>
