@@ -85,6 +85,7 @@ define([
 
             self.logger.info('Visiting a JavaFederate');
 
+            //Setup project POM files on visiting the first Java Federate
             if(!self.javaPOM){
                 self.javaPOM = new MavenPOM(self.mainPom);
                 self.javaPOM.artifactId = self.projectName + "-java";

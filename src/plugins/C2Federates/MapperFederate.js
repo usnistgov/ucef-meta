@@ -73,6 +73,7 @@ define([
 
             self.logger.info('Visiting a MaperFederate');
 
+            //Setup project POM files on visiting the first Mapper Federate
             if(!self.javaPOM){
                 self.javaPOM = new MavenPOM(self.mainPom);
                 self.javaPOM.artifactId = self.projectName + "-java";

@@ -29,11 +29,11 @@ define([
                 omnetDirPath =  omnetDirBasePath + ejs.render(self.directoryNameTemplate, omnetDirSpec);
                 omnetOutFilePath = omnetDirPath;
 
-                self.cpp_federateBasePOM = new MavenPOM();
-                self.cpp_federateBasePOM.groupId = 'org.c2w'
-                self.cpp_federateBasePOM.artifactId = 'OmnetFederate';
-                self.cpp_federateBasePOM.version = self.c2w_version;   
-                self.cpp_federateBasePOM.packaging = "nar";
+                self.omnet_federateBasePOM = new MavenPOM();
+                self.omnet_federateBasePOM.groupId = 'org.c2w'
+                self.omnet_federateBasePOM.artifactId = 'OmnetFederate';
+                self.omnet_federateBasePOM.version = self.c2w_version;   
+                self.omnet_federateBasePOM.packaging = "nar";
 
                 self.omnet_basePOM = null; //will be set by model visitor
                 //Add base POM generator
@@ -63,6 +63,7 @@ define([
 
             self.logger.info('Visiting a OmnetFederate');
             
+            //Setup project POM files on visiting the first Mapper Federate
             if(!self.cppPOM){
                 self.cppPOM = new MavenPOM(self.mainPom);
                 self.cppPOM.artifactId = self.projectName + "-cpp";
@@ -78,7 +79,7 @@ define([
                 self.omnet_basePOM.version = self.project_version;
                 self.omnet_basePOM.packaging = "nar";
                 self.omnet_basePOM.dependencies.push(self.cpp_rtiPOM);
-                self.omnet_basePOM.dependencies.push(self.cpp_federateBasePOM);
+                self.omnet_basePOM.dependencies.push(self.omnet_federateBasePOM);
             }
             
             context['omnetfedspec'] = self.createOmnetFederateCodeModel();

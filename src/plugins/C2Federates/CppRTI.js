@@ -221,18 +221,22 @@ define([
                 simDirSpec = {federation_name: self.projectName, artifact_name: "rti", language:"cpp"},
                 simDirPath =  simDirBasePath + ejs.render(self.directoryNameTemplate, simDirSpec);  
 
+            self.cpp_rtiPOM = new MavenPOM(); //Parent to be set serialization time.
+            self.cpp_rtiPOM.artifactId = ejs.render(self.directoryNameTemplate, simDirSpec)
+            self.cpp_rtiPOM.version = self.c2w_version;
+            self.cpp_rtiPOM.packaging = "nar";
+            self.cpp_rtiPOM.dependencies.push(self.cpp_corePOM);
+
             //Add sim POM generator
             self.fileGenerators.push(function(artifact, callback){
                 if(!self.cppPOM){
                     callback();
                     return;
                 }
-                self.cpp_rtiPOM = new MavenPOM(self.cppPOM);
-                self.cpp_rtiPOM.artifactId = ejs.render(self.directoryNameTemplate, simDirSpec)
-                self.cpp_rtiPOM.version = self.c2w_version;
-                self.cpp_rtiPOM.packaging = "nar";
-                self.cpp_rtiPOM.dependencies.push(self.cpp_corePOM);
 
+                //Set the parent now that it exists
+                self.cpp_rtiPOM.setParentPom(self.cppPOM);
+               
                 artifact.addFile(simDirPath + '/pom.xml', self._jsonToXml.convertToString( self.cpp_rtiPOM.toJSON() ), function (err) {
                     if (err) {
                         callback(err);

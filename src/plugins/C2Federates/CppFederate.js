@@ -56,16 +56,10 @@ define([
 
                 //Add base POM generator
                 self.fileGenerators.push(function(artifact, callback){
-                    if(!self.cppPOM){
+                    if(!self.cpp_basePOM){
                         callback();
                         return;
                     }
-                    self.cpp_basePOM = new MavenPOM(self.cppPOM);
-                    self.cpp_basePOM.artifactId = ejs.render(self.directoryNameTemplate, baseDirSpec);
-                    self.cpp_basePOM.version = self.project_version;
-                    self.cpp_basePOM.packaging = "nar";
-                    self.cpp_basePOM.dependencies.push(self.cpp_rtiPOM);
-                    self.cpp_basePOM.dependencies.push(self.cpp_federateBasePOM);
 
                     artifact.addFile(baseDirPath + '/pom.xml', self._jsonToXml.convertToString( self.cpp_basePOM.toJSON() ), function (err) {
                         if (err) {
@@ -109,6 +103,8 @@ define([
                 nodeType = self.core.getAttribute( self.getMetaType( node ), 'name' );
 
             self.logger.info('Visiting a CppFederate');
+
+            //Setup project POM files on visiting the first CPP Federate
             if(!self.cppPOM){
                 self.cppPOM = new MavenPOM(self.mainPom);
                 self.cppPOM.artifactId = self.projectName + "-cpp";
@@ -116,6 +112,14 @@ define([
                 self.cppPOM.version = self.project_version;
                 self.cppPOM.packaging = "pom";
                 self.cppPOM.name = self.projectName + ' C++ root'
+            }
+            if(!self.cpp_basePOM){
+                self.cpp_basePOM = new MavenPOM(self.cppPOM);
+                self.cpp_basePOM.artifactId = ejs.render(self.directoryNameTemplate, baseDirSpec);
+                self.cpp_basePOM.version = self.project_version;
+                self.cpp_basePOM.packaging = "nar";
+                self.cpp_basePOM.dependencies.push(self.cpp_rtiPOM);
+                self.cpp_basePOM.dependencies.push(self.cpp_federateBasePOM);
             }
 
             context['cppfedspec'] = self.createCppFederateCodeModel();
