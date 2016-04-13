@@ -155,17 +155,22 @@ define([], function () {
         }
 
         if(this.repositories){
+            model['repositories']={'repository':[]};
             model['distributionManagement']={};
             for(var repoId in this.repositories){
-                var repo = this.repositories[repoId];
-                model['distributionManagement'][repoId]=[];
-                model['distributionManagement'][repoId].push({
+                var repo = this.repositories[repoId],
+                repoModel = {
                     'id': {'#text': repo.id || ''},
                     'name': {'#text': repo.name || ''},
                     'url': {'#text': repo.url || ''} 
-                });
+                };
+                model['distributionManagement'][repoId]=[];
+                model['distributionManagement'][repoId].push(repoModel);
+                 model['repositories']['repository'].push(repoModel);
             }
         }
+
+
 
         if(this.plugins && this.plugins.length > 0){
             model['build'] = {'plugins': {'plugin': this.plugins}};
