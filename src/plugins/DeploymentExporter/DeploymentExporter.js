@@ -253,7 +253,7 @@ define([
             self.federates.forEach(function (fed){
                 self.scriptModel.script.expect.push({'@federateType':fed.name});
             });
-            
+
             artifact.addFile('src/experiments/' + 'default' + '/' + 'script.xml', self._jsonToXml.convertToString( self.scriptModel ) , function (err) {
                 if (err) {
                     callback(err);
@@ -302,7 +302,15 @@ define([
                             callback(err, self.result);
                             return;
                         }
-                        self.createMessage(null, 'Deployment artifact generated with id:[' + hashes[0] + ']');
+
+                        var artifactMsg =  
+                            '<em>Deployment artifact generated with id:[' + hashes[0] + ']<em><br>'+
+                            '<a title="Build artifact" '+
+                                'onclick="window.open(\'http://c2w-cdi.isis.vanderbilt.edu:8080/job/c2w-pull/buildWithParameters?GME_ARTIFACT_ID='+hashes[0]+'\', \'Build System\'); return false;">Build artifact..</a>';
+
+                        self.createMessage(null, artifactMsg);
+              
+
 
                         // This will add a download hyperlink in the result-dialog.
                         self.result.addArtifact(hashes[0]);

@@ -318,7 +318,7 @@ define([
 
                     
                     self.createMessage(null, 'Code artifact generated with id:[' + hashes[0] + ']');
-
+                    
                     // This will add a download hyperlink in the result-dialog.
                     for (var idx = 0; idx < hashes.length; idx++) {
                         self.result.addArtifact(hashes[idx]);
