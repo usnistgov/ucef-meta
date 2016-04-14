@@ -317,11 +317,18 @@ define([
                     }
 
                     
-                    self.createMessage(null, 'Code artifact generated with id:[' + hashes[0] + ']');
+                    //self.createMessage(null, 'Code artifact generated with id:[' + hashes[0] + ']');
                     
                     // This will add a download hyperlink in the result-dialog.
                     for (var idx = 0; idx < hashes.length; idx++) {
                         self.result.addArtifact(hashes[idx]);
+
+                        var artifactMsg = 'Code package ' + self.blobClient.artifacts[idx].name + ' was generated with id:[' + hashes[idx] + ']';
+                        var buildURL = "'http://c2w-cdi.isis.vanderbilt.edu:8080/job/c2w-pull/buildWithParameters?GME_ARTIFACT_ID="+hashes[idx]+"'"
+                        artifactMsg += '<br><a title="Build package..." '+
+                                'onclick="window.open(' + buildURL + ', \'Build System\'); return false;">Build artifact..</a>';
+                        self.createMessage(null, artifactMsg );
+
                     };
                     
                     // This will save the changes. If you don't want to save;
