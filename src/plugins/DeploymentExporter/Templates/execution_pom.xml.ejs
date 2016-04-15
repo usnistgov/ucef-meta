@@ -14,16 +14,32 @@
 	</properties>
 
 	<dependencies>
+		<% if(federatesByType['JavaFederate']){%>
 		<dependency><!-- The depenency for the user written code-->
 			<groupId><%= groupId %></groupId>
 			<artifactId><%= projectName %></artifactId>
 			<version><%= projectVersion %></version>
 		</dependency>
-		<dependency><!-- The depenency for the gemerated code-->
+		<dependency><!-- The depenency for the generated code-->
 			<groupId><%= groupId %></groupId>
 			<artifactId><%= projectName %>-base-java</artifactId>
 			<version><%= projectVersion %></version>
+		</dependency><%}%>
+		<% if(federatesByType['CppFederate']){%>
+		<dependency><!-- The depenency for the generated code-->
+			<groupId><%= groupId %></groupId>
+			<artifactId><%= projectName %>-base-cpp</artifactId>
+			<version><%= projectVersion %></version>
+			<type>nar</type>
 		</dependency>
+		<%federatesByType['CppFederate'].forEach(function(fed){%>
+		<dependency><!-- The depenency for the user written code-->
+			<groupId><%= groupId %></groupId>
+			<artifactId><%= projectName %>-<%= fed.name %>-cpp</artifactId>
+			<version><%= projectVersion %></version>
+			<type>nar</type>
+		</dependency>
+		<%});%><%}%>
 		<dependency>
 	        <groupId>junit</groupId>
 	        <artifactId>junit</artifactId>
@@ -133,6 +149,19 @@
 			<url><%= repositoryUrlSnapshot %></url>
 		</repository>
 	</repositories>
+
+	<pluginRepositories>
+		<pluginRepository>
+			<id>archiva.internal</id>
+			<name>Internal Release Repository</name>
+			<url><%= repositoryUrlRelease %></url>
+		</pluginRepository>
+		<pluginRepository>
+			<id>archiva.snapshots</id>
+			<name>Internal Snapshot Repository</name>
+			<url><%= repositoryUrlSnapshot %></url>
+		</pluginRepository>
+	</pluginRepositories>
 
 	<distributionManagement>
 		<repository>
@@ -263,7 +292,7 @@
 			        <plugin>
 				        <groupId>com.github.maven-nar</groupId>
 				        <artifactId>nar-maven-plugin</artifactId>
-				        <version>${nar-plugin.version}</version>
+				        <version>${nar.version}</version>
 				        <configuration>
 				          <classifiers>
 				            <classifier>${nar.aol}</classifier>
@@ -284,11 +313,18 @@
 			        <plugin>
 			          <artifactId>maven-assembly-plugin</artifactId>
 			          <version>2.6</version>
+			          <dependencies>
+			          	<dependency><!-- The depenency for CPP execution assembly script-->
+							<groupId>org.c2w</groupId>
+							<artifactId>ExecutionAssembler</artifactId>
+							<version>${c2w.version}</version>
+						</dependency>
+					  </dependencies>
 			          <configuration>
 			            <finalName>bin</finalName>
-			            <descriptors>
-			              <descriptor>src/main/assembly/executionAssembly.xml</descriptor>
-			            </descriptors>
+			            <descriptorRefs>
+			              <descriptorRef>executionAssembly</descriptorRef>
+			            </descriptorRefs>
 			          </configuration>
 			          <executions>
 			              <execution>
@@ -300,6 +336,20 @@
 			              </execution>
 			        </executions>
 			        </plugin>
+			        <plugin>
+						<groupId>org.codehaus.mojo</groupId>
+						<artifactId>exec-maven-plugin</artifactId>
+						<version>1.4.0</version>
+						<configuration>
+							<workingDirectory>${project.basedir}/target/bin-exec</workingDirectory>
+              				<executable>./<%= projectName %>-${federate.name}-cpp</executable>
+							<arguments>
+								<argument>${federation.name}</argument>
+					            <argument>${federate.name}</argument>
+					            <argument>${federate.loglevel}</argument>
+					    	</arguments>
+						</configuration>
+					</plugin>
 			    </plugins>
 			</build>
 		</profile>

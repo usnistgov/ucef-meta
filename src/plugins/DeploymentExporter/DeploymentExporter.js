@@ -178,6 +178,14 @@ define([
 
         //Add POM generator
         self.fileGenerators.push(function(artifact, callback){
+            pomModel['federatesByType'] = {};
+            pomModel.federates.forEach(function(fed){
+                if(!pomModel['federatesByType'][fed.FederateType]){
+                    pomModel['federatesByType'][fed.FederateType] = [];
+                }
+                pomModel['federatesByType'][fed.FederateType].push(fed);
+            });
+
             artifact.addFile('pom.xml', ejs.render(TEMPLATES['execution_pom.xml.ejs'], pomModel), function (err) {
                 if (err) {
                     callback(err);
@@ -357,7 +365,7 @@ define([
         for ( var i = 0; i < nodeAttrNames.length; i += 1 ) {
             fed[nodeAttrNames[i]] = self.core.getAttribute( node, nodeAttrNames[i]);
         }   
-
+        fed['FederateType'] = nodeType;
         self.federates.push(fed);
 
         if(nodeType != 'Federate'){
