@@ -60,7 +60,11 @@ define([], function () {
     	        try{
                     ret = self['visit_' + nodeType](node, parent, context);
                 }catch(err){
-                    self.logger.debug('No visitor function for ' + nodeType);
+                    if(err.message == 'self[visit_' + nodeType + '] is not a function'){
+                        self.logger.debug('No visitor function for ' + nodeType);
+                    }else{
+                        return {error: err};
+                    }
                 }
             }
 
@@ -78,7 +82,11 @@ define([], function () {
                 try{
                     ret = self['post_visit_' + nodeType](node, context);
                 }catch(err){
-                    self.logger.debug('No post-visitor function for ' + nodeType);
+                    if(err.message == 'self[post_visit_' + nodeType + '] is not a function'){
+                        self.logger.debug('No post-visitor function for ' + nodeType);
+                    }else{
+                        return {error: err};
+                    }
                 }
             }
             

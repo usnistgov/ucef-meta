@@ -16,7 +16,8 @@ define([
 
     var MapperFederateExporter  = function () {
     	var self = this,
-            mapperOutFilePath;
+            mapperOutFilePath,
+            mapperDirSpec;
         
         JavaRTI.call(this);
         JavaFederate.call(this); 
@@ -33,9 +34,9 @@ define([
                     self.initJavaRTI();  
                 }
 
-                var mapperDirBasePath = 'java-federates/',
-                mapperDirSpec = {federation_name: self.projectName, artifact_name: "mapper", language:"java"},
-                mapperDirPath =  mapperDirBasePath + ejs.render(self.directoryNameTemplate, mapperDirSpec);
+                var mapperDirBasePath = 'java-federates/';
+                mapperDirSpec = {federation_name: self.projectName, artifact_name: "mapper", language:"java"};
+                var mapperDirPath =  mapperDirBasePath + ejs.render(self.directoryNameTemplate, mapperDirSpec);
 
                 mapperOutFilePath = mapperDirPath + MavenPOM.mavenJavaPath; 
 

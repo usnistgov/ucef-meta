@@ -14,7 +14,8 @@ define([
 
     var OmnetFederateExporter  = function () {
     	var self = this,
-            omnetOutFilePath;
+            omnetOutFilePath,
+            omnetDirSpec;
         CppRTI.call(this);
 
         this.federateTypes = this.federateTypes || {};
@@ -24,9 +25,9 @@ define([
             init: function(){
                 self.initCppRTI();
 
-                var omnetDirBasePath = 'cpp-federates/',
-                omnetDirSpec = {federation_name: self.projectName, artifact_name: "omnet", language:"cpp"},
-                omnetDirPath =  omnetDirBasePath + ejs.render(self.directoryNameTemplate, omnetDirSpec);
+                var omnetDirBasePath = 'cpp-federates/';
+                omnetDirSpec = {federation_name: self.projectName, artifact_name: "omnet", language:"cpp"};
+                var omnetDirPath =  omnetDirBasePath + ejs.render(self.directoryNameTemplate, omnetDirSpec);
                 omnetOutFilePath = omnetDirPath;
 
                 self.omnet_federateBasePOM = new MavenPOM();

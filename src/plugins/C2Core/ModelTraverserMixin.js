@@ -80,6 +80,11 @@ define([], function () {
                         self.logger.debug('No post visitor function for ' + self.core.getAttribute(rootNode,'name'));
                     }
                     callback( error === '' ? undefined : error );
+                    return;
+                }
+                if(err){
+                    callback( error );
+                    return;
                 }
             };
             try{
