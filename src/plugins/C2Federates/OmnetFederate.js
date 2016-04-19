@@ -36,6 +36,14 @@ define([
                 self.omnet_federateBasePOM.version = self.c2w_version;   
                 self.omnet_federateBasePOM.packaging = "nar";
 
+                if(!self.cpp_federateBasePOM){
+                    self.cpp_federateBasePOM = new MavenPOM();
+                    self.cpp_federateBasePOM.groupId = 'org.c2w'
+                    self.cpp_federateBasePOM.artifactId = 'SynchronizedFederate';
+                    self.cpp_federateBasePOM.version = self.c2w_version;   
+                    self.cpp_federateBasePOM.packaging = "nar";
+                }
+
                 self.omnet_basePOM = null; //will be set by model visitor
                 //Add base POM generator
                 self.fileGenerators.push(function(artifact, callback){
@@ -81,6 +89,7 @@ define([
                 self.omnet_basePOM.packaging = "nar";
                 self.omnet_basePOM.dependencies.push(self.cpp_rtiPOM);
                 self.omnet_basePOM.dependencies.push(self.omnet_federateBasePOM);
+                self.omnet_basePOM.dependencies.push(self.cpp_federateBasePOM);
             }
             
             context['omnetfedspec'] = self.createOmnetFederateCodeModel();
@@ -100,8 +109,10 @@ define([
         this.post_visit_OmnetFederate = function(node, context){
             var self = this,
                 renderContext = context['omnetfedspec'],
-                outFileName = omnetOutFilePath + MavenPOM.mavenCppPath + "/" + self.core.getAttribute(node, 'name') + "FilterInit.cpp";
-            
+                //fileName = self.core.getAttribute(node, 'name') + "FilterInit", //TODO: Enable multiple Filter per project
+                fileName = self.projectName + "FilterInit",
+                outFileName = omnetOutFilePath + MavenPOM.mavenCppPath + "/" + fileName + ".cpp";
+
             self.fileGenerators.push(function(artifact, callback){
                 renderContext['allobjectdata'] = renderContext['publishedobjectdata'].concat(renderContext['subscribedobjectdata']);
                 renderContext['allinteractiondata'] = renderContext['publishedinteractiondata'].concat(renderContext['subscribedinteractiondata'])
@@ -112,7 +123,7 @@ define([
                         callback(err);
                         return;
                     }else{
-                        outFileName = omnetOutFilePath + MavenPOM.mavenIncludePath + "/" + self.core.getAttribute(node, 'name') + "FilterInit.hpp";
+                        outFileName = omnetOutFilePath + MavenPOM.mavenIncludePath + "/" + fileName + ".h";
                         self.logger.debug('Rendering template to file: ' + outFileName);
                         artifact.addFile(outFileName, ejs.render(TEMPLATES['omnetfilter.hpp.ejs'], renderContext), callback);
                         return;

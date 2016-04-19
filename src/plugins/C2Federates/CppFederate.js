@@ -30,11 +30,13 @@ define([
                 var baseDirPath =  baseDirBasePath + ejs.render(self.directoryNameTemplate, baseDirSpec);
                 baseOutFilePath = baseDirPath;
 
-                self.cpp_federateBasePOM = new MavenPOM();
-                self.cpp_federateBasePOM.groupId = 'org.c2w'
-                self.cpp_federateBasePOM.artifactId = 'SynchronizedFederate';
-                self.cpp_federateBasePOM.version = self.c2w_version;   
-                self.cpp_federateBasePOM.packaging = "nar";
+                if(!self.cpp_federateBasePOM){
+                    self.cpp_federateBasePOM = new MavenPOM();
+                    self.cpp_federateBasePOM.groupId = 'org.c2w'
+                    self.cpp_federateBasePOM.artifactId = 'SynchronizedFederate';
+                    self.cpp_federateBasePOM.version = self.c2w_version;   
+                    self.cpp_federateBasePOM.packaging = "nar";
+                }
 
                 
                 //Add sim POM generator
