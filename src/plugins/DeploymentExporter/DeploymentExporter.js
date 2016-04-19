@@ -118,7 +118,7 @@ define([
                 name: 'c2wVersion',
                 displayName: 'C2W version',
                 description: 'The version of the C2W foundation to be used',
-                value: '0.0.1-SNAPSHOT',
+                value: '0.1.0',
                 valueType: 'string',
                 readOnly: false
             },{
