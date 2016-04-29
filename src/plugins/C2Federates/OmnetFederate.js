@@ -114,6 +114,10 @@ define([
                 outFileName = omnetOutFilePath + MavenPOM.mavenCppPath + "/" + fileName + ".cpp";
 
             self.fileGenerators.push(function(artifact, callback){
+                if(self.omnet_filterGenerated){
+                    callback();
+                    return;
+                }
                 renderContext['allobjectdata'] = renderContext['publishedobjectdata'].concat(renderContext['subscribedobjectdata']);
                 renderContext['allinteractiondata'] = renderContext['publishedinteractiondata'].concat(renderContext['subscribedinteractiondata'])
 
@@ -125,7 +129,16 @@ define([
                     }else{
                         outFileName = omnetOutFilePath + MavenPOM.mavenIncludePath + "/" + fileName + ".h";
                         self.logger.debug('Rendering template to file: ' + outFileName);
-                        artifact.addFile(outFileName, ejs.render(TEMPLATES['omnetfilter.hpp.ejs'], renderContext), callback);
+                        artifact.addFile(outFileName, ejs.render(TEMPLATES['omnetfilter.hpp.ejs'], renderContext), function(err){
+                            if(err){
+                                callback(err);
+                                return;
+                            }else{
+                                self.omnet_filterGenerated = true;
+                                callback();
+                                return;
+                            }
+                        });
                         return;
                     }
                 });

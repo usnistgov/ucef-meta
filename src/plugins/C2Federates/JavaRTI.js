@@ -92,11 +92,6 @@ define([
                 eventsDirPath = foundationDirBasePath + ejs.render(self.directoryNameTemplate, eventsDirSpec),
                 eventsOutFilePath = eventsDirPath + MavenPOM.mavenJavaPath;
 
-            var porticoPOM = new MavenPOM();
-            porticoPOM.artifactId = "portico";
-            porticoPOM.groupId = "org.porticoproject";
-            porticoPOM.version = "2.0.2";
-
             var C2WLoggingPOM = new MavenPOM();
             C2WLoggingPOM.artifactId = "logging";
             C2WLoggingPOM.groupId = "org.c2w";
@@ -113,7 +108,6 @@ define([
             self.corePOM.groupId = "org.c2w";
             self.corePOM.version = self.c2w_version;
             self.corePOM.packaging = "jar";
-            self.corePOM.dependencies.push(porticoPOM);
             self.corePOM.dependencies.push(C2WLoggingPOM);
 
             self.java_core_rtiPOM = new MavenPOM(foundationPOM);

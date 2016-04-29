@@ -150,6 +150,9 @@ define([], function () {
                 if(dependency['packaging'] && dependency['packaging'] != 'jar'){
                     depModel['type'] =  {'#text': dependency['packaging']};
                 }
+                if(dependency.scope){
+                    depModel['scope'] = {'#text': dependency.scope};
+                }
                 model['dependencies']['dependency'].push(depModel);
             });
         }

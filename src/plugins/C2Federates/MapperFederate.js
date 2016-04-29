@@ -40,6 +40,14 @@ define([
 
                 mapperOutFilePath = mapperDirPath + MavenPOM.mavenJavaPath; 
 
+                if(!self.porticoPOM){  
+                    self.porticoPOM = new MavenPOM();
+                    self.porticoPOM.artifactId = "portico";
+                    self.porticoPOM.groupId = "org.porticoproject";
+                    self.porticoPOM.version = "2.0.2";
+                    self.porticoPOM.scope = "provided";
+                }
+
                 if(!self.java_federateBasePOM){
                     self.java_federateBasePOM = new MavenPOM();
                     self.java_federateBasePOM.groupId = 'org.c2w'
@@ -55,6 +63,10 @@ define([
                         callback();
                         return;
                     }
+
+                    self.java_mapperPOM.dependencies.push(self.java_rtiPOM);
+                    self.java_mapperPOM.dependencies.push(self.java_federateBasePOM);
+                    self.java_mapperPOM.dependencies.push(self.java_basePOM);
 
                     artifact.addFile(mapperDirPath + '/pom.xml', self._jsonToXml.convertToString( self.java_mapperPOM.toJSON() ), function (err) {
                         if (err) {
@@ -82,6 +94,7 @@ define([
                 self.javaPOM.version = self.project_version;
                 self.javaPOM.addMavenCompiler('1.5');
                 self.javaPOM.packaging = "pom";
+                self.javaPOM.dependencies.push(self.porticoPOM);
             }
 
             if(!self.java_mapperPOM){
@@ -89,9 +102,6 @@ define([
                 self.java_mapperPOM.artifactId = ejs.render(self.directoryNameTemplate, mapperDirSpec);
                 self.java_mapperPOM.version = self.project_version;
                 self.java_mapperPOM.packaging = "jar";
-                self.java_mapperPOM.dependencies.push(self.java_rtiPOM);
-                self.java_mapperPOM.dependencies.push(self.java_federateBasePOM);
-                self.java_mapperPOM.dependencies.push(self.java_basePOM);
             }
 
             context['mapperfedspec'] = self.createMapperFederateCodeModel();
@@ -116,26 +126,27 @@ define([
         var unifiedMappingConnectionVisitor = function(self, node, parent, context){  
             var parentMapper = context['mapperfedspec'],
                 parentMapperBase = context['javafedspec'],
-            mapping = self.createMappingConnectionsDataModel(),
-            nodeAttrNames = self.core.getAttributeNames(node),
-            PARSE_FUNCS = {
-                "Integer": "Integer.parseInt",
-                "int": "Integer.parseInt",
-                "Long": "Long.parseLong",
-                "long": "Long.parseLong",
-                "Double": "Double.parseDouble",
-                "double": "Double.parseDouble",
-                "Float": "Float.parseFloat",
-                "float": "Float.parseFloat",
-                "Boolean": "Boolean.parseBoolean",
-                "boolean": "Boolean.parseBoolean"
-            }
+                nodeGUID = self.core.getGuid(node),
+                mapping = self.createMappingConnectionsDataModel(),
+                nodeAttrNames = self.core.getAttributeNames(node),
+                PARSE_FUNCS = {
+                    "Integer": "Integer.parseInt",
+                    "int": "Integer.parseInt",
+                    "Long": "Long.parseLong",
+                    "long": "Long.parseLong",
+                    "Double": "Double.parseDouble",
+                    "double": "Double.parseDouble",
+                    "Float": "Float.parseFloat",
+                    "float": "Float.parseFloat",
+                    "Boolean": "Boolean.parseBoolean",
+                    "boolean": "Boolean.parseBoolean"
+                };
 
             for ( var i = 0; i < nodeAttrNames.length; i += 1 ) {
                 mapping[nodeAttrNames[i]] = self.core.getAttribute( node, nodeAttrNames[i]);
             }   
 
-            mapping['uniqueId'] = mapping['name'].replace(/-/g,'_');
+            mapping['uniqueId'] = nodeGUID.replace(/-/g,'_');
             // See if it is a Simple/Complex MappingConnection
             mapping['isSimpleConn'] = !self.isMetaTypeOf(node, self.META['ComplexMappingConnection']);
             mapping['parentPath'] = self.core.getAttribute( parent.parent, 'name') + "/" + self.core.getAttribute( parent, 'name')

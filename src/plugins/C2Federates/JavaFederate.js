@@ -35,6 +35,15 @@ define([
                 var baseDirPath =  baseDirBasePath + ejs.render(self.directoryNameTemplate, baseDirSpec);
 
                 baseOutFilePath = baseDirPath + MavenPOM.mavenJavaPath; 
+
+                if(!self.porticoPOM){  
+                    self.porticoPOM = new MavenPOM();
+                    self.porticoPOM.artifactId = "portico";
+                    self.porticoPOM.groupId = "org.porticoproject";
+                    self.porticoPOM.version = "2.0.2";
+                    self.porticoPOM.scope = "provided";
+                }
+
                 if(!self.java_federateBasePOM){
                     self.java_federateBasePOM = new MavenPOM();
                     self.java_federateBasePOM.groupId = 'org.c2w'
@@ -93,6 +102,7 @@ define([
                 self.javaPOM.version = self.project_version;
                 self.javaPOM.addMavenCompiler('1.5');
                 self.javaPOM.packaging = "pom";
+                self.javaPOM.dependencies.push(self.porticoPOM);
             }   
 
             if(!self.java_basePOM){
@@ -163,7 +173,7 @@ define([
         }
         this.javaCodeModel = this.createJavaFederateCodeModel();
 
-    }
+    }     
 
     return JavaFederateExporter;
 });
