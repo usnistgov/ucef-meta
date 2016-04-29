@@ -120,8 +120,11 @@ define([
 
     HLADecorator.prototype.update = function () {
         var client = this._control._client,
-            nodeObj = client.getNode(this._metaInfo[CONSTANTS.GME_ID]),
-            typeObj = client.getNode(nodeObj.getBaseId()),
+            nodeObj = client.getNode(this._metaInfo[CONSTANTS.GME_ID]);
+            if(!nodeObj){
+                return;
+            }
+        var typeObj = client.getNode(nodeObj.getBaseId()),
             newName = '',
             newType = '';
 
