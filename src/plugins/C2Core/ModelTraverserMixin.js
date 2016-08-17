@@ -210,6 +210,7 @@ define([], function () {
                     //self.logger.debug('No visitor function for ' + nodeType);
                 }else{
                     callback(err);
+                    return;
                 }
             }
             callback(null, context);

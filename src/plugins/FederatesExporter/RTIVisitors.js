@@ -42,7 +42,8 @@ define([], function () {
             }
 
             //Check: Interaction is derived form C2WInteractionRoot
-            if(nameFragments.length > 1 && !nameFragments.includes('C2WInteractionRoot')){
+            // if(nameFragments.length > 1 && !nameFragments.includes('C2WInteractionRoot')){
+            if(nameFragments.length > 1 && nameFragments.indexOf('C2WInteractionRoot')==-1){
                 self.createMessage(node, '[ERROR] ' + nodeName + ' is not deriverd from C2WInteractionRoot!', 'error');
             }
 
