@@ -8,6 +8,10 @@
       "DeploymentExporter": {
         "src": "src/plugins/DeploymentExporter",
         "test": "test/plugins/DeploymentExporter"
+      },
+      "RunFederation": {
+        "src": "src/plugins/RunFederation",
+        "test": "test/plugins/RunFederation"
       }
     },
     "decorators": {},
