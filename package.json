@@ -7,6 +7,9 @@
   "version": "0.0.1",
   "dependencies": {
     "filendir": "^1.0.0",
+    "fstream": "^1.0.10",
+    "tar": "^2.2.1",
+    "unzip": "^0.1.11",
     "webgme": "^1.6.0"
   },
   "devDependencies": {
