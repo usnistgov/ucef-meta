@@ -138,9 +138,9 @@ define([
 
 	// make sure it's always unique!
 	var timestamp = (new Date()).getTime();
-	self.basePath = '/home/vagrant/nistDemo/'+timestamp;
-	self.inputPrefix = basePath + '/input';
-	self.outputPrefix = basePath + '/output';
+	self.basePath = '/home/vagrant/nistDemo/'+timestamp+'/' ;
+	self.inputPrefix = self.basePath + '/input/';
+	self.outputPrefix = self.basePath + '/output/';
 
 	// What did the user select for our configuration?
 	var currentConfig = self.getCurrentConfig();
@@ -149,21 +149,21 @@ define([
 
         self.projectName = self.core.getAttribute(self.rootNode, 'name');
 
-        modelNode = self.activeNode;
+        var modelNode = self.activeNode;
 	self.modelName = self.core.getAttribute(modelNode, 'name');
 
 	self.dockerInfoMap = {
 	    'JavaFed': {
-		'name': '',
-		'tag': ''
+		'name': 'ydbarve/c2wtcore_v002',
+		'tag': '160816'
 	    },
 	    'CppFed': {
-		'name': '',
-		'tag': ''
+		'name': 'ydbarve/c2wtcore_v002',
+		'tag': '160816'
 	    },
 	    'OmnetFed': {
-		'name': '',
-		'tag': ''
+		'name': 'ydbarve/c2wtcore_v002',
+		'tag': '160816'
 	    },
 	};
 
@@ -181,6 +181,9 @@ define([
 	    })
 	    .then(function() {
 		return self.renderDockerFile();
+	    })
+	    .then(function() {
+		return self.createInputsFolder();
 	    })
 	    .then(function() {
 		return self.writeInputs();
@@ -233,7 +236,7 @@ define([
 		inputPrefix: self.inputPrefix,
 		outputPrefix: self.outputPrefix,
 		fedInfos: self.fedInfos,
-		dockerInfomap: self.dockerInfoMap
+		dockerInfoMap: self.dockerInfoMap
 	    }
 	);
 	var path = require('path'),
@@ -241,7 +244,24 @@ define([
 	fileName = 'docker-compose.yml';
 	
 	var deferred = Q.defer();
-	filendir.writeFile(path.join(basePath, fileName), self.dockerFileData, function(err) {
+	filendir.writeFile(path.join(self.basePath, fileName), self.dockerFileData, function(err) {
+	    if (err)
+		deferred.reject(err);
+	    else
+		deferred.resolve();
+	});
+	return deferred.promise;
+    };
+
+    RunFederation.prototype.createInputsFolder = function() {
+	var self = this;
+
+	var path = require('path'),
+	filendir = require('filendir'),
+	fileName = 'test';
+	
+	var deferred = Q.defer();
+	filendir.writeFile(path.join(self.inputPrefix, fileName), "test", function(err) {
 	    if (err)
 		deferred.reject(err);
 	    else
@@ -256,12 +276,13 @@ define([
 	var fs = require('fs'),
 	path = require('path'),
 	unzip = require('unzip'),
+	stream = require('stream'),
 	fstream = require('fstream');
-
-	return self.blobClient.getMetaData(self.deploymentFiles)
+	
+	return self.blobClient.getMetadata(self.deploymentFiles)
 	    .then(function(metaData) {
 		self.deploymentFilesName = metaData.name;
-		return self.blobClient.getMetaData(self.deploymentFiles);
+		return self.blobClient.getObject(self.deploymentFiles);
 	    })
 	    .then(function(objBuffer) {
 		var writeStream = fstream.Writer(self.inputPrefix);
@@ -269,7 +290,9 @@ define([
 		writeStream.on('unpipe', () => {
 		    deferred.resolve();
 		});
-		objBuffer
+		var bufferStream = new stream.PassThrough();
+		bufferStream.end(new Buffer(objBuffer));
+		bufferStream
 		    .pipe(unzip.Parse())
 		    .pipe(writeStream);
 		return deferred.promise;
@@ -283,9 +306,6 @@ define([
 
 	self.notify('info', 'Starting Simulation');
 
-	var fname = path.join(self.root_dir, self.fileName);
-
-	// start fed manager
 	return self.startFederates()
 	    .then(function() {
 		return self.monitorContainers();
@@ -311,6 +331,7 @@ define([
 		deferred.resolve(code);
 	    }
 	    else {
+		self.notify('error', 'error code: ' + code);
 		deferred.reject('federates:: child process exited with code ' + code);
 	    }
 	});
@@ -325,10 +346,9 @@ define([
     RunFederation.prototype.monitorContainers = function() {
 	var self = this;
 	var cp = require('child_process');
-	var deferred = Q.defer();
 	
 	var stdout = cp.execSync('docker ps');
-	var regex = /(fedManager_run_[\w+]*)/gi;
+	var regex = /(fedManager_[\w+]*)/gi;
 	var results = regex.exec(stdout);
 	if (results) {
 	    var dockerName = results[1];

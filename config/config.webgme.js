@@ -20,6 +20,7 @@ config.plugin.allowBrowserExecution = true;
 // Add requirejs paths
 config.requirejsPaths['c2wtng-meta'] = './src/common';
 config.requirejsPaths['C2Core'] = './src/plugins/C2Core';
+config.requirejsPaths['RunFederation'] = './src/plugins/RunFederation';
 config.requirejsPaths['C2Federates'] = './src/plugins/C2Federates';
 config.requirejsPaths['FederatesExporter'] = './src/plugins/FederatesExporter';
 config.requirejsPaths['DeploymentExporter'] = './src/plugins/DeploymentExporter';
