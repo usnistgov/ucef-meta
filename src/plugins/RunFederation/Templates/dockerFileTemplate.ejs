@@ -3,20 +3,20 @@ services:
   fedManager:
     build: .
     image: "ydbarve/c2wtcore_v002:160816"
-    command: "xvfb-run -a mvn package exec:exec -P FedManager"
+    command: "sh start.sh FedManager"
     volumes:
-      - <%- inputPrefix %>:/root/Projects/c2wt/input
-      - <%- outputPrefix %>:/root/Projects/c2wt/logs
+      - <%- inputPrefix %>/FedManager:/root/Projects/c2wt/input
+      - <%- outputPrefix %>/FedManager:/root/Projects/c2wt/logs
 <%
 fedInfos.map(function(fedInfo) {
 -%>
   <%- fedInfo.type %>_<%- fedInfo.name %>:
     build: .
     image: "<%- dockerInfoMap[fedInfo.type].name %>:<%- dockerInfoMap[fedInfo.type].tag %>"
-    command: "mvn package exec:exec -P <%- fedInfo.type %>,<%- fedInfo.name %>" 
+    command: "sh start.sh <%- fedInfo.type %>,<%- fedInfo.name %>" 
     volumes:
-      - <%- inputPrefix %>:/root/Projects/c2wt/input
-      - <%- outputPrefix %>:/root/Projects/c2wt/logs
+      - <%- inputPrefix %>/<%- fedInfo.name %>:/root/Projects/c2wt/input
+      - <%- outputPrefix %>/<%- fedInfo.name %>:/root/Projects/c2wt/logs
 <%
 })
 -%>

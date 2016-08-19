@@ -11,6 +11,7 @@ define([
     'common/util/ejs',
     'RunFederation/Templates/Templates',
     'c2wtng-meta/modelLoader',
+    'c2wtng-meta/remote_utils',
     'q'
 ], function (
     PluginConfig,
@@ -18,6 +19,7 @@ define([
     ejs,
     TEMPLATES,
     loader,
+    utils,
     Q) {
     'use strict';
 
@@ -138,7 +140,7 @@ define([
 
 	// make sure it's always unique!
 	var timestamp = (new Date()).getTime();
-	self.basePath = '/home/vagrant/nistDemo/'+timestamp+'/' ;
+	self.basePath = '/home/vagrant/nistDemo/'+timestamp ;
 	self.inputPrefix = self.basePath + '/input/';
 	self.outputPrefix = self.basePath + '/output/';
 
@@ -181,6 +183,9 @@ define([
 	    })
 	    .then(function() {
 		return self.renderDockerFile();
+	    })
+	    .then(function() {
+		return self.renderStartScript();
 	    })
 	    .then(function() {
 		return self.createInputsFolder();
@@ -253,21 +258,45 @@ define([
 	return deferred.promise;
     };
 
+    RunFederation.prototype.renderStartScript = function() {
+	// render docker compose file with federate type + shared folder name + command
+	var self = this;
+
+	self.startScriptData = ejs.render(
+	    TEMPLATES['startScript.ejs'], {}
+	);
+    };
+
     RunFederation.prototype.createInputsFolder = function() {
 	var self = this;
 
 	var path = require('path'),
 	filendir = require('filendir'),
-	fileName = 'test';
+	fileName = 'start.sh';
 	
-	var deferred = Q.defer();
-	filendir.writeFile(path.join(self.inputPrefix, fileName), "test", function(err) {
-	    if (err)
-		deferred.reject(err);
-	    else
-		deferred.resolve();
+	var tasks = self.fedInfos.map((fedInfo) => {
+	    var deferred = Q.defer();
+	    filendir.writeFile(path.join(
+		self.inputPrefix + fedInfo.name, fileName), self.startScriptData, function(err) {
+		if (err)
+		    deferred.reject(err);
+		else
+		    deferred.resolve();
+	    });
+	    return deferred.promise;
 	});
-	return deferred.promise;
+	return Q.all(tasks)
+	    .then(function() {
+		var deferred = Q.defer();
+		filendir.writeFile(path.join(self.inputPrefix + 'FedManager', fileName), 
+				   self.startScriptData, function(err) {
+			if (err)
+			    deferred.reject(err);
+			else
+			    deferred.resolve();
+		    });
+		return deferred.promise;
+	    });
     };
 
     RunFederation.prototype.writeInputs = function() {
@@ -278,20 +307,37 @@ define([
 	unzip = require('unzip'),
 	stream = require('stream'),
 	fstream = require('fstream');
-	
+
 	return self.blobClient.getMetadata(self.deploymentFiles)
 	    .then(function(metaData) {
 		self.deploymentFilesName = metaData.name;
 		return self.blobClient.getObject(self.deploymentFiles);
 	    })
 	    .then(function(objBuffer) {
-		var writeStream = fstream.Writer(self.inputPrefix);
+		self.zipBuffer = new Buffer(objBuffer);
+		var tasks = self.fedInfos.map((fedInfo) => {
+		    var writeStream = fstream.Writer(self.inputPrefix+fedInfo.name);
+		    var deferred = Q.defer();
+		    writeStream.on('unpipe', () => {
+			deferred.resolve();
+		    });
+		    var bufferStream = new stream.PassThrough();
+		    bufferStream.end(self.zipBuffer);
+		    bufferStream
+			.pipe(unzip.Parse())
+			.pipe(writeStream);
+		    return deferred.promise;
+		});
+		return Q.all(tasks);
+	    })
+	    .then(function() {
+		var writeStream = fstream.Writer(self.inputPrefix+'FedManager');
 		var deferred = Q.defer();
 		writeStream.on('unpipe', () => {
 		    deferred.resolve();
 		});
 		var bufferStream = new stream.PassThrough();
-		bufferStream.end(new Buffer(objBuffer));
+		bufferStream.end(self.zipBuffer);
 		bufferStream
 		    .pipe(unzip.Parse())
 		    .pipe(writeStream);
@@ -308,9 +354,6 @@ define([
 
 	return self.startFederates()
 	    .then(function() {
-		return self.monitorContainers();
-	    })
-	    .then(function() {
 		return self.killFederates();
 	    });
     };
@@ -322,8 +365,11 @@ define([
 	var deferred = Q.defer();
 
 	var fedMgr = cp.spawn('bash', [], {cwd:self.basePath});
-	fedMgr.stdout.on('data', function (data) {});
+	fedMgr.stdout.on('data', function (data) {
+	    self.logger.error('STDOUT::'+data);
+	});
 	fedMgr.stderr.on('data', function (error) {
+	    self.logger.error('STDERR::'+error);
 	});
 	fedMgr.on('exit', function (code) {
 	    if (code == 0) {
@@ -341,24 +387,6 @@ define([
 	    fedMgr.stdin.end();
 	}, 1000);
 	return deferred.promise;
-    };
-
-    RunFederation.prototype.monitorContainers = function() {
-	var self = this;
-	var cp = require('child_process');
-	
-	var stdout = cp.execSync('docker ps');
-	var regex = /(fedManager_[\w+]*)/gi;
-	var results = regex.exec(stdout);
-	if (results) {
-	    var dockerName = results[1];
-	    self.notify('info', 'Waiting for simulation to complete when ' + dockerName + ' exits.');
-	    stdout = cp.execSync('docker wait ' + dockerName);
-	    self.notify('info', 'Docker federate exited with stdout: ' + stdout);
-	}
-	else {
-	    self.notify('error', 'Couldnt find the federate docker container in docker ps!');
-	}
     };
 
     RunFederation.prototype.killFederates = function() {

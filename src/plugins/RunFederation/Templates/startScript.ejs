@@ -1,0 +1,11 @@
+#!/bin/bash
+if [ $1 = "FedManager" ]; then
+   echo "Starting --> " $1
+   #xvfb-run -a mvn exec:exec -P Fedmanager
+   #xvfb-run -a mvn exec:exec -P FedManager &> /root/Projects/c2wt/logs/log.txt
+   xvfb-run -a mvn package exec:exec -P FedManager 2>&1 | tee -a /root/Projects/c2wt/logs/log.txt
+else
+  echo "Starting -->" $1
+  #mvn exec:exec -P $1 &> /root/Projects/c2wt/logs/log.txt
+  mvn package exec:exec -P $1  2>&1 | tee -a /root/Projects/c2wt/logs/log.txt
+fi
