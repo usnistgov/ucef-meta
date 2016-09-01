@@ -20,8 +20,16 @@
   },
   "dependencies": {
     "plugins": {},
+    "addons": {},
     "decorators": {},
-    "seeds": {},
-    "visualizers": {}
-  }
+    "visualizers": {
+      "CodeEditor": {
+        "src": "panels/CodeEditor/CodeEditorPanel",
+        "title": "CodeEditor",
+        "panel": "src/visualizers/panels/CodeEditor",
+        "secondary": false,
+        "widget": "src/visualizers/widgets/CodeEditor",
+        "project": "webgme-codeeditor"
+      }
+    }
 }

@@ -1,0 +1,14 @@
+[
+  {
+    "id": "ModelEditor",
+    "title": "Composition",
+    "panel": "js/Panels/ModelEditor/ModelEditorPanel",
+    "DEBUG_ONLY": false
+  },
+  {
+    "id": "CodeEditor",
+    "title": "CodeEditor",
+    "panel": "panels/CodeEditor/CodeEditorPanel",
+    "DEBUG_ONLY": false
+  }
+]

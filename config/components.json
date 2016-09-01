@@ -1,0 +1,13 @@
+{
+    "CodeEditor": {
+	"theme": "default",
+	"keyBinding": "sublime",
+        "autoSaveInterval": "2000",
+	"map": {
+	    "SimpleMappingConnection": {
+		"guardCondition": {"name":"text/x-java"},
+		"mapSpecs": {"name":"text/x-java"}
+	    }
+	}
+  }
+}

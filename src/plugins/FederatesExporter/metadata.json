@@ -1,0 +1,79 @@
+{
+  "id": "FederatesExporter",
+  "name": "Federates Exporter",
+  "version": "0.2.0",
+  "description": "Export stuff",
+  "icon": {
+    "src": "",
+    "class": "fa fa-cogs"
+  },
+  "disableServerSideExecution": false,
+  "disableBrowserSideExecution": false,
+  "writeAccessRequired": false,
+  "configStructure": [
+      {
+          "name": "exportVersion",
+          "displayName": "version",
+          "description": "The version of the model to be exported",
+          "value": "0.0.1",
+          "valueType": "string",
+          "readOnly": false
+      },
+      {
+          "name": "isRelease",
+          "displayName": "release",
+          "description": "Is the model a release version?   ",
+          "value": false,
+          "valueType": "boolean",
+          "readOnly": false
+      },
+      {
+          "name": "groupId",
+          "displayName": "Maven GroupID",
+          "description": "The group ID to be included in the Maven POMs",
+          "value": "org.webgme.guest",
+          "valueType": "string",
+          "readOnly": false
+      },
+      {
+          "name": "c2wVersion",
+          "displayName": "C2W version",
+          "description": "The version of the C2W foundation to be used",
+          "value": "0.1.0",
+          "valueType": "string",
+          "readOnly": false
+      },
+      {
+          "name": "repositoryUrlSnapshot",
+          "displayName": "Repository URL for snapshots",
+          "description": "The URL of the repository where the packaged components should be deployed.",
+          "value": "http://c2w-cdi.isis.vanderbilt.edu:8088/repository/snapshots/",
+          "valueType": "string",
+          "readOnly": false
+      },
+      {
+          "name": "repositoryUrlRelease",
+          "displayName": "Repository URL for releases",
+          "description": "The URL of the repository where the packaged components should be deployed.",
+          "value": "http://c2w-cdi.isis.vanderbilt.edu:8088/repository/internal/",
+          "valueType": "string",
+          "readOnly": false
+      },
+      {
+          "name": "generateExportPackages",
+          "displayName": "Generate exports packages",
+          "description": "Generate the packages marked as export?   ",
+          "value": false,
+          "valueType": "boolean",
+          "readOnly": false
+      },
+      {
+          "name": "includedFederateTypes",
+          "displayName": "include",
+          "description": "The Types of federates included in this export",
+          "value": "Federate JavaFederate MapperFederate CppFederate OmnetFederate CPNFederate ",
+          "valueType": "string",
+          "readOnly": true
+      }
+      ]
+}
