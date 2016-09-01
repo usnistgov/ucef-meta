@@ -435,7 +435,9 @@ define([
         var self = this,
             exclude = false;
 
-        exclude = exclude || self.isMetaTypeOf(node, self.META['Language [CASIM]']) || self.isMetaTypeOf(node, self.META['Language [C2WT]']);
+        //exclude = exclude || self.isMetaTypeOf(node, self.META['Language [CASIM]']) || self.isMetaTypeOf(node, self.META['Language [C2WT]']);
+        exclude = exclude || self.isMetaTypeOf(node, self.META['Language [C2WT]']);
+        
         return exclude; 
 
     }

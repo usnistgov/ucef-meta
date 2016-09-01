@@ -313,7 +313,7 @@ define([
         if(self.rootNode != node){    
             var nodeTypeName = self.core.getAttribute(self.getMetaType(node),'name');
             exclude = exclude 
-            || self.isMetaTypeOf(node, self.META['Language [CASIM]'])
+            //|| self.isMetaTypeOf(node, self.META['Language [CASIM]'])
             || self.isMetaTypeOf(node, self.META['Language [C2WT]'])
             || (self.federateTypes.hasOwnProperty(nodeTypeName) && !self.federateTypes[nodeTypeName].includeInExport);
         }
