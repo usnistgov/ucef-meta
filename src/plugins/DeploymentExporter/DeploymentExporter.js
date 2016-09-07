@@ -178,6 +178,12 @@ define([
         pomModel.repositoryUrlRelease = self.getCurrentConfig().repositoryUrlRelease;
         pomModel.federates = self.federates;
 
+        pomModel.porticoPOM = {}       
+        pomModel.porticoPOM.artifactId = "portico";
+        pomModel.porticoPOM.groupId = "org.porticoproject";
+        pomModel.porticoPOM.version = self.getCurrentConfig().porticoReleaseNum;
+        pomModel.porticoPOM.scope = "provided";
+
         //Add POM generator
         self.fileGenerators.push(function(artifact, callback){
             pomModel['federatesByType'] = {};

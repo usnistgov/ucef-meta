@@ -47,7 +47,7 @@
           "name": "repositoryUrlSnapshot",
           "displayName": "Repository URL for snapshots",
           "description": "The URL of the repository where the packaged components should be deployed.",
-          "value": "http://c2w-cdi.isis.vanderbilt.edu:8088/repository/snapshots/",
+          "value": "http://10.0.2.15:8080/repository/snapshots/",
           "valueType": "string",
           "readOnly": false
       },
@@ -55,7 +55,7 @@
           "name": "repositoryUrlRelease",
           "displayName": "Repository URL for releases",
           "description": "The URL of the repository where the packaged components should be deployed.",
-          "value": "http://c2w-cdi.isis.vanderbilt.edu:8088/repository/internal/",
+          "value": "http://10.0.2.15:8080/repository/internal/",
           "valueType": "string",
           "readOnly": false
       },
