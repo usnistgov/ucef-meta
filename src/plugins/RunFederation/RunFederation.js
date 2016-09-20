@@ -413,7 +413,8 @@ define([
 	});
 	setTimeout(function() {
 	    self.notify('info', 'Killing experiment feds.');
-	    stopFeds.stdin.write('docker stop $(docker ps -a -q)\n');
+	    //stopFeds.stdin.write('docker stop $(docker ps -a -q)\n');
+	    stopFeds.stdin.write('sudo docker-compose down\n');
 	    stopFeds.stdin.end();
 	}, 1000);
 	return deferred.promise;

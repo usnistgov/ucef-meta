@@ -64,9 +64,9 @@
       "name": "porticoReleaseNum",
         "displayName": "Portico HLA Dependent Version",
         "description": "Portico HLA Library release version",
-        "value": "2.0.2",
+        "value": "2.1.0",
         "valueType": "string",
-        "readOnly": false  
+        "readOnly": true  
     }
 
   ]

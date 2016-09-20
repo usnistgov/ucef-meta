@@ -72,12 +72,12 @@
                         <incremental>false</incremental>
                         <libs>
                           <lib>
-                            <name>RTI-NG64</name>
+                            <name>RTI-NG_64d</name>
                             <type>shared</type>
                             <directory>${build.RTI_LIB_DIR}</directory>
                           </lib>
                           <lib>
-                            <name>FedTime64</name>
+                            <name>FedTime_64d</name>
                             <type>shared</type>
                             <directory>${build.RTI_LIB_DIR}</directory>
                           </lib>
@@ -96,6 +96,11 @@
                             <type>shared</type>
                             <directory>${build.MYSQL_LIB_DIR}</directory>
                           </lib>
+                          <lib>
+                                <name>jvm</name>
+                                <type>shared</type>
+                                <directory>${build.RTI_LIB_JVM_DIR}</directory>
+                            </lib>
                         </libs>
                         
                     </linker>
@@ -156,6 +161,7 @@
                 </os>
             </activation>
             <properties>
+              <build.RTI_LIB_JVM_DIR>${env.RTI_HOME}/jre/lib/amd64/server</build.RTI_LIB_JVM_DIR>
               <build.RTI_LIB_DIR>${env.RTI_HOME}/lib/gcc4</build.RTI_LIB_DIR>
               <build.RTI_INC_DIR>${env.RTI_HOME}/include/hla13</build.RTI_INC_DIR>
               <build.BOOST_INC_DIR>/usr/include/boost</build.BOOST_INC_DIR>
