@@ -39,7 +39,7 @@
           "name": "c2wVersion",
           "displayName": "C2W version",
           "description": "The version of the C2W foundation to be used",
-          "value": "0.1.0",
+          "value": "0.3.0-SNAPSHOT",
           "valueType": "string",
           "readOnly": false
       },
