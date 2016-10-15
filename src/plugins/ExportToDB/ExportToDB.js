@@ -95,6 +95,21 @@ define([
 		.done();
     };
 
+    // NOTE: When this plugin is converted to export single objects
+    //  (e.g. single COA or single Federate), the pointers and such
+    //  that go outside the object's tree will need to be converted
+    //  into shared object references.  This means that the pointers
+    //  will need to be followed and checked to see if the referenced
+    //  object exists in the shared object repository.  If not, the
+    //  exporter should throw an error indicating that dependent
+    //  objects have not been shared yet.  Conversely, these patterns
+    //  will need to be thought through to see how these dependencies
+    //  between shared objects should be managed (if they should) and
+    //  how they can be checked and verified.
+    //
+    //  Otherwise, we must make the stipulation that all shared
+    //  objects are self-contained and have no references to outside
+    //  objects.
     ExportToDB.prototype.processModel = function(model) {
 	var self = this;
 	// THIS FUNCTION HANDLES CREATION OF SOME CONVENIENCE MEMBERS
@@ -267,7 +282,6 @@ define([
 	var coaList = [];
 	coaList = coaList.concat(FOMSheetInfo.COA_list);
 	coaList.map(function(coaInfo) {
-	    console.log(coaInfo);
 	    var newObj = self.transformCOA(coaInfo);
 	    if (newObj) {
 		self.makeDBObject(model._DB, newObj, 'COAs');
