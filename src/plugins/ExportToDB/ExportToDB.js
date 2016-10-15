@@ -146,37 +146,28 @@ define([
 	model.root.FOMSheet_list.map(function(FOMSheetInfo) {
 	    // these all update the model._DB with the relevant items
 	    self.buildFederateTree(model, FOMSheetInfo);
-	    self.extractParameters(model, FOMSheetInfo);
 	    self.extractInteractions(model, FOMSheetInfo);
 	    self.extractCOAs(model, FOMSheetInfo);
 	    self.extractExperiments(model, FOMSheetInfo);
 	    self.extractConfigurations(model, FOMSheetInfo);
 	});
-	
-	// for testing since we will need these other objects
-	self.buildDummyObjects(model);
-
 	// now that we've transformed the model, get rid of the
 	// original data
-	model = model._DB;
-	return model;
+	var db = model._DB;
+
+	// need for testing since we will need these other objects
+	self.buildDummyObjects(db);
+
+	return db;
     };
 
     ExportToDB.prototype.initDB = function(model) {
 	model._DB = {
 	    "__OBJECTS__": {},
-	    "projects": [],
-	    "Users": [],
-	    "organizations": [],
 	    "Federates": [],
 	    "COAs": [],
 	    "Experiments": [],
 	    "Interactions": [],
-	    "Parameters": [],
-	    "repositories": [],
-	    "builds": [],
-	    "executions": [],
-	    "Docker Images": []
 	}
     };
 
@@ -220,6 +211,7 @@ define([
 	if (obj == null)
 	    return null;
 	var newObj = {};
+	newObj.__FEDERATE_TYPE__ = obj.type;
 	var attrNames = Object.keys(obj.attributes);
 	attrNames.map(function(attrName) {
 	    newObj[attrName] = obj.attributes[attrName];
@@ -227,13 +219,14 @@ define([
 	return newObj;
     };
 
-    ExportToDB.prototype.extractParameters = function(model) {
-    };
-
     ExportToDB.prototype.transformInteraction = function(obj) {
 	if (obj == null)
 	    return null;
 	var newObj = {};
+	if (obj.base)
+	    newObj.__INTERACTION_TYPE__ = obj.base.name;
+	else
+	    newObj.__INTERACTION_TYPE__ = obj.type;	    
 	var attrNames = Object.keys(obj.attributes);
 	attrNames.map(function(attrName) {
 	    newObj[attrName] = obj.attributes[attrName];
@@ -295,7 +288,14 @@ define([
     ExportToDB.prototype.extractConfigurations = function(model, FOMSheetInfo) {
     };
 
-    ExportToDB.prototype.buildDummyObjects = function(model, FOMSheetInfo) {
+    ExportToDB.prototype.buildDummyObjects = function(db) {
+	db.Projects = [];
+	db.Users = [];
+	db.Organizations = [];
+	db.Repositories = [];
+	db.Builds = [];
+	db.Executions = [];
+	db['Docker Images'] = [];
     };
 
     ExportToDB.prototype.generateGUID = function() {
