@@ -127,14 +127,17 @@ define([
 	// for testing, need the structure that would be in the database
 	self.initDB(model);
 
-	// these all update the model._DB with the relevant items
-	self.buildFederateTree(model);
-	self.extractParameters(model);
-	self.extractInteractions(model);
-	self.extractCOAs(model);
-	self.extractExperiments(model);
-	self.extractConfigurations(model);
-
+	// iterate through all the FOM Sheets in the root node
+	model.root.FOMSheet_list.map(function(FOMSheetInfo) {
+	    // these all update the model._DB with the relevant items
+	    self.buildFederateTree(model, FOMSheetInfo);
+	    self.extractParameters(model, FOMSheetInfo);
+	    self.extractInteractions(model, FOMSheetInfo);
+	    self.extractCOAs(model, FOMSheetInfo);
+	    self.extractExperiments(model, FOMSheetInfo);
+	    self.extractConfigurations(model, FOMSheetInfo);
+	});
+	
 	// for testing since we will need these other objects
 	self.buildDummyObjects(model);
 
@@ -151,7 +154,7 @@ define([
 	    "Users": [],
 	    "organizations": [],
 	    "Federates": [],
-	    "coas": [],
+	    "COAs": [],
 	    "Experiments": [],
 	    "Interactions": [],
 	    "Parameters": [],
@@ -173,34 +176,26 @@ define([
 
     // currently heirarchical federates dont' exist so can't test;
     // will need to update this function when they do exist
-    ExportToDB.prototype.buildFederateTree = function(model) {
+    ExportToDB.prototype.buildFederateTree = function(model, FOMSheetInfo) {
 	var self = this;
-	// to iterate through the model we need to know exactly
-	// what the META is
-
-	console.log(model);
-	
-	// iterate through all the FOM Sheets in the root node
-	model.root.FOMSheet_list.map(function(FOMSheetInfo) {
-	    // Need to go through all children of the FOMSheet
-	    // which are federates, should refactor a little so
-	    // that there is just a single Federate_list which
-	    // contains all types of federates.  will require some
-	    // further processing.
-	    var fedList = []
-	    fedList = fedList.concat(FOMSheetInfo.Federate_list);
-	    fedList = fedList.concat(FOMSheetInfo.CPNFederate_list);
-	    fedList = fedList.concat(FOMSheetInfo.OmnetFederate_list);
-	    fedList = fedList.concat(FOMSheetInfo.MapperFederate_list);
-	    fedList = fedList.concat(FOMSheetInfo.JavaFederate_list);
-	    fedList = fedList.concat(FOMSheetInfo.CppFederate_list);
-	    fedList = fedList.concat(FOMSheetInfo.GridlabDFederate_list);
-	    fedList.map(function(fedInfo) {
-		var newObj = self.transformFederate(fedInfo);
-		if (newObj) {
-		    self.makeDBObject(model._DB, newObj, 'Federates');
-		}
-	    });
+	// Need to go through all children of the FOMSheet
+	// which are federates, should refactor a little so
+	// that there is just a single Federate_list which
+	// contains all types of federates.  will require some
+	// further processing.
+	var fedList = []
+	fedList = fedList.concat(FOMSheetInfo.Federate_list);
+	fedList = fedList.concat(FOMSheetInfo.CPNFederate_list);
+	fedList = fedList.concat(FOMSheetInfo.OmnetFederate_list);
+	fedList = fedList.concat(FOMSheetInfo.MapperFederate_list);
+	fedList = fedList.concat(FOMSheetInfo.JavaFederate_list);
+	fedList = fedList.concat(FOMSheetInfo.CppFederate_list);
+	fedList = fedList.concat(FOMSheetInfo.GridlabDFederate_list);
+	fedList.map(function(fedInfo) {
+	    var newObj = self.transformFederate(fedInfo);
+	    if (newObj) {
+		self.makeDBObject(model._DB, newObj, 'Federates');
+	    }
 	});
     };
 
@@ -239,30 +234,49 @@ define([
 	return newObj;
     };
 
-    ExportToDB.prototype.extractInteractions = function(model) {
+    ExportToDB.prototype.extractInteractions = function(model, FOMSheetInfo) {
 	var self = this;
-	model.root.FOMSheet_list.map(function(FOMSheetInfo) {
-	    var interactionList = [];
-	    interactionList = interactionList.concat(FOMSheetInfo.Interaction_list);
-	    interactionList.map(function(interactionInfo) {
-		var newObj = self.transformInteraction(interactionInfo);
-		if (newObj) {
-		    self.makeDBObject(model._DB, newObj, 'Interactions');
-		}
-	    });
+	var interactionList = [];
+	interactionList = interactionList.concat(FOMSheetInfo.Interaction_list);
+	interactionList.map(function(interactionInfo) {
+	    var newObj = self.transformInteraction(interactionInfo);
+	    if (newObj) {
+		self.makeDBObject(model._DB, newObj, 'Interactions');
+	    }
 	});
     };
 
-    ExportToDB.prototype.extractCOAs = function(model) {
+    ExportToDB.prototype.transformCOA = function(obj) {
+	if (obj == null)
+	    return null;
+	var newObj = {};
+	var attrNames = Object.keys(obj.attributes);
+	attrNames.map(function(attrName) {
+	    newObj[attrName] = obj.attributes[attrName];
+	});
+	return newObj;
     };
 
-    ExportToDB.prototype.extractExperiments = function(model) {
+    ExportToDB.prototype.extractCOAs = function(model, FOMSheetInfo) {
+	var self = this;
+	var coaList = [];
+	coaList = coaList.concat(FOMSheetInfo.COA_list);
+	coaList.map(function(coaInfo) {
+	    console.log(coaInfo);
+	    var newObj = self.transformCOA(coaInfo);
+	    if (newObj) {
+		self.makeDBObject(model._DB, newObj, 'COAs');
+	    }
+	});
     };
 
-    ExportToDB.prototype.extractConfigurations = function(model) {
+    ExportToDB.prototype.extractExperiments = function(model, FOMSheetInfo) {
     };
 
-    ExportToDB.prototype.buildDummyObjects = function(model) {
+    ExportToDB.prototype.extractConfigurations = function(model, FOMSheetInfo) {
+    };
+
+    ExportToDB.prototype.buildDummyObjects = function(model, FOMSheetInfo) {
     };
 
     ExportToDB.prototype.generateGUID = function() {
@@ -279,7 +293,7 @@ define([
     };
 
     ExportToDB.prototype.generateVersion = function(object) {
-	object.version = (object.version | '1.0') + '.1';
+	object.version = (object.version || '1.0') + '.1';
     };
 
     return ExportToDB;
