@@ -11,8 +11,9 @@
     "stream": "0.0.2",
     "tar": "^2.2.1",
     "unzip": "^0.1.11",
+    "webgme": "^2.4.0",
     "webgme-codeeditor": "finger563/webgme-codeeditor",
-    "webgme": "^2.4.0"
+    "webgme-to-json": "^1.0.3"
   },
   "devDependencies": {
     "mocha": "^2.2.5",

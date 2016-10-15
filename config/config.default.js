@@ -10,6 +10,8 @@ config.server.port = 8088;
 //config.server.port = 80
 config.mongo.uri = 'mongodb://127.0.0.1:27017/c2webgme';
 
+config.requirejsPaths['webgme-to-json'] = "./node_modules/webgme-to-json/"
+
 config.visualization.decoratorPaths.push('./src/decorators');
 config.seedProjects = {
             enable: true,
