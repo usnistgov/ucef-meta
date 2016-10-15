@@ -254,6 +254,11 @@ define([
 	attrNames.map(function(attrName) {
 	    newObj[attrName] = obj.attributes[attrName];
 	});
+	// add all children here:
+	var listNames = Object.keys(obj).filter(function(n) { return n.indexOf('_list') > -1; });
+	listNames.map(function(listName) {
+	    newObj[listName] = obj[listName];
+	});
 	return newObj;
     };
 
