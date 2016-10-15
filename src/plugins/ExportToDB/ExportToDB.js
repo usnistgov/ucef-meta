@@ -147,6 +147,9 @@ define([
 	    // these all update the model._DB with the relevant items
 	    self.buildFederateTree(model, FOMSheetInfo);
 	    self.extractInteractions(model, FOMSheetInfo);
+
+	    // now that we have the federates and the interactions, need to get their relations
+	    
 	    self.extractCOAs(model, FOMSheetInfo);
 	    self.extractExperiments(model, FOMSheetInfo);
 	    self.extractConfigurations(model, FOMSheetInfo);
@@ -168,18 +171,105 @@ define([
 	    "COAs": [],
 	    "Experiments": [],
 	    "Interactions": [],
-	}
+	};
+	model._PathToRef = {}; // convert GME Path to DB Ref structure
     };
 
     ExportToDB.prototype.makeDBObject = function(db, obj, type) {
+	// makes the object in the database and returns a reference object
 	var self = this;
 	obj.GUID = self.generateGUID(); // wouldn't actually happen in the plugin
 	self.generateVersion(obj);
 	db.__OBJECTS__[obj.GUID] = {};
 	db.__OBJECTS__[obj.GUID][obj.version] = obj;
-	db[type].push({ GUID: obj.GUID, version: obj.version });
+	var refObj = {
+	    GUID: obj.GUID,
+	    version: obj.version
+	};
+	db[type].push(refObj);
+	return refObj;
     };
 
+    ExportToDB.prototype.transformParameter = function(obj) {
+	var self = this;
+	// converts from the generic representation we have here
+	// to the specific representation given in example.js
+	if (obj == null)
+	    return null;
+	var newObj = {
+	    name: obj.name,
+	    type: obj.ParameterType,
+	    hidden: obj.Hidden
+	};
+	return newObj;
+    };
+
+    ExportToDB.prototype.transformParameters = function(newObj, obj) {
+	var self = this;
+	newObj.parameters = [];
+	if (obj.Parameter_list) {
+	    newObj.parameters = newObj.parameters.concat(obj.Parameter_list);
+	    newObj.parameters = newObj.parameters.map(function(p) {
+		return self.transformParameter(p);
+	    });
+	}
+    };
+
+    ExportToDB.prototype.transformFederate = function(model, obj) {
+	var self = this;
+	// converts from the generic representation we have here
+	// to the specific representation given in example.js
+	if (obj == null)
+	    return null;
+	var newObj = {};
+	newObj.__FEDERATE_BASE__ = obj.type;
+	var attrNames = Object.keys(obj.attributes);
+	attrNames.map(function(attrName) {
+	    newObj[attrName] = obj.attributes[attrName];
+	});
+	// capture any child federates that may exist
+	newObj.federates = self.makeAndReturnChildFederates(model, obj);
+	// set the type based on whether it contains feds or not:
+	if (newObj.federates.length) {
+	    newObj.__FEDERATE_TYPE__ = "not directly deployable";
+	}
+	else {
+	    newObj.__FEDERATE_TYPE__ = "directly deployable";
+	}
+	// capture any parameters that may exist
+	self.transformParameters(newObj, obj);
+	// add any missing keys needed by schema
+	var addedKeys = ['documentation', 'repository'];
+	addedKeys.map(function(key) {
+	    newObj[key] = "No " +key + " exists yet.";
+	});
+	
+	return newObj;
+    };
+
+    ExportToDB.prototype.makeAndReturnChildFederates = function(model, obj) {
+	// recursive function to make all heirarchical federates
+	var self = this;
+	var newFeds = []; // will contain the list of references to any child feds
+	var fedList = [];
+	fedList = fedList.concat(obj.Federate_list);
+	fedList = fedList.concat(obj.CPNFederate_list);
+	fedList = fedList.concat(obj.OmnetFederate_list);
+	fedList = fedList.concat(obj.MapperFederate_list);
+	fedList = fedList.concat(obj.JavaFederate_list);
+	fedList = fedList.concat(obj.CppFederate_list);
+	fedList = fedList.concat(obj.GridlabDFederate_list);
+	fedList.map(function(fedInfo) {
+	    var newObj = self.transformFederate(model, fedInfo);
+	    if (newObj) {
+		var refObj = self.makeDBObject(model._DB, newObj, 'Federates');
+		model._PathToRef[fedInfo.path] = refObj;
+		newFeds.push(refObj);
+	    }
+	});
+	return newFeds; // list of references to new objects
+    };
+    
     // currently heirarchical federates dont' exist so can't test;
     // will need to update this function when they do exist
     ExportToDB.prototype.buildFederateTree = function(model, FOMSheetInfo) {
@@ -189,56 +279,24 @@ define([
 	// that there is just a single Federate_list which
 	// contains all types of federates.  will require some
 	// further processing.
-	var fedList = []
-	fedList = fedList.concat(FOMSheetInfo.Federate_list);
-	fedList = fedList.concat(FOMSheetInfo.CPNFederate_list);
-	fedList = fedList.concat(FOMSheetInfo.OmnetFederate_list);
-	fedList = fedList.concat(FOMSheetInfo.MapperFederate_list);
-	fedList = fedList.concat(FOMSheetInfo.JavaFederate_list);
-	fedList = fedList.concat(FOMSheetInfo.CppFederate_list);
-	fedList = fedList.concat(FOMSheetInfo.GridlabDFederate_list);
-	fedList.map(function(fedInfo) {
-	    var newObj = self.transformFederate(fedInfo);
-	    if (newObj) {
-		self.makeDBObject(model._DB, newObj, 'Federates');
-	    }
-	});
-    };
-
-    ExportToDB.prototype.transformFederate = function(obj) {
-	// converts from the generic representation we have here
-	// to the specific representation given in example.js
-	if (obj == null)
-	    return null;
-	var newObj = {};
-	newObj.__FEDERATE_TYPE__ = obj.type;
-	var attrNames = Object.keys(obj.attributes);
-	attrNames.map(function(attrName) {
-	    newObj[attrName] = obj.attributes[attrName];
-	});
-	return newObj;
+	self.makeAndReturnChildFederates(model, FOMSheetInfo);
     };
 
     ExportToDB.prototype.transformInteraction = function(obj) {
+	var self = this;
 	if (obj == null)
 	    return null;
 	var newObj = {};
 	if (obj.base)
-	    newObj.__INTERACTION_TYPE__ = obj.base.name;
+	    newObj.__INTERACTION_BASE__ = obj.base.name;
 	else
-	    newObj.__INTERACTION_TYPE__ = obj.type;	    
+	    newObj.__INTERACTION_BASE__ = obj.type;	    
 	var attrNames = Object.keys(obj.attributes);
 	attrNames.map(function(attrName) {
 	    newObj[attrName] = obj.attributes[attrName];
 	});
 	// get parameters here:
-	newObj.parameters = {};
-	obj.Parameter_list.map(function(paramInfo) {
-	    newObj.parameters[paramInfo.name] = {
-		type: paramInfo.ParameterType,
-		hidden: paramInfo.Hidden
-	    };
-	});
+	self.transformParameters(newObj, obj);
 	return newObj;
     };
 
@@ -249,12 +307,14 @@ define([
 	interactionList.map(function(interactionInfo) {
 	    var newObj = self.transformInteraction(interactionInfo);
 	    if (newObj) {
-		self.makeDBObject(model._DB, newObj, 'Interactions');
+		var refObj = self.makeDBObject(model._DB, newObj, 'Interactions');
+		model._PathToRef[interactionInfo.path] = refObj;
 	    }
 	});
     };
 
     ExportToDB.prototype.transformCOA = function(obj) {
+	var self = this;
 	if (obj == null)
 	    return null;
 	var newObj = {};
@@ -277,7 +337,8 @@ define([
 	coaList.map(function(coaInfo) {
 	    var newObj = self.transformCOA(coaInfo);
 	    if (newObj) {
-		self.makeDBObject(model._DB, newObj, 'COAs');
+		var refObj = self.makeDBObject(model._DB, newObj, 'COAs');
+		model._PathToRef[coaInfo.path] = refObj;
 	    }
 	});
     };
