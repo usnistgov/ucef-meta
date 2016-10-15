@@ -127,6 +127,7 @@ define([
 	// for testing, need the structure that would be in the database
 	self.initDB(model);
 
+	// these all update the model._DB with the relevant items
 	self.buildFederateTree(model);
 	self.extractParameters(model);
 	self.extractInteractions(model);
@@ -161,6 +162,17 @@ define([
 	}
     };
 
+    ExportToDB.prototype.makeDBObject = function(db, obj, type) {
+	var self = this;
+	obj.GUID = self.generateGUID(); // wouldn't actually happen in the plugin
+	self.generateVersion(obj);
+	db.__OBJECTS__[obj.GUID] = {};
+	db.__OBJECTS__[obj.GUID][obj.version] = obj;
+	db[type].push({ GUID: obj.GUID, version: obj.version });
+    };
+
+    // currently heirarchical federates dont' exist so can't test;
+    // will need to update this function when they do exist
     ExportToDB.prototype.buildFederateTree = function(model) {
 	var self = this;
 	// to iterate through the model we need to know exactly
@@ -186,11 +198,7 @@ define([
 	    fedList.map(function(fedInfo) {
 		var newObj = self.transformFederate(fedInfo);
 		if (newObj) {
-		    newObj.GUID = self.generateGUID(); // wouldn't actually happen in the plugin
-		    self.generateVersion(newObj);
-		    model._DB.__OBJECTS__[newObj.GUID] = {};
-		    model._DB.__OBJECTS__[newObj.GUID][newObj.version] = newObj;
-		    model._DB.Federates.push({ GUID: newObj.GUID, version: newObj.version });
+		    self.makeDBObject(model._DB, newObj, 'Federates');
 		}
 	    });
 	});
@@ -212,7 +220,37 @@ define([
     ExportToDB.prototype.extractParameters = function(model) {
     };
 
+    ExportToDB.prototype.transformInteraction = function(obj) {
+	if (obj == null)
+	    return null;
+	var newObj = {};
+	var attrNames = Object.keys(obj.attributes);
+	attrNames.map(function(attrName) {
+	    newObj[attrName] = obj.attributes[attrName];
+	});
+	// get parameters here:
+	newObj.parameters = {};
+	obj.Parameter_list.map(function(paramInfo) {
+	    newObj.parameters[paramInfo.name] = {
+		type: paramInfo.ParameterType,
+		hidden: paramInfo.Hidden
+	    };
+	});
+	return newObj;
+    };
+
     ExportToDB.prototype.extractInteractions = function(model) {
+	var self = this;
+	model.root.FOMSheet_list.map(function(FOMSheetInfo) {
+	    var interactionList = [];
+	    interactionList = interactionList.concat(FOMSheetInfo.Interaction_list);
+	    interactionList.map(function(interactionInfo) {
+		var newObj = self.transformInteraction(interactionInfo);
+		if (newObj) {
+		    self.makeDBObject(model._DB, newObj, 'Interactions');
+		}
+	    });
+	});
     };
 
     ExportToDB.prototype.extractCOAs = function(model) {
