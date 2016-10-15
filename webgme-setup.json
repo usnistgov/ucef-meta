@@ -1,35 +1,41 @@
 {
-  "components": {
-    "plugins": {
-      "FederatesExporter": {
-        "src": "src/plugins/FederatesExporter",
-        "test": "test/plugins/FederatesExporter"
-      },
-      "DeploymentExporter": {
-        "src": "src/plugins/DeploymentExporter",
-        "test": "test/plugins/DeploymentExporter"
-      },
-      "RunFederation": {
-        "src": "src/plugins/RunFederation",
-        "test": "test/plugins/RunFederation"
-      }
+    "components": {
+	"plugins": {
+	    "FederatesExporter": {
+		"src": "src/plugins/FederatesExporter",
+		"test": "test/plugins/FederatesExporter"
+	    },
+	    "DeploymentExporter": {
+		"src": "src/plugins/DeploymentExporter",
+		"test": "test/plugins/DeploymentExporter"
+	    },
+	    "RunFederation": {
+		"src": "src/plugins/RunFederation",
+		"test": "test/plugins/RunFederation"
+	    },
+	    "ExportToDB": {
+		"src": "src/plugins/ExportToDB"
+	    }
+	},
+	"addons": {},
+	"decorators": {},
+	"seeds": {},
+	"visualizers": {}
     },
-    "decorators": {},
-    "seeds": {},
-    "visualizers": {}
-  },
-  "dependencies": {
-    "plugins": {},
-    "addons": {},
-    "decorators": {},
-    "visualizers": {
-      "CodeEditor": {
-        "src": "panels/CodeEditor/CodeEditorPanel",
-        "title": "CodeEditor",
-        "panel": "src/visualizers/panels/CodeEditor",
-        "secondary": false,
-        "widget": "src/visualizers/widgets/CodeEditor",
-        "project": "webgme-codeeditor"
-      }
+    "dependencies": {
+	"plugins": {},
+	"addons": {},
+	"decorators": {},
+	"visualizers": {
+	    "CodeEditor": {
+		"src": "panels/CodeEditor/CodeEditorPanel",
+		"title": "CodeEditor",
+		"panel": "src/visualizers/panels/CodeEditor",
+		"secondary": false,
+		"widget": "src/visualizers/widgets/CodeEditor",
+		"project": "webgme-codeeditor"
+	    }
+	},
+	"layouts": {}
     }
 }
