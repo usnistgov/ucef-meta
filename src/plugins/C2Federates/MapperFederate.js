@@ -44,7 +44,8 @@ define([
                     self.porticoPOM = new MavenPOM();
                     self.porticoPOM.artifactId = "portico";
                     self.porticoPOM.groupId = "org.porticoproject";
-                    self.porticoPOM.version = "2.0.2";
+                    // Set the portico Release Version
+                    self.porticoPOM.version = "2.1.0";
                     self.porticoPOM.scope = "provided";
                 }
 

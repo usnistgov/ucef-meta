@@ -6,7 +6,7 @@
  */
 
 define([
-    'plugin/PluginConfig',
+    'text!./metadata.json',
     'plugin/PluginBase',
     'common/util/ejs',
     'C2Core/ModelTraverserMixin',
@@ -22,7 +22,7 @@ define([
     'C2Federates/OmnetFederate',
     'C2Federates/CPNFederate'
 ], function (
-    PluginConfig,
+    pluginMetadata,
     PluginBase,
     ejs,
     ModelTraverserMixin,
@@ -39,6 +39,9 @@ define([
     CPNFederate
     ) {
     'use strict';
+
+    // console.log(pluginMetadata);
+    pluginMetadata = JSON.parse(pluginMetadata);
 
     /**
      * Initializes a new instance of FederatesExporter.
@@ -65,133 +68,13 @@ define([
 
         this.mainPom = new MavenPOM();
         this._jsonToXml = new JSON2XMLConverter.Json2xml();
+        this.pluginMetadata = pluginMetadata;
     };
 
     // Prototypal inheritance from PluginBase.
     FederatesExporter.prototype = Object.create(PluginBase.prototype);
     FederatesExporter.prototype.constructor = FederatesExporter;
-
-    /**
-     * Gets the name of the FederatesExporter.
-     * @returns {string} The name of the plugin.
-     * @public
-     */
-    FederatesExporter.prototype.getName = function () {
-        return 'FederatesExporter';
-    };
-
-    /**
-     * Gets the semantic version (semver.org) of the FederatesExporter.
-     * @returns {string} The version of the plugin.
-     * @public
-     */
-    FederatesExporter.prototype.getVersion = function () {
-        return '0.2.0';
-    };
-
-    /**
-     * Gets the configuration structure for the FederatesExporter.
-     * The ConfigurationStructure defines the configuration for the plugin
-     * and will be used to populate the GUI when invoking the plugin from webGME.
-     * @returns {object} The version of the plugin.
-     * @public
-     */
-    FederatesExporter.prototype.getConfigStructure = function () {
-        var baseURLDefault = 'https://editor.webgme.org',
-            usernameDefault = 'guest',
-            allFederateTypes = '';
-
-        if(window){
-            baseURLDefault = window.location.protocol + window.location.pathname + window.location.pathname + window.location.host;
-        }
-
-        if(WebGMEGlobal && WebGMEGlobal.Client){
-            usernameDefault =WebGMEGlobal.userInfo._id;
-        }
-
-        if(this.federateTypes){
-            for(var typeKey in this.federateTypes){
-                allFederateTypes+=typeKey + ' '
-            }
-            allFederateTypes.trim();
-        }
-
-        return [
-            {
-                name: 'exportVersion',
-                displayName: 'version',
-                description: 'The version of the model to be exported',
-                value: '0.0.1',
-                valueType: 'string',
-                readOnly: false
-            },{
-                name: 'isRelease',
-                displayName: 'release',
-                description: 'Is the model a release version?   ',
-                value: false,
-                valueType: 'boolean',
-                readOnly: false
-            },{
-                name: 'groupId',
-                displayName: 'Maven GroupID',
-                description: 'The group ID to be included in the Maven POMs',
-                value: 'org.webgme.' + usernameDefault,
-                valueType: 'string',
-                readOnly: false
-            },{
-                name: 'c2wVersion',
-                displayName: 'C2W version',
-                description: 'The version of the C2W foundation to be used',
-                value: '0.1.0',
-                valueType: 'string',
-                readOnly: false
-            },{
-                name: 'repositoryUrlSnapshot',
-                displayName: 'Repository URL for snapshots',
-                description: 'The URL of the repository where the packaged components should be deployed.',
-                value: 'http://c2w-cdi.isis.vanderbilt.edu:8088/repository/snapshots/',
-                valueType: 'string',
-                readOnly: false
-            },{
-                name: 'repositoryUrlRelease',
-                displayName: 'Repository URL for releases',
-                description: 'The URL of the repository where the packaged components should be deployed.',
-                value: 'http://c2w-cdi.isis.vanderbilt.edu:8088/repository/internal/',
-                valueType: 'string',
-                readOnly: false
-            },{
-                name: 'generateExportPackages',
-                displayName: 'Generate exports packages',
-                description: 'Generate the packages marked as export?   ',
-                value: false,
-                valueType: 'boolean',
-                readOnly: false
-            /*},{
-                name: 'projectNameTemplate',
-                displayName: 'Project Name Template',
-                description: 'EJS Template for naming the maven projects',
-                value: '<%=federation_name%><%=artifact_name?"-"+artifact_name:""%><%=language?"-"+language:""%>',
-                valueType: 'string',
-                readOnly: true*/        
-            },{
-                name: 'includedFederateTypes',
-                displayName: 'include',
-                description: 'The Types of federates included in this export',
-                value: allFederateTypes,
-                valueType: 'string',
-                readOnly: true
-            
-                    
-            /*},{
-                name: 'urlBase',
-                displayName: 'URL Base',
-                description: 'The base address of webGME where the model is accessible',
-                value: baseURLDefault,
-                valueType: 'string',
-                readOnly: false*/
-            }
-        ];
-    };
+    FederatesExporter.metadata = pluginMetadata;
 
     /**
      * Main function for the plugin to execute. This will perform the execution.
@@ -430,7 +313,7 @@ define([
         if(self.rootNode != node){    
             var nodeTypeName = self.core.getAttribute(self.getMetaType(node),'name');
             exclude = exclude 
-            || self.isMetaTypeOf(node, self.META['Language [CASIM]'])
+            //|| self.isMetaTypeOf(node, self.META['Language [CASIM]'])
             || self.isMetaTypeOf(node, self.META['Language [C2WT]'])
             || (self.federateTypes.hasOwnProperty(nodeTypeName) && !self.federateTypes[nodeTypeName].includeInExport);
         }

@@ -228,6 +228,11 @@
 					<artifactId>c2w-gui</artifactId>
 					<version>${c2w.version}</version>
 				</dependency>
+				<dependency>
+					<groupId><%= porticoPOM.groupId %></groupId>
+					<artifactId><%= porticoPOM.artifactId %></artifactId>
+					<version><%= porticoPOM.version %></version>
+				</dependency>
 			</dependencies>	
         	<build>
 	        	<plugins>
@@ -256,8 +261,8 @@
 					            <argument>--autoStart</argument>
 					            <argument>--lockfile</argument><argument>${env.C2WTROOT}/__lock__</argument>
 					            <argument>HelloWorld</argument>
-					            <argument>${project.basedir}/<%= projectName %>.fed</argument>
-					            <argument>${project.basedir}/default/script.xml</argument>
+					            <argument>${project.basedir}/target/classes/<%= projectName %>.fed</argument>
+					            <argument>${project.basedir}/target/classes/default/script.xml</argument>
 					            <argument>HelloWorld_main-Deployment1_100</argument>
 					            <argument>NORMAL</argument>
 					    	</arguments>
@@ -271,6 +276,13 @@
         </profile>
 		<profile>
 			<id>JavaFed</id>
+			<dependencies>
+				<dependency>
+					<groupId><%= porticoPOM.groupId %></groupId>
+					<artifactId><%= porticoPOM.artifactId %></artifactId>
+					<version><%= porticoPOM.version %></version>
+				</dependency>
+			</dependencies>	
 			<build>
 				<plugins>
 					<plugin>
@@ -367,6 +379,7 @@
 					    	</arguments>
 					    	<environmentVariables>
 			                    <EXEDIR>${project.basedir}/target/${federate.name}</EXEDIR>
+			                    <LD_LIBRARY_PATH>${project.basedir}/target/nar/lib/${nar.aol}/shared/:${env.RTI_HOME}/lib/gcc4/:${env.RTI_HOME}/jre/lib/amd64/server</LD_LIBRARY_PATH>
 			                </environmentVariables>
 						</configuration>
 					</plugin>

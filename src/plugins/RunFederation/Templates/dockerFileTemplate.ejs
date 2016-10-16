@@ -1,0 +1,23 @@
+--- 
+services: 
+  fedManager:
+    build: .
+    image: "ydbarve/c2wtcore_v002:160816"
+    command: "sh start.sh FedManager"
+    volumes:
+      - <%- inputPrefix %>/FedManager:/root/Projects/c2wt/input
+      - <%- outputPrefix %>/FedManager:/root/Projects/c2wt/logs
+<%
+fedInfos.map(function(fedInfo) {
+-%>
+  <%- fedInfo.type %>_<%- fedInfo.name %>:
+    build: .
+    image: "<%- dockerInfoMap[fedInfo.type].name %>:<%- dockerInfoMap[fedInfo.type].tag %>"
+    command: "sh start.sh <%- fedInfo.type %>,<%- fedInfo.name %>" 
+    volumes:
+      - <%- inputPrefix %>/<%- fedInfo.name %>:/root/Projects/c2wt/input
+      - <%- outputPrefix %>/<%- fedInfo.name %>:/root/Projects/c2wt/logs
+<%
+})
+-%>
+version: "2"

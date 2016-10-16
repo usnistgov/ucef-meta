@@ -1,0 +1,7 @@
+//jshint ignore: start
+/* Generated file based on ejs templates */
+define([], function() {
+    return {
+    "dockerFileTemplate.ejs": "--- \nservices: \n  fedManager:\n    build: .\n    image: \"ydbarve/c2wtcore_v002:160816\"\n    command: \"sh start.sh FedManager\"\n    volumes:\n      - <%- inputPrefix %>/FedManager:/root/Projects/c2wt/input\n      - <%- outputPrefix %>/FedManager:/root/Projects/c2wt/logs\n<%\nfedInfos.map(function(fedInfo) {\n-%>\n  <%- fedInfo.type %>_<%- fedInfo.name %>:\n    build: .\n    image: \"<%- dockerInfoMap[fedInfo.type].name %>:<%- dockerInfoMap[fedInfo.type].tag %>\"\n    command: \"sh start.sh <%- fedInfo.type %>,<%- fedInfo.name %>\" \n    volumes:\n      - <%- inputPrefix %>/<%- fedInfo.name %>:/root/Projects/c2wt/input\n      - <%- outputPrefix %>/<%- fedInfo.name %>:/root/Projects/c2wt/logs\n<%\n})\n-%>\nversion: \"2\"\n",
+    "startScript.ejs": "#!/bin/bash\nif [ $1 = \"FedManager\" ]; then\n   echo \"Starting --> \" $1\n   #xvfb-run -a mvn exec:exec -P Fedmanager\n   #xvfb-run -a mvn exec:exec -P FedManager &> /root/Projects/c2wt/logs/log.txt\n   xvfb-run -a mvn package exec:exec -P FedManager 2>&1 | tee -a /root/Projects/c2wt/logs/log.txt\nelse\n  echo \"Starting -->\" $1\n  #mvn exec:exec -P $1 &> /root/Projects/c2wt/logs/log.txt\n  mvn package exec:exec -P $1  2>&1 | tee -a /root/Projects/c2wt/logs/log.txt\nfi\n"
+}});

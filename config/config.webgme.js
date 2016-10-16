@@ -9,12 +9,24 @@ var config = require('webgme/config/config.default'),
 
 // The paths can be loaded from the webgme-setup.json
 config.plugin.basePaths.push('src/plugins');
+config.plugin.basePaths.push('src/common');
 
+config.visualization.panelPaths.push('node_modules/webgme-codeeditor/src/visualizers/panels');
+
+// Plugins
+config.plugin.allowServerExecution = true;
+config.plugin.allowBrowserExecution = true;
+
+config.visualization.visualizerDescriptors.push('./src/visualizers/Visualizers.json');
 
 // Visualizer descriptors
 
 // Add requirejs paths
+config.requirejsPaths['c2wtng-meta'] = './src/common';
+config.requirejsPaths['panels/CodeEditor'] = './node_modules/webgme-codeeditor/src/visualizers/panels/CodeEditor';
+config.requirejsPaths['widgets/CodeEditor'] = './node_modules/webgme-codeeditor/src/visualizers/widgets/CodeEditor';
 config.requirejsPaths['C2Core'] = './src/plugins/C2Core';
+config.requirejsPaths['RunFederation'] = './src/plugins/RunFederation';
 config.requirejsPaths['C2Federates'] = './src/plugins/C2Federates';
 config.requirejsPaths['FederatesExporter'] = './src/plugins/FederatesExporter';
 config.requirejsPaths['DeploymentExporter'] = './src/plugins/DeploymentExporter';

@@ -6,7 +6,7 @@
  */
 
 define([
-    'plugin/PluginConfig',
+    'text!./metadata.json',
     'plugin/PluginBase',
     'common/util/ejs',
     'C2Core/xmljsonconverter',
@@ -15,7 +15,7 @@ define([
     'FederatesExporter/RTIVisitors',
     'FederatesExporter/PubSubVisitors',
 ], function (
-    PluginConfig,
+    pluginMetadata,
     PluginBase,
     ejs,
     JSON2XMLConverter,
@@ -26,6 +26,7 @@ define([
     ) {
     'use strict';
 
+    pluginMetadata = JSON.parse(pluginMetadata); 
     /**
      * Initializes a new instance of DeploymentExporter.
      * @class
@@ -41,104 +42,13 @@ define([
         RTIVisitors.call(this);
 
         this._jsonToXml = new JSON2XMLConverter.Json2xml();
+        this.pluginMetadata = pluginMetadata;
     };
 
     // Prototypal inheritance from PluginBase.
     DeploymentExporter.prototype = Object.create(PluginBase.prototype);
     DeploymentExporter.prototype.constructor = DeploymentExporter;
-
-    /**
-     * Gets the name of the DeploymentExporter.
-     * @returns {string} The name of the plugin.
-     * @public
-     */
-    DeploymentExporter.prototype.getName = function () {
-        return 'DeploymentExporter';
-    };
-
-    /**
-     * Gets the semantic version (semver.org) of the DeploymentExporter.
-     * @returns {string} The version of the plugin.
-     * @public
-     */
-    DeploymentExporter.prototype.getVersion = function () {
-        return '0.1.0';
-    };
-
-    /**
-     * Gets the configuration structure for the DeploymentExporter.
-     * The ConfigurationStructure defines the configuration for the plugin
-     * and will be used to populate the GUI when invoking the plugin from webGME.
-     * @returns {object} The version of the plugin.
-     * @public
-     */
-    DeploymentExporter.prototype.getConfigStructure = function () {
-        var baseURLDefault = 'https://editor.webgme.org',
-            usernameDefault = 'guest',
-            allFederateTypes = '';
-
-        if(window){
-            baseURLDefault = window.location.protocol + window.location.pathname + window.location.pathname + window.location.host;
-        }
-
-        if(WebGMEGlobal && WebGMEGlobal.Client){
-            usernameDefault =WebGMEGlobal.userInfo._id;
-        }
-
-        if(this.federateTypes){
-            for(var typeKey in this.federateTypes){
-                allFederateTypes+=typeKey + ' '
-            }
-            allFederateTypes.trim();
-        }
-
-        return [
-            {
-                name: 'exportVersion',
-                displayName: 'version',
-                description: 'The version of the model to be exported',
-                value: '0.0.1',
-                valueType: 'string',
-                readOnly: false
-            },{
-                name: 'isRelease',
-                displayName: 'release',
-                description: 'Is the model a release version?   ',
-                value: false,
-                valueType: 'boolean',
-                readOnly: false
-            },{
-                name: 'groupId',
-                displayName: 'Maven GroupID',
-                description: 'The group ID to be included in the Maven POMs',
-                value: 'org.webgme.' + usernameDefault,
-                valueType: 'string',
-                readOnly: false
-            },{
-                name: 'c2wVersion',
-                displayName: 'C2W version',
-                description: 'The version of the C2W foundation to be used',
-                value: '0.1.0',
-                valueType: 'string',
-                readOnly: false
-            },{
-                name: 'repositoryUrlSnapshot',
-                displayName: 'Repository URL for snapshots',
-                description: 'The URL of the repository where the packaged components should be deployed.',
-                value: 'http://c2w-cdi.isis.vanderbilt.edu:8088/repository/snapshots/',
-                valueType: 'string',
-                readOnly: false
-            },{
-                name: 'repositoryUrlRelease',
-                displayName: 'Repository URL for releases',
-                description: 'The URL of the repository where the packaged components should be deployed.',
-                value: 'http://c2w-cdi.isis.vanderbilt.edu:8088/repository/internal/',
-                valueType: 'string',
-                readOnly: false       
-            }
-        ];
-    };
-
+    DeploymentExporter.metadata = pluginMetadata;
     /**
      * Main function for the plugin to execute. This will perform the execution.
      * Notes:
@@ -175,6 +85,12 @@ define([
         pomModel.repositoryUrlSnapshot = self.getCurrentConfig().repositoryUrlSnapshot;
         pomModel.repositoryUrlRelease = self.getCurrentConfig().repositoryUrlRelease;
         pomModel.federates = self.federates;
+
+        pomModel.porticoPOM = {}       
+        pomModel.porticoPOM.artifactId = "portico";
+        pomModel.porticoPOM.groupId = "org.porticoproject";
+        pomModel.porticoPOM.version = self.getCurrentConfig().porticoReleaseNum;
+        pomModel.porticoPOM.scope = "provided";
 
         //Add POM generator
         self.fileGenerators.push(function(artifact, callback){
@@ -433,7 +349,9 @@ define([
         var self = this,
             exclude = false;
 
-        exclude = exclude || self.isMetaTypeOf(node, self.META['Language [CASIM]']) || self.isMetaTypeOf(node, self.META['Language [C2WT]']);
+        //exclude = exclude || self.isMetaTypeOf(node, self.META['Language [CASIM]']) || self.isMetaTypeOf(node, self.META['Language [C2WT]']);
+        exclude = exclude || self.isMetaTypeOf(node, self.META['Language [C2WT]']);
+        
         return exclude; 
 
     }
