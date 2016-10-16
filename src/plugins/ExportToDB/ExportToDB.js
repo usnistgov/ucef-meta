@@ -3,19 +3,19 @@ define([
     'text!./metadata.json',
     'plugin/PluginBase',
     'webgme-to-json/webgme-to-json',
-    'text!./BasePackage.json',
+    'text!./BasePackage.pm.json',
     'q'
 ], function (
     PluginConfig,
     pluginMetadata,
     PluginBase,
     webgmeToJSON,
-    basePackage,
+    baseMap,
     Q) {
     'use strict';
 
     pluginMetadata = JSON.parse(pluginMetadata);
-    basePackage    = JSON.parse(basePackage);
+    baseMap        = JSON.parse(baseMap);
 
     /**
      * Initializes a new instance of ExportToDB.
@@ -71,22 +71,39 @@ define([
 
         self.updateMETA({});
 
+	console.log(baseMap);
+
 	// What did the user select for our configuration?
 	var currentConfig = self.getCurrentConfig();
-	self.modelHash = currentConfig.modelHash;
+	self.savePathMap = currentConfig.savePathMap;
+
+	if (self.savePathMap)
+	    self.notify('info', "Saving path map as well");
 
 	var nodeName = self.core.getAttribute(self.activeNode, 'name');
 	
-	webgmeToJSON.notify = function(level, msg) {self.notify(level, msg);}
+	webgmeToJSON.notify = function(level, msg) {}
 
-	// resolve pointers and children, don't keep webgmeNodes as part of the JSON.
-	webgmeToJSON.loadModel(self.core, self.activeNode, true, false)
+	// don't resolve pointers and children, keep webgmeNodes as part of the JSON.
+	webgmeToJSON.loadModel(self.core, self.activeNode, false, true)
 	    .then(function(model) {
-		model = self.processModel(model); // convert to the DB format
-		return self.blobClient.putFile(nodeName+'.json', JSON.stringify(model, null, 2));
+		self.model = model;
+		var dataBase = self.processModel(); // convert to the DB format
+		return self.blobClient.putFile(
+		    nodeName+'.db.json',
+		    JSON.stringify(dataBase, null, 2));
 	    })
 	    .then(function(hash) {
 		self.result.addArtifact(hash);
+		if (self.savePathMap) {
+		    return self.blobClient.putFile(
+			nodeName + '.pm.json',
+			JSON.stringify(self.model._PathToRef, null, 2));
+		}
+	    })
+	    .then(function(hash) {
+		if (hash)
+		    self.result.addArtifact(hash);
 		self.result.setSuccess(true);
 		callback(null, self.result);
 	    })
@@ -113,7 +130,7 @@ define([
     //  Otherwise, we must make the stipulation that all shared
     //  objects are self-contained and have no references to outside
     //  objects.
-    ExportToDB.prototype.processModel = function(model) {
+    ExportToDB.prototype.processModel = function() {
 	var self = this;
 	// THIS FUNCTION HANDLES CREATION OF SOME CONVENIENCE MEMBERS
 	// FOR SELECT OBJECTS IN THE MODEL
@@ -143,25 +160,45 @@ define([
 	//      really get GUIDs from
 
 	// for testing, need the structure that would be in the database
-	self.initDB(model);
+	self.initDB();
+
+	var objectPaths = Object.keys(self.model.objects);
+	// go through all objects and transform pointers to be RefSpecs
+	objectPaths.map(function(objPath) {
+	    var obj = self.model.objects[objPath];
+	    self.processPointers(obj);
+	});
 
 	// these all update the model._DB with the relevant items
-
-	model.root.FOMSheet_list.map(function(obj) {
-	    self.extractInteractions(model, obj);
-	    self.buildFederateTree(model, obj);
+	objectPaths.map(function(objPath) {
+	    var obj = self.model.objects[objPath];
+	    if (self.core.isTypeOf(obj.node, self.META.InteractionBase))
+		self.transformInteraction(obj);
+	    else if (self.core.isTypeOf(obj.node, self.META.Federate))
+		self.transformFederate(obj);
 	});
+
 	// now that we have (ALL) the interactions and federates, we
 	// can make sure the federate dependencies can be captured
-	model.root.FOMSheet_list.map(function(obj) {
-	    self.connectFederatesToInteractions(model, obj);
-	    self.extractCOAs(model, obj);
-	    self.extractExperiments(model, obj);
-	    self.extractConfigurations(model, obj);
+	objectPaths.map(function(objPath) {
+	    var obj = self.model.objects[objPath];
+	    if (self.core.isTypeOf(obj.node, self.META.StaticInteractionPublish)) {
+		self.resolvePublishers(obj);
+	    }
+	    else if (self.core.isTypeOf(obj.node, self.META.StaticInteractionSubscribe)) {
+		self.resolveSubscribers(obj);
+	    }
+	    else if (self.core.isTypeOf(obj.node, self.META.COA)) {
+		self.transformCOA(obj);
+	    }
+	    else if (self.core.isTypeOf(obj.node, self.META.Experiment)) {
+		self.extractExperiments(obj);
+	    }
 	});
+
 	// now that we've transformed the model, get rid of the
 	// original data
-	var db = model._DB;
+	var db = self.model._DB;
 
 	// need for testing since we will need these other objects
 	self.buildDummyObjects(db);
@@ -169,30 +206,56 @@ define([
 	return db;
     };
 
-    ExportToDB.prototype.initDB = function(model) {
-	model._DB = {
+    ExportToDB.prototype.initDB = function() {
+	var self = this;
+	self.model._DB = {
 	    "__OBJECTS__": {},
 	    "Federates": [],
 	    "COAs": [],
 	    "Experiments": [],
 	    "Interactions": [],
 	};
-	model._PathToRef = {}; // convert GME Path to DB Ref structure
+	// convert GME Path to DB Ref structure
+	self.model._PathToRef = Object.assign({}, baseMap); 
     };
 
-    ExportToDB.prototype.makeDBObject = function(db, obj, type) {
+    ExportToDB.prototype.getRefObject = function(path) {
+	var self = this;
+	var refObj = self.model._PathToRef[path];
+	if (!refObj) { // need to make one
+	    refObj = {
+		GUID: self.generateGUID(),  // wouldn't actually happen in the plugin
+		version: self.generateVersion()
+	    };
+	    self.model._PathToRef[path] = refObj;
+	}
+	return refObj;
+    };
+
+    ExportToDB.prototype.makeDBObject = function(original, obj, type) {
 	// makes the object in the database and returns a reference object
 	var self = this;
-	obj.GUID = self.generateGUID(); // wouldn't actually happen in the plugin
-	self.generateVersion(obj);
-	db.__OBJECTS__[obj.GUID] = {};
-	db.__OBJECTS__[obj.GUID][obj.version] = obj;
-	var refObj = {
-	    GUID: obj.GUID,
-	    version: obj.version
-	};
-	db[type].push(refObj);
+	var refObj = self.getRefObject(original.path);
+	obj.GUID = refObj.GUID;
+	obj.version = refObj.version;
+	if (!self.model._DB.__OBJECTS__[obj.GUID])
+	    self.model._DB.__OBJECTS__[obj.GUID] = {};
+	self.model._DB.__OBJECTS__[obj.GUID][obj.version] = obj;
+	self.model._DB[type].push(refObj);
 	return refObj;
+    };
+
+    ExportToDB.prototype.processPointers = function(obj) {
+	var self = this;
+	// this function handles conversion from webgme pointers to
+	// database pointers; this means that pointers don't go to
+	// paths, they go to database references.
+	// pointers contains name -> path mappings
+	var ptrNames = Object.keys(obj.pointers);
+	ptrNames.map(function(ptrName) {
+	    var ptrPath = obj.pointers[ptrName];
+	    obj.pointers[ptrName] = self.getRefObject(ptrPath);
+	});
     };
 
     ExportToDB.prototype.transformParameter = function(obj) {
@@ -203,24 +266,26 @@ define([
 	    return null;
 	var newObj = {
 	    name: obj.name,
-	    type: obj.ParameterType,
-	    hidden: obj.Hidden
+	    type: obj.attributes.ParameterType,
+	    hidden: obj.attributes.Hidden
 	};
 	return newObj;
     };
 
-    ExportToDB.prototype.transformParameters = function(newObj, obj) {
+    ExportToDB.prototype.transformParameters = function(obj) {
 	var self = this;
-	newObj.parameters = [];
-	if (obj.Parameter_list) {
-	    newObj.parameters = newObj.parameters.concat(obj.Parameter_list);
-	    newObj.parameters = newObj.parameters.map(function(p) {
-		return self.transformParameter(p);
-	    });
-	}
+	var parameters = [];
+	obj.childPaths.map(function(childPath) {
+	    var childObj = self.model.objects[childPath];
+	    var childNode = childObj.node;
+	    if (self.core.isTypeOf(childNode, self.META.Parameter)) {
+		parameters.push(self.transformParameter(childObj));
+	    }
+	});
+	return parameters;
     };
 
-    ExportToDB.prototype.transformFederate = function(model, obj) {
+    ExportToDB.prototype.transformFederate = function(obj) {
 	var self = this;
 	// converts from the generic representation we have here
 	// to the specific representation given in example.js
@@ -233,7 +298,7 @@ define([
 	    newObj[attrName] = obj.attributes[attrName];
 	});
 	// capture any child federates that may exist
-	newObj.federates = self.makeAndReturnChildFederates(model, obj);
+	newObj.federates = self.makeAndReturnChildFederates(obj);
 	// set the type based on whether it contains feds or not:
 	if (newObj.federates.length) {
 	    newObj.__FEDERATE_TYPE__ = "not directly deployable";
@@ -242,7 +307,7 @@ define([
 	    newObj.__FEDERATE_TYPE__ = "directly deployable";
 	}
 	// capture any parameters that may exist
-	self.transformParameters(newObj, obj);
+	newObj.parameters = self.transformParameters(obj);
 	// initialize the inputs (interaction subscribe) and outputs (interaction publish)
 	newObj.inputs = [];
 	newObj.outputs = [];
@@ -251,68 +316,41 @@ define([
 	addedKeys.map(function(key) {
 	    newObj[key] = "No " +key + " exists yet.";
 	});
-	
-	return newObj;
+	var refObj = self.makeDBObject(obj, newObj, 'Federates');
+	return refObj;
     };
 
-    ExportToDB.prototype.makeAndReturnChildFederates = function(model, obj) {
+    ExportToDB.prototype.makeAndReturnChildFederates = function(obj) {
 	// recursive function to make all heirarchical federates
 	var self = this;
 	var newFeds = []; // will contain the list of references to any child feds
-	var fedList = [];
-	fedList = fedList.concat(obj.Federate_list);
-	fedList = fedList.concat(obj.CPNFederate_list);
-	fedList = fedList.concat(obj.OmnetFederate_list);
-	fedList = fedList.concat(obj.MapperFederate_list);
-	fedList = fedList.concat(obj.JavaFederate_list);
-	fedList = fedList.concat(obj.CppFederate_list);
-	fedList = fedList.concat(obj.GridlabDFederate_list);
-	fedList.map(function(fedInfo) {
-	    var newObj = self.transformFederate(model, fedInfo);
-	    if (newObj) {
-		var refObj = self.makeDBObject(model._DB, newObj, 'Federates');
-		model._PathToRef[fedInfo.path] = refObj;
-		newFeds.push(refObj);
+	obj.childPaths.map(function(childPath) {
+	    var childObj = self.model.objects[childPath];
+	    var childNode = childObj.node;
+	    if (self.core.isTypeOf(childNode, self.META.Federate)) {
+		var refObj = self.transformFederate(childObj);
+		if (newObj) {
+		    newFeds.push(refObj);
+		}
 	    }
 	});
 	return newFeds; // list of references to new objects
     };
     
-    // currently heirarchical federates dont' exist so can't test;
-    // will need to update this function when they do exist
-    ExportToDB.prototype.buildFederateTree = function(model, obj) {
+    ExportToDB.prototype.resolvePublishers = function(obj) {
 	var self = this;
-	// Need to go through all children of the FOMSheet
-	// which are federates, should refactor a little so
-	// that there is just a single Federate_list which
-	// contains all types of federates.  will require some
-	// further processing.
-	self.makeAndReturnChildFederates(model, obj);
+	var fedRef = obj.pointers.src;  // will have been converted to refObj
+	var intRef = obj.pointers.dst;
+	var fedObj = self.model._DB.__OBJECTS__[fedRef.GUID][fedRef.version];
+	fedObj.outputs.push(intRef);
     };
 
-    ExportToDB.prototype.connectFederatesToInteractions = function(model, obj) {
+    ExportToDB.prototype.resolveSubscribers = function(obj) {
 	var self = this;
-	// by this point, all federats and interactions are in 	model._PathToRef
-	if (obj.StaticInteractionPublish_list) {
-	    obj.StaticInteractionPublish_list.map(function(publish) {
-		var srcPath = publish.src.path;
-		var dstPath = publish.dst.path;
-		var fedRef = model._PathToRef[srcPath];
-		var intRef = model._PathToRef[dstPath];
-		var fedObj = model._DB.__OBJECTS__[fedRef.GUID][fedRef.version];
-		fedObj.outputs.push(intRef);
-	    });
-	}
-	if (obj.StaticInteractionSubscribe_list) {
-	    obj.StaticInteractionSubscribe_list.map(function(subscribe) {
-		var srcPath = subscribe.src.path;
-		var dstPath = subscribe.dst.path;
-		var intRef = model._PathToRef[srcPath];
-		var fedRef = model._PathToRef[dstPath];
-		var fedObj = model._DB.__OBJECTS__[fedRef.GUID][fedRef.version];
-		fedObj.inputs.push(intRef);
-	    });
-	}
+	var intRef = obj.pointers.src;
+	var fedRef = obj.pointers.dst;
+	var fedObj = self.model._DB.__OBJECTS__[fedRef.GUID][fedRef.version];
+	fedObj.inputs.push(intRef);
     };
 
     ExportToDB.prototype.transformInteraction = function(obj) {
@@ -320,30 +358,18 @@ define([
 	if (obj == null)
 	    return null;
 	var newObj = {};
-	if (obj.base)
-	    newObj.__INTERACTION_BASE__ = obj.base.name;
+	if (obj.pointers.base)
+	    newObj.__INTERACTION_BASE__ = obj.pointers.base;
 	else
-	    newObj.__INTERACTION_BASE__ = obj.type;	    
+	    newObj.__INTERACTION_BASE__ = obj.type; 
 	var attrNames = Object.keys(obj.attributes);
 	attrNames.map(function(attrName) {
 	    newObj[attrName] = obj.attributes[attrName];
 	});
 	// get parameters here:
-	self.transformParameters(newObj, obj);
-	return newObj;
-    };
-
-    ExportToDB.prototype.extractInteractions = function(model, obj) {
-	var self = this;
-	var interactionList = [];
-	interactionList = interactionList.concat(obj.Interaction_list);
-	interactionList.map(function(interactionInfo) {
-	    var newObj = self.transformInteraction(interactionInfo);
-	    if (newObj) {
-		var refObj = self.makeDBObject(model._DB, newObj, 'Interactions');
-		model._PathToRef[interactionInfo.path] = refObj;
-	    }
-	});
+	newObj.parameters = self.transformParameters(obj);
+	var refObj = self.makeDBObject(obj, newObj, 'Interactions');
+	return refObj;
     };
 
     ExportToDB.prototype.transformCOA = function(obj) {
@@ -355,31 +381,18 @@ define([
 	attrNames.map(function(attrName) {
 	    newObj[attrName] = obj.attributes[attrName];
 	});
+	// need to refactor this code now that we're not resolving the pointers and such
 	// add all children here:
-	var listNames = Object.keys(obj).filter(function(n) { return n.indexOf('_list') > -1; });
-	listNames.map(function(listName) {
-	    newObj[listName] = obj[listName];
+	newObj.childObjects = {};
+	obj.childPaths.map(function(childPath) {
+	    newObj.childObjects[childPath] = Object.assign({}, self.model.objects[childPath]);
+	    newObj.childObjects[childPath].node = undefined;
 	});
-	return newObj;
+	var refObj = self.makeDBObject(obj, newObj, 'COAs');
+	return refObj;
     };
 
-    ExportToDB.prototype.extractCOAs = function(model, obj) {
-	var self = this;
-	var coaList = [];
-	coaList = coaList.concat(obj.COA_list);
-	coaList.map(function(coaInfo) {
-	    var newObj = self.transformCOA(coaInfo);
-	    if (newObj) {
-		var refObj = self.makeDBObject(model._DB, newObj, 'COAs');
-		model._PathToRef[coaInfo.path] = refObj;
-	    }
-	});
-    };
-
-    ExportToDB.prototype.extractExperiments = function(model, obj) {
-    };
-
-    ExportToDB.prototype.extractConfigurations = function(model, obj) {
+    ExportToDB.prototype.extractExperiments = function(obj) {
     };
 
     ExportToDB.prototype.buildDummyObjects = function(db) {
@@ -405,8 +418,8 @@ define([
 	return uuid;
     };
 
-    ExportToDB.prototype.generateVersion = function(object) {
-	object.version = (object.version || '1.0') + '.1';
+    ExportToDB.prototype.generateVersion = function(version) {
+	return (version || '1.0') + '.1';
     };
 
     return ExportToDB;

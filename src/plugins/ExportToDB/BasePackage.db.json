@@ -1,187 +1,11 @@
 {
   "__OBJECTS__": {
-    "417a2219-b717-44de-9e44-a4e439c4ae92": {
+    "e62d46dc-de56-4f25-a982-04747289656f": {
       "1.0.1": {
-        "__INTERACTION_BASE__": "SimulationControl",
-        "name": "SimEnd",
-        "Order": "timestamp",
-        "LogLevel": "NORMAL",
-        "EnableLogging": "false",
-        "Delivery": "reliable",
-        "parameters": [
-          {
-            "name": "originFed",
-            "type": "String",
-            "hidden": "false"
-          },
-          {
-            "name": "sourceFed",
-            "type": "String",
-            "hidden": "false"
-          },
-          {
-            "name": "actualLogicalGenerationTime",
-            "type": "double",
-            "hidden": "false"
-          },
-          {
-            "name": "federateFilter",
-            "type": "String",
-            "hidden": "false"
-          }
-        ],
-        "GUID": "417a2219-b717-44de-9e44-a4e439c4ae92",
-        "version": "1.0.1"
-      }
-    },
-    "5aa09cb9-a843-4dd3-8900-81b1217b413e": {
-      "1.0.1": {
-        "__INTERACTION_BASE__": "C2WInteractionRoot",
-        "name": "SimLog",
-        "Order": "timestamp",
-        "LogLevel": "NORMAL",
-        "EnableLogging": "false",
-        "Delivery": "reliable",
-        "parameters": [
-          {
-            "name": "FedName",
-            "type": "String",
-            "hidden": false
-          },
-          {
-            "name": "originFed",
-            "type": "String",
-            "hidden": "false"
-          },
-          {
-            "name": "Comment",
-            "type": "String",
-            "hidden": false
-          },
-          {
-            "name": "Time",
-            "type": "double",
-            "hidden": false
-          },
-          {
-            "name": "sourceFed",
-            "type": "String",
-            "hidden": "false"
-          },
-          {
-            "name": "actualLogicalGenerationTime",
-            "type": "double",
-            "hidden": "false"
-          },
-          {
-            "name": "federateFilter",
-            "type": "String",
-            "hidden": "false"
-          }
-        ],
-        "GUID": "5aa09cb9-a843-4dd3-8900-81b1217b413e",
-        "version": "1.0.1"
-      }
-    },
-    "68e39fa0-2dee-48d4-84ce-72407dd0ecb0": {
-      "1.0.1": {
-        "__INTERACTION_BASE__": "SimLog",
-        "name": "VeryLowPrio",
-        "Order": "timestamp",
-        "LogLevel": "NORMAL",
-        "EnableLogging": "false",
-        "Delivery": "reliable",
-        "parameters": [
-          {
-            "name": "FedName",
-            "type": "String",
-            "hidden": false
-          },
-          {
-            "name": "originFed",
-            "type": "String",
-            "hidden": "false"
-          },
-          {
-            "name": "Comment",
-            "type": "String",
-            "hidden": false
-          },
-          {
-            "name": "Time",
-            "type": "double",
-            "hidden": false
-          },
-          {
-            "name": "sourceFed",
-            "type": "String",
-            "hidden": "false"
-          },
-          {
-            "name": "actualLogicalGenerationTime",
-            "type": "double",
-            "hidden": "false"
-          },
-          {
-            "name": "federateFilter",
-            "type": "String",
-            "hidden": "false"
-          }
-        ],
-        "GUID": "68e39fa0-2dee-48d4-84ce-72407dd0ecb0",
-        "version": "1.0.1"
-      }
-    },
-    "f03a65e9-14e9-448f-9f98-c742d83abedd": {
-      "1.0.1": {
-        "__INTERACTION_BASE__": "Interaction",
-        "name": "InteractionRoot",
-        "Order": "timestamp",
-        "LogLevel": "NORMAL",
-        "EnableLogging": "false",
-        "Delivery": "reliable",
-        "parameters": [],
-        "GUID": "f03a65e9-14e9-448f-9f98-c742d83abedd",
-        "version": "1.0.1"
-      }
-    },
-    "a29359c1-ceb7-4487-a8ab-64730fc13d5e": {
-      "1.0.1": {
-        "__INTERACTION_BASE__": "C2WInteractionRoot",
-        "name": "OutcomeBase",
-        "Order": "timestamp",
-        "LogLevel": "NORMAL",
-        "EnableLogging": "false",
-        "Delivery": "reliable",
-        "parameters": [
-          {
-            "name": "originFed",
-            "type": "String",
-            "hidden": "false"
-          },
-          {
-            "name": "sourceFed",
-            "type": "String",
-            "hidden": "false"
-          },
-          {
-            "name": "actualLogicalGenerationTime",
-            "type": "double",
-            "hidden": "false"
-          },
-          {
-            "name": "federateFilter",
-            "type": "String",
-            "hidden": "false"
-          }
-        ],
-        "GUID": "a29359c1-ceb7-4487-a8ab-64730fc13d5e",
-        "version": "1.0.1"
-      }
-    },
-    "5b0882d1-089f-4852-93f5-806aa1e39495": {
-      "1.0.1": {
-        "__INTERACTION_BASE__": "SimulationControl",
+        "__INTERACTION_BASE__": {
+          "GUID": "626468ad-0e72-4f32-aa6d-6ab5c1392a33",
+          "version": "1.0.1"
+        },
         "name": "SimResume",
         "Order": "timestamp",
         "LogLevel": "NORMAL",
@@ -209,13 +33,16 @@
             "hidden": "false"
           }
         ],
-        "GUID": "5b0882d1-089f-4852-93f5-806aa1e39495",
+        "GUID": "e62d46dc-de56-4f25-a982-04747289656f",
         "version": "1.0.1"
       }
     },
-    "014ccb43-7eb5-4c15-bf57-d97c95bc9a9c": {
+    "ef1e2360-614d-4a58-ba58-622812414f0d": {
       "1.0.1": {
-        "__INTERACTION_BASE__": "SimLog",
+        "__INTERACTION_BASE__": {
+          "GUID": "86bd5b2f-306b-4bc8-81d7-f7b19d834cee",
+          "version": "1.0.1"
+        },
         "name": "LowPrio",
         "Order": "timestamp",
         "LogLevel": "NORMAL",
@@ -258,13 +85,16 @@
             "hidden": "false"
           }
         ],
-        "GUID": "014ccb43-7eb5-4c15-bf57-d97c95bc9a9c",
+        "GUID": "ef1e2360-614d-4a58-ba58-622812414f0d",
         "version": "1.0.1"
       }
     },
-    "426ef9cb-ea63-441b-a28b-bb3f15ed97e5": {
+    "2a031b16-4158-4687-b1a3-c0fec0de3ba8": {
       "1.0.1": {
-        "__INTERACTION_BASE__": "InteractionRoot",
+        "__INTERACTION_BASE__": {
+          "GUID": "29446fb6-2b1c-42ea-b554-6e4a2a66dcc4",
+          "version": "1.0.1"
+        },
         "name": "C2WInteractionRoot",
         "Order": "timestamp",
         "LogLevel": "NORMAL",
@@ -292,13 +122,16 @@
             "hidden": "false"
           }
         ],
-        "GUID": "426ef9cb-ea63-441b-a28b-bb3f15ed97e5",
+        "GUID": "2a031b16-4158-4687-b1a3-c0fec0de3ba8",
         "version": "1.0.1"
       }
     },
-    "9870c5d6-cdc1-4bf0-81c4-272d590815f9": {
+    "626468ad-0e72-4f32-aa6d-6ab5c1392a33": {
       "1.0.1": {
-        "__INTERACTION_BASE__": "C2WInteractionRoot",
+        "__INTERACTION_BASE__": {
+          "GUID": "2a031b16-4158-4687-b1a3-c0fec0de3ba8",
+          "version": "1.0.1"
+        },
         "name": "SimulationControl",
         "Order": "timestamp",
         "LogLevel": "NORMAL",
@@ -326,13 +159,68 @@
             "hidden": "false"
           }
         ],
-        "GUID": "9870c5d6-cdc1-4bf0-81c4-272d590815f9",
+        "GUID": "626468ad-0e72-4f32-aa6d-6ab5c1392a33",
         "version": "1.0.1"
       }
     },
-    "f6721923-b6c7-417c-8a6c-c96374df2ddc": {
+    "86bd5b2f-306b-4bc8-81d7-f7b19d834cee": {
       "1.0.1": {
-        "__INTERACTION_BASE__": "SimLog",
+        "__INTERACTION_BASE__": {
+          "GUID": "2a031b16-4158-4687-b1a3-c0fec0de3ba8",
+          "version": "1.0.1"
+        },
+        "name": "SimLog",
+        "Order": "timestamp",
+        "LogLevel": "NORMAL",
+        "EnableLogging": "false",
+        "Delivery": "reliable",
+        "parameters": [
+          {
+            "name": "FedName",
+            "type": "String",
+            "hidden": false
+          },
+          {
+            "name": "originFed",
+            "type": "String",
+            "hidden": "false"
+          },
+          {
+            "name": "Comment",
+            "type": "String",
+            "hidden": false
+          },
+          {
+            "name": "Time",
+            "type": "double",
+            "hidden": false
+          },
+          {
+            "name": "sourceFed",
+            "type": "String",
+            "hidden": "false"
+          },
+          {
+            "name": "actualLogicalGenerationTime",
+            "type": "double",
+            "hidden": "false"
+          },
+          {
+            "name": "federateFilter",
+            "type": "String",
+            "hidden": "false"
+          }
+        ],
+        "GUID": "86bd5b2f-306b-4bc8-81d7-f7b19d834cee",
+        "version": "1.0.1"
+      }
+    },
+    "efbbec25-4770-4237-a5fe-50a09862d1ad": {
+      "1.0.1": {
+        "__INTERACTION_BASE__": {
+          "GUID": "86bd5b2f-306b-4bc8-81d7-f7b19d834cee",
+          "version": "1.0.1"
+        },
         "name": "MediumPrio",
         "Order": "timestamp",
         "LogLevel": "NORMAL",
@@ -375,13 +263,16 @@
             "hidden": "false"
           }
         ],
-        "GUID": "f6721923-b6c7-417c-8a6c-c96374df2ddc",
+        "GUID": "efbbec25-4770-4237-a5fe-50a09862d1ad",
         "version": "1.0.1"
       }
     },
-    "fc9322e4-b4f5-4b4c-9dd3-769a597cdc8e": {
+    "817d000d-41d7-495b-a8a3-88ec525259bc": {
       "1.0.1": {
-        "__INTERACTION_BASE__": "SimLog",
+        "__INTERACTION_BASE__": {
+          "GUID": "86bd5b2f-306b-4bc8-81d7-f7b19d834cee",
+          "version": "1.0.1"
+        },
         "name": "HighPrio",
         "Order": "timestamp",
         "LogLevel": "NORMAL",
@@ -424,13 +315,16 @@
             "hidden": "false"
           }
         ],
-        "GUID": "fc9322e4-b4f5-4b4c-9dd3-769a597cdc8e",
+        "GUID": "817d000d-41d7-495b-a8a3-88ec525259bc",
         "version": "1.0.1"
       }
     },
-    "dc2abf7e-dc6f-4ff3-bc58-da043b8c58c9": {
+    "d3b9d12e-139c-4992-8abc-a974026dc33c": {
       "1.0.1": {
-        "__INTERACTION_BASE__": "C2WInteractionRoot",
+        "__INTERACTION_BASE__": {
+          "GUID": "2a031b16-4158-4687-b1a3-c0fec0de3ba8",
+          "version": "1.0.1"
+        },
         "name": "ActionBase",
         "Order": "timestamp",
         "LogLevel": "NORMAL",
@@ -458,13 +352,16 @@
             "hidden": "false"
           }
         ],
-        "GUID": "dc2abf7e-dc6f-4ff3-bc58-da043b8c58c9",
+        "GUID": "d3b9d12e-139c-4992-8abc-a974026dc33c",
         "version": "1.0.1"
       }
     },
-    "ee2b1dc2-4e94-4179-87f6-02ddca50a461": {
+    "08cf8c40-2fba-4bd1-866e-16ec68e633e5": {
       "1.0.1": {
-        "__INTERACTION_BASE__": "SimulationControl",
+        "__INTERACTION_BASE__": {
+          "GUID": "626468ad-0e72-4f32-aa6d-6ab5c1392a33",
+          "version": "1.0.1"
+        },
         "name": "SimPause",
         "Order": "timestamp",
         "LogLevel": "NORMAL",
@@ -492,7 +389,149 @@
             "hidden": "false"
           }
         ],
-        "GUID": "ee2b1dc2-4e94-4179-87f6-02ddca50a461",
+        "GUID": "08cf8c40-2fba-4bd1-866e-16ec68e633e5",
+        "version": "1.0.1"
+      }
+    },
+    "bcdb9e06-21d2-4414-bb87-cce59d19e798": {
+      "1.0.1": {
+        "__INTERACTION_BASE__": {
+          "GUID": "86bd5b2f-306b-4bc8-81d7-f7b19d834cee",
+          "version": "1.0.1"
+        },
+        "name": "VeryLowPrio",
+        "Order": "timestamp",
+        "LogLevel": "NORMAL",
+        "EnableLogging": "false",
+        "Delivery": "reliable",
+        "parameters": [
+          {
+            "name": "FedName",
+            "type": "String",
+            "hidden": false
+          },
+          {
+            "name": "originFed",
+            "type": "String",
+            "hidden": "false"
+          },
+          {
+            "name": "Comment",
+            "type": "String",
+            "hidden": false
+          },
+          {
+            "name": "Time",
+            "type": "double",
+            "hidden": false
+          },
+          {
+            "name": "sourceFed",
+            "type": "String",
+            "hidden": "false"
+          },
+          {
+            "name": "actualLogicalGenerationTime",
+            "type": "double",
+            "hidden": "false"
+          },
+          {
+            "name": "federateFilter",
+            "type": "String",
+            "hidden": "false"
+          }
+        ],
+        "GUID": "bcdb9e06-21d2-4414-bb87-cce59d19e798",
+        "version": "1.0.1"
+      }
+    },
+    "d6e15de9-40b6-4c2c-8843-5d632c15351c": {
+      "1.0.1": {
+        "__INTERACTION_BASE__": {
+          "GUID": "626468ad-0e72-4f32-aa6d-6ab5c1392a33",
+          "version": "1.0.1"
+        },
+        "name": "SimEnd",
+        "Order": "timestamp",
+        "LogLevel": "NORMAL",
+        "EnableLogging": "false",
+        "Delivery": "reliable",
+        "parameters": [
+          {
+            "name": "originFed",
+            "type": "String",
+            "hidden": "false"
+          },
+          {
+            "name": "sourceFed",
+            "type": "String",
+            "hidden": "false"
+          },
+          {
+            "name": "actualLogicalGenerationTime",
+            "type": "double",
+            "hidden": "false"
+          },
+          {
+            "name": "federateFilter",
+            "type": "String",
+            "hidden": "false"
+          }
+        ],
+        "GUID": "d6e15de9-40b6-4c2c-8843-5d632c15351c",
+        "version": "1.0.1"
+      }
+    },
+    "29446fb6-2b1c-42ea-b554-6e4a2a66dcc4": {
+      "1.0.1": {
+        "__INTERACTION_BASE__": {
+          "GUID": "da3538cb-83f3-482c-a649-329b55846cdb",
+          "version": "1.0.1"
+        },
+        "name": "InteractionRoot",
+        "Order": "timestamp",
+        "LogLevel": "NORMAL",
+        "EnableLogging": "false",
+        "Delivery": "reliable",
+        "parameters": [],
+        "GUID": "29446fb6-2b1c-42ea-b554-6e4a2a66dcc4",
+        "version": "1.0.1"
+      }
+    },
+    "9a3ed0ca-6bce-4ef7-a04e-831b4d83bf74": {
+      "1.0.1": {
+        "__INTERACTION_BASE__": {
+          "GUID": "2a031b16-4158-4687-b1a3-c0fec0de3ba8",
+          "version": "1.0.1"
+        },
+        "name": "OutcomeBase",
+        "Order": "timestamp",
+        "LogLevel": "NORMAL",
+        "EnableLogging": "false",
+        "Delivery": "reliable",
+        "parameters": [
+          {
+            "name": "originFed",
+            "type": "String",
+            "hidden": "false"
+          },
+          {
+            "name": "sourceFed",
+            "type": "String",
+            "hidden": "false"
+          },
+          {
+            "name": "actualLogicalGenerationTime",
+            "type": "double",
+            "hidden": "false"
+          },
+          {
+            "name": "federateFilter",
+            "type": "String",
+            "hidden": "false"
+          }
+        ],
+        "GUID": "9a3ed0ca-6bce-4ef7-a04e-831b4d83bf74",
         "version": "1.0.1"
       }
     }
@@ -502,55 +541,55 @@
   "Experiments": [],
   "Interactions": [
     {
-      "GUID": "417a2219-b717-44de-9e44-a4e439c4ae92",
+      "GUID": "e62d46dc-de56-4f25-a982-04747289656f",
       "version": "1.0.1"
     },
     {
-      "GUID": "5aa09cb9-a843-4dd3-8900-81b1217b413e",
+      "GUID": "ef1e2360-614d-4a58-ba58-622812414f0d",
       "version": "1.0.1"
     },
     {
-      "GUID": "68e39fa0-2dee-48d4-84ce-72407dd0ecb0",
+      "GUID": "2a031b16-4158-4687-b1a3-c0fec0de3ba8",
       "version": "1.0.1"
     },
     {
-      "GUID": "f03a65e9-14e9-448f-9f98-c742d83abedd",
+      "GUID": "626468ad-0e72-4f32-aa6d-6ab5c1392a33",
       "version": "1.0.1"
     },
     {
-      "GUID": "a29359c1-ceb7-4487-a8ab-64730fc13d5e",
+      "GUID": "86bd5b2f-306b-4bc8-81d7-f7b19d834cee",
       "version": "1.0.1"
     },
     {
-      "GUID": "5b0882d1-089f-4852-93f5-806aa1e39495",
+      "GUID": "efbbec25-4770-4237-a5fe-50a09862d1ad",
       "version": "1.0.1"
     },
     {
-      "GUID": "014ccb43-7eb5-4c15-bf57-d97c95bc9a9c",
+      "GUID": "817d000d-41d7-495b-a8a3-88ec525259bc",
       "version": "1.0.1"
     },
     {
-      "GUID": "426ef9cb-ea63-441b-a28b-bb3f15ed97e5",
+      "GUID": "d3b9d12e-139c-4992-8abc-a974026dc33c",
       "version": "1.0.1"
     },
     {
-      "GUID": "9870c5d6-cdc1-4bf0-81c4-272d590815f9",
+      "GUID": "08cf8c40-2fba-4bd1-866e-16ec68e633e5",
       "version": "1.0.1"
     },
     {
-      "GUID": "f6721923-b6c7-417c-8a6c-c96374df2ddc",
+      "GUID": "bcdb9e06-21d2-4414-bb87-cce59d19e798",
       "version": "1.0.1"
     },
     {
-      "GUID": "fc9322e4-b4f5-4b4c-9dd3-769a597cdc8e",
+      "GUID": "d6e15de9-40b6-4c2c-8843-5d632c15351c",
       "version": "1.0.1"
     },
     {
-      "GUID": "dc2abf7e-dc6f-4ff3-bc58-da043b8c58c9",
+      "GUID": "29446fb6-2b1c-42ea-b554-6e4a2a66dcc4",
       "version": "1.0.1"
     },
     {
-      "GUID": "ee2b1dc2-4e94-4179-87f6-02ddca50a461",
+      "GUID": "9a3ed0ca-6bce-4ef7-a04e-831b4d83bf74",
       "version": "1.0.1"
     }
   ],

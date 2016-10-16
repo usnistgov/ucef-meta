@@ -1,14 +1,23 @@
 {
-  "id": "ExportToDB",
-  "name": "ExportToDB",
-  "version": "0.1.0",
-  "description": "",
-  "icon": {
-    "class": "glyphicon glyphicon-cog",
-    "src": ""
-  },
-  "disableServerSideExecution": false,
-  "disableBrowserSideExecution": false,
-  "writeAccessRequired": true,
-  "configStructure": []
+    "id": "ExportToDB",
+    "name": "ExportToDB",
+    "version": "0.1.0",
+    "description": "",
+    "icon": {
+	"class": "glyphicon glyphicon-cog",
+	"src": ""
+    },
+    "disableServerSideExecution": false,
+    "disableBrowserSideExecution": false,
+    "writeAccessRequired": true,
+    "configStructure": [
+        {
+            "name": "savePathMap",
+            "displayName": "Save Path Map",
+            "description": "Saves the WebGME Path to RefObj (GUID/Version) map.",
+            "value": false,
+            "valueType": "boolean",
+            "readOnly": false
+        }
+    ]
 }
