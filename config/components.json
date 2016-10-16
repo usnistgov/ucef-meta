@@ -3,11 +3,35 @@
 	"theme": "default",
 	"keyBinding": "sublime",
         "autoSaveInterval": "2000",
-	"map": {
+	"syntaxToModeMap": {
+	    "Java": {"name":"text/x-java"},
+	    "UNIX": {"name":"gfm"}
+	},
+	"attrToSyntaxMap": {
 	    "SimpleMappingConnection": {
-		"guardCondition": {"name":"text/x-java"},
-		"mapSpecs": {"name":"text/x-java"}
+		"guardCondition": "Java",
+		"mapSpecs": "Java"
+	    },
+	    "ComplexMappingConnection": {
+		"guardCondition": "Java",
+		"mapSpecs": "Java"
+	    },
+	    "Action": {
+		"ParamValues": "UNIX"
+	    },
+	    "OutcomeFilter": {
+		"Expression": "Java"
+	    },
+	    "COAException": {
+		"branchesFinishedCondition": "UNIX"
+	    },
+	    "InteractionMapping": {
+		"guardCondition": "Java",
+		"mapSpecs": "Java"
+	    },
+	    "FederateExecution": {
+		"Command": "UNIX"
 	    }
 	}
-  }
+    }
 }
