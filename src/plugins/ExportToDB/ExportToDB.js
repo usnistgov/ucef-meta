@@ -3,16 +3,19 @@ define([
     'text!./metadata.json',
     'plugin/PluginBase',
     'webgme-to-json/webgme-to-json',
+    'text!./BasePackage.json',
     'q'
 ], function (
     PluginConfig,
     pluginMetadata,
     PluginBase,
     webgmeToJSON,
+    basePackage,
     Q) {
     'use strict';
 
     pluginMetadata = JSON.parse(pluginMetadata);
+    basePackage    = JSON.parse(basePackage);
 
     /**
      * Initializes a new instance of ExportToDB.
@@ -142,17 +145,19 @@ define([
 	// for testing, need the structure that would be in the database
 	self.initDB(model);
 
-	// iterate through all the FOM Sheets in the root node
-	model.root.FOMSheet_list.map(function(FOMSheetInfo) {
-	    // these all update the model._DB with the relevant items
-	    self.buildFederateTree(model, FOMSheetInfo);
-	    self.extractInteractions(model, FOMSheetInfo);
+	// these all update the model._DB with the relevant items
 
-	    // now that we have the federates and the interactions, need to get their relations
-	    
-	    self.extractCOAs(model, FOMSheetInfo);
-	    self.extractExperiments(model, FOMSheetInfo);
-	    self.extractConfigurations(model, FOMSheetInfo);
+	model.root.FOMSheet_list.map(function(obj) {
+	    self.extractInteractions(model, obj);
+	    self.buildFederateTree(model, obj);
+	});
+	// now that we have (ALL) the interactions and federates, we
+	// can make sure the federate dependencies can be captured
+	model.root.FOMSheet_list.map(function(obj) {
+	    self.connectFederatesToInteractions(model, obj);
+	    self.extractCOAs(model, obj);
+	    self.extractExperiments(model, obj);
+	    self.extractConfigurations(model, obj);
 	});
 	// now that we've transformed the model, get rid of the
 	// original data
@@ -238,6 +243,9 @@ define([
 	}
 	// capture any parameters that may exist
 	self.transformParameters(newObj, obj);
+	// initialize the inputs (interaction subscribe) and outputs (interaction publish)
+	newObj.inputs = [];
+	newObj.outputs = [];
 	// add any missing keys needed by schema
 	var addedKeys = ['documentation', 'repository'];
 	addedKeys.map(function(key) {
@@ -272,14 +280,39 @@ define([
     
     // currently heirarchical federates dont' exist so can't test;
     // will need to update this function when they do exist
-    ExportToDB.prototype.buildFederateTree = function(model, FOMSheetInfo) {
+    ExportToDB.prototype.buildFederateTree = function(model, obj) {
 	var self = this;
 	// Need to go through all children of the FOMSheet
 	// which are federates, should refactor a little so
 	// that there is just a single Federate_list which
 	// contains all types of federates.  will require some
 	// further processing.
-	self.makeAndReturnChildFederates(model, FOMSheetInfo);
+	self.makeAndReturnChildFederates(model, obj);
+    };
+
+    ExportToDB.prototype.connectFederatesToInteractions = function(model, obj) {
+	var self = this;
+	// by this point, all federats and interactions are in 	model._PathToRef
+	if (obj.StaticInteractionPublish_list) {
+	    obj.StaticInteractionPublish_list.map(function(publish) {
+		var srcPath = publish.src.path;
+		var dstPath = publish.dst.path;
+		var fedRef = model._PathToRef[srcPath];
+		var intRef = model._PathToRef[dstPath];
+		var fedObj = model._DB.__OBJECTS__[fedRef.GUID][fedRef.version];
+		fedObj.outputs.push(intRef);
+	    });
+	}
+	if (obj.StaticInteractionSubscribe_list) {
+	    obj.StaticInteractionSubscribe_list.map(function(subscribe) {
+		var srcPath = subscribe.src.path;
+		var dstPath = subscribe.dst.path;
+		var intRef = model._PathToRef[srcPath];
+		var fedRef = model._PathToRef[dstPath];
+		var fedObj = model._DB.__OBJECTS__[fedRef.GUID][fedRef.version];
+		fedObj.inputs.push(intRef);
+	    });
+	}
     };
 
     ExportToDB.prototype.transformInteraction = function(obj) {
@@ -300,10 +333,10 @@ define([
 	return newObj;
     };
 
-    ExportToDB.prototype.extractInteractions = function(model, FOMSheetInfo) {
+    ExportToDB.prototype.extractInteractions = function(model, obj) {
 	var self = this;
 	var interactionList = [];
-	interactionList = interactionList.concat(FOMSheetInfo.Interaction_list);
+	interactionList = interactionList.concat(obj.Interaction_list);
 	interactionList.map(function(interactionInfo) {
 	    var newObj = self.transformInteraction(interactionInfo);
 	    if (newObj) {
@@ -330,10 +363,10 @@ define([
 	return newObj;
     };
 
-    ExportToDB.prototype.extractCOAs = function(model, FOMSheetInfo) {
+    ExportToDB.prototype.extractCOAs = function(model, obj) {
 	var self = this;
 	var coaList = [];
-	coaList = coaList.concat(FOMSheetInfo.COA_list);
+	coaList = coaList.concat(obj.COA_list);
 	coaList.map(function(coaInfo) {
 	    var newObj = self.transformCOA(coaInfo);
 	    if (newObj) {
@@ -343,10 +376,10 @@ define([
 	});
     };
 
-    ExportToDB.prototype.extractExperiments = function(model, FOMSheetInfo) {
+    ExportToDB.prototype.extractExperiments = function(model, obj) {
     };
 
-    ExportToDB.prototype.extractConfigurations = function(model, FOMSheetInfo) {
+    ExportToDB.prototype.extractConfigurations = function(model, obj) {
     };
 
     ExportToDB.prototype.buildDummyObjects = function(db) {

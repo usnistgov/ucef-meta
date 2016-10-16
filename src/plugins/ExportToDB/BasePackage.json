@@ -1,0 +1,564 @@
+{
+  "__OBJECTS__": {
+    "417a2219-b717-44de-9e44-a4e439c4ae92": {
+      "1.0.1": {
+        "__INTERACTION_BASE__": "SimulationControl",
+        "name": "SimEnd",
+        "Order": "timestamp",
+        "LogLevel": "NORMAL",
+        "EnableLogging": "false",
+        "Delivery": "reliable",
+        "parameters": [
+          {
+            "name": "originFed",
+            "type": "String",
+            "hidden": "false"
+          },
+          {
+            "name": "sourceFed",
+            "type": "String",
+            "hidden": "false"
+          },
+          {
+            "name": "actualLogicalGenerationTime",
+            "type": "double",
+            "hidden": "false"
+          },
+          {
+            "name": "federateFilter",
+            "type": "String",
+            "hidden": "false"
+          }
+        ],
+        "GUID": "417a2219-b717-44de-9e44-a4e439c4ae92",
+        "version": "1.0.1"
+      }
+    },
+    "5aa09cb9-a843-4dd3-8900-81b1217b413e": {
+      "1.0.1": {
+        "__INTERACTION_BASE__": "C2WInteractionRoot",
+        "name": "SimLog",
+        "Order": "timestamp",
+        "LogLevel": "NORMAL",
+        "EnableLogging": "false",
+        "Delivery": "reliable",
+        "parameters": [
+          {
+            "name": "FedName",
+            "type": "String",
+            "hidden": false
+          },
+          {
+            "name": "originFed",
+            "type": "String",
+            "hidden": "false"
+          },
+          {
+            "name": "Comment",
+            "type": "String",
+            "hidden": false
+          },
+          {
+            "name": "Time",
+            "type": "double",
+            "hidden": false
+          },
+          {
+            "name": "sourceFed",
+            "type": "String",
+            "hidden": "false"
+          },
+          {
+            "name": "actualLogicalGenerationTime",
+            "type": "double",
+            "hidden": "false"
+          },
+          {
+            "name": "federateFilter",
+            "type": "String",
+            "hidden": "false"
+          }
+        ],
+        "GUID": "5aa09cb9-a843-4dd3-8900-81b1217b413e",
+        "version": "1.0.1"
+      }
+    },
+    "68e39fa0-2dee-48d4-84ce-72407dd0ecb0": {
+      "1.0.1": {
+        "__INTERACTION_BASE__": "SimLog",
+        "name": "VeryLowPrio",
+        "Order": "timestamp",
+        "LogLevel": "NORMAL",
+        "EnableLogging": "false",
+        "Delivery": "reliable",
+        "parameters": [
+          {
+            "name": "FedName",
+            "type": "String",
+            "hidden": false
+          },
+          {
+            "name": "originFed",
+            "type": "String",
+            "hidden": "false"
+          },
+          {
+            "name": "Comment",
+            "type": "String",
+            "hidden": false
+          },
+          {
+            "name": "Time",
+            "type": "double",
+            "hidden": false
+          },
+          {
+            "name": "sourceFed",
+            "type": "String",
+            "hidden": "false"
+          },
+          {
+            "name": "actualLogicalGenerationTime",
+            "type": "double",
+            "hidden": "false"
+          },
+          {
+            "name": "federateFilter",
+            "type": "String",
+            "hidden": "false"
+          }
+        ],
+        "GUID": "68e39fa0-2dee-48d4-84ce-72407dd0ecb0",
+        "version": "1.0.1"
+      }
+    },
+    "f03a65e9-14e9-448f-9f98-c742d83abedd": {
+      "1.0.1": {
+        "__INTERACTION_BASE__": "Interaction",
+        "name": "InteractionRoot",
+        "Order": "timestamp",
+        "LogLevel": "NORMAL",
+        "EnableLogging": "false",
+        "Delivery": "reliable",
+        "parameters": [],
+        "GUID": "f03a65e9-14e9-448f-9f98-c742d83abedd",
+        "version": "1.0.1"
+      }
+    },
+    "a29359c1-ceb7-4487-a8ab-64730fc13d5e": {
+      "1.0.1": {
+        "__INTERACTION_BASE__": "C2WInteractionRoot",
+        "name": "OutcomeBase",
+        "Order": "timestamp",
+        "LogLevel": "NORMAL",
+        "EnableLogging": "false",
+        "Delivery": "reliable",
+        "parameters": [
+          {
+            "name": "originFed",
+            "type": "String",
+            "hidden": "false"
+          },
+          {
+            "name": "sourceFed",
+            "type": "String",
+            "hidden": "false"
+          },
+          {
+            "name": "actualLogicalGenerationTime",
+            "type": "double",
+            "hidden": "false"
+          },
+          {
+            "name": "federateFilter",
+            "type": "String",
+            "hidden": "false"
+          }
+        ],
+        "GUID": "a29359c1-ceb7-4487-a8ab-64730fc13d5e",
+        "version": "1.0.1"
+      }
+    },
+    "5b0882d1-089f-4852-93f5-806aa1e39495": {
+      "1.0.1": {
+        "__INTERACTION_BASE__": "SimulationControl",
+        "name": "SimResume",
+        "Order": "timestamp",
+        "LogLevel": "NORMAL",
+        "EnableLogging": "false",
+        "Delivery": "reliable",
+        "parameters": [
+          {
+            "name": "originFed",
+            "type": "String",
+            "hidden": "false"
+          },
+          {
+            "name": "sourceFed",
+            "type": "String",
+            "hidden": "false"
+          },
+          {
+            "name": "actualLogicalGenerationTime",
+            "type": "double",
+            "hidden": "false"
+          },
+          {
+            "name": "federateFilter",
+            "type": "String",
+            "hidden": "false"
+          }
+        ],
+        "GUID": "5b0882d1-089f-4852-93f5-806aa1e39495",
+        "version": "1.0.1"
+      }
+    },
+    "014ccb43-7eb5-4c15-bf57-d97c95bc9a9c": {
+      "1.0.1": {
+        "__INTERACTION_BASE__": "SimLog",
+        "name": "LowPrio",
+        "Order": "timestamp",
+        "LogLevel": "NORMAL",
+        "EnableLogging": "false",
+        "Delivery": "reliable",
+        "parameters": [
+          {
+            "name": "FedName",
+            "type": "String",
+            "hidden": false
+          },
+          {
+            "name": "originFed",
+            "type": "String",
+            "hidden": "false"
+          },
+          {
+            "name": "Comment",
+            "type": "String",
+            "hidden": false
+          },
+          {
+            "name": "Time",
+            "type": "double",
+            "hidden": false
+          },
+          {
+            "name": "sourceFed",
+            "type": "String",
+            "hidden": "false"
+          },
+          {
+            "name": "actualLogicalGenerationTime",
+            "type": "double",
+            "hidden": "false"
+          },
+          {
+            "name": "federateFilter",
+            "type": "String",
+            "hidden": "false"
+          }
+        ],
+        "GUID": "014ccb43-7eb5-4c15-bf57-d97c95bc9a9c",
+        "version": "1.0.1"
+      }
+    },
+    "426ef9cb-ea63-441b-a28b-bb3f15ed97e5": {
+      "1.0.1": {
+        "__INTERACTION_BASE__": "InteractionRoot",
+        "name": "C2WInteractionRoot",
+        "Order": "timestamp",
+        "LogLevel": "NORMAL",
+        "EnableLogging": "false",
+        "Delivery": "reliable",
+        "parameters": [
+          {
+            "name": "originFed",
+            "type": "String",
+            "hidden": "false"
+          },
+          {
+            "name": "sourceFed",
+            "type": "String",
+            "hidden": "false"
+          },
+          {
+            "name": "actualLogicalGenerationTime",
+            "type": "double",
+            "hidden": "false"
+          },
+          {
+            "name": "federateFilter",
+            "type": "String",
+            "hidden": "false"
+          }
+        ],
+        "GUID": "426ef9cb-ea63-441b-a28b-bb3f15ed97e5",
+        "version": "1.0.1"
+      }
+    },
+    "9870c5d6-cdc1-4bf0-81c4-272d590815f9": {
+      "1.0.1": {
+        "__INTERACTION_BASE__": "C2WInteractionRoot",
+        "name": "SimulationControl",
+        "Order": "timestamp",
+        "LogLevel": "NORMAL",
+        "EnableLogging": "false",
+        "Delivery": "reliable",
+        "parameters": [
+          {
+            "name": "originFed",
+            "type": "String",
+            "hidden": "false"
+          },
+          {
+            "name": "sourceFed",
+            "type": "String",
+            "hidden": "false"
+          },
+          {
+            "name": "actualLogicalGenerationTime",
+            "type": "double",
+            "hidden": "false"
+          },
+          {
+            "name": "federateFilter",
+            "type": "String",
+            "hidden": "false"
+          }
+        ],
+        "GUID": "9870c5d6-cdc1-4bf0-81c4-272d590815f9",
+        "version": "1.0.1"
+      }
+    },
+    "f6721923-b6c7-417c-8a6c-c96374df2ddc": {
+      "1.0.1": {
+        "__INTERACTION_BASE__": "SimLog",
+        "name": "MediumPrio",
+        "Order": "timestamp",
+        "LogLevel": "NORMAL",
+        "EnableLogging": "false",
+        "Delivery": "reliable",
+        "parameters": [
+          {
+            "name": "FedName",
+            "type": "String",
+            "hidden": false
+          },
+          {
+            "name": "originFed",
+            "type": "String",
+            "hidden": "false"
+          },
+          {
+            "name": "Comment",
+            "type": "String",
+            "hidden": false
+          },
+          {
+            "name": "Time",
+            "type": "double",
+            "hidden": false
+          },
+          {
+            "name": "sourceFed",
+            "type": "String",
+            "hidden": "false"
+          },
+          {
+            "name": "actualLogicalGenerationTime",
+            "type": "double",
+            "hidden": "false"
+          },
+          {
+            "name": "federateFilter",
+            "type": "String",
+            "hidden": "false"
+          }
+        ],
+        "GUID": "f6721923-b6c7-417c-8a6c-c96374df2ddc",
+        "version": "1.0.1"
+      }
+    },
+    "fc9322e4-b4f5-4b4c-9dd3-769a597cdc8e": {
+      "1.0.1": {
+        "__INTERACTION_BASE__": "SimLog",
+        "name": "HighPrio",
+        "Order": "timestamp",
+        "LogLevel": "NORMAL",
+        "EnableLogging": "false",
+        "Delivery": "reliable",
+        "parameters": [
+          {
+            "name": "FedName",
+            "type": "String",
+            "hidden": false
+          },
+          {
+            "name": "originFed",
+            "type": "String",
+            "hidden": "false"
+          },
+          {
+            "name": "Comment",
+            "type": "String",
+            "hidden": false
+          },
+          {
+            "name": "Time",
+            "type": "double",
+            "hidden": false
+          },
+          {
+            "name": "sourceFed",
+            "type": "String",
+            "hidden": "false"
+          },
+          {
+            "name": "actualLogicalGenerationTime",
+            "type": "double",
+            "hidden": "false"
+          },
+          {
+            "name": "federateFilter",
+            "type": "String",
+            "hidden": "false"
+          }
+        ],
+        "GUID": "fc9322e4-b4f5-4b4c-9dd3-769a597cdc8e",
+        "version": "1.0.1"
+      }
+    },
+    "dc2abf7e-dc6f-4ff3-bc58-da043b8c58c9": {
+      "1.0.1": {
+        "__INTERACTION_BASE__": "C2WInteractionRoot",
+        "name": "ActionBase",
+        "Order": "timestamp",
+        "LogLevel": "NORMAL",
+        "EnableLogging": "false",
+        "Delivery": "reliable",
+        "parameters": [
+          {
+            "name": "originFed",
+            "type": "String",
+            "hidden": "false"
+          },
+          {
+            "name": "sourceFed",
+            "type": "String",
+            "hidden": "false"
+          },
+          {
+            "name": "actualLogicalGenerationTime",
+            "type": "double",
+            "hidden": "false"
+          },
+          {
+            "name": "federateFilter",
+            "type": "String",
+            "hidden": "false"
+          }
+        ],
+        "GUID": "dc2abf7e-dc6f-4ff3-bc58-da043b8c58c9",
+        "version": "1.0.1"
+      }
+    },
+    "ee2b1dc2-4e94-4179-87f6-02ddca50a461": {
+      "1.0.1": {
+        "__INTERACTION_BASE__": "SimulationControl",
+        "name": "SimPause",
+        "Order": "timestamp",
+        "LogLevel": "NORMAL",
+        "EnableLogging": "false",
+        "Delivery": "reliable",
+        "parameters": [
+          {
+            "name": "originFed",
+            "type": "String",
+            "hidden": "false"
+          },
+          {
+            "name": "sourceFed",
+            "type": "String",
+            "hidden": "false"
+          },
+          {
+            "name": "actualLogicalGenerationTime",
+            "type": "double",
+            "hidden": "false"
+          },
+          {
+            "name": "federateFilter",
+            "type": "String",
+            "hidden": "false"
+          }
+        ],
+        "GUID": "ee2b1dc2-4e94-4179-87f6-02ddca50a461",
+        "version": "1.0.1"
+      }
+    }
+  },
+  "Federates": [],
+  "COAs": [],
+  "Experiments": [],
+  "Interactions": [
+    {
+      "GUID": "417a2219-b717-44de-9e44-a4e439c4ae92",
+      "version": "1.0.1"
+    },
+    {
+      "GUID": "5aa09cb9-a843-4dd3-8900-81b1217b413e",
+      "version": "1.0.1"
+    },
+    {
+      "GUID": "68e39fa0-2dee-48d4-84ce-72407dd0ecb0",
+      "version": "1.0.1"
+    },
+    {
+      "GUID": "f03a65e9-14e9-448f-9f98-c742d83abedd",
+      "version": "1.0.1"
+    },
+    {
+      "GUID": "a29359c1-ceb7-4487-a8ab-64730fc13d5e",
+      "version": "1.0.1"
+    },
+    {
+      "GUID": "5b0882d1-089f-4852-93f5-806aa1e39495",
+      "version": "1.0.1"
+    },
+    {
+      "GUID": "014ccb43-7eb5-4c15-bf57-d97c95bc9a9c",
+      "version": "1.0.1"
+    },
+    {
+      "GUID": "426ef9cb-ea63-441b-a28b-bb3f15ed97e5",
+      "version": "1.0.1"
+    },
+    {
+      "GUID": "9870c5d6-cdc1-4bf0-81c4-272d590815f9",
+      "version": "1.0.1"
+    },
+    {
+      "GUID": "f6721923-b6c7-417c-8a6c-c96374df2ddc",
+      "version": "1.0.1"
+    },
+    {
+      "GUID": "fc9322e4-b4f5-4b4c-9dd3-769a597cdc8e",
+      "version": "1.0.1"
+    },
+    {
+      "GUID": "dc2abf7e-dc6f-4ff3-bc58-da043b8c58c9",
+      "version": "1.0.1"
+    },
+    {
+      "GUID": "ee2b1dc2-4e94-4179-87f6-02ddca50a461",
+      "version": "1.0.1"
+    }
+  ],
+  "Projects": [],
+  "Users": [],
+  "Organizations": [],
+  "Repositories": [],
+  "Builds": [],
+  "Executions": [],
+  "Docker Images": []
+}
