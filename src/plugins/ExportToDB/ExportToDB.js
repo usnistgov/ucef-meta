@@ -75,6 +75,8 @@ define([
 
 	// What did the user select for our configuration?
 	var currentConfig = self.getCurrentConfig();
+	self.dbFileHash = currentConfig.dataBaseFile;
+	self.combineDB = currentConfig.combine;
 	self.savePathMap = currentConfig.savePathMap;
 
 	if (self.savePathMap)
@@ -83,6 +85,11 @@ define([
 	var nodeName = self.core.getAttribute(self.activeNode, 'name');
 	
 	webgmeToJSON.notify = function(level, msg) {}
+
+	// TODO:: Enable automatically following all pointers - even
+	// outside the tree, so that we can make sure all dependencies
+	// are properly published into the database if they don't
+	// already exist there.
 
 	// don't resolve pointers and children, keep webgmeNodes as part of the JSON.
 	webgmeToJSON.loadModel(self.core, self.activeNode, false, true)

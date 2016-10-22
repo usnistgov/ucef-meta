@@ -12,6 +12,22 @@
     "writeAccessRequired": true,
     "configStructure": [
         {
+            "name": "dataBaseFile",
+            "displayName": "Database file",
+            "description": "Previously exported database file for use in referencing.",
+            "value": "",
+            "valueType": "asset",
+            "readOnly": false
+        },
+        {
+            "name": "combine",
+            "displayName": "Combine DB Files",
+            "description": "Combine the uploaded database file with the generated database file.",
+            "value": true,
+            "valueType": "boolean",
+            "readOnly": false
+        },
+        {
             "name": "savePathMap",
             "displayName": "Save Path Map",
             "description": "Saves the WebGME Path to RefObj (GUID/Version) map.",
