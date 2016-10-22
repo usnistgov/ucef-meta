@@ -71,11 +71,9 @@ define([
 
         self.updateMETA({});
 
-	console.log(baseMap);
-
 	// What did the user select for our configuration?
 	var currentConfig = self.getCurrentConfig();
-	self.dbFileHash = currentConfig.dataBaseFile;
+	var dbFileHash = currentConfig.dataBaseFile;
 	self.combineDB = currentConfig.combine;
 	self.savePathMap = currentConfig.savePathMap;
 
@@ -92,9 +90,14 @@ define([
 	// already exist there.
 
 	// don't resolve pointers and children, keep webgmeNodes as part of the JSON.
-	webgmeToJSON.loadModel(self.core, self.activeNode, false, true)
+	webgmeToJSON.loadModel(self.core, self.rootNode, self.activeNode, false, true, true)
 	    .then(function(model) {
 		self.model = model;
+	    })
+	    .then(function() {
+		return self.updateBaseMap();
+	    })
+	    .then(function() {
 		var dataBase = self.processModel(); // convert to the DB format
 		return self.blobClient.putFile(
 		    nodeName+'.db.json',
@@ -120,6 +123,30 @@ define([
 		callback(err, self.result);
 	    })
 		.done();
+    };
+
+    ExportToDB.prototype.updateBaseMap = function() {
+	var self = this;
+	if (!self.dbFileHash)
+	    return;
+	return self.blobClient.getMetadata(self.dbFileHash)
+	    .then(function(dbFileMetadata) {
+		var splitName = dbFileMetadata.name.split('.');
+		var newName = "";
+		for (var i=0; i<splitName.length-1; i++)
+		    newName += splitName[i];
+		self.importedName = newName;
+		return self.blobClient.getObjectAsString(self.dbFileHash);
+	    })
+	    .then(function(dbFile) {
+		var extraDB = JSON.parse(dbFile);
+		Object.assign(baseMap, extraDB);  // merge the new db with the base db
+	    });
+    };
+
+    ExportToDB.prototype.resolveReferences = function(obj) {
+	var self = this;
+	// need to check the database
     };
 
     // NOTE: When this plugin is converted to export single objects
@@ -414,8 +441,9 @@ define([
 
     ExportToDB.prototype.generateGUID = function() {
 	var d = new Date().getTime();
-	if(window.performance && typeof window.performance.now === "function"){
-            d += performance.now(); //use high-precision timer if available
+	if( typeof(window) !== 'undefined' ) {
+	    if (window.performance && typeof window.performance.now === "function")
+		d += performance.now(); //use high-precision timer if available
 	}
 	var uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
             var r = (d + Math.random()*16)%16 | 0;

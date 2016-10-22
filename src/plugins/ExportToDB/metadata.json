@@ -31,7 +31,7 @@
             "name": "savePathMap",
             "displayName": "Save Path Map",
             "description": "Saves the WebGME Path to RefObj (GUID/Version) map.",
-            "value": false,
+            "value": true,
             "valueType": "boolean",
             "readOnly": false
         }
