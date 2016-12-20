@@ -1,0 +1,45 @@
+fieldset {
+    border-width: thin;
+    border-color: silver;
+    border-style: solid;
+    border-radius: 5px;
+}
+
+legend {
+    width: inherit;
+    padding-right: 6px;
+    padding-left: 6px;
+    margin-left: 12px;
+    border: 0;
+}
+
+.form-horizontal .form-group {
+    margin-right: 0;
+    margin-left: 0;
+    margin-bottom: 5px;
+}
+
+.form-group div.desc {
+    font-size: 0.9em;
+    color: #444;
+}
+
+.error.message {
+    background: red;
+    color: white;
+    font-weight: 800;
+    padding: 4px;
+}
+
+.success.message {
+    background: green;
+    color: white;
+    font-weight: 800;
+    padding: 4px;
+}
+
+#dialogMessage {
+    align-content: center;
+    border-radius: 5px;
+    padding-left: 10px;
+}

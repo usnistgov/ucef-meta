@@ -1,41 +1,53 @@
 {
-    "components": {
-	"plugins": {
-	    "FederatesExporter": {
-		"src": "src/plugins/FederatesExporter",
-		"test": "test/plugins/FederatesExporter"
-	    },
-	    "DeploymentExporter": {
-		"src": "src/plugins/DeploymentExporter",
-		"test": "test/plugins/DeploymentExporter"
-	    },
-	    "RunFederation": {
-		"src": "src/plugins/RunFederation",
-		"test": "test/plugins/RunFederation"
-	    },
-	    "ExportToDB": {
-		"src": "src/plugins/ExportToDB"
-	    }
-	},
-	"addons": {},
-	"decorators": {},
-	"seeds": {},
-	"visualizers": {}
+  "components": {
+    "plugins": {
+      "FederatesExporter": {
+        "src": "src/plugins/FederatesExporter",
+        "test": "test/plugins/FederatesExporter"
+      },
+      "DeploymentExporter": {
+        "src": "src/plugins/DeploymentExporter",
+        "test": "test/plugins/DeploymentExporter"
+      },
+      "RunFederation": {
+        "src": "src/plugins/RunFederation",
+        "test": "test/plugins/RunFederation"
+      },
+      "ExportToDB": {
+        "src": "src/plugins/ExportToDB"
+      },
+      "ExportToRegistry": {
+        "src": "src/plugins/ExportToRegistry",
+        "test": "test/plugins/ExportToRegistry"
+      }
     },
-    "dependencies": {
-	"plugins": {},
-	"addons": {},
-	"decorators": {},
-	"visualizers": {
-	    "CodeEditor": {
-		"src": "panels/CodeEditor/CodeEditorPanel",
-		"title": "CodeEditor",
-		"panel": "src/visualizers/panels/CodeEditor",
-		"secondary": false,
-		"widget": "src/visualizers/widgets/CodeEditor",
-		"project": "webgme-codeeditor"
-	    }
-	},
-	"layouts": {}
-    }
+    "addons": {},
+    "decorators": {
+      "RegistryDecorator": {
+        "src": "src/decorators/RegistryDecorator"
+      }
+    },
+    "seeds": {},
+    "visualizers": {},
+    "layouts": {},
+    "routers": {}
+  },
+  "dependencies": {
+    "plugins": {},
+    "addons": {},
+    "decorators": {},
+    "visualizers": {
+      "CodeEditor": {
+        "src": "panels/CodeEditor/CodeEditorPanel",
+        "title": "CodeEditor",
+        "panel": "src/visualizers/panels/CodeEditor",
+        "secondary": false,
+        "widget": "src/visualizers/widgets/CodeEditor",
+        "project": "webgme-codeeditor"
+      }
+    },
+    "layouts": {},
+    "routers": {},
+    "seeds": {}
+  }
 }
