@@ -115,15 +115,15 @@ define([
 
 	self.dockerInfoMap = {
 	    'JavaFed': {
-		'name': 'ydbarve/c2wtcore_v002',
+		'name': 'cpswt/c2wtcore_v002',
 		'tag': '160816'
 	    },
 	    'CppFed': {
-		'name': 'ydbarve/c2wtcore_v002',
+		'name': 'cpswt/c2wtcore_v002',
 		'tag': '160816'
 	    },
 	    'OmnetFed': {
-		'name': 'ydbarve/c2wtcore_v002',
+		'name': 'cpswt/c2wtcore_v002',
 		'tag': '160816'
 	    },
 	};

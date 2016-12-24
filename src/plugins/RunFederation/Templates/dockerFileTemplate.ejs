@@ -2,8 +2,10 @@
 services: 
   fedManager:
     build: .
-    image: "ydbarve/c2wtcore_v002:160816"
+    image: "cpswt/c2wtcore_v002:160816"
     command: "sh start.sh FedManager"
+    extra_hosts:
+      - "cpswtng_archiva:10.0.2.15"
     volumes:
       - <%- inputPrefix %>/FedManager:/root/Projects/c2wt/input
       - <%- outputPrefix %>/FedManager:/root/Projects/c2wt/logs
@@ -14,6 +16,8 @@ fedInfos.map(function(fedInfo) {
     build: .
     image: "<%- dockerInfoMap[fedInfo.type].name %>:<%- dockerInfoMap[fedInfo.type].tag %>"
     command: "sh start.sh <%- fedInfo.type %>,<%- fedInfo.name %>" 
+    extra_hosts:
+      - "cpswtng_archiva:10.0.2.15"
     volumes:
       - <%- inputPrefix %>/<%- fedInfo.name %>:/root/Projects/c2wt/input
       - <%- outputPrefix %>/<%- fedInfo.name %>:/root/Projects/c2wt/logs
