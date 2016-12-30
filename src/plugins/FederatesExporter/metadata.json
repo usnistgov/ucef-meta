@@ -1,7 +1,7 @@
 {
   "id": "FederatesExporter",
   "name": "Federates Exporter",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Export stuff",
   "icon": {
     "src": "",
@@ -39,7 +39,7 @@
           "name": "c2wVersion",
           "displayName": "C2W version",
           "description": "The version of the C2W foundation to be used",
-          "value": "0.3.0-SNAPSHOT",
+          "value": "0.4.0-SNAPSHOT",
           "valueType": "string",
           "readOnly": false
       },
@@ -47,7 +47,7 @@
           "name": "repositoryUrlSnapshot",
           "displayName": "Repository URL for snapshots",
           "description": "The URL of the repository where the packaged components should be deployed.",
-          "value": "http://10.0.2.15:8080/repository/snapshots/",
+          "value": "http://cpswtng_archiva:8080/repository/snapshots/",
           "valueType": "string",
           "readOnly": false
       },
@@ -55,7 +55,7 @@
           "name": "repositoryUrlRelease",
           "displayName": "Repository URL for releases",
           "description": "The URL of the repository where the packaged components should be deployed.",
-          "value": "http://10.0.2.15:8080/repository/internal/",
+          "value": "http://cpswtng_archiva:8080/repository/internal/",
           "valueType": "string",
           "readOnly": false
       },
