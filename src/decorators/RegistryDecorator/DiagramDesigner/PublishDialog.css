@@ -6,10 +6,11 @@ fieldset {
 }
 
 legend {
-    width: inherit;
+    width: initial;
     padding-right: 6px;
     padding-left: 6px;
     margin-left: 12px;
+    margin-bottom: 12px;
     border: 0;
 }
 

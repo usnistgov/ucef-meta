@@ -10,23 +10,24 @@
  */
 
 define([
-    'js/RegistryKeys',
     'js/Constants',
     'decorators/ModelDecorator/DiagramDesigner/ModelDecorator.DiagramDesignerWidget',
     './PublishDialog',
+    './ImportDialog',
     'jquery',
     'underscore'
 ], function (
-    REGISTRY_KEYS,
     CONSTANTS,
     ModelDecoratorDiagramDesignerWidget,
-    PublishDialog) {
+    PublishDialog,
+    ImportDialog) {
 
     'use strict';
 
     var RegistryDecorator,
         DECORATOR_ID = 'RegistryDecorator',
-        REGISTRY_SHARE_BTN = $('<i class="glyphicon glyphicon-share text-meta" title="Share in Registry" />');
+        REGISTRY_SHARE_BTN = $('<i class="glyphicon glyphicon-share text-meta" title="Share in Registry" />'),
+        REGISTRY_IMPORT_BTN = $('<i class="glyphicon glyphicon-import text-meta" title="Import from Registry" />');
 
     RegistryDecorator = function (options) {
         var opts = _.extend({}, options);
@@ -45,23 +46,39 @@ define([
     RegistryDecorator.prototype.on_addTo = function () {
         var self = this,
             client = this._control._client,
-            nodeObj = client.getNode(this._metaInfo[CONSTANTS.GME_ID]);
-
-        // TODO: choose dialog based on Node Type
+            nodeObj = client.getNode(this._metaInfo[CONSTANTS.GME_ID]),
+            metaTypeId = nodeObj.getMetaTypeId(),
+            metaType = client.getNode(metaTypeId),
+            metaName = metaType.getAttribute('name');
 
         //render text-editor based META editing UI piece
-        this._skinParts.$ShareDialogBtn = REGISTRY_SHARE_BTN.clone();
-        this.$el.append(this._skinParts.$ShareDialogBtn);
+        if (metaName.match('Federate$')){
+            this._skinParts.$ShareDialogBtn = REGISTRY_SHARE_BTN.clone();
+            this.$el.append(this._skinParts.$ShareDialogBtn);
 
-        // Load EpicEditor on click
-        this._skinParts.$ShareDialogBtn.on('click', function (event) {
-            if (self.hostDesignerItem.canvas.getIsReadOnlyMode() !== true) {
-                self._showPublishDialog();
-            }
+            this._skinParts.$ShareDialogBtn.on('click', function (event) {
+                if (self.hostDesignerItem.canvas.getIsReadOnlyMode() !== true) {
+                    self._showPublishDialog();
+                }
 
-            event.stopPropagation();
-            event.preventDefault();
-        });
+                event.stopPropagation();
+                event.preventDefault();
+            });
+
+        } else if (metaName == 'FOMSheet'){
+            this._skinParts.$ImportDialogBtn = REGISTRY_IMPORT_BTN.clone();
+            this.$el.append(this._skinParts.$ImportDialogBtn);
+
+            this._skinParts.$ImportDialogBtn.on('click', function (event) {
+                if (self.hostDesignerItem.canvas.getIsReadOnlyMode() !== true) {
+                    self._showImportDialog();
+                }
+
+                event.stopPropagation();
+                event.preventDefault();
+            });
+
+        }
 
         this.logger.debug('This node was added to the canvas', nodeObj);
 
@@ -83,7 +100,7 @@ define([
     };
 
     /**
-     * Initialize Dialog and Editor creation
+     * Initialize Share Dialog
      * @return {void}
      */
     RegistryDecorator.prototype._showPublishDialog = function () {
@@ -98,6 +115,31 @@ define([
             nodeObj,
             function (publishResult) {
                 try {
+                } catch (e) {
+                    self.logger.error('Something went wrong while publishing object');
+                }
+            }
+        );
+
+        publishDialog.show();
+    };
+
+    /**
+     * Initialize Share Dialog
+     * @return {void}
+     */
+    RegistryDecorator.prototype._showImportDialog = function () {
+        var self = this;
+        var client = this._control._client;
+        var nodeObj = client.getNode(this._metaInfo[CONSTANTS.GME_ID]);
+        var importDialog = new ImportDialog();
+
+        // Initialize with documentation attribute and save callback function
+        importDialog.initialize(
+            client,
+            nodeObj,
+            function (importResult) {
+                try {
                     self.$doc.empty();
                     self.$doc.append($(marked(text)));
                 } catch (e) {
@@ -106,7 +148,7 @@ define([
             }
         );
 
-        publishDialog.show();
+        importDialog.show();
     };
 
 

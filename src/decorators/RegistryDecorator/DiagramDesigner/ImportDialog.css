@@ -1,0 +1,25 @@
+#resultContainer{
+    height: 300px;
+}
+
+#filterFields {
+    width: 20%;
+    float: left;
+    padding-right: 5px;
+    height: 100%;
+}
+
+#resultSpacer {
+    width: 2%;
+    float: left;
+}
+
+#resultObjects {
+    width: 78%;
+    float: left;
+    height: 100%;
+}
+
+.filterItem {
+    padding-left: 6px;
+}

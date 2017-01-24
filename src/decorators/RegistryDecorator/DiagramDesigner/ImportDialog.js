@@ -6,37 +6,52 @@
 
 define(['js/util',
     'js/Constants',
-    'text!./PublishDialog.html',
+    'text!./ImportDialog.html',
     'js/Utils/ComponentSettings',
-    'css!./PublishDialog.css'
+    './datatables',
+    'css!./PublishDialog.css',
+    'css!./ImportDialog.css',
+    'css!./datatables.css'
 ], function (Util,
              CONSTANTS,
-             PublishDialogTemplate,
-             ComponentSettings) {
+             ImportDialogTemplate,
+             ComponentSettings,
+             DataTable
+) {
     'use strict';
 
-    var PublishDialog,
+    var ImportDialog,
         REGISTRY_ACCESS_SETTINGS = 'RegistryAccessSettings',
         registryAccessSettings = {
             registryURL:"https://vulcan.isis.vanderbilt.edu",
             username:"username",
             serviceToken:""
-        };
+        },
+        COLUMNS = [
+            { title: "Name" , bSortable: false },
+            { title: "Type" , bSortable: false },
+            { title: "Version" , bSortable: false },
+            { title: "Description" , bSortable: false },
+            { title: "Released" , bSortable: false },
+            { title: "Actions" ,
+                bSortable: false,
+                data: null,
+                defaultContent: "<button>Import</button>" }
+        ],
+        DISPLAY_LENGTH = 20;
 
     /**
-     * PublishDialog Constructor
+     * ImportDialog Constructor
      * Insert dialog modal into body and initialize editor with
      * customized options
      */
-    PublishDialog = function () {
+    ImportDialog = function () {
         // Get Modal Template node for Editor Dialog and append it to body
-        this._dialog = $(PublishDialogTemplate);
+        this._dialog = $(ImportDialogTemplate);
         this._dialog.appendTo($(document.body));
 
         // Get element nodes
         this._el = this._dialog.find('.modal-body').first();
-        this._dialogHeader = this._dialog.find('#dialogHeader').first();
-        this._btnPublish = this._dialog.find('.btn-publish').first();
         this._btnOk = this._dialog.find('.btn-ok').first();
 
         this._urlInput = this._el.find('#url').first();
@@ -45,30 +60,38 @@ define(['js/util',
         this._passwordInput = this._el.find('#password').first();
         this._passwordGroup = this._el.find('#passwordGroup').first();
         this._toolGroup = this._el.find('#toolGroup').first();
-        this._toolSelector = this._el.find('#toolSelector').first();
-        this._toolMessage = this._el.find('#toolMessage').first();
-        this._toolDesc = this._el.find('#toolDesc').first();
-        this._btnRenewToken = this._el.find('.btn-renew-token').first();
-        this._registryFooter = this._el.find('#registryFooter').first();
-        this._dialogMessage = this._el.find('#dialogMessage').first()
+        this._toolSelector = this._dialog.find('#toolSelector').first();
+        this._toolMessage = this._dialog.find('#toolMessage').first();
+        this._toolDesc = this._dialog.find('#toolDesc').first();
+        this._btnRenewToken = this._dialog.find('.btn-renew-token').first();
+        this._registryFooter = this._dialog.find('#registryFooter').first();
+        this._dialogMessage = this._dialog.find('#dialogMessage').first();
 
-        this._objectTypeLegend = this._el.find('#objectTypeLegend');
-        this._objectFields = this._el.find('#objectFields').first();
-        this._nameInput = this._el.find('#name').first();
-        this._versionInput = this._el.find('#versionNumber').first();
-        this._descrInput = this._el.find('#description').first();
+        // Filter controls:
+        this._typeSelector = this._dialog.find('#typeSelector').first();
+        this._nameInput = this._dialog.find('#nameInput').first();
+        this._versionSelector = this._dialog.find('#versionSelector').first();
+
+        this._resultContainer = this._el.find('#resultContainer').first();
+        this._resultTable = $('#resultsTable').DataTable( {
+            columns: COLUMNS,
+            bFilter: false,
+            bPaginate: false,
+            iDisplayLength: DISPLAY_LENGTH
+        });
 
         this.registryURL = "";
         this.serviceToken = "";
         this.registryTools = null;
         this.modelObject = null;
-        this.publishSuccess = false;
+        this.importSuccess = false;
         this.nodeObj = null;
         this.client = null;
+        this.facetFields = {};
     };
 
     /**
-     * Initialize PublishDialog by creating EpicEditor in Bootstrap modal
+     * Initialize ImportDialog by creating EpicEditor in Bootstrap modal
      * window and set event listeners on its subcomponents like save button. Notice
      * EpicEditor is created but not loaded yet. The creation and loading of editor
      * are seperated due to the reason decorator component is not appended to DOM within
@@ -77,12 +100,9 @@ define(['js/util',
      * @param  {Function}   saveCallback   Callback function after click save button
      * @return {void}
      */
-    PublishDialog.prototype.initialize = function (client, nodeObj, publishCallback) {
+    ImportDialog.prototype.initialize = function (client, nodeObj, importCallback) {
         var self = this,
-            publishResult = {},
-            metaTypeId = nodeObj.getMetaTypeId(),
-            metaType = client.getNode(metaTypeId),
-            metaName = metaType.getAttribute('name');
+            importResult = {};
 
         this.pluginContext = client.getCurrentPluginContext(
             "ExportToRegistry",
@@ -91,19 +111,6 @@ define(['js/util',
 
         this.client = client;
         this.nodeObj = nodeObj;
-
-        var headerText = "Publish Object";
-        var objectTypeText = "Object";
-        if (metaName.match('Federate$')) {
-            headerText = "Publish Federate";
-            objectTypeText = "Federate";
-        }
-        this._dialogHeader.text(headerText);
-        this._objectTypeLegend.text(objectTypeText);
-
-        var name = nodeObj.getAttribute('name') || '';
-        var versionNumber = nodeObj.getAttribute('registryVersion') || '0.0.1';
-        var description = nodeObj.getAttribute('description') || '';
 
         // Initialize Modal and append it to main DOM
         this._dialog.modal({show: false});
@@ -115,7 +122,7 @@ define(['js/util',
         this._urlInput.prop("value", registryAccessSettings.registryURL);
         this._usernameInput.prop("value", registryAccessSettings.username);
 
-        // Event listener on click for SAVE button
+        // Event listener on click for Renew Token button
         this._btnRenewToken.on('click', function (event) {
             self._doRenewToken();
 
@@ -123,28 +130,34 @@ define(['js/util',
             event.preventDefault();
         });
 
-        this._nameInput.prop("value", name);
-        this._versionInput.prop("value", versionNumber);
-        this._descrInput.prop("value", description);
-
-        // Event listener on click for PUBLISH button
-        this._btnPublish.on('click', function (event) {
-            self._doPublishFederate();
-
-            event.stopPropagation();
-            event.preventDefault();
-        });
-
         // Event listener on click for OK button
         this._btnOk.on('click', function (event) {
-            if (publishCallback) {
-                publishCallback.call(null, publishResult);
+            if (importCallback) {
+                importCallback.call(null, importResult);
             }
             self._dialog.modal('hide');
 
             event.stopPropagation();
             event.preventDefault();
         });
+
+        // Filters
+        this._toolSelector.on('change', function(event){
+            self._doGetResults();
+        });
+
+        this._typeSelector.on('change', function(event){
+            self._doGetResults();
+        });
+
+        this._versionSelector.on('change', function(event){
+            self._doGetResults();
+        });
+
+        this._resultTable.on( 'click', 'button', function () {
+            var data = self._resultTable.row( $(this).parents('tr') ).data();
+            self._importObject(data[6]);
+        } );
 
         // Listener on event when dialog is shown
         // Use callback to show editor after Modal window is shown.
@@ -162,25 +175,45 @@ define(['js/util',
             this._doGetTools();
         }
         this._updateUI();
+    };
 
-        this.client.runBrowserPlugin(
-            "ExportToRegistry",
-            this.pluginContext,
-            function(err, result) {
-                if (err) {
-                    // Log error somehow
-                } else {
-                    self.modelObject = result.modelObject;
-                    self._updateUI();
-                }
-            });
+    ImportDialog.prototype._importObject = function(objectId) {
+        alert(objectId);
     };
 
     ///////////////////////////////////////////////////////////////////////////
     // UI Related
     ///////////////////////////////////////////////////////////////////////////
 
-    PublishDialog.prototype._renderToolSelector = function () {
+    ImportDialog.prototype._renderResults = function() {
+        var self = this,
+            processedData = [],
+            queryResult, processedResult, i, type;
+
+        // Empty the table first:
+        this._resultTable.clear();
+
+        for (i=0; i < self.queryResults.length; i++){
+            queryResult = self.queryResults[i];
+            type = queryResult['type_s'] || '';
+            type = type.replace('C2WT ', '');
+            processedResult = [];
+            processedResult.push(queryResult['name_s'] || '');
+            processedResult.push(type);
+            processedResult.push(queryResult['version_s'] || '');
+            processedResult.push(queryResult['description_s'] || '');
+            processedResult.push(queryResult['released_b'] ? 'Yes' : 'No');
+            // Add actions like import
+            processedResult.push(null);
+            processedResult.push(queryResult['id_s'] || '');
+            processedData.push(processedResult);
+        }
+
+        this._resultTable.rows.add(processedData);
+        this._resultTable.draw();
+    };
+
+    ImportDialog.prototype._renderToolSelector = function () {
         var i, option, tool;
         this._toolSelector.empty();
 
@@ -197,7 +230,7 @@ define(['js/util',
         }
     };
 
-    PublishDialog.prototype._updateUI = function () {
+    ImportDialog.prototype._updateUI = function () {
         var self = this;
 
         if (this.serviceToken && this.registryTools != null){
@@ -207,21 +240,13 @@ define(['js/util',
             this._toolGroup.show();
             if (this.registryTools.length){
                 // re render tool selector
-                this._renderToolSelector();
                 this._toolSelector.show();
                 this._toolDesc.show();
                 this._toolMessage.hide();
-                this._objectFields.show();
-                if (this.modelObject != null){
-                    this._btnPublish.show();
-                } else {
-                    this._btnPublish.hide();
-                }
-                if (this.publishSuccess){
-                    this._btnPublish.hide();
+                this._resultContainer.show();
+                if (this.importSuccess){
                     this._btnOk.show();
                 } else{
-                    this._btnPublish.show();
                     this._btnOk.hide();
                 }
             } else {
@@ -229,27 +254,92 @@ define(['js/util',
                 this._toolDesc.hide();
                 this._toolMessage.text("You do not have any registry tools where you have write access");
                 this._toolMessage.addClass("error");
-                this._objectFields.hide();
-                this._btnPublish.hide();
+                this._resultContainer.hide();
             }
         } else {
             this._usernameGroup.show();
             this._passwordGroup.show();
             this._toolGroup.hide();
             this._registryFooter.show();
-            this._objectFields.hide();
-            this._btnPublish.hide();
+            this._resultContainer.hide();
             this._btnOk.hide();
         }
+    };
 
+    ImportDialog.prototype._updateFilters = function() {
+        var self = this, i, facetValue;
 
+        if (self.facetFields['version_s'] &&
+            this._versionSelector.val() == 'all'){
+
+            this._versionSelector
+                .children()
+                .remove()
+                .end()
+                .append('<option selected value="all">All</option>');
+
+            for (i=0; i < self.facetFields['version_s'].length; i+=2){
+                facetValue = self.facetFields['version_s'][i];
+                this._versionSelector.append(
+                    '<option value="'+facetValue+'">'+facetValue+'</option>');
+            }
+        }
+    };
+
+    ImportDialog.prototype._getFilterInfo = function () {
+        var filters = {},
+            typeValue = this._typeSelector.val(),
+            versionValue = this._versionSelector.val();
+
+        if (typeValue != 'all'){
+            filters['type'] = typeValue;
+        }
+
+        if (versionValue != 'all'){
+            filters['version'] = versionValue;
+        }
+
+        return JSON.stringify(filters);
     };
 
     ///////////////////////////////////////////////////////////////////////////
     // AJAX Calls
     ///////////////////////////////////////////////////////////////////////////
 
-    PublishDialog.prototype._saveCredentials = function () {
+    ImportDialog.prototype._doGetResults = function () {
+        var self = this;
+
+        // Populate tool information which is an implicit confirmation
+        // that the serviceToken is still valid
+        var queryURL = this.registryURL + "/registry/query";
+        var appConfigId = this._toolSelector.val();
+        $.ajax({
+            method: "POST",
+            url: queryURL,
+            data: {
+                service_token: registryAccessSettings.serviceToken,
+                app_config_id: appConfigId,
+                rows: DISPLAY_LENGTH,
+                filters: this._getFilterInfo()
+            },
+            dataType: "json",
+            headers: {'X-Requested-With': 'XMLHttpRequest'},
+            success: function (data) {
+                self.queryResults = data["docs"];
+                self.facetFields = data["facet_fields"];
+                self._dialogMessage.hide();
+                self._updateUI();
+                self._updateFilters();
+                self._renderResults();
+            },
+            error: function (error) {
+                self.showAjaxError(error);
+                self._updateUI();
+            }
+        });
+    };
+
+    ImportDialog.prototype._saveCredentials = function () {
         var self = this;
 
         registryAccessSettings.registryURL = self.registryURL = this._urlInput.prop("value");
@@ -258,7 +348,7 @@ define(['js/util',
         ComponentSettings.overwriteComponentSettings(REGISTRY_ACCESS_SETTINGS, registryAccessSettings);
     };
 
-    PublishDialog.prototype._doRenewToken = function () {
+    ImportDialog.prototype._doRenewToken = function () {
         var self = this;
         var renewTokenURL;
         var password = this._passwordInput.prop("value");
@@ -285,26 +375,14 @@ define(['js/util',
                     self._dialogMessage.hide();
                     self._updateUI();
                 },
-                error: function (data){
-                    if (typeof data.readyState !== undefined) {
-                        if (data.readyState == 0) {
-                            self._dialogMessage.text("There was a network error");
-                            self._dialogMessage.addClass("error");
-                            self._dialogMessage.show();
-                        }
-                        if (data.readyState == 4 && data.status == 401) {
-                            self._dialogMessage.text("The credentials used did not work");
-                            self._dialogMessage.addClass("error");
-                            self._dialogMessage.show();
-                        }
-                    }
-                    console.log('Failed to renew token');
+                error: function (error){
+                    self.showAjaxError(error);
                 }
             });
         }
     };
 
-    PublishDialog.prototype._doGetTools = function () {
+    ImportDialog.prototype._doGetTools = function () {
         var self = this;
 
         // Populate tool information which is an implicit confirmation
@@ -315,89 +393,22 @@ define(['js/util',
             url: getRegistryToolsURL,
             data: {
                 service_token: registryAccessSettings.serviceToken,
-                permission: "write"
+                permission: "read"
             },
             dataType: "json",
             headers: {'X-Requested-With': 'XMLHttpRequest'},
             success: function (data) {
                 self.registryTools = data["tools"];
+                self._dialogMessage.hide();
                 self._updateUI();
+                self._renderToolSelector();
+                self._doGetResults();
             },
-            error: function (data) {
-                if (typeof data.readyState !== undefined) {
-                    if (data.readyState == 0) {
-                        self._dialogMessage.text("There was a network error");
-                        self._dialogMessage.addClass("error");
-                        self._dialogMessage.show();
-                    }
-                    if (data.readyState == 4 && data.status == 401) {
-                        self._dialogMessage.text("The credentials used did not work");
-                        self._dialogMessage.addClass("error");
-                        self._dialogMessage.show();
-                    }
-                }
+            error: function (error) {
+                self.showAjaxError(error);
                 self.registryTools = null;
                 self.serviceToken = "";
                 self._updateUI();
-            }
-        });
-    };
-
-    PublishDialog.prototype._updateModelObject = function() {
-        this.modelObject.__ROOT_OBJECT__['name'] = this._nameInput.val();
-        this.modelObject.__ROOT_OBJECT__['version'] = this._versionInput.val();
-        this.modelObject.__ROOT_OBJECT__['description'] = this._descrInput.val();
-    }
-
-    PublishDialog.prototype._doPublishFederate = function () {
-        var self = this;
-
-        // Populate tool information which is an implicit confirmation
-        // that the serviceToken is still valid
-        var publishFederateURL = this.registryURL + "/registry/publish_federate";
-        var appConfigId = this._toolSelector.val();
-        var name = this._nameInput.val();
-        var version = this._versionInput.val();
-        var description = this._descrInput.val();
-        var rootNode = this.client.getNode(CONSTANTS.PROJECT_ROOT_ID);
-        var languageVersion = rootNode.getAttribute("version") || '0.0.1';
-
-        this._updateModelObject();
-
-        var registryJSON = JSON.stringify(this.modelObject, null, 2);
-        $.ajax({
-            method: "POST",
-            url: publishFederateURL,
-            data: {
-                service_token: registryAccessSettings.serviceToken,
-                app_config_id: appConfigId,
-                name: name,
-                version: version,
-                description: description,
-                language_version: languageVersion,
-                registry_json: registryJSON
-            },
-            dataType: "json",
-            headers: {'X-Requested-With': 'XMLHttpRequest'},
-            success: function (data) {
-                self.publishSuccess = true;
-                data['registry_url'] = self.registryURL;
-                self.client.setAttribute(self.nodeObj._id, 'RegistryInfo', JSON.stringify(data, null, 2));
-                self._dialogMessage.text("Object was published successfully");
-                self._dialogMessage.addClass("success");
-                self._dialogMessage.removeClass("error");
-                self._updateUI();
-            },
-            error: function (data) {
-                if (typeof data.readyState !== undefined) {
-                    if (data.readyState == 4 && typeof data.responseText !== undefined) {
-                        var responseJSON = JSON.parse(data.responseText);
-                        self._dialogMessage.text(responseJSON.detail);
-                        self._dialogMessage.addClass("error");
-                        self._dialogMessage.show();
-                    }
-                }
-                console.log('Failed to publish');
             }
         });
     };
@@ -408,10 +419,27 @@ define(['js/util',
      * into DOM at this point and load() cannot access other DOM elements.
      * @return {void}
      */
-    PublishDialog.prototype.show = function () {
+    ImportDialog.prototype.show = function () {
         var self = this;
         self._dialog.modal('show');
     };
 
-    return PublishDialog;
+    ImportDialog.prototype.showAjaxError = function(error){
+        var self = this;
+
+        if (typeof error.readyState !== undefined) {
+            if (error.readyState == 0) {
+                self._dialogMessage.text("There was a network error");
+                self._dialogMessage.addClass("error");
+                self._dialogMessage.show();
+            }
+            if (error.readyState == 4 && error.status == 401) {
+                self._dialogMessage.text("The credentials used did not work");
+                self._dialogMessage.addClass("error");
+                self._dialogMessage.show();
+            }
+        }
+    };
+
+    return ImportDialog;
 });
