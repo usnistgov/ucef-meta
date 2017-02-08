@@ -9,17 +9,39 @@
     height: 100%;
 }
 
-#resultSpacer {
-    width: 2%;
-    float: left;
-}
-
 #resultObjects {
     width: 78%;
-    float: left;
-    height: 100%;
+    height: initial;
+    float: right;
 }
 
 .filterItem {
     padding-left: 6px;
+}
+
+.message {
+    background: grey;
+    color: white;
+    font-weight: 800;
+    padding: 4px;
+}
+
+.error.message {
+    background: red;
+    color: white;
+    font-weight: 800;
+    padding: 4px;
+}
+
+.success.message {
+    background: green;
+    color: white;
+    font-weight: 800;
+    padding: 4px;
+}
+
+#dialogMessage {
+    align-content: center;
+    border-radius: 5px;
+    padding-left: 10px;
 }

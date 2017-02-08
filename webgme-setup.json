@@ -19,6 +19,18 @@
       "ExportToRegistry": {
         "src": "src/plugins/ExportToRegistry",
         "test": "test/plugins/ExportToRegistry"
+      },
+      "?": {
+        "src": "src/plugins/?",
+        "test": "test/plugins/?"
+      },
+      "ImportFromRegistry": {
+        "src": "src/plugins/ImportFromRegistry",
+        "test": "test/plugins/ImportFromRegistry"
+      },
+      "FindObjects": {
+        "src": "src/plugins/FindObjects",
+        "test": "test/plugins/FindObjects"
       }
     },
     "addons": {},

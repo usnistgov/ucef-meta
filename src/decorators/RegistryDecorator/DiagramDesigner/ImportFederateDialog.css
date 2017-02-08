@@ -1,0 +1,24 @@
+#inputs {
+    width: 49%;
+    float: left;
+    padding-right: 5px;
+    height: 100%;
+}
+
+#outputs {
+    width: 49%;
+    float: right;
+    height: 100%;
+}
+
+#inputTable td,
+#outputTable td {
+    padding-left: 10px;
+    padding-bottom: 3px;
+}
+
+#inputTable .status-error,
+#outputTable .status-error {
+    color: red;
+    font-weight: bold;
+}

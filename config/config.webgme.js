@@ -24,6 +24,7 @@ config.requirejsPaths = {
   'CodeEditor': 'panels/CodeEditor/CodeEditorPanel',
   'panels': './src/visualizers/panels',
   'widgets': './src/visualizers/widgets',
+  'c2wtng': './src/common',
   'panels/CodeEditor': './node_modules/webgme-codeeditor/src/visualizers/panels/CodeEditor',
   'widgets/CodeEditor': './node_modules/webgme-codeeditor/src/visualizers/widgets/CodeEditor'
 };

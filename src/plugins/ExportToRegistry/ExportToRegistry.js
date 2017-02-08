@@ -11,7 +11,7 @@ define([
     'plugin/PluginConfig',
     'text!./metadata.json',
     'plugin/PluginBase',
-    'webgme-to-json/webgme-to-json'
+    'c2wtng/webgme-to-json'
 ], function (
     PluginConfig,
     pluginMetadata,
@@ -76,12 +76,13 @@ define([
         self.result.success = false;
 
         // Using the coreAPI to make changes.
-        webgmeToJSON.notify = function (level, msg) {}
+        webgmeToJSON.notify = function (level, msg) {};
         self.activeNodePath = self.core.getPath(self.activeNode);
 
         // Loading the model
         // don't resolve pointers and children, keep webgmeNodes as part of the JSON.
-        webgmeToJSON.loadModel(self.core, self.rootNode, self.activeNode.parent, true, true, true)
+        //webgmeToJSON.loadModel(self.core, self.rootNode, self.activeNode.parent, true, true, true)
+        webgmeToJSON.loadModel(self.core, self.rootNode, self.rootNode, true, true, true)
             .then(function (model) {
                 self.model = model;
             })
@@ -188,10 +189,10 @@ define([
         self.model._DB = {
             "__OBJECTS__": {},
             "__ROOT_OBJECT__": {},
-            "Federates": [],
-            "COAs": [],
-            "Experiments": [],
-            "Interactions": [],
+            "Federates": {},
+            "COAs": {},
+            "Experiments": {},
+            "Interactions": {},
         };
         self.model._PathToRef = {};
     };
@@ -221,14 +222,23 @@ define([
         var fedObj = self.model._DB.__OBJECTS__[refObj.GUID];
         objectPaths.map(function (objPath) {
             var obj = self.model.objects[objPath];
-            if (self.core.isTypeOf(obj.node, self.META.StaticInteractionPublish)) {
+            if (self.core.isTypeOf(obj.node, self.META.StaticInteractionPublish) &&
+            obj.node != self.META.StaticInteractionPublish) {
                 self.resolvePublishers(obj, fedObj);
             }
-            else if (self.core.isTypeOf(obj.node, self.META.StaticInteractionSubscribe)) {
+            else if (self.core.isTypeOf(obj.node, self.META.StaticInteractionSubscribe) &&
+            obj.node != self.META.StaticInteractionSubscribe) {
                 self.resolveSubscribers(obj, fedObj);
             }
         });
     }
+
+    ExportToRegistry.prototype.hasDBObject = function (original, type) {
+        var self = this;
+        var refObj = self.getRefObject(original.path);
+        return refObj.GUID in this.model._DB[type];
+    };
+
 
     ExportToRegistry.prototype.makeDBObject = function (original, obj, type) {
         // makes the object in the database and returns a reference object
@@ -238,7 +248,7 @@ define([
         if (!self.model._DB.__OBJECTS__[obj.GUID])
             self.model._DB.__OBJECTS__[obj.GUID] = {};
         self.model._DB.__OBJECTS__[obj.GUID] = obj;
-        self.model._DB[type].push(refObj);
+        self.model._DB[type][obj.GUID] = '';
         return refObj;
     };
 
@@ -250,8 +260,8 @@ define([
             return null;
         var newObj = {
             name: obj.name,
-            type: obj.attributes.ParameterType,
-            hidden: obj.attributes.Hidden
+            ParameterType: obj.attributes.ParameterType,
+            Hidden: obj.attributes.Hidden
         };
         return newObj;
     };
@@ -294,22 +304,34 @@ define([
     };
 
     ExportToRegistry.prototype.transformInteraction = function (obj) {
-        var self = this;
+        var self = this,
+            basePath,
+            baseObj;
         if (obj == null)
             return null;
+
+        // Add base Interaction classes if necessary
+        if (obj.base && (obj.base.name != obj.base.type)){
+            basePath = obj.base.path;
+            baseObj = self.model.objects[basePath];
+            if (!self.hasDBObject(baseObj, 'Interactions')){
+                self.transformInteraction(baseObj);
+            }
+        }
+
         var newObj = {};
         if (obj.pointers.base)
             newObj.__INTERACTION_BASE__ = obj.pointers.base;
         else
             newObj.__INTERACTION_BASE__ = obj.type;
+
         var attrNames = Object.keys(obj.attributes);
         attrNames.map(function (attrName) {
             newObj[attrName] = obj.attributes[attrName];
         });
         // get parameters here:
         newObj.parameters = self.transformParameters(obj);
-        var refObj = self.makeDBObject(obj, newObj, 'Interactions');
-        return refObj;
+        return self.makeDBObject(obj, newObj, 'Interactions');
     };
 
     ExportToRegistry.prototype.transformFederate = function (obj) {
@@ -338,13 +360,16 @@ define([
         // initialize the inputs (interaction subscribe) and outputs (interaction publish)
         newObj.inputs = [];
         newObj.outputs = [];
+
+        // Scrub registry_info
+        newObj.RegistryInfo = "";
+
         // add any missing keys needed by schema
         var addedKeys = ['documentation', 'repository'];
         addedKeys.map(function (key) {
             newObj[key] = "No " + key + " exists yet.";
         });
-        var refObj = self.makeDBObject(obj, newObj, 'Federates');
-        return refObj;
+        return self.makeDBObject(obj, newObj, 'Federates');
     };
 
     ExportToRegistry.prototype.makeAndReturnChildFederates = function (obj) {

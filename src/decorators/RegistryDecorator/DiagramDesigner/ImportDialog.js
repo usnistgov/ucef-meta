@@ -1,21 +1,23 @@
 /*globals define, $, EpicEditor*/
 /*jshint browser:true*/
 /**
- * @author Qishen Zhang / https://github.com/VictorCoder123
+ * @author U{Gabor Pap<macpapszi@gmail.com>}
  */
 
 define(['js/util',
     'js/Constants',
     'text!./ImportDialog.html',
     'js/Utils/ComponentSettings',
-    './datatables',
+    './ImportFederateDialog',
+    'c2wtng/datatables',
     'css!./PublishDialog.css',
     'css!./ImportDialog.css',
-    'css!./datatables.css'
+    'css!c2wtng/datatables.css'
 ], function (Util,
              CONSTANTS,
              ImportDialogTemplate,
              ComponentSettings,
+             ImportFederateDialog,
              DataTable
 ) {
     'use strict';
@@ -52,7 +54,6 @@ define(['js/util',
 
         // Get element nodes
         this._el = this._dialog.find('.modal-body').first();
-        this._btnOk = this._dialog.find('.btn-ok').first();
 
         this._urlInput = this._el.find('#url').first();
         this._usernameInput = this._el.find('#username').first();
@@ -104,11 +105,6 @@ define(['js/util',
         var self = this,
             importResult = {};
 
-        this.pluginContext = client.getCurrentPluginContext(
-            "ExportToRegistry",
-            nodeObj._id
-        );
-
         this.client = client;
         this.nodeObj = nodeObj;
 
@@ -130,17 +126,6 @@ define(['js/util',
             event.preventDefault();
         });
 
-        // Event listener on click for OK button
-        this._btnOk.on('click', function (event) {
-            if (importCallback) {
-                importCallback.call(null, importResult);
-            }
-            self._dialog.modal('hide');
-
-            event.stopPropagation();
-            event.preventDefault();
-        });
-
         // Filters
         this._toolSelector.on('change', function(event){
             self._doGetResults();
@@ -156,7 +141,7 @@ define(['js/util',
 
         this._resultTable.on( 'click', 'button', function () {
             var data = self._resultTable.row( $(this).parents('tr') ).data();
-            self._importObject(data[6]);
+            self._importObject(data[1], data[6]);
         } );
 
         // Listener on event when dialog is shown
@@ -177,8 +162,17 @@ define(['js/util',
         this._updateUI();
     };
 
-    ImportDialog.prototype._importObject = function(objectId) {
-        alert(objectId);
+    ImportDialog.prototype._importObject = function(type, objectId) {
+        this._doGetObject(type, objectId);
+    };
+
+    ImportDialog.prototype._saveCredentials = function () {
+        var self = this;
+
+        registryAccessSettings.registryURL = self.registryURL = this._urlInput.prop("value");
+        registryAccessSettings.username = this._usernameInput.prop("value");
+        registryAccessSettings.serviceToken = this.serviceToken;
+        ComponentSettings.overwriteComponentSettings(REGISTRY_ACCESS_SETTINGS, registryAccessSettings);
     };
 
     ///////////////////////////////////////////////////////////////////////////
@@ -244,11 +238,6 @@ define(['js/util',
                 this._toolDesc.show();
                 this._toolMessage.hide();
                 this._resultContainer.show();
-                if (this.importSuccess){
-                    this._btnOk.show();
-                } else{
-                    this._btnOk.hide();
-                }
             } else {
                 this._toolSelector.hide();
                 this._toolDesc.hide();
@@ -262,7 +251,6 @@ define(['js/util',
             this._toolGroup.hide();
             this._registryFooter.show();
             this._resultContainer.hide();
-            this._btnOk.hide();
         }
     };
 
@@ -339,15 +327,6 @@ define(['js/util',
         });
     };
 
-    ImportDialog.prototype._saveCredentials = function () {
-        var self = this;
-
-        registryAccessSettings.registryURL = self.registryURL = this._urlInput.prop("value");
-        registryAccessSettings.username = this._usernameInput.prop("value");
-        registryAccessSettings.serviceToken = this.serviceToken;
-        ComponentSettings.overwriteComponentSettings(REGISTRY_ACCESS_SETTINGS, registryAccessSettings);
-    };
-
     ImportDialog.prototype._doRenewToken = function () {
         var self = this;
         var renewTokenURL;
@@ -413,12 +392,65 @@ define(['js/util',
         });
     };
 
+    ImportDialog.prototype._doGetObject = function (type, id) {
+        var self = this;
+
+        // Populate tool information which is an implicit confirmation
+        // that the serviceToken is still valid
+        var getRegistryObjectURL = this.registryURL + "/registry/get_object";
+        $.ajax({
+            method: "GET",
+            url: getRegistryObjectURL,
+            data: {
+                service_token: registryAccessSettings.serviceToken,
+                obj_type: type,
+                obj_id: id
+            },
+            dataType: "json",
+            headers: {'X-Requested-With': 'XMLHttpRequest'},
+            success: function (data) {
+                // data is the already parsed JSON file
+                // Let's do some heavy lifting
+
+                // We need to gather information to drive a second Dialog
+                // For that we need a plugin
+
+                self._showImportFederateDialog(data);
+            },
+            error: function (error) {
+                self.showAjaxError(error);
+                self.serviceToken = "";
+                self._updateUI();
+            }
+        });
+    };
+
+    ///
+    //
+    ////
+
     /**
-     * Show actual text editor in its container by loading EpicEditor, this method
-     * must be put into listener's callback function because its container is not appended
-     * into DOM at this point and load() cannot access other DOM elements.
+     * Initialize Share Dialog
      * @return {void}
      */
+    ImportDialog.prototype._showImportFederateDialog = function (federateJSON) {
+        var self = this;
+        var importFederateDialog = new ImportFederateDialog();
+
+        self._dialog.hide();
+        // Initialize with documentation attribute and save callback function
+        importFederateDialog.initialize(
+            self.client,
+            self.nodeObj,
+            federateJSON,
+            function (result) {
+                self._dialog.show();
+            }
+        );
+
+        importFederateDialog.show();
+    };
+
     ImportDialog.prototype.show = function () {
         var self = this;
         self._dialog.modal('show');

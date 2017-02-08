@@ -1,7 +1,7 @@
 /*globals define, $, EpicEditor*/
 /*jshint browser:true*/
 /**
- * @author Qishen Zhang / https://github.com/VictorCoder123
+ * @author @author U{Gabor Pap<macpapszi@gmail.com>}
  */
 
 define(['js/util',
@@ -173,7 +173,8 @@ define(['js/util',
                     self.modelObject = result.modelObject;
                     self._updateUI();
                 }
-            });
+            }
+        );
     };
 
     ///////////////////////////////////////////////////////////////////////////
@@ -402,12 +403,6 @@ define(['js/util',
         });
     };
 
-    /**
-     * Show actual text editor in its container by loading EpicEditor, this method
-     * must be put into listener's callback function because its container is not appended
-     * into DOM at this point and load() cannot access other DOM elements.
-     * @return {void}
-     */
     PublishDialog.prototype.show = function () {
         var self = this;
         self._dialog.modal('show');
