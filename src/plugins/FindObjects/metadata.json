@@ -1,0 +1,23 @@
+{
+  "id": "FindObjects",
+  "name": "FindObjects",
+  "version": "0.1.0",
+  "description": "",
+  "icon": {
+    "class": "glyphicon glyphicon-cog",
+    "src": ""
+  },
+  "disableServerSideExecution": true,
+  "disableBrowserSideExecution": false,
+  "writeAccessRequired": false,
+  "configStructure": [
+    {
+      "name": "objectKind",
+      "displayName": "Object Kind",
+      "description": "The kind of objects the plugin should return",
+      "value": "Federate",
+      "valueType": "string",
+      "readOnly": false
+    }
+  ]
+}
