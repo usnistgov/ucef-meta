@@ -320,6 +320,7 @@ define([
         }
 
         var newObj = {};
+        newObj.attributes = {};
         if (obj.pointers.base)
             newObj.__INTERACTION_BASE__ = obj.pointers.base;
         else
@@ -327,7 +328,7 @@ define([
 
         var attrNames = Object.keys(obj.attributes);
         attrNames.map(function (attrName) {
-            newObj[attrName] = obj.attributes[attrName];
+            newObj.attributes[attrName] = obj.attributes[attrName];
         });
         // get parameters here:
         newObj.parameters = self.transformParameters(obj);
@@ -340,11 +341,12 @@ define([
         // to the specific representation given in example.js
         if (obj == null)
             return null;
-        var newObj = {};
+        var newObj = {'attributes': {}};
+        newObj.attributes = {};
         newObj.__FEDERATE_BASE__ = obj.type;
         var attrNames = Object.keys(obj.attributes);
         attrNames.map(function (attrName) {
-            newObj[attrName] = obj.attributes[attrName];
+            newObj.attributes[attrName] = obj.attributes[attrName];
         });
         // capture any child federates that may exist
         newObj.federates = self.makeAndReturnChildFederates(obj);

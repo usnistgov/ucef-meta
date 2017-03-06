@@ -32,6 +32,7 @@ define(['js/util',
         // Get element nodes
         this._el = this._dialog.find('.modal-body').first();
         this._dialogHeader = this._dialog.find('#dialogHeader').first();
+        this._btnImport = this._dialog.find('.btn-import').first();
         this._btnOk = this._dialog.find('.btn-ok').first();
         this._dialogMessage = this._dialog.find('#dialogMessage').first();
         this._ioContainer = this._dialog.find('#ioContainer').first();
@@ -40,6 +41,7 @@ define(['js/util',
 
         this.importStruct = null;
         this.objectsByKind = null;
+        this.existingInteractionNodes = null;
         this.federateObj = null;
         this.nodeObj = null;
         this.client = null;
@@ -64,7 +66,6 @@ define(['js/util',
             rootObject,
             rootGUID,
             result,
-            closeAndCallback,
             pluginContext = client.getCurrentPluginContext(
                 "FindObjects",
                 nodeObj._id
@@ -84,7 +85,7 @@ define(['js/util',
             this.federateObj = objects[rootGUID] || null;
         }
         if (this.federateObj){
-            this._dialogHeader.text('Import ' + this.federateObj['name'])
+            this._dialogHeader.text('Import ' + this.federateObj.attributes['name'])
         }
 
         // Initialize Modal and append it to main DOM
@@ -98,17 +99,56 @@ define(['js/util',
         });
 
         // Event listener on click for OK button
-        this._btnOk.on('click', function (event) {
+        this._btnImport.on('click', function (event) {
             event.stopPropagation();
             event.preventDefault();
 
+            // Call import federate
+            var importPluginCtx = client.getCurrentPluginContext(
+                "ImportFromRegistry",
+                self.nodeObj._id
+            );
+
+            importPluginCtx.pluginConfig = {
+                'action': 'CREATE_NEW',
+                'object': self.federateObj,
+                'objectKind': 'federate',
+                'existingInteractionNodes': self.existingInteractionNodes,
+                'objectsByKind': self.objectsByKind,
+                'core': self.core,
+                'activeNode': self.activeNode,
+                'rootNode': self.rootNode,
+                'META': self.META
+            };
+
+            self.client.runBrowserPlugin(
+                "ImportFromRegistry",
+                importPluginCtx,
+                function(err, result) {
+                    if (err) {
+                        self.status = 'IMPORT_ERROR';
+                    } else {
+                        // Display import status
+                        self.status = 'IMPORT_SUCCESS';
+                    }
+                    self._updateUI();
+                }
+            );
+        });
+
+        // Event listener on click for OK button
+        this._btnOk.on('click', function (event) {
             self._dialog.modal('hide');
+
+            event.stopPropagation();
+            event.preventDefault();
         });
 
         this._updateUI();
 
         pluginContext.pluginConfig = {
-            'objectKinds': ['Interaction', 'Federate', 'Parameter']};
+            'objectKinds': ['Interaction', 'Federate', 'Parameter']
+        };
         this.client.runBrowserPlugin(
             "FindObjects",
             pluginContext,
@@ -118,6 +158,9 @@ define(['js/util',
                 } else {
                     self.objectsByKind = result.objectsByKind;
                     self.core = result.core;
+                    self.rootNode = result.rootNode;
+                    self.activeNode = result.activeNode;
+                    self.META = result.META;
                     self._processObjects();
                     self._updateUI();
                 }
@@ -127,7 +170,6 @@ define(['js/util',
 
     ImportFederateDialog.prototype._checkInteraction = function(
         interaction,
-        existingInteractions,
         parametersById
     ) {
         var self = this,
@@ -146,18 +188,20 @@ define(['js/util',
 
         for (var k in interaction) newObject[k] = interaction[k];
         newObject['status'] = 'OK';
+        newObject['gmeNode'] = null;
 
-        if (existingInteractions[interaction['name']]){
-            gmeNode = existingInteractions[interaction['name']]
+        gmeNode = self.existingInteractionNodes[interaction.attributes['name']];
+        if (gmeNode){
+            newObject['gmeNode'] = gmeNode;
 
             // check interaction attributes first
             for (i = 0; i < INT_ATTRIBUTES.length; i++){
                 attributeName = INT_ATTRIBUTES[i];
                 attributeValue = self.core.getAttribute(gmeNode, attributeName);
-                if (interaction[attributeName] != attributeValue){
+                if (interaction.attributes[attributeName] != attributeValue){
                     errors.push('Attribute ' + attributeName +
                         '\'s the existing value is ' + attributeValue +
-                        ' instead of ' + interaction[attributeName]);
+                        ' instead of ' + interaction.attributes[attributeName]);
                 }
             }
 
@@ -201,19 +245,19 @@ define(['js/util',
     
     ImportFederateDialog.prototype._processObjects = function () {
         var self = this,
-            existingInteractions = {},
             parametersById = {},
-            rootObject, objects,
-            federateObject, rootGUID,
-            interactionName, interactionObj,
+            objects,
+            interactionName,
+            interactionObj,
             paramPath;
 
-        // Add existing interactions
+        self.existingInteractionNodes = {};
+        // Process existing interactions
         if (self.core && self.objectsByKind){
             if (self.objectsByKind['Interaction']){
                 self.objectsByKind['Interaction'].map(function(interaction){
                     interactionName = self.core.getAttribute(interaction, "name");
-                    existingInteractions[interactionName] = interaction;
+                    self.existingInteractionNodes[interactionName] = interaction;
                 });
             }
             if (self.objectsByKind['Parameter']){
@@ -224,7 +268,8 @@ define(['js/util',
             }
         }
 
-        // Add interactions from federate
+        // Process interactions from federate to be imported
+        // and compare them to existing ones to detect conflicts
         if (self.federateObj){
             objects = self.importStruct['__OBJECTS__'] || {};
             self.federateObj.resolvedInputs = {};
@@ -233,10 +278,9 @@ define(['js/util',
             self.federateObj.inputs.map(function(obj){
                 interactionObj = objects[obj['GUID']] || null;
                 if (interactionObj != null){
-                    self.federateObj.resolvedInputs[interactionObj.name] =
+                    self.federateObj.resolvedInputs[interactionObj.attributes.name] =
                         self._checkInteraction(
                             interactionObj,
-                            existingInteractions,
                             parametersById
                         );
                 }
@@ -245,16 +289,15 @@ define(['js/util',
             self.federateObj.outputs.map(function(obj){
                 interactionObj = objects[obj['GUID']] || null;
                 if (interactionObj != null){
-                    self.federateObj.resolvedOutputs[interactionObj.name] =
+                    self.federateObj.resolvedOutputs[interactionObj.attributes.name] =
                         self._checkInteraction(
                             interactionObj,
-                            existingInteractions,
                             parametersById
                         );
                 }
             });
         }
-        self.status = 'READY';
+        self.status = 'PROCESSED';
 
     };
 
@@ -297,17 +340,36 @@ define(['js/util',
     ImportFederateDialog.prototype._updateUI = function () {
         var self = this;
 
-        if (self.status == 'READY'){
-            self._dialogMessage.hide();
-            self._renderIO();
-            self._btnOk.show();
-            self._ioContainer.show();
-        } else {
+        if (self.status == 'INITIAL'){
             self._dialogMessage.text("Loading information");
             self._dialogMessage.addClass("message");
             self._dialogMessage.show();
             self._ioContainer.hide();
             self._btnOk.hide();
+            self._btnImport.hide();
+        }
+        if (self.status == 'PROCESSED'){
+            self._dialogMessage.hide();
+            self._renderIO();
+            self._btnOk.hide();
+            self._btnImport.show();
+            self._ioContainer.show();
+        }
+        if (self.status == 'IMPORT_SUCCESS'){
+            self._dialogMessage.text("Federate was imported");
+            self._dialogMessage.addClass("success");
+            self._dialogMessage.addClass("message");
+            self._dialogMessage.show();
+            self._btnOk.show();
+            self._btnImport.hide();
+        }
+        if (self.status == 'IMPORT_ERROR'){
+            self._dialogMessage.text("There was an error");
+            self._dialogMessage.addClass("error");
+            self._dialogMessage.addClass("message");
+            self._dialogMessage.show();
+            self._btnOk.show();
+            self._btnImport.hide();
         }
     };
 

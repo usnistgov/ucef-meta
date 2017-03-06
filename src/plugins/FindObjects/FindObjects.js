@@ -99,7 +99,10 @@ define([
                 }
             ).then(function () {
                 self.result.objectsByKind = objectsByKind;
-                self.result.core = core;
+                self.result.core = self.core;
+                self.result.rootNode = self.rootNode;
+                self.result.activeNode = self.activeNode;
+                self.result.META = self.META;
                 self.result.setSuccess(true);
                 callback(null, self.result);
             }).catch(function (err) {
