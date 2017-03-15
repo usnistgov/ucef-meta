@@ -50,7 +50,7 @@ define(['js/util',
         this._toolDesc = this._el.find('#toolDesc').first();
         this._btnRenewToken = this._el.find('.btn-renew-token').first();
         this._registryFooter = this._el.find('#registryFooter').first();
-        this._dialogMessage = this._el.find('#dialogMessage').first()
+        this._dialogMessage = this._el.find('#dialogMessage').first();
 
         this._objectTypeLegend = this._el.find('#objectTypeLegend');
         this._objectFields = this._el.find('#objectFields').first();
@@ -322,6 +322,7 @@ define(['js/util',
             headers: {'X-Requested-With': 'XMLHttpRequest'},
             success: function (data) {
                 self.registryTools = data["tools"];
+                self._dialogMessage.hide();
                 self._updateUI();
             },
             error: function (data) {
@@ -348,7 +349,7 @@ define(['js/util',
         this.modelObject.__ROOT_OBJECT__['name'] = this._nameInput.val();
         this.modelObject.__ROOT_OBJECT__['version'] = this._versionInput.val();
         this.modelObject.__ROOT_OBJECT__['description'] = this._descrInput.val();
-    }
+    };
 
     PublishDialog.prototype._doPublishFederate = function () {
         var self = this;
@@ -387,6 +388,7 @@ define(['js/util',
                 self._dialogMessage.text("Object was published successfully");
                 self._dialogMessage.addClass("success");
                 self._dialogMessage.removeClass("error");
+                self._dialogMessage.show();
                 self._updateUI();
             },
             error: function (data) {
