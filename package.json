@@ -12,7 +12,7 @@
     "tar": "^2.2.1",
     "unzip": "^0.1.11",
     "webgme": "^2.4.0",
-    "webgme-codeeditor": "finger563/webgme-codeeditor",
+    "webgme-codeeditor": "github:finger563/webgme-codeeditor",
     "webgme-to-json": "^1.0.3"
   },
   "devDependencies": {

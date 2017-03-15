@@ -42,10 +42,15 @@ define([], function () {
 
             var generalChildSorter = function(a, b) {
 
-                //a is less than b by some ordering criterion : return -1;         
+                //a is less than b by some ordering criterion : return -1;
                 //a is greater than b by the ordering criterion: return 1;
-                // a equal to b:
+                // a equal to b, than return 0;
+                var aName = self.core.getAttribute(a,'name');
+                var bName = self.core.getAttribute(b,'name');
+                if (aName < bName) return -1;
+                if (aName > bName) return 1;
                 return 0;
+
             };
             return generalChildSorter;
             
