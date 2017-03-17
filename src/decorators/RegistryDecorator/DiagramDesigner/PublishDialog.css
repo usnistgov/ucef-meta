@@ -1,11 +1,11 @@
-fieldset {
+.registry-dialog fieldset {
     border-width: thin;
     border-color: silver;
     border-style: solid;
     border-radius: 5px;
 }
 
-legend {
+.registry-dialog legend {
     width: initial;
     padding-right: 6px;
     padding-left: 6px;
