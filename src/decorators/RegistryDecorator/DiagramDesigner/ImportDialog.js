@@ -116,9 +116,10 @@ define(['js/util',
         this._dialog.modal({show: false});
 
         // Detect if WebGME is embedded in Vulcan
-        if (embeddedIframe.length && embeddedIframe.context != 'undefined'){
+        if (embeddedIframe.context != 'undefined' && embeddedIframe.context.referrer != ''){
+            var arr = embeddedIframe.context.referrer.split("/");
             this.isEmbedded = true;
-            this.registryURL = embeddedIframe.context.location.origin;
+            this.registryURL = arr[0] + "//" + arr[2];
             this.sessionId = $.cookie('_session_id');
         } else {
             ComponentSettings.resolveWithWebGMEGlobal(registryAccessSettings, REGISTRY_ACCESS_SETTINGS);
