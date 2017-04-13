@@ -90,8 +90,6 @@ define(['js/util',
         this.client = null;
         this.facetFields = {};
         this.isEmbedded = false;
-        this.sessionId = null;
-        this.vulcanSession = null;
     };
 
     /**
@@ -120,8 +118,6 @@ define(['js/util',
             var arr = embeddedIframe.context.referrer.split("/");
             this.isEmbedded = true;
             this.registryURL = arr[0] + "//" + arr[2];
-            this.sessionId = $.cookie('_session_id');
-            this.vulcanSession = $.cookie('vehicleforge');
         } else {
             ComponentSettings.resolveWithWebGMEGlobal(registryAccessSettings, REGISTRY_ACCESS_SETTINGS);
             this.registryURL = registryAccessSettings.registryURL || '';
@@ -329,9 +325,10 @@ define(['js/util',
                 rows: DISPLAY_LENGTH,
                 filters: this._getFilterInfo()
             };
+        var xhrFields = {};
         if (this.isEmbedded){
-            data["_session_id"] = this.sessionId;
-        }else{
+            xhrFields['withCredentials'] = true;
+        } else{
             data["service_token"] = registryAccessSettings.serviceToken;
         }
         $.ajax({
@@ -339,9 +336,7 @@ define(['js/util',
             url: queryURL,
             data: data,
             dataType: "json",
-            xhrFields: {
-                withCredentials: true
-            },
+            xhrFields: xhrFields,
             headers: {'X-Requested-With': 'XMLHttpRequest'},
             success: function (data) {
                 self.queryResults = data["docs"];
@@ -399,7 +394,10 @@ define(['js/util',
         // that the serviceToken is still valid
         var getRegistryToolsURL = this.registryURL + "/registry/get_tools";
         var data = {permission: "read"};
-        if (!this.isEmbedded){
+        var xhrFields = {};
+        if (this.isEmbedded){
+            xhrFields['withCredentials'] = true;
+        } else {
             data["service_token"] = registryAccessSettings.serviceToken;
         }
         $.ajax({
@@ -407,9 +405,7 @@ define(['js/util',
             url: getRegistryToolsURL,
             data: data,
             dataType: "json",
-            xhrFields: {
-                withCredentials: true
-            },
+            xhrFields: xhrFields,
             headers: {'X-Requested-With': 'XMLHttpRequest'},
             success: function (data) {
                 self.registryTools = data["tools"];
@@ -433,18 +429,20 @@ define(['js/util',
         // Populate tool information which is an implicit confirmation
         // that the serviceToken is still valid
         var getRegistryObjectURL = this.registryURL + "/registry/get_object";
+        var data = {obj_type: type, obj_id: id};
+        var xhrFields = {};
+        if (this.isEmbedded){
+            xhrFields['withCredentials'] = true;
+        } else {
+            data["service_token"] = registryAccessSettings.serviceToken;
+        }
+
         $.ajax({
             method: "GET",
             url: getRegistryObjectURL,
-            data: {
-                service_token: registryAccessSettings.serviceToken,
-                obj_type: type,
-                obj_id: id
-            },
+            data: data,
             dataType: "json",
-            xhrFields: {
-                withCredentials: true
-            },
+            xhrFields: xhrFields,
             headers: {'X-Requested-With': 'XMLHttpRequest'},
             success: function (data) {
                 // data is the already parsed JSON file
