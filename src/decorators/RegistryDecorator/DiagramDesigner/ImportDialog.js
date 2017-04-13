@@ -328,6 +328,7 @@ define(['js/util',
         var xhrFields = {};
         if (this.isEmbedded){
             xhrFields['withCredentials'] = true;
+            data["_session_id"] = $.cookie('_session_id');
         } else{
             data["service_token"] = registryAccessSettings.serviceToken;
         }
@@ -429,7 +430,10 @@ define(['js/util',
         // Populate tool information which is an implicit confirmation
         // that the serviceToken is still valid
         var getRegistryObjectURL = this.registryURL + "/registry/get_object";
-        var data = {obj_type: type, obj_id: id};
+        var data = {
+            obj_type: type,
+            obj_id: id
+        };
         var xhrFields = {};
         if (this.isEmbedded){
             xhrFields['withCredentials'] = true;
