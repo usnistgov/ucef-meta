@@ -90,6 +90,8 @@ define(['js/util',
         this.client = null;
         this.facetFields = {};
         this.isEmbedded = false;
+        this.sessionId = null;
+        this.vulcanSession = null;
     };
 
     /**
@@ -109,8 +111,6 @@ define(['js/util',
 
         this.client = client;
         this.nodeObj = nodeObj;
-        this.sessionId = null;
-
 
         // Initialize Modal and append it to main DOM
         this._dialog.modal({show: false});
@@ -121,6 +121,7 @@ define(['js/util',
             this.isEmbedded = true;
             this.registryURL = arr[0] + "//" + arr[2];
             this.sessionId = $.cookie('_session_id');
+            this.vulcanSession = $.cookie('vehicleforge');
         } else {
             ComponentSettings.resolveWithWebGMEGlobal(registryAccessSettings, REGISTRY_ACCESS_SETTINGS);
             this.registryURL = registryAccessSettings.registryURL || '';
@@ -338,6 +339,7 @@ define(['js/util',
             url: queryURL,
             data: data,
             dataType: "json",
+            withCredentials: true,
             headers: {'X-Requested-With': 'XMLHttpRequest'},
             success: function (data) {
                 self.queryResults = data["docs"];
@@ -403,6 +405,7 @@ define(['js/util',
             url: getRegistryToolsURL,
             data: data,
             dataType: "json",
+            withCredentials: true,
             headers: {'X-Requested-With': 'XMLHttpRequest'},
             success: function (data) {
                 self.registryTools = data["tools"];
@@ -435,6 +438,7 @@ define(['js/util',
                 obj_id: id
             },
             dataType: "json",
+            withCredentials: true,
             headers: {'X-Requested-With': 'XMLHttpRequest'},
             success: function (data) {
                 // data is the already parsed JSON file
