@@ -339,7 +339,9 @@ define(['js/util',
             url: queryURL,
             data: data,
             dataType: "json",
-            withCredentials: true,
+            xhrFields: {
+                withCredentials: true
+            },
             headers: {'X-Requested-With': 'XMLHttpRequest'},
             success: function (data) {
                 self.queryResults = data["docs"];
@@ -405,7 +407,9 @@ define(['js/util',
             url: getRegistryToolsURL,
             data: data,
             dataType: "json",
-            withCredentials: true,
+            xhrFields: {
+                withCredentials: true
+            },
             headers: {'X-Requested-With': 'XMLHttpRequest'},
             success: function (data) {
                 self.registryTools = data["tools"];
@@ -438,7 +442,9 @@ define(['js/util',
                 obj_id: id
             },
             dataType: "json",
-            withCredentials: true,
+            xhrFields: {
+                withCredentials: true
+            },
             headers: {'X-Requested-With': 'XMLHttpRequest'},
             success: function (data) {
                 // data is the already parsed JSON file
