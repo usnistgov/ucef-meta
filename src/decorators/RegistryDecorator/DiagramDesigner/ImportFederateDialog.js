@@ -170,8 +170,17 @@ define(['js/util',
 
     ImportFederateDialog.prototype._checkInteraction = function(
         interaction,
-        parametersById
+        parametersById,
+        objects,
+        containerObject,
+        isBase
     ) {
+        if (interaction == null){
+            return null;
+        }
+        if (containerObject.hasOwnProperty(interaction.attributes.name)){
+            return containerObject[interaction.attributes.name];
+        }
         var self = this,
             gmeNode,
             newObject = {},
@@ -182,13 +191,24 @@ define(['js/util',
             parametersByName = {},
             paramName,
             childrenPaths,
-            paramNode, newParamObj;
-
-        var i, j;
+            paramNode, newParamObj,
+            i,j;
 
         for (var k in interaction) newObject[k] = interaction[k];
         newObject['status'] = 'OK';
         newObject['gmeNode'] = null;
+        newObject['selected'] = true;
+        newObject['isBase'] = isBase;
+
+        if (interaction.hasOwnProperty("__INTERACTION_BASE__")){
+            newObject["base"] = self._checkInteraction(
+                objects[interaction["__INTERACTION_BASE__"]["GUID"]] || null,
+                parametersById,
+                objects,
+                containerObject,
+                true
+            )
+        }
 
         gmeNode = self.existingInteractionNodes[interaction.attributes['name']];
         if (gmeNode){
@@ -237,9 +257,11 @@ define(['js/util',
             if (errors.length > 0){
                 newObject['status'] = 'Error';
                 newObject['errors'] = errors;
+                newObject['selected'] = false;
             }
         }
 
+        containerObject[interaction.attributes.name] = newObject;
         return newObject;
     };
     
@@ -277,24 +299,24 @@ define(['js/util',
 
             self.federateObj.inputs.map(function(obj){
                 interactionObj = objects[obj['GUID']] || null;
-                if (interactionObj != null){
-                    self.federateObj.resolvedInputs[interactionObj.attributes.name] =
-                        self._checkInteraction(
-                            interactionObj,
-                            parametersById
-                        );
-                }
+                self._checkInteraction(
+                    interactionObj,
+                    parametersById,
+                    objects,
+                    self.federateObj.resolvedInputs,
+                    false
+                );
             });
 
             self.federateObj.outputs.map(function(obj){
                 interactionObj = objects[obj['GUID']] || null;
-                if (interactionObj != null){
-                    self.federateObj.resolvedOutputs[interactionObj.attributes.name] =
-                        self._checkInteraction(
-                            interactionObj,
-                            parametersById
-                        );
-                }
+                self._checkInteraction(
+                    interactionObj,
+                    parametersById,
+                    objects,
+                    self.federateObj.resolvedOutputs,
+                    false
+                );
             });
         }
         self.status = 'PROCESSED';
@@ -305,36 +327,44 @@ define(['js/util',
     // UI Related
     ///////////////////////////////////////////////////////////////////////////
 
-    ImportFederateDialog.prototype._renderIO = function(){
+    ImportFederateDialog.prototype._renderIO = function(ioMap, target) {
+        var self = this,
+            checkBox;
+
+        target.empty();
+        Object.keys(ioMap)
+            .sort()
+            .forEach(function (key, _) {
+                if (ioMap[key]['isBase'] == false) {
+                    var row = $('<tr/>').appendTo(target);
+                    var statusCell = $('<td/>').appendTo(row);
+                    var cell = $('<td/>').text(key).appendTo(row);
+                    if (ioMap[key]['status'] == 'OK') {
+                        //statusCell.attr('class', 'fa fa-check');
+                        checkBox = $('<input>', {
+                            type: "checkbox",
+                            class: "importBox",
+                            id: key,
+                            checked: true
+                        }).appendTo(statusCell);
+
+                    } else {
+                        statusCell.attr('class', 'status-error fa fa-exclamation');
+                        cell.attr('title', ioMap[key]['errors'].join('\n'));
+                        cell.attr('class', 'status-error');
+                    }
+                }
+            });
+        target.on("click", "input[type='checkbox']", function() {
+            ioMap[this.id].selected = this.checked;
+        });
+    };
+
+    ImportFederateDialog.prototype._renderIOs = function(){
         var self = this;
 
-        this._inputTable.empty();
-        $.each(self.federateObj.resolvedInputs, function(key, value) {
-            var row = $('<tr/>').appendTo(self._inputTable);
-            var statusCell = $('<td/>').appendTo(row);
-            var cell = $('<td/>').text(key).appendTo(row);
-            if (value['status'] == 'OK'){
-                statusCell.attr('class', 'fa fa-check');
-            } else {
-                statusCell.attr('class', 'status-error fa fa-exclamation');
-                cell.attr('title', value['errors'].join('\n'));
-                cell.attr('class', 'status-error');
-            }
-        });
-
-        this._outputTable.empty();
-        $.each(self.federateObj.resolvedOutputs, function(key, value) {
-            var row = $('<tr/>').appendTo(self._outputTable);
-            var statusCell = $('<td/>').appendTo(row);
-            var cell = $('<td/>').text(key).appendTo(row);
-            if (value['status'] == 'OK'){
-                statusCell.attr('class', 'fa fa-check');
-            } else {
-                statusCell.attr('class', 'status-error fa fa-exclamation');
-                cell.attr('title', value['errors'].join(' ; '));
-                cell.attr('class', 'status-error');
-            }
-        });
+        this._renderIO(self.federateObj.resolvedInputs, self._inputTable);
+        this._renderIO(self.federateObj.resolvedOutputs, self._outputTable);
     };
 
     ImportFederateDialog.prototype._updateUI = function () {
@@ -350,7 +380,7 @@ define(['js/util',
         }
         if (self.status == 'PROCESSED'){
             self._dialogMessage.hide();
-            self._renderIO();
+            self._renderIOs();
             self._btnOk.hide();
             self._btnImport.show();
             self._ioContainer.show();
