@@ -10,11 +10,15 @@
 define([
     'plugin/PluginConfig',
     'text!./metadata.json',
-    'plugin/PluginBase'
+    'plugin/PluginBase',
+    'js/RegistryKeys',
+    'common/util/guid'
 ], function (
     PluginConfig,
     pluginMetadata,
-    PluginBase) {
+    PluginBase,
+    REG_KEYS,
+    generateGuid) {
     'use strict';
 
     var INT_ATTRIBUTES = ["name", "Order", "LogLevel", "EnableLogging", "Delivery"],
@@ -219,7 +223,7 @@ define([
                         self.core.setPointer(connectionNode, 'src', federateNode);
                         self.core.setPointer(connectionNode, 'dst', interactionObj.gmeNode);
                     }
-
+                    interactionObj.gmeConnection = connectionNode;
                 }
             }
         }
@@ -234,7 +238,7 @@ define([
             baseType = 'Federate';
 
         if (self.object){
-            // Add federate
+            // Create federate
             baseType = self.object['__FEDERATE_BASE__'] || 'Federate';
             federateNode = self.core.createNode(
                 {parent: self.container, base:self.META[baseType]});
@@ -273,8 +277,39 @@ define([
                     );
                 }
             });
-            // Create new crosscut when necessary
 
+            // Create new crosscut
+            // Copy & update registry
+            var ccRegistry = JSON.parse(JSON.stringify(
+                self.core.getRegistry(self.container, REG_KEYS.CROSSCUTS) || []
+            ));
+            var ccId = "Crosscut_" + generateGuid();
+            var ccDesc = {
+                SetID: ccId,
+                order: ccRegistry.length,
+                title: self.object.attributes.name + " Crosscut"
+            };
+            ccRegistry.push(ccDesc);
+
+            self.core.setRegistry(self.container, REG_KEYS.CROSSCUTS, ccRegistry);
+            self.core.createSet(self.container, ccId);
+
+            // Add members to the crosscut
+            self.core.addMember(self.container, ccId, federateNode);
+            inputNames.map(function (inputName) {
+                if (self.object.resolvedInputs[inputName].selected){
+                    var interaction = self.object.resolvedInputs[inputName];
+                    self.core.addMember(self.container, ccId, interaction.gmeNode);
+                    self.core.addMember(self.container, ccId, interaction.gmeConnection);
+                }
+            });
+            outputNames.map(function (inputName) {
+                if (self.object.resolvedInputs[inputName].selected){
+                    var interaction = self.object.resolvedInputs[inputName];
+                    self.core.addMember(self.container, ccId, interaction.gmeNode);
+                    self.core.addMember(self.container, ccId, interaction.gmeConnection);
+                }
+            });
         }
     };
 
