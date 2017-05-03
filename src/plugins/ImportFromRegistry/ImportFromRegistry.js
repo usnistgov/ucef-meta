@@ -269,7 +269,7 @@ define([
 
             var outputNames = Object.keys(self.object.resolvedOutputs);
             outputNames.map(function (outputName) {
-                if (self.object.resolvedInputs[outputName].selected) {
+                if (self.object.resolvedOutputs[outputName].selected) {
                     self.upsertInteraction(
                         self.object.resolvedOutputs[outputName],
                         false,
@@ -304,8 +304,8 @@ define([
                 }
             });
             outputNames.map(function (inputName) {
-                if (self.object.resolvedInputs[inputName].selected){
-                    var interaction = self.object.resolvedInputs[inputName];
+                if (self.object.resolvedOutputs[inputName].selected){
+                    var interaction = self.object.resolvedOutputs[inputName];
                     self.core.addMember(self.container, ccId, interaction.gmeNode);
                     self.core.addMember(self.container, ccId, interaction.gmeConnection);
                 }
