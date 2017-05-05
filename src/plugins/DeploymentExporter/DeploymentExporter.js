@@ -9,7 +9,7 @@ define([
     'text!./metadata.json',
     'plugin/PluginBase',
     'common/util/ejs',
-    'C2Core/xmljsonconverter',
+    'common/util/xmljsonconverter',
     'C2Core/ModelTraverserMixin',
     'DeploymentExporter/Templates/Templates',
     'FederatesExporter/RTIVisitors',

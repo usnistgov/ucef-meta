@@ -10,7 +10,7 @@ define([
     'plugin/PluginBase',
     'common/util/ejs',
     'C2Core/ModelTraverserMixin',
-    'C2Core/xmljsonconverter',
+    'common/util/xmljsonconverter',
     'C2Core/MavenPOM',
     'FederatesExporter/PubSubVisitors',
     'FederatesExporter/RTIVisitors',
