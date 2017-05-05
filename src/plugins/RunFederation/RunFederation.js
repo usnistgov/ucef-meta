@@ -10,8 +10,8 @@ define([
     'plugin/PluginBase',
     'common/util/ejs',
     'RunFederation/Templates/Templates',
-    'c2wtng-meta/modelLoader',
-    'c2wtng-meta/remote_utils',
+    'c2wtng/modelLoader',
+    'c2wtng/remote_utils',
     'q'
 ], function (
     pluginMetadata,

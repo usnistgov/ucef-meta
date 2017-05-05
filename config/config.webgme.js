@@ -25,6 +25,10 @@ config.requirejsPaths = {
   'panels': './src/visualizers/panels',
   'widgets': './src/visualizers/widgets',
   'c2wtng': './src/common',
+  'C2Core': './src/plugins/C2Core',
+  'FederatesExporter': './src/plugins/FederatesExporter',
+  'DeploymentExporter': './src/plugins/DeploymentExporter',
+  'C2Federates': './src/plugins/C2Federates',
   'panels/CodeEditor': './node_modules/webgme-codeeditor/src/visualizers/panels/CodeEditor',
   'widgets/CodeEditor': './node_modules/webgme-codeeditor/src/visualizers/widgets/CodeEditor'
 };
