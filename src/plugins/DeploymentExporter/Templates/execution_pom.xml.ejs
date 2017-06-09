@@ -220,7 +220,43 @@
                 <federate.loglevel><%= fed.logLevel || 'NORMAL' %></federate.loglevel>
             </properties>
         </profile><% }); %>
-        <profile>
+		<profile>
+			<id>FederationManagerExecJava</id>
+			<dependencies>
+				<dependency>
+					<groupId>org.c2w</groupId>
+					<artifactId>fedmanager-host</artifactId>
+					<version>${c2w.version}</version>
+				</dependency>
+    		</dependencies>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.codehaus.mojo</groupId>
+						<artifactId>exec-maven-plugin</artifactId>
+						<version>1.5.0</version>
+						<goals>
+							<goal>java</goal>
+						</goals>
+						<configuration>
+							<mainClass>c2w.host.FederationManagerHostApplication</mainClass>
+							<classpathScope>runtime</classpathScope>
+							<systemProperties>
+								<systemProperty>
+									<key>java.net.preferIPv4Stack</key>
+									<value>true</value>
+								</systemProperty>
+							</systemProperties>
+							<arguments>
+								<argument>server</argument>
+								<argument>fedmgrconfig.yml</argument>
+							</arguments>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+		<profile>
         	<id>FedManager</id>
         	<dependencies>
 				<dependency>
@@ -288,14 +324,14 @@
 					<plugin>
 						<groupId>org.codehaus.mojo</groupId>
 						<artifactId>exec-maven-plugin</artifactId>
-						<version>1.4.0</version>
+						<version>1.5.0</version>
 						<configuration>
 							<executable>java</executable>
 							<arguments>
 								<argument>-Xmx512m</argument>
 								<!-- For debugging purposes-->
 								<!--argument>-Xdiag</argument-->
-					            <argument>-Djava.library.path=${project.basedir}/target/nar/processid-${c2w.version}-${nar.aol}-jni/lib/${nar.aol}/jni/</argument>
+					            <!--<argument>-Djava.library.path=${project.basedir}/target/nar/processid-${c2w.version}-${nar.aol}-jni/lib/${nar.aol}/jni/</argument>-->
 					            <argument>-Djava.net.preferIPv4Stack=true</argument>
 					            <argument>-classpath</argument>
 					            <!-- automatically creates the classpath using all project dependencies,

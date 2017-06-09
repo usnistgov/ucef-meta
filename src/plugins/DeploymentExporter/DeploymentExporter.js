@@ -188,6 +188,24 @@ define([
             });
         });
 
+        // Add fedmgrconfig.yml 
+        self.fileGenerators.push(function(artifact,callback){
+            var fedmgrConfig = {
+                    fedfile : {} ,
+                    federationname: {}
+                };
+             fedmgrConfig.federationname = self.projectName
+             fedmgrConfig.fedfile = self.projectName + '.fed'   
+            artifact.addFile('fedmgrconfig.yml', ejs.render(TEMPLATES['fedmgrconfig.yml.ejs'], fedmgrConfig), function (err) {
+                if (err) {
+                    callback(err);
+                    return;
+                }else{
+                    callback();
+                }
+            });
+        });
+
         generateFiles = function(artifact, doneBack){
             if(numberOfFilesToGenerate > 0){ 
                 self.fileGenerators[self.fileGenerators.length - numberOfFilesToGenerate](artifact, function(err){
