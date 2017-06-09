@@ -79,13 +79,38 @@
 		    </resource>
 		</resources>
 		<plugins>
+ 			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-shade-plugin</artifactId>
+				<version>2.4.3</version>
+				<executions>
+					<execution>
+						<phase>package</phase>
+						<goals>
+							<goal>shade</goal>
+						</goals>
+						<configuration>
+							<filters>
+								<filter>
+									<artifact>*:*</artifact>
+									<excludes>
+										<exclude>META-INF/*.SF</exclude>
+										<exclude>META-INF/*.DSA</exclude>
+										<exclude>META-INF/*.RSA</exclude>
+									</excludes>
+								</filter>
+							</filters>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
 			<plugin>
 		      <groupId>org.apache.maven.plugins</groupId>
 		      <artifactId>maven-surefire-plugin</artifactId>
 		      <version>2.19.1</version>
 		      <configuration>
 		        <forkMode>once</forkMode>
-		        <argLine>-Djava.library.path=${project.basedir}/target/nar/processid-${c2w.version}-${nar.aol}-jni/lib/${nar.aol}/jni/</argLine>
+		        <argLine>-Djava.library.path=${project.basedir}/target/nar/processid-${c2w.version}-amd64-Linux-gpp-jni/lib/amd64-Linux-gpp/jni/</argLine>
 		      </configuration>
 		    </plugin>
 			<plugin>
@@ -282,7 +307,7 @@
 								<argument>-Xmx512m</argument>
 								<!-- For debugging purposes-->
 								<!--argument>-Xdiag</argument-->
-					            <argument>-Djava.library.path=${project.basedir}/target/nar/processid-${c2w.version}-${nar.aol}-jni/lib/${nar.aol}/jni/</argument>
+					            <argument>-Djava.library.path=${project.basedir}/target/nar/processid-${c2w.version}-amd64-Linux-gpp-jni/lib/amd64-Linux-gpp/jni/</argument>
 					            <argument>-Djava.net.preferIPv4Stack=true</argument>
 					            <argument>-classpath</argument>
 					            <!-- automatically creates the classpath using all project dependencies,
@@ -295,15 +320,15 @@
 					            <argument>--federationEndTime</argument><argument>20.0</argument>
 					            <argument>--seed4DurRNG</argument><argument>0</argument>
 					            <argument>--autoStart</argument>
-					            <argument>--lockfile</argument><argument>${env.C2WTROOT}/__lock__</argument>
-					            <argument>HelloWorld</argument>
+					            <argument>--lockfile</argument><argument>/home/vagrant/Projects/cpswt/__lock__</argument>
+					            <argument><%= projectName %></argument>
 					            <argument>${project.basedir}/target/classes/<%= projectName %>.fed</argument>
 					            <argument>${project.basedir}/target/classes/default/script.xml</argument>
-					            <argument>HelloWorld_main-Deployment1_100</argument>
+					            <argument><%= projectName %>_main-Deployment1_100</argument>
 					            <argument>NORMAL</argument>
 					    	</arguments>
 						    <environmentVariables>
-			                    <EXEDIR>${env.C2WTROOT}</EXEDIR>
+			                    <EXEDIR>/home/vagrant/Projects/cpswt</EXEDIR>
 			                </environmentVariables>
 						</configuration>
 					</plugin>
@@ -331,13 +356,13 @@
 								<argument>-Xmx512m</argument>
 								<!-- For debugging purposes-->
 								<!--argument>-Xdiag</argument-->
-					            <!--<argument>-Djava.library.path=${project.basedir}/target/nar/processid-${c2w.version}-${nar.aol}-jni/lib/${nar.aol}/jni/</argument>-->
+					            <!--<argument>-Djava.library.path=${project.basedir}/target/nar/processid-${c2w.version}-amd64-Linux-gpp-jni/lib/amd64-Linux-gpp/jni/</argument>-->
 					            <argument>-Djava.net.preferIPv4Stack=true</argument>
 					            <argument>-classpath</argument>
 					            <!-- automatically creates the classpath using all project dependencies,
 		                 		also adding the project build directory -->
 					            <classpath/>
-					            <argument>${federation.name}.${federate.name}</argument>
+					            <argument><%= projectName %>.${federate.name}</argument>
 					            <argument>${federation.name}</argument>
 					            <argument>${federate.name}</argument>
 					            <argument>${federate.loglevel}</argument>
@@ -360,7 +385,7 @@
 				        <version>${nar.version}</version>
 				        <configuration>
 				          <classifiers>
-				            <classifier>${nar.aol}</classifier>
+				            <classifier>amd64-Linux-gpp</classifier>
 				          </classifiers>
 				        </configuration>
 				        <executions>
@@ -415,7 +440,7 @@
 					    	</arguments>
 					    	<environmentVariables>
 			                    <EXEDIR>${project.basedir}/target/${federate.name}</EXEDIR>
-			                    <LD_LIBRARY_PATH>${project.basedir}/target/nar/lib/${nar.aol}/shared/:${env.RTI_HOME}/lib/gcc4/:${env.RTI_HOME}/jre/lib/amd64/server</LD_LIBRARY_PATH>
+			                    <LD_LIBRARY_PATH>${project.basedir}/target/nar/lib/amd64-Linux-gpp/shared/:${env.RTI_HOME}/lib/gcc4/:${env.RTI_HOME}/jre/lib/amd64/server</LD_LIBRARY_PATH>
 			                </environmentVariables>
 						</configuration>
 					</plugin>

@@ -33,7 +33,9 @@ define([
                 }else{
                     self.initJavaRTI();  
                 }
-
+                if(this.federateTypes['JavaImplFederate']){
+                    this.federateTypes['JavaImplFederate'].init();
+                }
                 var mapperDirBasePath = 'java-federates/';
                 mapperDirSpec = {federation_name: self.projectName, artifact_name: "mapper", language:"java"};
                 var mapperDirPath =  mapperDirBasePath + ejs.render(self.directoryNameTemplate, mapperDirSpec);
@@ -85,7 +87,7 @@ define([
             var self = this,
                 nodeType = self.core.getAttribute( self.getMetaType( node ), 'name' );
 
-            self.logger.info('Visiting a MaperFederate');
+            self.logger.info('Visiting a MapperFederate');
 
             //Setup project POM files on visiting the first Mapper Federate
             if(!self.javaPOM){
@@ -93,7 +95,7 @@ define([
                 self.javaPOM.artifactId = self.projectName + "-java";
                 self.javaPOM.directory = "java-federates";
                 self.javaPOM.version = self.project_version;
-                self.javaPOM.addMavenCompiler('1.5');
+                self.javaPOM.addMavenCompiler('1.7');
                 self.javaPOM.packaging = "pom";
                 self.javaPOM.dependencies.push(self.porticoPOM);
             }
