@@ -17,6 +17,14 @@
     padding-bottom: 3px;
 }
 
+#multiplier {
+    margin: 6px;
+    margin-left: 10px;
+    border-radius: 5px;
+    border-width: 1px;
+    border-color: lightgray;
+}
+
 #inputTable .status-error,
 #outputTable .status-error {
     color: red;

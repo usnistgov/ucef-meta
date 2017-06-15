@@ -11,12 +11,12 @@ define([
     'plugin/PluginConfig',
     'text!./metadata.json',
     'plugin/PluginBase',
-    'c2wtng/webgme-to-json'
-], function (
-    PluginConfig,
-    pluginMetadata,
-    PluginBase,
-    webgmeToJSON) {
+    'c2wtng/webgme-to-json',
+    'js/Utils/ComponentSettings'
+], function (PluginConfig,
+             pluginMetadata,
+             PluginBase,
+             webgmeToJSON) {
     'use strict';
 
     pluginMetadata = JSON.parse(pluginMetadata);

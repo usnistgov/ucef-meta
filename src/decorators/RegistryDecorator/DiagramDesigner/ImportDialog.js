@@ -9,6 +9,7 @@ define(['js/util',
     'text!./ImportDialog.html',
     'js/Utils/ComponentSettings',
     './ImportFederateDialog',
+    'js/Controls/PropertyGrid/Widgets/AssetWidget',
     'c2wtng/datatables',
     'css!./PublishDialog.css',
     'css!./ImportDialog.css',
@@ -18,12 +19,14 @@ define(['js/util',
              ImportDialogTemplate,
              ComponentSettings,
              ImportFederateDialog,
+             AssetWidget,
              DataTable
 ) {
     'use strict';
 
     var ImportDialog,
         REGISTRY_ACCESS_SETTINGS = 'RegistryAccessSettings',
+        REGISTRY_CONFIG = "Registry",
         registryAccessSettings = {
             registryURL:"https://vulcan.isis.vanderbilt.edu",
             username:"username",
@@ -40,7 +43,8 @@ define(['js/util',
                 data: null,
                 defaultContent: "<button>Import</button>" }
         ],
-        DISPLAY_LENGTH = 20;
+        DISPLAY_LENGTH = 20,
+        INPUT_FILE_UPLOAD = $('<input type="file" accept="application/json"/>');
 
     /**
      * ImportDialog Constructor
@@ -55,6 +59,7 @@ define(['js/util',
         // Get element nodes
         this._el = this._dialog.find('.modal-body').first();
 
+        this._registryFields = this._el.find('#registryFields').first();
         this._urlInput = this._el.find('#url').first();
         this._urlGroup = this._el.find('#urlGroup').first();
         this._usernameInput = this._el.find('#username').first();
@@ -82,6 +87,9 @@ define(['js/util',
             iDisplayLength: DISPLAY_LENGTH
         });
 
+        // Import button for offline
+        this._btnImport = this._dialog.find('.btn-import').first();
+
         this.registryURL = "";
         this.serviceToken = "";
         this.registryTools = [];
@@ -90,6 +98,10 @@ define(['js/util',
         this.client = null;
         this.facetFields = {};
         this.isEmbedded = false;
+
+        this.config = {"useRemote": true};
+        this._fileInputContainer = this._el.find('fileInputContainer').first();
+        this._addFileBtn = this._dialog.find('#addFileBtn').first();
     };
 
     /**
@@ -113,28 +125,53 @@ define(['js/util',
         // Initialize Modal and append it to main DOM
         this._dialog.modal({show: false});
 
-        // Detect if WebGME is embedded in Vulcan
-        if (embeddedIframe.context != 'undefined' && embeddedIframe.context.referrer != ''){
-            var arr = embeddedIframe.context.referrer.split("/");
-            this.isEmbedded = true;
-            this.registryURL = arr[0] + "//" + arr[2];
+        ComponentSettings.resolveWithWebGMEGlobal(this.config, REGISTRY_CONFIG);
+
+        if (this.config.useRemote) {
+
+            // Detect if WebGME is embedded in Vulcan
+            if (embeddedIframe.context != 'undefined' && embeddedIframe.context.referrer != '') {
+                var arr = embeddedIframe.context.referrer.split("/");
+                this.isEmbedded = true;
+                this.registryURL = arr[0] + "//" + arr[2];
+            } else {
+                ComponentSettings.resolveWithWebGMEGlobal(registryAccessSettings, REGISTRY_ACCESS_SETTINGS);
+                this.registryURL = registryAccessSettings.registryURL || '';
+                this.serviceToken = registryAccessSettings.serviceToken || '';
+
+                this._urlInput.prop("value", registryAccessSettings.registryURL);
+                this._usernameInput.prop("value", registryAccessSettings.username);
+
+                // Event listener on click for Renew Token button
+                this._btnRenewToken.on('click', function (event) {
+                    self._doRenewToken();
+
+                    event.stopPropagation();
+                    event.preventDefault();
+                });
+            }
+            if (registryAccessSettings.serviceToken || this.isEmbedded){
+                this._doGetTools();
+            }
         } else {
-            ComponentSettings.resolveWithWebGMEGlobal(registryAccessSettings, REGISTRY_ACCESS_SETTINGS);
-            this.registryURL = registryAccessSettings.registryURL || '';
-            this.serviceToken = registryAccessSettings.serviceToken || '';
+            this._addFileBtn.on('click', function (e) {
+                e.stopPropagation();
+                e.preventDefault();
 
-            this._urlInput.prop("value", registryAccessSettings.registryURL);
-            this._usernameInput.prop("value", registryAccessSettings.username);
+                self._fileUploadInput = INPUT_FILE_UPLOAD.clone();
+                // file select
+                self._fileUploadInput.on('change', function (event) {
+                    event.stopPropagation();
+                    event.preventDefault();
+                    self._fileSelectHandler(event.originalEvent);
+                });
 
-            // Event listener on click for Renew Token button
-            this._btnRenewToken.on('click', function (event) {
-                self._doRenewToken();
-
-                event.stopPropagation();
-                event.preventDefault();
+                self._fileUploadInput.click();
             });
-        }
 
+
+
+        }
 
         // Filters
         this._toolSelector.on('change', function(event){
@@ -166,10 +203,32 @@ define(['js/util',
             self._dialog.remove();
         });
 
-        if (registryAccessSettings.serviceToken || this.isEmbedded){
-            this._doGetTools();
-        }
         this._updateUI();
+        self._dialogMessage.hide();
+    };
+
+    ImportDialog.prototype._fileSelectHandler = function (event) {
+        var self = this,
+            files = event.target.files || event.dataTransfer.files;
+
+        // cancel event and hover styling
+        event.stopPropagation();
+        event.preventDefault();
+
+        // process all File objects
+        if (files && files.length > 0) {
+            var f = files[0],
+                reader = new FileReader();
+
+            // Closure to capture the file information.
+            reader.onload = (function(theFile) {
+                return function(e) {
+                    self._showImportFederateDialog(JSON.parse(e.target.result));
+                };
+            })(f);
+            reader.readAsText(f);
+            //this._detachFileDropHandlers(true);
+        }
     };
 
     ImportDialog.prototype._importObject = function(type, objectId) {
@@ -237,38 +296,51 @@ define(['js/util',
     ImportDialog.prototype._updateUI = function () {
         var self = this;
 
-        if (this.isEmbedded){
-            this._usernameGroup.hide();
-            this._passwordGroup.hide();
-            this._registryFooter.hide();
-            this._urlGroup.hide();
-            this._toolGroup.show();
-        } else {
-            if (this.serviceToken && this.registryTools.length){
+        if (this.config.useRemote) {
+            this._btnImport.hide();
+            this._fileInputContainer.hide();
+            if (this.isEmbedded) {
                 this._usernameGroup.hide();
                 this._passwordGroup.hide();
                 this._registryFooter.hide();
+                this._urlGroup.hide();
                 this._toolGroup.show();
             } else {
-                this._usernameGroup.show();
-                this._passwordGroup.show();
-                this._toolGroup.hide();
-                this._registryFooter.show();
+                if (this.serviceToken && this.registryTools.length) {
+                    this._usernameGroup.hide();
+                    this._passwordGroup.hide();
+                    this._registryFooter.hide();
+                    this._toolGroup.show();
+                } else {
+                    this._usernameGroup.show();
+                    this._passwordGroup.show();
+                    this._toolGroup.hide();
+                    this._registryFooter.show();
+                    this._resultContainer.hide();
+                }
+            }
+            if (this.registryTools.length) {
+                // re render tool selector
+                this._toolSelector.show();
+                this._toolDesc.show();
+                this._toolMessage.hide();
+                this._resultContainer.show();
+            } else {
+                this._toolSelector.hide();
+                this._toolDesc.hide();
+                this._toolMessage.text("You do not have any registry tools where you have read access");
+                this._toolMessage.addClass("error");
                 this._resultContainer.hide();
             }
-        }
-        if (this.registryTools.length){
-            // re render tool selector
-            this._toolSelector.show();
-            this._toolDesc.show();
-            this._toolMessage.hide();
-            this._resultContainer.show();
         } else {
-            this._toolSelector.hide();
-            this._toolDesc.hide();
-            this._toolMessage.text("You do not have any registry tools where you have read access");
-            this._toolMessage.addClass("error");
+            // Hide registry access related logic
+            this._registryFields.hide();
+            // Hide object Selection fields
             this._resultContainer.hide();
+
+            // Show import button if file was added
+            this._btnImport.hide();
+            this._fileInputContainer.show();
         }
 
     };

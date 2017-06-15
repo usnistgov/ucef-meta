@@ -17,6 +17,7 @@ define(['js/util',
 
     var PublishDialog,
         REGISTRY_ACCESS_SETTINGS = 'RegistryAccessSettings',
+        REGISTRY_CONFIG = "Registry",
         registryAccessSettings = {
             registryURL:"https://vulcan.isis.vanderbilt.edu",
             username:"username",
@@ -39,6 +40,7 @@ define(['js/util',
         this._btnPublish = this._dialog.find('.btn-publish').first();
         this._btnOk = this._dialog.find('.btn-ok').first();
 
+        this._registryFields = this._el.find('#registryFields').first();
         this._urlInput = this._el.find('#url').first();
         this._urlGroup = this._el.find('#urlGroup').first();
         this._usernameInput = this._el.find('#username').first();
@@ -59,6 +61,8 @@ define(['js/util',
         this._versionInput = this._el.find('#versionNumber').first();
         this._descrInput = this._el.find('#description').first();
 
+
+
         this.registryURL = "";
         this.serviceToken = "";
         this.registryTools = [];
@@ -67,6 +71,8 @@ define(['js/util',
         this.nodeObj = null;
         this.client = null;
         this.isEmbedded = false;
+
+        this.config = {"useRemote": true};
     };
 
     /**
@@ -81,7 +87,6 @@ define(['js/util',
      */
     PublishDialog.prototype.initialize = function (client, nodeObj, publishCallback) {
         var self = this,
-            publishResult = {},
             metaTypeId = nodeObj.getMetaTypeId(),
             metaType = client.getNode(metaTypeId),
             metaName = metaType.getAttribute('name'),
@@ -111,27 +116,34 @@ define(['js/util',
         // Initialize Modal and append it to main DOM
         this._dialog.modal({show: false});
 
-        // Detect if WebGME is embedded in Vulcan
-        if (embeddedIframe.context != 'undefined' && embeddedIframe.context.referrer != ''){
-            var arr = embeddedIframe.context.referrer.split("/");
-            this.isEmbedded = true;
-            this.registryURL = arr[0] + "//" + arr[2];
-        } else {
+        ComponentSettings.resolveWithWebGMEGlobal(this.config, REGISTRY_CONFIG);
 
-            ComponentSettings.resolveWithWebGMEGlobal(registryAccessSettings, REGISTRY_ACCESS_SETTINGS);
-            this.registryURL = registryAccessSettings.registryURL || '';
-            this.serviceToken = registryAccessSettings.serviceToken || '';
+        if (this.config.useRemote) {
+            // Detect if WebGME is embedded in Vulcan
+            if (embeddedIframe.context != 'undefined' && embeddedIframe.context.referrer != '') {
+                var arr = embeddedIframe.context.referrer.split("/");
+                this.isEmbedded = true;
+                this.registryURL = arr[0] + "//" + arr[2];
+            } else {
 
-            this._urlInput.prop("value", registryAccessSettings.registryURL);
-            this._usernameInput.prop("value", registryAccessSettings.username);
+                ComponentSettings.resolveWithWebGMEGlobal(registryAccessSettings, REGISTRY_ACCESS_SETTINGS);
+                this.registryURL = registryAccessSettings.registryURL || '';
+                this.serviceToken = registryAccessSettings.serviceToken || '';
 
-            // Event listener on click for SAVE button
-            this._btnRenewToken.on('click', function (event) {
-                self._doRenewToken();
+                this._urlInput.prop("value", registryAccessSettings.registryURL);
+                this._usernameInput.prop("value", registryAccessSettings.username);
 
-                event.stopPropagation();
-                event.preventDefault();
-            });
+                // Event listener on click for SAVE button
+                this._btnRenewToken.on('click', function (event) {
+                    self._doRenewToken();
+
+                    event.stopPropagation();
+                    event.preventDefault();
+                });
+            }
+            if (registryAccessSettings.serviceToken || this.isEmbedded){
+                this._doGetTools();
+            }
         }
 
         this._nameInput.prop("value", name);
@@ -149,7 +161,7 @@ define(['js/util',
         // Event listener on click for OK button
         this._btnOk.on('click', function (event) {
             if (publishCallback) {
-                publishCallback.call(null, publishResult);
+                publishCallback.call(null, {});
             }
             self._dialog.modal('hide');
 
@@ -169,11 +181,8 @@ define(['js/util',
             self._dialog.remove();
         });
 
-        if (registryAccessSettings.serviceToken || this.isEmbedded){
-            this._doGetTools();
-        }
         this._updateUI();
-
+        self._dialogMessage.hide();
         this.client.runBrowserPlugin(
             "ExportToRegistry",
             this.pluginContext,
@@ -212,56 +221,73 @@ define(['js/util',
     PublishDialog.prototype._updateUI = function () {
         var self = this;
 
-        if (this.isEmbedded){
-            this._usernameGroup.hide();
-            this._passwordGroup.hide();
-            this._registryFooter.hide();
-            this._urlGroup.hide();
-            this._toolGroup.show();
-        } else {
-            if (this.serviceToken && this.registryTools.length){
+        if (this.config.useRemote) {
+            if (this.isEmbedded) {
                 this._usernameGroup.hide();
                 this._passwordGroup.hide();
                 this._registryFooter.hide();
+                this._urlGroup.hide();
                 this._toolGroup.show();
             } else {
-                this._usernameGroup.show();
-                this._passwordGroup.show();
-                this._toolGroup.hide();
-                this._registryFooter.show();
+                if (this.serviceToken && this.registryTools.length) {
+                    this._usernameGroup.hide();
+                    this._passwordGroup.hide();
+                    this._registryFooter.hide();
+                    this._toolGroup.show();
+                } else {
+                    this._usernameGroup.show();
+                    this._passwordGroup.show();
+                    this._toolGroup.hide();
+                    this._registryFooter.show();
+                    this._objectFields.hide();
+                    this._btnPublish.hide();
+                    this._btnOk.hide();
+                }
+            }
+
+            if (this.registryTools.length) {
+                // re render tool selector
+                this._toolSelector.show();
+                this._toolDesc.show();
+                this._toolMessage.hide();
+                this._objectFields.show();
+                if (this.modelObject != null) {
+                    this._btnPublish.show();
+                } else {
+                    this._btnPublish.hide();
+                }
+                if (this.publishSuccess) {
+                    this._btnPublish.hide();
+                    this._btnOk.show();
+                } else {
+                    this._btnPublish.show();
+                    this._btnOk.hide();
+                }
+            } else {
+                this._toolSelector.hide();
+                this._toolDesc.hide();
+                this._toolMessage.text("You do not have any registry tools where you have write access");
+                this._toolMessage.addClass("error");
                 this._objectFields.hide();
                 this._btnPublish.hide();
-                this._btnOk.hide();
             }
-        }
-
-        if (this.registryTools.length){
-            // re render tool selector
-            this._toolSelector.show();
-            this._toolDesc.show();
-            this._toolMessage.hide();
+        } else {
+            this._registryFields.hide();
             this._objectFields.show();
-            if (this.modelObject != null){
+
+            if (this.modelObject != null) {
                 this._btnPublish.show();
             } else {
                 this._btnPublish.hide();
             }
-            if (this.publishSuccess){
+            if (this.publishSuccess) {
                 this._btnPublish.hide();
                 this._btnOk.show();
-            } else{
+            } else {
                 this._btnPublish.show();
                 this._btnOk.hide();
             }
-        } else {
-            this._toolSelector.hide();
-            this._toolDesc.hide();
-            this._toolMessage.text("You do not have any registry tools where you have write access");
-            this._toolMessage.addClass("error");
-            this._objectFields.hide();
-            this._btnPublish.hide();
         }
-
     };
 
     ///////////////////////////////////////////////////////////////////////////
@@ -385,51 +411,67 @@ define(['js/util',
         this._updateModelObject();
 
         var registryJSON = JSON.stringify(this.modelObject, null, 2);
-        var data = {
-            app_config_id: this._toolSelector.val(),
-            name: this._nameInput.val(),
-            version: this._versionInput.val(),
-            description: this._descrInput.val(),
-            language_version: rootNode.getAttribute("version") || '0.0.1',
-            registry_json: registryJSON
-        };
-        var xhrFields = {};
-        if (this.isEmbedded){
-            xhrFields['withCredentials'] = true;
-            data["_session_id"] = $.cookie('_session_id');
-        } else {
-            data["service_token"] = registryAccessSettings.serviceToken;
-        }
-
-        $.ajax({
-            method: "POST",
-            url: publishFederateURL,
-            data: data,
-            dataType: "json",
-            xhrFields: xhrFields,
-            headers: {'X-Requested-With': 'XMLHttpRequest'},
-            success: function (data) {
-                self.publishSuccess = true;
-                data['registry_url'] = self.registryURL;
-                self.client.setAttribute(self.nodeObj._id, 'RegistryInfo', JSON.stringify(data, null, 2));
-                self._dialogMessage.text("Object was published successfully");
-                self._dialogMessage.addClass("success");
-                self._dialogMessage.removeClass("error");
-                self._dialogMessage.show();
-                self._updateUI();
-            },
-            error: function (data) {
-                if (typeof data.readyState !== undefined) {
-                    if (data.readyState == 4 && typeof data.responseText !== undefined) {
-                        var responseJSON = JSON.parse(data.responseText);
-                        self._dialogMessage.text(responseJSON.detail);
-                        self._dialogMessage.addClass("error");
-                        self._dialogMessage.show();
-                    }
-                }
-                console.log('Failed to publish');
+        if (this.config.useRemote){
+            var data = {
+                app_config_id: this._toolSelector.val(),
+                name: this._nameInput.val(),
+                version: this._versionInput.val(),
+                description: this._descrInput.val(),
+                language_version: rootNode.getAttribute("version") || '0.0.1',
+                registry_json: registryJSON
+            };
+            var xhrFields = {};
+            if (this.isEmbedded){
+                xhrFields['withCredentials'] = true;
+                data["_session_id"] = $.cookie('_session_id');
+            } else {
+                data["service_token"] = registryAccessSettings.serviceToken;
             }
-        });
+
+            $.ajax({
+                method: "POST",
+                url: publishFederateURL,
+                data: data,
+                dataType: "json",
+                xhrFields: xhrFields,
+                headers: {'X-Requested-With': 'XMLHttpRequest'},
+                success: function (data) {
+                    self.publishSuccess = true;
+                    data['registry_url'] = self.registryURL;
+                    self.client.setAttribute(self.nodeObj._id, 'RegistryInfo', JSON.stringify(data, null, 2));
+                    self._dialogMessage.text("Object was published successfully");
+                    self._dialogMessage.addClass("success");
+                    self._dialogMessage.removeClass("error");
+                    self._dialogMessage.show();
+                    self._updateUI();
+                },
+                error: function (data) {
+                    if (typeof data.readyState !== undefined) {
+                        if (data.readyState == 4 && typeof data.responseText !== undefined) {
+                            var responseJSON = JSON.parse(data.responseText);
+                            self._dialogMessage.text(responseJSON.detail);
+                            self._dialogMessage.addClass("error");
+                            self._dialogMessage.show();
+                        }
+                    }
+                    console.log('Failed to publish');
+                }
+            });
+        } else {
+            // Creating the file and then downloading it
+            var link = document.createElement('a');
+            link.href = 'data:text/plain;charset=utf-8,' + encodeURIComponent(registryJSON);
+            link.download = this._nameInput.val() + '.json';
+            document.body.appendChild(link);
+            link.click();
+
+            self.publishSuccess = true;
+            self._dialogMessage.text("Object was published successfully");
+            self._dialogMessage.addClass("success");
+            self._dialogMessage.removeClass("error");
+            self._dialogMessage.show();
+            self._updateUI();
+        }
     };
 
     PublishDialog.prototype.show = function () {

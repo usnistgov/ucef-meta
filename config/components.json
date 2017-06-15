@@ -1,37 +1,40 @@
 {
     "CodeEditor": {
-	"theme": "default",
-	"keyBinding": "sublime",
+        "theme": "default",
+        "keyBinding": "sublime",
         "autoSaveInterval": "2000",
-	"syntaxToModeMap": {
-	    "Java": {"name":"text/x-java"},
-	    "UNIX": {"name":"gfm"}
-	},
-	"attrToSyntaxMap": {
-	    "SimpleMappingConnection": {
-		"guardCondition": "Java",
-		"mapSpecs": "Java"
-	    },
-	    "ComplexMappingConnection": {
-		"guardCondition": "Java",
-		"mapSpecs": "Java"
-	    },
-	    "Action": {
-		"ParamValues": "UNIX"
-	    },
-	    "OutcomeFilter": {
-		"Expression": "Java"
-	    },
-	    "COAException": {
-		"branchesFinishedCondition": "UNIX"
-	    },
-	    "InteractionMapping": {
-		"guardCondition": "Java",
-		"mapSpecs": "Java"
-	    },
-	    "FederateExecution": {
-		"Command": "UNIX"
-	    }
-	}
+        "syntaxToModeMap": {
+            "Java": {"name":"text/x-java"},
+            "UNIX": {"name":"gfm"}
+        },
+        "attrToSyntaxMap": {
+            "SimpleMappingConnection": {
+                "guardCondition": "Java",
+                "mapSpecs": "Java"
+            },
+            "ComplexMappingConnection": {
+                "guardCondition": "Java",
+                "mapSpecs": "Java"
+            },
+            "Action": {
+                "ParamValues": "UNIX"
+            },
+            "OutcomeFilter": {
+                "Expression": "Java"
+            },
+            "COAException": {
+                "branchesFinishedCondition": "UNIX"
+            },
+            "InteractionMapping": {
+                "guardCondition": "Java",
+                "mapSpecs": "Java"
+            },
+            "FederateExecution": {
+                "Command": "UNIX"
+            }
+        }
+    },
+    "Registry": {
+        "useRemote": false
     }
 }

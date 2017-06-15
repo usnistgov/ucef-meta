@@ -38,6 +38,7 @@ define(['js/util',
         this._ioContainer = this._dialog.find('#ioContainer').first();
         this._inputTable = this._ioContainer.find('#inputTable').first();
         this._outputTable = this._ioContainer.find('#outputTable').first();
+        this._multiplierInput = this._dialog.find('#multiplier').first();
 
         this.importStruct = null;
         this.objectsByKind = null;
@@ -118,7 +119,8 @@ define(['js/util',
                 'core': self.core,
                 'activeNode': self.activeNode,
                 'rootNode': self.rootNode,
-                'META': self.META
+                'META': self.META,
+                'multiplier': parseInt(self._multiplierInput.val())
             };
 
             self.client.runBrowserPlugin(

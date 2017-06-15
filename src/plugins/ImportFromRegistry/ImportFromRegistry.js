@@ -91,6 +91,7 @@ define([
         self.rootNode = this._currentConfig['rootNode'] || self.rootNode;
         self.activeNode = this._currentConfig['activeNode'] || self.activeNode;
         self.META = this._currentConfig['META'] || self.META;
+        self.multiplier = this._currentConfig['multiplier'] || 1;
         //self.container = this._currentConfig['container'] || null;
         self.container = self.activeNode;
 
@@ -235,48 +236,56 @@ define([
     ImportFromRegistry.prototype.importFederate = function(){
         var self = this,
             federateNode,
-            baseType = 'Federate';
+            federateNodes = [],
+            baseType = 'Federate',
+            i = 0;
 
         if (self.object){
             // Create federate
             baseType = self.object['__FEDERATE_BASE__'] || 'Federate';
-            federateNode = self.core.createNode(
-                {parent: self.container, base:self.META[baseType]});
+            while (i < self.multiplier){
+                federateNode = self.core.createNode(
+                   {parent: self.container, base:self.META[baseType]});
+                federateNodes.push(federateNode);
 
-            // Add attributes
-            var attrNames = Object.keys(self.object.attributes);
-            attrNames.map(function (attrName) {
-                self.core.setAttribute(
-                    federateNode,
-                    attrName,
-                    self.object.attributes[attrName]);
-            });
+                // Add attributes
+                var attrNames = Object.keys(self.object.attributes);
+                attrNames.map(function (attrName) {
+                    self.core.setAttribute(
+                        federateNode,
+                        attrName,
+                        self.object.attributes[attrName]);
+                });
 
-            // Add new connections
-            // For now assume all the interactions are in the local context
-            // Also assume that they all exist
-            var inputNames = Object.keys(self.object.resolvedInputs);
-            inputNames.map(function (inputName) {
-                // Improvement: Only import selected interactions
-                if (self.object.resolvedInputs[inputName].selected){
-                    self.upsertInteraction(
-                        self.object.resolvedInputs[inputName],
-                        true,
-                        federateNode
-                    );
-                }
-            });
+                // Add new connections
+                // For now assume all the interactions are in the local context
+                // Also assume that they all exist
+                var inputNames = Object.keys(self.object.resolvedInputs);
+                inputNames.map(function (inputName) {
+                    // Improvement: Only import selected interactions
+                    if (self.object.resolvedInputs[inputName].selected){
+                        self.upsertInteraction(
+                            self.object.resolvedInputs[inputName],
+                            true,
+                            federateNode
+                        );
+                    }
+                });
 
-            var outputNames = Object.keys(self.object.resolvedOutputs);
-            outputNames.map(function (outputName) {
-                if (self.object.resolvedOutputs[outputName].selected) {
-                    self.upsertInteraction(
-                        self.object.resolvedOutputs[outputName],
-                        false,
-                        federateNode
-                    );
-                }
-            });
+                var outputNames = Object.keys(self.object.resolvedOutputs);
+                outputNames.map(function (outputName) {
+                    if (self.object.resolvedOutputs[outputName].selected) {
+                        self.upsertInteraction(
+                            self.object.resolvedOutputs[outputName],
+                            false,
+                            federateNode
+                        );
+                    }
+                });
+
+                i++;
+            }
+
 
             // Create new crosscut
             // Copy & update registry
@@ -295,7 +304,10 @@ define([
             self.core.createSet(self.container, ccId);
 
             // Add members to the crosscut
-            self.core.addMember(self.container, ccId, federateNode);
+            for (i = 0; i < federateNodes.length; i++) {
+                self.core.addMember(self.container, ccId, federateNodes[i]);
+            }
+
             inputNames.map(function (inputName) {
                 if (self.object.resolvedInputs[inputName].selected){
                     var interaction = self.object.resolvedInputs[inputName];
