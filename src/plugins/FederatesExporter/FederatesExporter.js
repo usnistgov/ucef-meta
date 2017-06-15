@@ -119,7 +119,7 @@ define([
         self.directoryNameTemplate= '<%=federation_name%><%=artifact_name?"-"+artifact_name:""%><%=language?"-"+language:""%>';
         self.generateExportPackages = self.getCurrentConfig().generateExportPackages;
 
-        self.mainPom.artifactId = self.projectName + "_root";
+        self.mainPom.artifactId = self.projectName + "-root";
         self.mainPom.version = self.project_version;
         self.mainPom.packaging = "pom";
         self.mainPom.groupId = self.getCurrentConfig().groupId.trim();
@@ -164,9 +164,9 @@ define([
 
         
 
-        generateFiles = function(artifact, fileGerenrators, doneBack){
+        generateFiles = function(artifact, fileGenerators, doneBack){
             if(numberOfFilesToGenerate > 0){ 
-                fileGerenrators[fileGerenrators.length - numberOfFilesToGenerate](artifact, function(err){
+                fileGenerators[fileGenerators.length - numberOfFilesToGenerate](artifact, function(err){
                     if (err) {
                         callback(err, self.result);
                         return;
@@ -174,7 +174,7 @@ define([
                     numberOfFilesToGenerate--;
                     if(numberOfFilesToGenerate > 0){
 
-                        generateFiles(artifact, fileGerenrators, doneBack);
+                        generateFiles(artifact, fileGenerators, doneBack);
                     }else{
                         doneBack();
                      }

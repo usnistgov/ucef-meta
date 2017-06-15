@@ -23,6 +23,7 @@ define([], function () {
     MavenPOM.mavenJavaPath = "/src/main/java";
     MavenPOM.mavenCppPath = "/src/main/c++";
     MavenPOM.mavenIncludePath = "/src/main/include";
+	MavenPOM.mavenResourcePath = "/src/main/resources";
 
     MavenPOM.prototype.constructor = MavenPOM;    
 

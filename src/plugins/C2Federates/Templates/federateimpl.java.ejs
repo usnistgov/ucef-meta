@@ -1,0 +1,117 @@
+package <%= simname %>;
+
+import c2w.hla.InteractionRoot;
+import c2w.hla.ObjectRoot;
+import c2w.hla.SynchronizedFederate.AdvanceTimeRequest;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+/**
+ * The federate federate for the federation federation designed in WebGME.
+ *
+ * This federate MUST join the federation before the federation manager starts the experiment.
+ * This means that, when the federate joins, the federation logical time must be 0 and both
+ * the readyToPopulate and the readyToRun synchronization points must be defined.
+ */
+public class <%= classname %> extends <%= classname %>Base {
+
+    private final static Logger log = LogManager.getLogger(<%= classname %>.class);
+    
+    public <%= classname %>(String[] args) throws Exception {
+        super(args);
+    }
+
+    private void execute() throws Exception {
+        double logicalTime = 0;
+        InteractionRoot interaction = null;
+        ObjectReflector reflector = null;
+        
+        /////////////////////////////////////////////
+        // TODO perform basic initialization below //
+        /////////////////////////////////////////////
+
+        AdvanceTimeRequest atr = new AdvanceTimeRequest(logicalTime);
+        putAdvanceTimeRequest(atr);
+
+        readyToPopulate();
+        ///////////////////////////////////////////////////////////////////////
+        // TODO perform initialization that depends on other federates below //
+        ///////////////////////////////////////////////////////////////////////
+        readyToRun();
+
+        startAdvanceTimeThread();
+    
+        while (true) {
+            //////////////////////////////////////////////////////////////
+            // TODO update step size for logical time progression below //
+            //////////////////////////////////////////////////////////////
+            logicalTime += 1.0;
+
+            atr.requestSyncStart();
+            <% if (publishedinteractiondata.length + publishedobjectdata.length > 0) { %>
+           ////////////////////////////////////////////////////////////////////////////////////////
+           // TODO send interactions and objects that must be sent every logical time step below //
+           ////////////////////////////////////////////////////////////////////////////////////////
+            <% } %>
+
+           <% if (subscribedinteractiondata.length > 0) { %>
+            <% var conditional = "if"; %>
+            while ((interaction = getNextInteractionNoWait()) != null) {
+                <% subscribedinteractiondata.forEach(function(interaction_data){ %>
+                <%= conditional %> (interaction instanceof <%= interaction_data.name %>) {
+                        handleInteractionClass((<%= interaction_data.name %>) interaction);
+                }
+            <% conditional = "else if"; %>
+            <% }) %>        
+            }
+           <% } %>
+           <%if (subscribedobjectdata.length > 0) { %>
+            <% conditional = "if"; %>
+            while ((reflector = getNextObjectReflectorNoWait()) != null) {
+                reflector.reflect();
+                ObjectRoot object = reflector.getObjectRoot();
+                <%subscribedobjectdata.forEach(function(object_data){ %>
+                <%= conditional %> (object instanceof <%= object_data.name %>) {
+                    handleObjectClass((<%= object_data.name %>) object);
+                }
+             <% conditional = "else if"; %>
+             <%}) %>
+            }
+           <% } %>
+            // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            // DO NOT MODIFY FILE BEYOND THIS LINE
+            // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            AdvanceTimeRequest newATR = new AdvanceTimeRequest(logicalTime);
+            putAdvanceTimeRequest(newATR);
+            atr.requestSyncEnd();
+            atr = newATR;
+        }
+    }
+    <%/* allinteractiondata:createInteraction() */ -%>
+        <%subscribedinteractiondata.forEach(function(interaction_data){ %>
+
+        private void handleInteractionClass(<%= interaction_data.name %> interaction) {
+            //////////////////////////////////////////////////////////////////////////
+            // TODO implement how to handle reception of the interaction            //
+            //////////////////////////////////////////////////////////////////////////
+        } <%}); %>
+
+    <%/* allobjectdata:createObject() */ -%>
+        <%subscribedobjectdata.forEach(function(object_data){ %>
+
+        private void handleObjectClass(<%= object_data.name %> object) {
+            //////////////////////////////////////////////////////////////////////////
+            // TODO implement how to handle reception of the object                 //
+            //////////////////////////////////////////////////////////////////////////
+        } <%}); %>
+
+    public static void main(String[] args) {
+        try {
+            <%= classname %> instance = new <%= classname %>(args);
+            instance.execute();
+        } catch (Exception e) {
+            System.err.println("Exception caught: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+}
