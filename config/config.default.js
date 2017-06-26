@@ -20,5 +20,8 @@ config.seedProjects = {
             basePaths: [path.join(__dirname, '../seeds')]
         };
 
+config.client.log.level = 'debug';
+
+
 validateConfig(config);
 module.exports = config;
