@@ -13,6 +13,7 @@ define([
     'c2wtng/modelLoader',
     'c2wtng/remote_utils',
     'q'
+	
 ], function (
     pluginMetadata,
     PluginBase,
@@ -20,7 +21,9 @@ define([
     TEMPLATES,
     loader,
     utils,
-    Q) {
+    Q
+	
+	) {
     'use strict';
 
     // fixed vars
@@ -116,15 +119,15 @@ define([
 	self.dockerInfoMap = {
 	    'JavaFed': {
 		'name': 'cpswt/c2wtcore_v002',
-		'tag': '160816'
+		'tag': '170626'
 	    },
 	    'CppFed': {
 		'name': 'cpswt/c2wtcore_v002',
-		'tag': '160816'
+		'tag': '170626'
 	    },
 	    'OmnetFed': {
 		'name': 'cpswt/c2wtcore_v002',
-		'tag': '160816'
+		'tag': '170626'
 	    },
 	};
 
@@ -197,6 +200,7 @@ define([
 	self.dockerFileData = ejs.render(
 	    TEMPLATES['dockerFileTemplate.ejs'],
 	    {
+		cpswtng_archiva_ip: "10.0.2.15",
 		inputPrefix: self.inputPrefix,
 		outputPrefix: self.outputPrefix,
 		fedInfos: self.fedInfos,
@@ -262,7 +266,7 @@ define([
 	// Copy the user input files (pom + xml + fed) into docker shared folder
 	var self = this;
 	var fs = require('fs'),
-	path = require('path'),
+	// path = require('path'),
 	unzip = require('unzip'),
 	stream = require('stream'),
 	fstream = require('fstream');

@@ -15,6 +15,8 @@ config.visualization.decoratorPaths.push(__dirname + '/../src/decorators');
 config.visualization.panelPaths.push(__dirname + '/../node_modules/webgme-codeeditor/src/visualizers/panels');
 
 
+// allow server side execution
+config.plugin.allowServerExecution = true
 
 
 // Visualizer descriptors
@@ -29,6 +31,7 @@ config.requirejsPaths = {
   'FederatesExporter': './src/plugins/FederatesExporter',
   'DeploymentExporter': './src/plugins/DeploymentExporter',
   'C2Federates': './src/plugins/C2Federates',
+  'RunFederation':'./src/plugins/RunFederation',
   'panels/CodeEditor': './node_modules/webgme-codeeditor/src/visualizers/panels/CodeEditor',
   'widgets/CodeEditor': './node_modules/webgme-codeeditor/src/visualizers/widgets/CodeEditor'
 };

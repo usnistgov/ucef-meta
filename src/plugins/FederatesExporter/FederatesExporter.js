@@ -236,7 +236,7 @@ define([
         finishExport = function(err){
 
             //var outFileName = self.projectName + '.json'
-            var artifact = self.blobClient.createArtifact('generated_' +self.projectName.trim().replace(/\s+/g,'_') +'_Files');
+            var artifact = self.blobClient.createArtifact(self.projectName.trim().replace(/\s+/g,'_') +'_generated');
             if(self.generateExportPackages){
                 var coreArtifact = self.blobClient.createArtifact('generated_Core_Files');
             }

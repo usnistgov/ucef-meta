@@ -260,7 +260,7 @@ define([
         finishExport = function(err){
 
             //var outFileName = self.projectName + '.json'
-            var artifact = self.blobClient.createArtifact(self.projectName.trim().replace(/\s+/g,'_') +'_Deployment_Files');
+            var artifact = self.blobClient.createArtifact(self.projectName.trim().replace(/\s+/g,'_') +'_deployment');
 
             numberOfFilesToGenerate = self.fileGenerators.length;
             if(numberOfFilesToGenerate > 0){
