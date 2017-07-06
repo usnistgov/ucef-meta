@@ -76,6 +76,11 @@ define([
         self.objectRoots = [];
         self.attributes   = {};
 
+        // COA related
+        self.coaNodes = [];
+        self.coaEdges = [];
+        self.coaPaths = {};
+
         self.projectName = self.core.getAttribute(self.rootNode, 'name');
 
         pomModel.projectName = self.projectName;
@@ -168,17 +173,43 @@ define([
     
         self.scriptModel = {
             'script': {
-                'expect': []
+                'expect': [],
+                'pauses': [],
+                'coaNodes': [],
+                'coaEdges': []
             }
         };
             
-        //Add basic script xml for testing
+        //Add Script.JSON
         self.fileGenerators.push(function(artifact, callback){
             self.federates.forEach(function (fed){
-                self.scriptModel.script.expect.push({'@federateType':fed.name});
+                //self.scriptModel.script.expect.push({'@federateType':fed.name});
+                self.scriptModel.script.expect.push({'federateType':fed.name});
+            });
+            self.scriptModel.script.coaNodes = self.coaNodes;
+            self.coaEdges.forEach(function (edge){
+                if (self.coaPaths.hasOwnProperty(edge.fromNode)){
+                    edge.fromNode = self.coaPaths[edge.fromNode];
+                } else {
+                    edge.fromNode = ""
+                }
+                if (self.coaPaths.hasOwnProperty(edge.toNode)){
+                    edge.toNode = self.coaPaths[edge.toNode];
+                } else {
+                    edge.toNode = ""
+                }
+                self.scriptModel.script.coaEdges.push(edge);
             });
 
-            artifact.addFile('src/experiments/' + 'default' + '/' + 'script.xml', self._jsonToXml.convertToString( self.scriptModel ) , function (err) {
+            /*artifact.addFile('src/experiments/' + 'default' + '/' + 'script.xml', self._jsonToXml.convertToString( self.scriptModel ) , function (err) {
+                if (err) {
+                    callback(err);
+                    return;
+                }else{
+                    callback();
+                }
+            });*/
+            artifact.addFile('src/experiments/' + 'default' + '/' + 'script.json', JSON.stringify(self.scriptModel, null, 2), function (err) {
                 if (err) {
                     callback(err);
                     return;
@@ -287,6 +318,181 @@ define([
 
     };
 
+
+    ////////////////////////
+    // COA node visitors
+    ///////////////////////
+
+    DeploymentExporter.prototype.addCoaNode = function(node, obj){
+        var self = this;
+
+        obj.name = self.core.getAttribute(node, 'name');
+        obj.nodeType  = self.core.getAttribute(self.getMetaType(node), 'name' );
+        obj.ID = self.core.getGuid(node);
+
+        self.coaNodes.push(obj);
+        self.coaPaths[self.core.getPath(node)] = self.core.getGuid(node);
+    };
+
+    DeploymentExporter.prototype.visit_Action = function(node, parent, context){
+        var self = this,
+            interactionName = '',
+            obj = {},
+            paramValues = self.core.getAttribute(node, 'ParamValues');
+
+        paramValues.split(" ").forEach(function(param){
+            try {
+                obj[param.split('=')[0]] = param.split('=')[1].split('"')[1]
+            } catch(err){
+                self.logger.debug('Erroneous param ' + param);
+            }
+        });
+
+        self.addCoaNode(node, obj);
+        return {context:context};
+    };
+
+    DeploymentExporter.prototype.visit_Fork = function(node, parent, context){
+        var self = this,
+            obj = {
+                isDecisionPoint : self.core.getAttribute(node, 'isDecisionPoint')
+            };
+
+        self.addCoaNode(node, obj);
+        return {context:context};
+    };
+
+    DeploymentExporter.prototype.visit_ProbabilisticChoice = function(node, parent, context){
+        var self = this,
+            obj = {
+                isDecisionPoint : self.core.getAttribute(node, 'isDecisionPoint')
+            };
+
+        self.addCoaNode(node, obj);
+        return {context:context};
+    };
+
+    DeploymentExporter.prototype.visit_SyncPoint = function(node, parent, context){
+        var self = this,
+            obj = {
+                time : self.core.getAttribute(node, 'time'),
+                minBranchesToSync : self.core.getAttribute(node, 'minBranchesToSync')
+            };
+
+        self.addCoaNode(node, obj);
+        return {context:context};
+    };
+
+    DeploymentExporter.prototype.visit_Dur = function(node, parent, context){
+        var self = this,
+            obj = {
+                time : self.core.getAttribute(node, 'time')
+            };
+
+        self.addCoaNode(node, obj);
+        return {context:context};
+    };
+
+    DeploymentExporter.prototype.visit_RandomDur = function(node, parent, context){
+        var self = this,
+            obj = {
+                lowerBound : self.core.getAttribute(node, 'lowerBound'),
+                upperBound : self.core.getAttribute(node, 'upperBound')
+            };
+
+        self.addCoaNode(node, obj);
+        return {context:context};
+    };
+
+    DeploymentExporter.prototype.visit_AwaitN = function(node, parent, context){
+        var self = this,
+            obj = {
+                minBranchesToAwait : self.core.getAttribute(node, 'minBranchesToAwait')
+            };
+
+        self.addCoaNode(node, obj);
+        return {context:context};
+    };
+
+    DeploymentExporter.prototype.visit_Outcome = function(node, parent, context){
+        var self = this,
+            obj = {
+                interactionName : ""
+            };
+
+        self.addCoaNode(node, obj);
+        return {context:context};
+    };
+    
+    DeploymentExporter.prototype.visit_OutcomeFilter = function(node, parent, context){
+        var self = this;
+
+        self.addCoaNode(node, {});
+        return {context:context};
+    };
+
+    DeploymentExporter.prototype.visit_TerminateCOA = function(node, parent, context){
+        var self = this;
+
+        self.addCoaNode(node, {});
+        return {context:context};
+    };
+
+    DeploymentExporter.prototype.addCoaEdge = function(node, obj){
+        var self = this;
+
+        obj.name = self.core.getAttribute(node, 'name');
+        obj.type  = self.core.getAttribute(self.getMetaType(node), 'name' );
+        obj.ID = self.core.getGuid(node);
+        obj.flowID = self.core.getAttribute(node, 'flowID');
+        obj.fromNode = self.core.getPointerPath(node,'src');
+        obj.toNode = self.core.getPointerPath(node, 'dst');
+
+        self.coaEdges.push(obj);
+    };
+
+    DeploymentExporter.prototype.visit_COAFlow = function(node, parent, context){
+        var self = this;
+
+        self.addCoaEdge(node, {});
+        return {context:context};
+    };
+
+    DeploymentExporter.prototype.visit_COAFlowWithProbability = function(node, parent, context){
+        var self = this,
+            obj = {
+                probability : self.core.getAttribute(node, 'probability')
+            };
+
+        self.addCoaEdge(node, obj);
+        return {context:context};
+    };
+
+    DeploymentExporter.prototype.visit_Outcome2Filter = function(node, parent, context){
+        var self = this;
+
+        self.addCoaEdge(node, {});
+        return {context:context};
+    };
+
+    DeploymentExporter.prototype.visit_Filter2COAElement = function(node, parent, context){
+        var self = this;
+
+        self.addCoaEdge(node, {});
+        return {context:context};
+    };
+
+    DeploymentExporter.prototype.visit_COAException = function(node, parent, context){
+        var self = this;
+
+        self.addCoaEdge(node, {});
+        return {context:context};
+    };
+
+    ////////////////////////
+    // END COA node visitors
+    ///////////////////////
+
     DeploymentExporter.prototype.visit_Federate = function(node, parent, context){
         var self = this,
             ret = {context:context},
@@ -372,7 +578,7 @@ define([
 
     }
 
-        /*
+    /*
     * Rest of TRAVERSAL CODE:
     * - PubSubVisitors.js
     * - RTIVisitors.js
