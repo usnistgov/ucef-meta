@@ -27,11 +27,11 @@ import hla.rti.LogicalTime;
 import hla.rti.ReceivedInteraction;
 
 import c2w.hla.C2WInteractionRoot;
-import c2w.hla.C2WLogger;
 import c2w.hla.InteractionRoot;
 import c2w.hla.SubscribedInteractionFilter;
 import c2w.hla.SynchronizedFederate;
 
+import org.cpswt.config.FederateConfig;
 
 import c2w.hla.*;
 <% if(melderpackagename){ -%>
@@ -57,19 +57,17 @@ public class <%= classname %>Base extends <% if(melderpackagename) { %><%= class
 	private SubscribedInteractionFilter _subscribedInteractionFilter = new SubscribedInteractionFilter();
 	
 	// constructor
-	public <%= classname %>Base( String federation_id, String federate_id ) throws Exception {
-	
-<% if(isnonmapperfed){ -%>
-		setLookahead( <%= lookahead %> );
-<% } -%>
-		createRTI();
-		joinFederation( federation_id, federate_id );
+	public <%= classname %>Base(FederateConfig config) throws Exception {
+		super(config);
+
+		super.createLRC();
+		super.joinFederation();
 
 <% if(timeconstrained){ -%>
 		enableTimeConstrained();
 <% } %>
 <% if(timeregulating){ -%>
-		enableTimeRegulation( getLookahead() );
+		enableTimeRegulation(getLookahead());
 <% } -%>
 <% if(asynchronousdelivery){ -%>
 		enableAsynchronousDelivery();
@@ -77,10 +75,10 @@ public class <%= classname %>Base extends <% if(melderpackagename) { %><%= class
         // interaction pubsub
 <% /* publishedinteractiondata:pubinter() */ -%>
         <% publishedinteractiondata.forEach(function(interactiondata){ %>
-        <%= interactiondata.name %>.publish( getRTI() );<%});%>
+        <%= interactiondata.name %>.publish(getLRC());<%});%>
 <% /* subscribedinteractiondata:subinter() */ -%>
         <% subscribedinteractiondata.forEach(function(interactiondata){ %>
-        <%= interactiondata.name %>.subscribe( getRTI() );
+        <%= interactiondata.name %>.subscribe(getLRC());
         _subscribedInteractionFilter.setFedFilters( 
 			<%= interactiondata.name %>.get_handle(), 
 			SubscribedInteractionFilter.OriginFedFilter.<%= interactiondata.originFedFilter() %>, 
@@ -92,106 +90,16 @@ public class <%= classname %>Base extends <% if(melderpackagename) { %><%= class
         <% publishedobjectdata.forEach(function(objectdata){ %>
         	<% objectdata.publishedAttributeData.forEach(function(a){ %>
         <%= objectdata.name %>.publish_<%= a.name %>();<%});%>
-        <%= objectdata.name %>.publish( getRTI() );
+        <%= objectdata.name %>.publish(getLRC());
         <%}); -%>
 <%/* subscribedobjectdata:subobjectdata() */ -%>
         <% subscribedobjectdata.forEach(function(objectdata){ %>
         	<% objectdata.subscribedAttributeData.forEach(function(a){ %>
         <%= objectdata.name %>.subscribe_<%= a.name %>();<%});%>
-        <%= objectdata.name %>.subscribe( getRTI() );
+        <%= objectdata.name %>.subscribe(getLRC());
         <%}); -%>
         }
         
-       // constructor
-	public <%= classname %>Base(  String[] federationInfo ) throws Exception {
-
-<% if(isnonmapperfed){ -%>
-		setLookahead( <%= lookahead %> );
-<% } -%>
-		createRTI();
-		joinFederation( federationInfo[ 0 ], federationInfo[ 1 ] );
-
-		String loglevel = null;
-		if(federationInfo.length == 3)
-			C2WLogger.init( federationInfo[ 2 ] );
-		else if(federationInfo.length > 3)
-			C2WLogger.init( federationInfo[ 2 ], federationInfo[ 3 ] );		
-		
-		if(federationInfo.length == 5)
-			loglevel = federationInfo[ 4 ];
-
-<% if(timeconstrained){ -%>
-		enableTimeConstrained();
-<% } -%>
-<% if(timeregulating){ -%>
-		enableTimeRegulation( getLookahead() );
-<% } -%>
-<% if(asynchronousdelivery){ -%>
-		enableAsynchronousDelivery();
-<% } -%>
-
-        // interaction pubsub
-<%/* publishedinteractiondata:pubinter() */ -%>
-<%publishedinteractiondata.forEach(function(interactiondata){ %>
-        <%= interactiondata.name %>.publish( getRTI() );<%}); %>
-<%/* subscribedinteractiondata:subinter() */ -%>
-<%subscribedinteractiondata.forEach(function(interactiondata){ %>
-        <%= interactiondata.name %>.subscribe( getRTI() );
-        _subscribedInteractionFilter.setFedFilters( 
-			<%= interactiondata.name %>.get_handle(), 
-			SubscribedInteractionFilter.OriginFedFilter.<%= interactiondata.originFedFilter() %>, 
-			SubscribedInteractionFilter.SourceFedFilter.<%= interactiondata.srcFedFilter() %> 
-		);<%}); -%>
-		// object pubsub
-<%/* publishedobjectdata:pubobjectdata() */ -%>
-        <%publishedobjectdata.forEach(function(objectdata){ %>
-        	<%objectdata.publishedAttributeData.forEach(function(a){%>
-        <%= objectdata.name %>.publish_<%= a.name %>();<% }); %>
-        <%= objectdata.name %>.publish( getRTI() );
-        <%}); -%>
-<%/* subscribedobjectdata:subobjectdata() */ -%>
-        <%subscribedobjectdata.forEach(function(objectdata){%>
-        	<%objectdata.subscribedAttributeData.forEach(function(a){%>
-        <%= objectdata.name %>.subscribe_<%= a.name %>();<% }); %>
-        <%= objectdata.name %>.subscribe( getRTI() );
-        <%}); -%>
-		// enable pubsub log
-		if(federationInfo.length  > 2) {
-<%/* publishedinteractiondata:publoginter() */ -%>
-			<%publishedinteractiondata.forEach(function(interactiondata){%>
-			<%= interactiondata.name %>.enablePublishLog(
-				"<%= interactiondata.name %>",
-				"<%= classname %>",
-				"<%= interactiondata.publishedLoglevel %>",
-				loglevel);<%}); %>
-<%/* subscribedinteractiondata:subloginter() */ -%>
-			<%subscribedinteractiondata.forEach(function(interactiondata){%>
-			<%= interactiondata.name %>.enableSubscribeLog(
-				"<%= interactiondata.name %>",
-				"<%= classname %>", 
-				"<%= interactiondata.subscribedLoglevel %>", 
-				loglevel);<%}); %>	
-<%/* publishedobjectdata:pubobjectinter() */ -%>
-			<%publishedobjectdata.forEach(function(objectdata){%>
-	        	<%objectdata.logPublishedAttributeData.forEach(function(a){%>
-	        <%= objectdata.name %>.enablePublishLog(
-	        	"<%= objectdata.name %>",	
-	        	"<%= a.name %>",
-	        	"<%= classname %>",
-	        	"<%= objectdata.publishedLoglevel %>",
-	        	loglevel);<% }); %><%}); %>
-<%/* subscribedobjectdata:subobjectinter() */ -%>
-			<%subscribedobjectdata.forEach(function(objectdata){%>
-        		<%objectdata.logSubscribedAttributeData.forEach(function(a){%>
-	        	<%= objectdata.name %>.enableSubscribeLog(
-	        	"<%= objectdata.name %>",	
-	        	"<%= a.name %>",
-	        	"<%= classname %>",
-	        	"<%= objectdata.subscribedLoglevel %>",
-	        	loglevel);<% }); %><%}); %>
-		}
-		
-	}
 <%/* publishedinteractiondata:create_interaction() */ -%>
 	<%publishedinteractiondata.forEach(function(interaction_data){%>
 	public <%= interaction_data.name %> create_<%= interaction_data.name %>() {
