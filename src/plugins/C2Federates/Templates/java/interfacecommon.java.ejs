@@ -43,32 +43,28 @@ public Set< String > getAll<%=isinteraction?"Parameter":"Attribute"%>Names();
 /**
 * Publishes the <%=isinteraction?"interaction":"object"%> class of this instance of the class for a federate.
 *
-* @param rti handle to the RTI, usu. obtained through the
-* {@link SynchronizedFederate#getRTI()} call
+* @param rti handle to the Local RTI Component
 */
 public void publish<%=isinteraction?"Interaction":"Object"%>( RTIambassador rti );
 
 /**
 * Unpublishes the <%=isinteraction?"interaction":"object"%> class of this instance of this class for a federate.
 *
-* @param rti handle to the RTI, usu. obtained through the
-* {@link SynchronizedFederate#getRTI()} call
+* @param rti handle to the Local RTI Component
 */
 public void unpublish<%=isinteraction?"Interaction":"Object"%>( RTIambassador rti );
 
 /**
 * Subscribes a federate to the <%=isinteraction?"interaction":"object"%> class of this instance of this class.
 *
-* @param rti handle to the RTI, usu. obtained through the
-* {@link SynchronizedFederate#getRTI()} call
+* @param rti handle to the Local RTI Component
 */
 public void subscribe<%=isinteraction?"Interaction":"Object"%>( RTIambassador rti );
 
 /**
 * Unsubscribes a federate from the <%=isinteraction?"interaction":"object"%> class of this instance of this class.
 *
-* @param rti handle to the RTI, usu. obtained through the
-* {@link SynchronizedFederate#getRTI()} call
+* @param rti handle to the Local RTI Component
 */
 public void unsubscribe<%=isinteraction?"Interaction":"Object"%>( RTIambassador rti );
 

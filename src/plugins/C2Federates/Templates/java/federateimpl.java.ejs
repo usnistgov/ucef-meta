@@ -1,44 +1,54 @@
 package <%= simname %>;
 
-import c2w.hla.InteractionRoot;
-import c2w.hla.base.ObjectReflector;
-import c2w.hla.ObjectRoot;
-import c2w.hla.base.AdvanceTimeRequest;
+import org.cpswt.config.FederateConfig;
+import org.cpswt.config.FederateConfigParser;
+import org.cpswt.hla.base.ObjectReflector;
+import org.cpswt.hla.ObjectRoot;
+import org.cpswt.hla.InteractionRoot;
+import org.cpswt.hla.base.AdvanceTimeRequest;
+import org.cpswt.utils.CpswtDefaults;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
 /**
- * The federate federate for the federation federation designed in WebGME.
+ * The <%= classname %> type of federate for the federation designed in WebGME.
  *
- * This federate MUST join the federation before the federation manager starts the experiment.
- * This means that, when the federate joins, the federation logical time must be 0 and both
- * the readyToPopulate and the readyToRun synchronization points must be defined.
  */
 public class <%= classname %> extends <%= classname %>Base {
 
-    private final static Logger log = LogManager.getLogger(<%= classname %>.class);
+    private final static Logger logger = LogManager.getLogger(<%= classname %>.class);
     
-    public <%= classname %>(String[] args) throws Exception {
-        super(args);
+    public <%= classname %>(FederateConfig params) throws Exception {
+        super(params);
     }
 
     private void execute() throws Exception {
-        double logicalTime = 0;
+        double currentTime = 0;
         InteractionRoot interaction = null;
         ObjectReflector reflector = null;
         
+        if(super.isLateJoiner()) {
+            currentTime = super.getLBTS() - super.getLookAhead() + CpswtDefaults.EPSILON;
+        }
+
         /////////////////////////////////////////////
         // TODO perform basic initialization below //
         /////////////////////////////////////////////
 
-        AdvanceTimeRequest atr = new AdvanceTimeRequest(logicalTime);
+        AdvanceTimeRequest atr = new AdvanceTimeRequest(currentTime);
         putAdvanceTimeRequest(atr);
 
-        readyToPopulate();
+        if(!super.isLateJoiner()) {
+            readyToPopulate();
+        }
         ///////////////////////////////////////////////////////////////////////
         // TODO perform initialization that depends on other federates below //
         ///////////////////////////////////////////////////////////////////////
-        readyToRun();
+        
+        if(!super.isLateJoiner()) {
+            readyToRun();
+        }
 
         startAdvanceTimeThread();
     
@@ -46,7 +56,7 @@ public class <%= classname %> extends <%= classname %>Base {
             //////////////////////////////////////////////////////////////
             // TODO update step size for logical time progression below //
             //////////////////////////////////////////////////////////////
-            logicalTime += 1.0;
+            currentTime += super.getStepSize();
 
             atr.requestSyncStart();
             <% if (publishedinteractiondata.length + publishedobjectdata.length > 0) { %>
@@ -82,11 +92,14 @@ public class <%= classname %> extends <%= classname %>Base {
             // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             // DO NOT MODIFY FILE BEYOND THIS LINE
             // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-            AdvanceTimeRequest newATR = new AdvanceTimeRequest(logicalTime);
+            AdvanceTimeRequest newATR = new AdvanceTimeRequest(currentTime);
             putAdvanceTimeRequest(newATR);
             atr.requestSyncEnd();
             atr = newATR;
         }
+
+        // while loop finished, notify FederationManager about resign
+        super.notifyFederationOfResign();
     }
     <%/* allinteractiondata:createInteraction() */ -%>
         <%subscribedinteractiondata.forEach(function(interaction_data){ %>
@@ -108,11 +121,13 @@ public class <%= classname %> extends <%= classname %>Base {
 
     public static void main(String[] args) {
         try {
-            <%= classname %> instance = new <%= classname %>(args);
-            instance.execute();
+            FederateConfigParser federateConfigParser = new FederateConfigParser();
+            FederateConfig federateConfig = federateConfigParser.parseArgs(args, FederateConfig.class);
+            <%= classname %> federate = new <%= classname %>(federateConfig);
+            federate.execute();
         } catch (Exception e) {
-            System.err.println("Exception caught: " + e.getMessage());
-            e.printStackTrace();
+            logger.error("There was a problem executing the <%= classname %> federate: {}", e.getMessage());
+            logger.error(e);
         }
     }
 }

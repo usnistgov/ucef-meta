@@ -1,5 +1,5 @@
 <% /* classrootinterface(isinteraction)*/ %>
-package c2w.hla;
+package org.cpswt.hla;
 
 import java.util.*;
 import hla.rti.*;
@@ -24,8 +24,7 @@ public interface <%=isinteraction?"Interaction":"Object"%>RootInterface
     * Requests an attribute update for this object instance from the federate that
     * has modification rights on these attributes.
     *
-    * @param rti handle to the RTI, usu. obtained through the
-    * {@link SynchronizedFederate#getRTI()} call
+    * @param rti handle to the Local RTI Component
     */
     public void requestUpdate( RTIambassador rti );
 
@@ -123,8 +122,7 @@ public interface <%=isinteraction?"Interaction":"Object"%>RootInterface
     * This method should be used to send interactions that have "timestamp"
     * ordering.
     *
-    * @param rti handle to the RTI, usu. obtained through the
-    * {@link SynchronizedFederate#getRTI()} call
+    * @param rti handle to the Local RTI Component
     * @param time timestamp for this interaction.  The timestamp should be no
     * less than the current federation time + the LOOKAHEAD value of the federate
     * sending this interaction.
@@ -136,8 +134,7 @@ public interface <%=isinteraction?"Interaction":"Object"%>RootInterface
     * This method should be used to send interactions that have "receive"
     * ordering.
     *
-    * @param rti handle to the RTI, usu. obtained through the
-    * {@link SynchronizedFederate#getRTI()} call
+    * @param rti handle to the Local RTI Component
     */
     public void sendInteraction( RTIambassador rti ) throws Exception ;
 <%}else{%>
@@ -147,8 +144,7 @@ public interface <%=isinteraction?"Interaction":"Object"%>RootInterface
     * has write-privileges to its attributes (so, it is responsible for updating
     * these attribute and conveying their updated values to the RTI).
     *
-    * @param rti handle to the RTI, usu. obtained through the
-    * {@link SynchronizedFederate#getRTI()} call
+    * @param rti handle to the Local RTI Component
     */ 
     public void registerObject( RTIambassador rti );
     
@@ -158,8 +154,7 @@ public interface <%=isinteraction?"Interaction":"Object"%>RootInterface
     * called by a federate who "owns" this object, i.e. the federate that created
     * it and has write-privileges to its attributes.
     *
-    * @param rti handle to the RTI, usu. obtained through the
-    * {@link SynchronizedFederate#getRTI()} call
+    * @param rti handle to the Local RTI Component
     */ 
     public void unregisterObject( RTIambassador rti );
 
@@ -168,8 +163,7 @@ public interface <%=isinteraction?"Interaction":"Object"%>RootInterface
     * the values have "time" as their timestamp.  This call should be used for
     * objects whose attributes have "timestamp" ordering.
     *
-    * @param rti handle to the RTI, usu. obtained through the
-    * {@link SynchronizedFederate#getRTI()} call
+    * @param rti handle to the Local RTI Component
     * @param time timestamp on attribute values of this object
     * @param force if "false", only the attributes whose values have changed since
     * the last call to "updateAttributeValues" will be broadcast to the RTI.  If
@@ -181,8 +175,7 @@ public interface <%=isinteraction?"Interaction":"Object"%>RootInterface
     * Like {@link #updateAttributeValues( RTIambassador rti, double time, boolean force )},
     * except "force" is always false.
     *
-    * @param rti handle to the RTI, usu. obtained through the
-    * {@link SynchronizedFederate#getRTI()} call
+    * @param rti handle to the Local RTI Component
     * @param time timestamp on attribute values of this object
     */
     public void updateAttributeValues( RTIambassador rti, double time );
@@ -192,8 +185,7 @@ public interface <%=isinteraction?"Interaction":"Object"%>RootInterface
     * no timestamp).  This call should be used for objects whose attributes have
     * "receive" ordering.
     *
-    * @param rti handle to the RTI, usu. obtained through the
-    * {@link SynchronizedFederate#getRTI()} call
+    * @param rti handle to the Local RTI Component
     * @param force if "false", only the attributes whose values have changed since
     * the last call to "updateAttributeValues" will be broadcast to the RTI.  If
     * "true", all attributes and their values are broadcast to the RTI.
@@ -204,8 +196,7 @@ public interface <%=isinteraction?"Interaction":"Object"%>RootInterface
     * Like {@link #updateAttributeValues( RTIambassador rti, boolean force )},
     * except "force" is always false.
     *
-    * @param rti handle to the RTI, usu. obtained through the
-    * {@link SynchronizedFederate#getRTI()} call
+    * @param rti handle to the Local RTI Component
     */
     public void updateAttributeValues( RTIambassador rti );    
 <%}%>    
