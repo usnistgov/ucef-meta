@@ -39,6 +39,8 @@ define([
                 'LowPrio': {simname: corePackagePathStr},
                 'VeryLowPrio': {simname: corePackagePathStr},
                 'FederateObject': {simname: corePackagePathStr, hlaclassname: 'ObjectRoot.Manager.Federate'},
+                'FederateJoinInteraction': {simname: corePackagePathStr},
+                'FederateResignInteraction': {simname: corePackagePathStr},
             };
 
 
@@ -92,37 +94,27 @@ define([
                 eventsDirPath = foundationDirBasePath + ejs.render(self.directoryNameTemplate, eventsDirSpec),
                 eventsOutFilePath = eventsDirPath + MavenPOM.mavenJavaPath;
 
-            var C2WLoggingPOM = new MavenPOM();
-            C2WLoggingPOM.artifactId = "logging";
-            C2WLoggingPOM.groupId = "org.c2w";
-            C2WLoggingPOM.version = self.c2w_version;
-
             var foundationPOM = new MavenPOM();
-            foundationPOM.artifactId = "c2w-foundation";
-            foundationPOM.groupId = "org.c2w";
-            foundationPOM.version  = self.c2w_version;
-
+            foundationPOM.artifactId = "cpswt-core";
+            foundationPOM.groupId = "org.cpswt";
+            foundationPOM.version  = self.cpswt_version;
 
             self.corePOM = new MavenPOM(foundationPOM);
             self.corePOM.artifactId = "root";
-            self.corePOM.groupId = "org.c2w";
-            self.corePOM.version = self.c2w_version;
+            self.corePOM.groupId = "org.cpswt";
+            self.corePOM.version = self.cpswt_version;
             self.corePOM.packaging = "jar";
-            self.corePOM.dependencies.push(C2WLoggingPOM);
 
             self.java_core_rtiPOM = new MavenPOM(foundationPOM);
             self.java_core_rtiPOM.artifactId = "base-events";
-            self.java_core_rtiPOM.version = self.c2w_version;
+            self.java_core_rtiPOM.version = self.cpswt_version;
             self.java_core_rtiPOM.packaging = "jar";
             self.java_core_rtiPOM.dependencies.push(self.corePOM);
 
-
-            
             if(self.generateExportPackages){
-
                 //Add core POM generator
                 self.corefileGenerators.push(function(artifact, callback){
-                    artifact.addFile(coreDirPath + '/pom.xml', self._jsonToXml.convertToString( self.corePOM.toJSON() ), function (err) {
+                    artifact.addFile(coreDirPath + '/pom.xml', self._jsonToXml.convertToString(self.corePOM.toJSON()), function (err) {
                         if (err) {
                             callback(err);
                             return;
@@ -134,7 +126,7 @@ define([
 
                 //Add sim POM generator
                 self.corefileGenerators.push(function(artifact, callback){
-                    artifact.addFile(eventsDirPath + '/pom.xml', self._jsonToXml.convertToString( self.java_core_rtiPOM.toJSON() ), function (err) {
+                    artifact.addFile(eventsDirPath + '/pom.xml', self._jsonToXml.convertToString(self.java_core_rtiPOM.toJSON()), function (err) {
                         if (err) {
                             callback(err);
                             return;
@@ -223,7 +215,7 @@ define([
                     };
 
                     for(var oid in self.objects){
-                        if(self.objects[oid].name != "ObjectRoot" && self.javaCorePackageOISpecs.hasOwnProperty(self.objects[oid].name) ){
+                        if(self.objects[oid].name != "ObjectRoot" && self.javaCorePackageOISpecs.hasOwnProperty(self.objects[oid].name)){
                             objToRender.push(self.objects[oid]);
                         }
                     }
@@ -252,7 +244,7 @@ define([
                     };
 
                     for(var iid in self.interactions){
-                        if(self.interactions[iid].name != "InteractionRoot" && self.javaCorePackageOISpecs.hasOwnProperty(self.interactions[iid].name) ){
+                        if(self.interactions[iid].name != "InteractionRoot" && self.javaCorePackageOISpecs.hasOwnProperty(self.interactions[iid].name)){
                             intToRender.push(self.interactions[iid]);
                         }
                     }
@@ -287,7 +279,7 @@ define([
                 //Set the parent now that it exists
                 self.java_rtiPOM.setParentPom(self.javaPOM);
 
-                artifact.addFile(simDirPath + '/pom.xml', self._jsonToXml.convertToString( self.java_rtiPOM.toJSON() ), function (err) {
+                artifact.addFile(simDirPath + '/pom.xml', self._jsonToXml.convertToString(self.java_rtiPOM.toJSON()), function (err) {
                     if (err) {
                         callback(err);
                         return;
@@ -318,7 +310,7 @@ define([
                 };
 
                 for(var oid in self.objects){
-                    if(self.objects[oid].name != "ObjectRoot" && !self.javaCorePackageOISpecs.hasOwnProperty(self.objects[oid].name) ){
+                    if(self.objects[oid].name != "ObjectRoot" && !self.javaCorePackageOISpecs.hasOwnProperty(self.objects[oid].name)){
                         objToRender.push(self.objects[oid]);
                     }
                 }
@@ -348,7 +340,7 @@ define([
                 };
 
                 for(var iid in self.interactions){
-                    if(self.interactions[iid].name != "InteractionRoot" && !self.javaCorePackageOISpecs.hasOwnProperty(self.interactions[iid].name) ){
+                    if(self.interactions[iid].name != "InteractionRoot" && !self.javaCorePackageOISpecs.hasOwnProperty(self.interactions[iid].name)){
                         intToRender.push(self.interactions[iid]);
                     }
                 }
@@ -390,42 +382,42 @@ define([
                     supplied: function(type, name){
                         var typeMap = {
                             "String"  : "get_" + name + "()",
-                            "int"     : "Integer.toString( get_" + name +"() )",
-                            "long"    : "Long.toString( get_" + name +"() )",
-                            "short"   : "Short.toString( get_" + name +"() )",
-                            "byte"    : "Byte.toString( get_" + name +"() )",
-                            "char"    : "Character.toString( get_" + name +"() )",
-                            "double"  : "Double.toString( get_" + name +"() )",
-                            "float"   : "Float.toString( get_" + name +"() )",
-                            "boolean" : "Boolean.toString( get_" + name +"() )"
+                            "int"     : "Integer.toString(get_" + name +"())",
+                            "long"    : "Long.toString(get_" + name +"())",
+                            "short"   : "Short.toString(get_" + name +"())",
+                            "byte"    : "Byte.toString(get_" + name +"())",
+                            "char"    : "Character.toString(get_" + name +"())",
+                            "double"  : "Double.toString(get_" + name +"())",
+                            "float"   : "Float.toString(get_" + name +"())",
+                            "boolean" : "Boolean.toString(get_" + name +"())"
                         }
                         return typeMap[type];
                     },
                     set: function(type){
                         var typeMap = {
                             "String"  : "val",
-                            "int"     : "Integer.parseInt( val )",
-                            "long"    : "Long.parseLong( val )",
-                            "short"   : "Short.parseShort( val )",
-                            "byte"    : "Byte.parseByte( val )",
-                            "char"    : "val.charAt( 0 )",
-                            "double"  : "Double.parseDouble( val )",
-                            "float"   : "Float.parseFloat( val )",
-                            "boolean" : "Boolean.parseBoolean( val )"
+                            "int"     : "Integer.parseInt(val)",
+                            "long"    : "Long.parseLong(val)",
+                            "short"   : "Short.parseShort(val)",
+                            "byte"    : "Byte.parseByte(val)",
+                            "char"    : "val.charAt(0)",
+                            "double"  : "Double.parseDouble(val)",
+                            "float"   : "Float.parseFloat(val)",
+                            "boolean" : "Boolean.parseBoolean(val)"
                         }
                         return typeMap[type];
                     },
                     get: function(type, name){
                         var typeMap = {
                             "String"  : "get_" + name + "()",
-                            "int"     : "new Integer( get_" + name +"() )",
-                            "long"    : "new Long( get_" + name +"() )",
-                            "short"   : "new Short( get_" + name +"() )",
-                            "byte"    : "new Byte( get_" + name +"() )",
-                            "char"    : "new Character( get_" + name +"() )",
-                            "double"  : "new Double( get_" + name +"() )",
-                            "float"   : "new Float( get_" + name +"() )",
-                            "boolean" : "new Boolean( get_" + name +"() )"
+                            "int"     : "new Integer(get_" + name +"())",
+                            "long"    : "new Long(get_" + name +"())",
+                            "short"   : "new Short(get_" + name +"())",
+                            "byte"    : "new Byte(get_" + name +"())",
+                            "char"    : "new Character(get_" + name +"())",
+                            "double"  : "new Double(get_" + name +"())",
+                            "float"   : "new Float(get_" + name +"())",
+                            "boolean" : "new Boolean(get_" + name +"())"
                         }
                         return typeMap[type];
                     },

@@ -14731,7 +14731,7 @@
         "fc49219e-fcf2-e7bb-ce6e-f335379082c9": {
             "attributes": {
                 "artifact": "base-events",
-                "group": "org.c2w",
+                "group": "org.cpswt",
                 "name": "BasePackage",
                 "type": "import",
                 "version": "0.0.1"

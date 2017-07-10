@@ -90,20 +90,20 @@ define([
 
             var porticoPOM = new MavenPOM();
             porticoPOM.artifactId = "portico-hla13-cpp";
-            porticoPOM.groupId = "org.c2w";
+            porticoPOM.groupId = "org.cpswt";
             porticoPOM.version = "1.0.0";
             porticoPOM.packaging = "nar";
 
             var C2WLoggingPOM = new MavenPOM();
             C2WLoggingPOM.artifactId = "C2WConsoleLogger";
-            C2WLoggingPOM.groupId = "org.c2w";
-            C2WLoggingPOM.version = self.c2w_version;
+            C2WLoggingPOM.groupId = "org.cpswt";
+            C2WLoggingPOM.version = self.cpswt_version;
             C2WLoggingPOM.packaging = "nar";
 
             self.cpp_corePOM = new MavenPOM();
-            self.cpp_corePOM.groupId = "org.c2w";
+            self.cpp_corePOM.groupId = "org.cpswt";
             self.cpp_corePOM.artifactId = "rti-base-cpp";
-            self.cpp_corePOM.version = self.c2w_version;
+            self.cpp_corePOM.version = self.cpswt_version;
             self.cpp_corePOM.packaging = "nar";
             self.cpp_corePOM.dependencies.push(porticoPOM);
             self.cpp_corePOM.dependencies.push(C2WLoggingPOM);
@@ -223,7 +223,7 @@ define([
 
             self.cpp_rtiPOM = new MavenPOM(); //Parent to be set serialization time.
             self.cpp_rtiPOM.artifactId = ejs.render(self.directoryNameTemplate, simDirSpec)
-            self.cpp_rtiPOM.version = self.c2w_version;
+            self.cpp_rtiPOM.version = self.cpswt_version;
             self.cpp_rtiPOM.packaging = "nar";
             self.cpp_rtiPOM.dependencies.push(self.cpp_corePOM);
 

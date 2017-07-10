@@ -31,16 +31,16 @@ define([
                 omnetOutFilePath = omnetDirPath;
 
                 self.omnet_federateBasePOM = new MavenPOM();
-                self.omnet_federateBasePOM.groupId = 'org.c2w'
+                self.omnet_federateBasePOM.groupId = 'org.cpswt'
                 self.omnet_federateBasePOM.artifactId = 'OmnetFederate';
-                self.omnet_federateBasePOM.version = self.c2w_version;   
+                self.omnet_federateBasePOM.version = self.cpswt_version;   
                 self.omnet_federateBasePOM.packaging = "nar";
 
                 if(!self.cpp_federateBasePOM){
                     self.cpp_federateBasePOM = new MavenPOM();
-                    self.cpp_federateBasePOM.groupId = 'org.c2w'
+                    self.cpp_federateBasePOM.groupId = 'org.cpswt'
                     self.cpp_federateBasePOM.artifactId = 'SynchronizedFederate';
-                    self.cpp_federateBasePOM.version = self.c2w_version;   
+                    self.cpp_federateBasePOM.version = self.cpswt_version;   
                     self.cpp_federateBasePOM.packaging = "nar";
                 }
 

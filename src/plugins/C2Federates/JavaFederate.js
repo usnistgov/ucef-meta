@@ -30,7 +30,7 @@ define([
                 self.javaPOM.artifactId = self.projectName + "-java";
                 self.javaPOM.directory = "java-federates";
                 self.javaPOM.version = self.project_version;
-                self.javaPOM.addMavenCompiler('1.5');
+                self.javaPOM.addMavenCompiler('1.8');
                 self.javaPOM.packaging = "pom";
                 self.javaPOM.dependencies.push(self.porticoPOM);
             }               
@@ -44,16 +44,14 @@ define([
                 self.porticoPOM.scope = "provided";
             }
 
-                   this.visit_JavaBaseFederate(node, parent, context);
+            this.visit_JavaBaseFederate(node, parent, context);
             return this.visit_JavaImplFederate(node, parent, context);
         };
 
         this.post_visit_JavaFederate = function(node, context){
-
-                   this.post_visit_JavaBaseFederate(node, context);
+            this.post_visit_JavaBaseFederate(node, context);
             return this.post_visit_JavaImplFederate(node, context);
-
-        };  
+        };
     }
     return JavaFederateExporter;
 });

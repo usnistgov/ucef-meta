@@ -53,9 +53,9 @@ define([
 
                 if(!self.java_federateBasePOM){
                     self.java_federateBasePOM = new MavenPOM();
-                    self.java_federateBasePOM.groupId = 'org.c2w'
+                    self.java_federateBasePOM.groupId = 'org.cpswt'
                     self.java_federateBasePOM.artifactId = 'federate-base';
-                    self.java_federateBasePOM.version = self.c2w_version;  
+                    self.java_federateBasePOM.version = self.cpswt_version;  
                 } 
 
                 self.java_mapperPOM = null; //will be set by model visitor
