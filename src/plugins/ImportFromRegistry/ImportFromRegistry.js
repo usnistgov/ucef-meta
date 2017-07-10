@@ -92,8 +92,14 @@ define([
         self.activeNode = this._currentConfig['activeNode'] || self.activeNode;
         self.META = this._currentConfig['META'] || self.META;
         self.multiplier = this._currentConfig['multiplier'] || 1;
-        //self.container = this._currentConfig['container'] || null;
         self.container = self.activeNode;
+
+        if (self.multiplier < 1){
+            self.multiplier = 1
+        }
+        if (self.multiplier > 100){
+            self.multiplier = 100;
+        }
 
         self.postProcesses = 0;
 
@@ -238,12 +244,12 @@ define([
             federateNode,
             federateNodes = [],
             baseType = 'Federate',
-            i = 0;
+            i = 1;
 
         if (self.object){
             // Create federate
             baseType = self.object['__FEDERATE_BASE__'] || 'Federate';
-            while (i < self.multiplier){
+            while (i <= self.multiplier){
                 federateNode = self.core.createNode(
                    {parent: self.container, base:self.META[baseType]});
                 federateNodes.push(federateNode);
@@ -251,10 +257,14 @@ define([
                 // Add attributes
                 var attrNames = Object.keys(self.object.attributes);
                 attrNames.map(function (attrName) {
+                    var attrValue = self.object.attributes[attrName];
+                    if (attrName == 'name'){
+                        attrValue = attrValue + "_" + i;
+                    }
                     self.core.setAttribute(
                         federateNode,
                         attrName,
-                        self.object.attributes[attrName]);
+                        attrValue);
                 });
 
                 // Add new connections
