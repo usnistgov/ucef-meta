@@ -8,14 +8,21 @@ import java.util.HashSet;
 import java.util.Set;
 
 import hla.rti.*;
-<% if(simname !== 'c2w.hla'){ %>
-import c2w.hla.*;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.cpswt.utils.CpswtUtils;
+
+<% if(simname !== 'org.cpswt.hla'){ %>
+import org.cpswt.hla.*;
 <% } %>
 /**
 * The <%=classname%> class implements the <%=classname%> <%=isinteraction?"interaction":"object"%> in the
 * <%=simname%> simulation.
 */
 public class <%=classname%> extends <%=parentclassname%> {
+
+	private static final Logger logger = LogManager.getLogger(<%=classname%>.class);
 
 	/**
 	* Default constructor -- creates an instance of the <%=classname%> <%=isinteraction?"interaction":"object"%>
@@ -308,7 +315,7 @@ public class <%=classname%> extends <%=parentclassname%> {
 			try {
 				isPublished = _publishedAttributeHandleSet.isMember( get_<%=datamember.name%>_handle() );
 			} catch ( Exception e ) {
-				System.err.println( "ERROR:  <%=hlaclassname%>.createSuppliedAttributes:  could not determine if <%=datamember.name%> is published." );
+				logger.error("ERROR:  <%=hlaclassname%>.createSuppliedAttributes:  could not determine if <%=datamember.name%> is published.");
 				isPublished = false;
 			}
 			if (  isPublished && _<%=datamember.name%>.shouldBeUpdated( force )  ) {

@@ -41,7 +41,7 @@
 	* {@link #get<%=isinteraction?"Parameter":"Attribute"%>Names()}.
 	*/
 	public static Set< String > get_<%=isinteraction?"parameter":"attribute"%>_names() {
-		return new HashSet< String >( _datamemberNames );
+		return new HashSet< String >(_datamemberNames);
 	}
 
 
@@ -55,7 +55,7 @@
 	* {@link #get<%=isinteraction?"Parameter":"Attribute"%>Names()}.
 	*/
 	public static Set< String > get_all_<%=isinteraction?"parameter":"attribute"%>_names() {
-		return new HashSet< String >( _allDatamemberNames );
+		return new HashSet< String >(_allDatamemberNames);
 	}
 
 
@@ -69,99 +69,98 @@
 	<%}%>
 
 	static {
-		_classNameSet.add( "<%= hlaclassname %>" );
-		_classNameClassMap.put( "<%= hlaclassname %>", <%= classname %>.class );
+		_classNameSet.add("<%= hlaclassname %>");
+		_classNameClassMap.put("<%= hlaclassname %>", <%= classname %>.class);
 		
-		_datamemberClassNameSetMap.put( "<%= hlaclassname %>", _datamemberNames );
-		_allDatamemberClassNameSetMap.put( "<%= hlaclassname %>", _allDatamemberNames );
+		_datamemberClassNameSetMap.put("<%= hlaclassname %>", _datamemberNames);
+		_allDatamemberClassNameSetMap.put("<%= hlaclassname %>", _allDatamemberNames);
 
 		<%/*alldatamembers:initDatamemberNameSet()*/%>
 		<% alldatamembers.forEach(function(datamember){%>
-		<% if(!datamember.hidden && !datamember.inherited){ %>_datamemberNames.add( "<%=datamember.name%>" );<%}%><%}); %>
+		<% if(!datamember.hidden && !datamember.inherited){ %>_datamemberNames.add("<%=datamember.name%>");<%}%><%}); %>
 		<%/*alldatamembers:initAllDatamemberNameSet()*/%>
 		<% alldatamembers.forEach(function(datamember){%>
-		_allDatamemberNames.add( "<%=datamember.name%>" );<%}); %>
+		_allDatamemberNames.add("<%=datamember.name%>");<%}); %>
 		<%/*datamembers:initDatamemberTypeMap()*/%>
 		<% datamembers.forEach(function(datamember){%>
-		_datamemberTypeMap.put( "<%=datamember.name%>", "<%=datamember.parameterType%>" );<%}); %>
+		_datamemberTypeMap.put("<%=datamember.name%>", "<%=datamember.parameterType%>");<%}); %>
 	<% if(isinteraction){ %>
 	<% }else{ %>
 
-		_classNamePublishAttributeNameMap.put( "<%= hlaclassname %>", _publishAttributeNameSet );
+		_classNamePublishAttributeNameMap.put("<%= hlaclassname %>", _publishAttributeNameSet);
 		_publishedAttributeHandleSet = _factory.createAttributeHandleSet();
-		_classNamePublishedAttributeMap.put( "<%= hlaclassname %>", _publishedAttributeHandleSet );
+		_classNamePublishedAttributeMap.put("<%= hlaclassname %>", _publishedAttributeHandleSet);
 
-		_classNameSubscribeAttributeNameMap.put( "<%= hlaclassname %>", _subscribeAttributeNameSet );
+		_classNameSubscribeAttributeNameMap.put("<%= hlaclassname %>", _subscribeAttributeNameSet);
 		_subscribedAttributeHandleSet = _factory.createAttributeHandleSet();
-		_classNameSubscribedAttributeMap.put( "<%= hlaclassname %>", _subscribedAttributeHandleSet );
+		_classNameSubscribedAttributeMap.put("<%= hlaclassname %>", _subscribedAttributeHandleSet);
 	<%}%>
 
 	}
 
 
 	private static String initErrorMessage = "Error:  <%= hlaclassname %>:  could not initialize:  ";
-	protected static void init( RTIambassador rti ) {
-		if ( _isInitialized ) return;
+	protected static void init(RTIambassador rti) {
+		if (_isInitialized) return;
 		_isInitialized = true;
 		
-		<% if(parentclassname){ %><%=parentclassname%>.init( rti );<%}%>
+		<% if(parentclassname){ %><%=parentclassname%>.init(rti);<%}%>
 		
 		boolean isNotInitialized = true;
-		while( isNotInitialized ) {
+		while(isNotInitialized) {
 			try {
-				_handle = rti.get<%=isinteraction?"Interaction":"Object"%>ClassHandle( "<%= hlaclassname %>" );
+				_handle = rti.get<%=isinteraction?"Interaction":"Object"%>ClassHandle("<%= hlaclassname %>");
 				isNotInitialized = false;
-			} catch ( FederateNotExecutionMember f ) {
-				System.err.println( initErrorMessage + "Federate Not Execution Member" );
-				f.printStackTrace();
+			} catch (FederateNotExecutionMember f) {
+				logger.error("{} Federate Not Execution Member", initErrorMessage);
+				logger.error(f);
 				return;				
-			} catch ( NameNotFound n ) {
-				System.err.println( initErrorMessage + "Name Not Found" );
-				n.printStackTrace();
+			} catch (NameNotFound n) {
+				logger.error("{} Name Not Found", initErrorMessage);
+				logger.error(n);
 				return;				
-			} catch ( Exception e ) {
-				e.printStackTrace();
-				try { Thread.sleep( 50 ); } catch( Exception e1 ) { }					
+			} catch (Exception e) {
+				logger.error(e);
+				CpswtUtils.sleepDefault();
 			}
 		}
 
-		_classNameHandleMap.put( "<%= hlaclassname %>", get_handle() );
-		_classHandleNameMap.put( get_handle(), "<%= hlaclassname %>" );
-		_classHandleSimpleNameMap.put( get_handle(), "<%= classname %>" );
+		_classNameHandleMap.put("<%= hlaclassname %>", get_handle());
+		_classHandleNameMap.put(get_handle(), "<%= hlaclassname %>");
+		_classHandleSimpleNameMap.put(get_handle(), "<%= classname %>");
 
 		<% if(datamembers && datamembers.length > 0){ %>
 		isNotInitialized = true;
-		while( isNotInitialized ) {
+		while(isNotInitialized) {
 			try {<%/*datamembers:handle_init()*/%>
 				<% datamembers.forEach(function(datamember){%>			
-				_<%=datamember.name%>_handle = rti.get<%=isinteraction?"Parameter":"Attribute"%>Handle( "<%=datamember.name%>", get_handle() );<%}); %>
+				_<%=datamember.name%>_handle = rti.get<%=isinteraction?"Parameter":"Attribute"%>Handle("<%=datamember.name%>", get_handle());<%}); %>
 				isNotInitialized = false;
-			} catch ( FederateNotExecutionMember f ) {
-				System.err.println( initErrorMessage + "Federate Not Execution Member" );
-				f.printStackTrace();
-				return;				
-			} catch ( <%=isinteraction?"Interaction":"Object"%>ClassNotDefined i ) {
-				System.err.println( initErrorMessage + "<%=isinteraction?"Interaction":"Object"%> Class Not Defined" );
-				i.printStackTrace();
-				return;				
-			} catch ( NameNotFound n ) {
-				System.err.println( initErrorMessage + "Name Not Found" );
-				n.printStackTrace();
-				return;				
-			} catch ( Exception e ) {
-				e.printStackTrace();
-				try { Thread.sleep( 50 ); } catch( Exception e1 ) { }					
+			} catch (FederateNotExecutionMember f) {
+				logger.error("{} Federate Not Execution Member", initErrorMessage);
+				logger.error(f);
+				return;
+			} catch (<%=isinteraction?"Interaction":"Object"%>ClassNotDefined i) {
+				logger.error("{} <%=isinteraction?"Interaction":"Object"%> Class Not Defined", initErrorMessage);
+				logger.error(i);
+				return;
+			} catch (NameNotFound n) {
+				logger.error("{} Name Not Found", initErrorMessage);
+				logger.error(n);
+				return;
+			} catch (Exception e) {
+				logger.error(e);
+				CpswtUtils.sleepDefault();
 			}
 		}
 			<%/*  datamembers: { d |<initDatamemberNameHandleMap(hlaclassname=hlaclassname,datamember=d)>}  */%>
 			<% datamembers.forEach(function(datamember){%>
-		_datamemberNameHandleMap.put( "<%=hlaclassname%>,<%=datamember.name%>", get_<%=datamember.name%>_handle() );<%}); %>
+		_datamemberNameHandleMap.put("<%=hlaclassname%>,<%=datamember.name%>", get_<%=datamember.name%>_handle());<%}); %>
 			<%/*datamembers:initDatamemberHandleNameMap()*/%>
 			<% datamembers.forEach(function(datamember){%>
-		_datamemberHandleNameMap.put( get_<%=datamember.name%>_handle(), "<%=datamember.name%>" );<%}); %>
+		_datamemberHandleNameMap.put(get_<%=datamember.name%>_handle(), "<%=datamember.name%>");<%}); %>
 		<%}%>
 	}
-
 
 	private static boolean _isPublished = false;
 	private static String publishErrorMessage = "Error:  <%= hlaclassname %>:  could not publish:  ";
@@ -169,42 +168,41 @@
 	/**
 	* Publishes the <%= classname %> <%=isinteraction?"interaction":"object"%> class for a federate.
 	*
-	* @param rti handle to the RTI, usu. obtained through the
-	* {@link SynchronizedFederate#getRTI()} call
+	* @param rti handle to the Local RTI Component
 	*/
-	public static void publish( RTIambassador rti ) {
-		if ( _isPublished ) return;
+	public static void publish(RTIambassador rti) {
+		if (_isPublished) return;
 		
-		init( rti );
+		init(rti);
 
 	<% if(isinteraction){ %><% }else{ %>	
 		_publishedAttributeHandleSet.empty();
-		for( String attributeName : _publishAttributeNameSet ) {
+		for(String attributeName : _publishAttributeNameSet) {
 			try {
-				_publishedAttributeHandleSet.add(  _datamemberNameHandleMap.get( "<%= hlaclassname %>," + attributeName )  );
-			} catch ( Exception e ) {
-				System.err.println( publishErrorMessage + "Could not publish \"" + attributeName + "\" attribute." );
+				_publishedAttributeHandleSet.add(_datamemberNameHandleMap.get("<%= hlaclassname %>," + attributeName));
+			} catch (Exception e) {
+				logger.error("{} Could not publish \"" + attributeName + "\" attribute.", publishErrorMessage);
 			}
 		}
 	<%}%>
 
-		synchronized( rti ) {
+		synchronized(rti) {
 			boolean isNotPublished = true;
-			while( isNotPublished ) {
+			while(isNotPublished) {
 				try {
-					rti.publish<%=isinteraction?"Interaction":"Object"%>Class( get_handle()<% if(isinteraction){ %><% }else{ %>, _publishedAttributeHandleSet<%}%> );
+					rti.publish<%=isinteraction?"Interaction":"Object"%>Class(get_handle()<% if(isinteraction){ %><% }else{ %>, _publishedAttributeHandleSet<%}%>);
 					isNotPublished = false;
-				} catch ( FederateNotExecutionMember f ) {
-					System.err.println( publishErrorMessage + "Federate Not Execution Member" );
-					f.printStackTrace();
+				} catch (FederateNotExecutionMember f) {
+					logger.error("{} Federate Not Execution Member", publishErrorMessage);
+					logger.error(f);
 					return;
-				} catch ( <%=isinteraction?"Interaction":"Object"%>ClassNotDefined i ) {
-					System.err.println( publishErrorMessage + "<%=isinteraction?"Interaction":"Object"%> Class Not Defined" );
-					i.printStackTrace();
+				} catch (<%=isinteraction?"Interaction":"Object"%>ClassNotDefined i) {
+					logger.error("{} <%=isinteraction?"Interaction":"Object"%> Class Not Defined", publishErrorMessage);
+					logger.error(i);
 					return;
-				} catch ( Exception e ) {
-					e.printStackTrace();
-					try { Thread.sleep( 50 ); } catch( Exception e1 ) { }
+				} catch (Exception e) {
+					logger.error(e);
+					CpswtUtils.sleepDefault();
 				}
 			}
 		}
@@ -216,34 +214,33 @@
 	/**
 	* Unpublishes the <%= classname %> <%=isinteraction?"interaction":"object"%> class for a federate.
 	*
-	* @param rti handle to the RTI, usu. obtained through the
-	* {@link SynchronizedFederate#getRTI()} call
+	* @param rti handle to the Local RTI Component
 	*/
-	public static void unpublish( RTIambassador rti ) {
-		if ( !_isPublished ) return;
+	public static void unpublish(RTIambassador rti) {
+		if (!_isPublished) return;
 		
-		init( rti );
-		synchronized( rti ) {
+		init(rti);
+		synchronized(rti) {
 			boolean isNotUnpublished = true;
-			while( isNotUnpublished ) {
+			while(isNotUnpublished) {
 				try {
-					rti.unpublish<%=isinteraction?"Interaction":"Object"%>Class( get_handle() );
+					rti.unpublish<%=isinteraction?"Interaction":"Object"%>Class(get_handle());
 					isNotUnpublished = false;
-				} catch ( FederateNotExecutionMember f ) {
-					System.err.println( unpublishErrorMessage + "Federate Not Execution Member" );
-					f.printStackTrace();
+				} catch (FederateNotExecutionMember f) {
+					logger.error("{} Federate Not Execution Member", unpublishErrorMessage);
+					logger.error(f);
 					return;
-				} catch ( <%=isinteraction?"Interaction":"Object"%>ClassNotDefined i ) {
-					System.err.println( unpublishErrorMessage + "<%=isinteraction?"Interaction":"Object"%> Class Not Defined" );
-					i.printStackTrace();
+				} catch (<%=isinteraction?"Interaction":"Object"%>ClassNotDefined i) {
+					logger.error("{} <%=isinteraction?"Interaction":"Object"%> Class Not Defined", unpublishErrorMessage);
+					logger.error(i);
 					return;
-				} catch ( <%=isinteraction?"Interaction":"Object"%>ClassNotPublished i ) {
-					System.err.println( unpublishErrorMessage + "<%=isinteraction?"Interaction":"Object"%> Class Not Published" );
-					i.printStackTrace();
+				} catch (<%=isinteraction?"Interaction":"Object"%>ClassNotPublished i) {
+					logger.error("{} <%=isinteraction?"Interaction":"Object"%> Class Not Published", unpublishErrorMessage);
+					logger.error(i);
 					return;
-				} catch ( Exception e ) {
-					e.printStackTrace();
-					try { Thread.sleep( 50 ); } catch( Exception e1 ) { }
+				} catch (Exception e) {
+					logger.error(e);
+					CpswtUtils.sleepDefault();
 				}
 			}
 		}
@@ -256,41 +253,40 @@
 	/**
 	* Subscribes a federate to the <%= classname %> <%=isinteraction?"interaction":"object"%> class.
 	*
-	* @param rti handle to the RTI, usu. obtained through the
-	* {@link SynchronizedFederate#getRTI()} call
+	* @param rti handle to the Local RTI Component
 	*/
-	public static void subscribe( RTIambassador rti ) {
-		if ( _isSubscribed ) return;
+	public static void subscribe(RTIambassador rti) {
+		if (_isSubscribed) return;
 		
-		init( rti );
+		init(rti);
 	<% if(isinteraction){ %><% }else{ %>	
 		_subscribedAttributeHandleSet.empty();
-		for( String attributeName : _subscribeAttributeNameSet ) {
+		for(String attributeName : _subscribeAttributeNameSet) {
 			try {
-				_subscribedAttributeHandleSet.add(  _datamemberNameHandleMap.get( "<%= hlaclassname %>," + attributeName )  );
-			} catch ( Exception e ) {
-				System.err.println( subscribeErrorMessage + "Could not subscribe to \"" + attributeName + "\" attribute." );
+				_subscribedAttributeHandleSet.add(_datamemberNameHandleMap.get("<%= hlaclassname %>," + attributeName));
+			} catch (Exception e) {
+				logger.error("{} Could not subscribe to \"" + attributeName + "\" attribute.", subscribeErrorMessage);
 			}
 		}
 	<%}%>
 		
-		synchronized( rti ) {
+		synchronized(rti) {
 			boolean isNotSubscribed = true;
-			while( isNotSubscribed ) {
+			while(isNotSubscribed) {
 				try {
-					rti.subscribe<% if(isinteraction){ %>InteractionClass( get_handle() )<% }else{ %>ObjectClassAttributes( get_handle(), _subscribedAttributeHandleSet )<%}%>;
+					rti.subscribe<% if(isinteraction){ %>InteractionClass(get_handle())<% }else{ %>ObjectClassAttributes(get_handle(), _subscribedAttributeHandleSet)<%}%>;
 					isNotSubscribed = false;
-				} catch ( FederateNotExecutionMember f ) {
-					System.err.println( subscribeErrorMessage + "Federate Not Execution Member" );
-					f.printStackTrace();
+				} catch (FederateNotExecutionMember f) {
+					logger.error("{} Federate Not Execution Member", subscribeErrorMessage);
+					logger.error(f);
 					return;
-				} catch ( <%=isinteraction?"Interaction":"Object"%>ClassNotDefined i ) {
-					System.err.println( subscribeErrorMessage + "<%=isinteraction?"Interaction":"Object"%> Class Not Defined" );
-					i.printStackTrace();
+				} catch (<%=isinteraction?"Interaction":"Object"%>ClassNotDefined i) {
+					logger.error("{} <%=isinteraction?"Interaction":"Object"%> Class Not Defined", subscribeErrorMessage);
+					logger.error(i);
 					return;
-				} catch ( Exception e ) {
-					e.printStackTrace();
-					try { Thread.sleep( 50 ); } catch( Exception e1 ) { }
+				} catch (Exception e) {
+					logger.error(e);
+					CpswtUtils.sleepDefault();
 				}
 			}
 		}
@@ -302,34 +298,33 @@
 	/**
 	* Unsubscribes a federate from the <%= classname %> <%=isinteraction?"interaction":"object"%> class.
 	*
-	* @param rti handle to the RTI, usu. obtained through the
-	* {@link SynchronizedFederate#getRTI()} call
+	* @param rti handle to the Local RTI Component
 	*/
-	public static void unsubscribe( RTIambassador rti ) {
-		if ( !_isSubscribed ) return;
+	public static void unsubscribe(RTIambassador rti) {
+		if (!_isSubscribed) return;
 
-		init( rti );
-		synchronized( rti ) {
+		init(rti);
+		synchronized(rti) {
 			boolean isNotUnsubscribed = true;
-			while( isNotUnsubscribed ) {
+			while(isNotUnsubscribed) {
 				try {
-					rti.unsubscribe<%=isinteraction?"Interaction":"Object"%>Class( get_handle() );
+					rti.unsubscribe<%=isinteraction?"Interaction":"Object"%>Class(get_handle());
 					isNotUnsubscribed = false;
-				} catch ( FederateNotExecutionMember f ) {
-					System.err.println( unsubscribeErrorMessage + "Federate Not Execution Member" );
-					f.printStackTrace();
+				} catch (FederateNotExecutionMember f) {
+					logger.error("{} Federate Not Execution Member", unsubscribeErrorMessage);
+					logger.error(f);
 					return;
-				} catch ( <%=isinteraction?"Interaction":"Object"%>ClassNotDefined i ) {
-					System.err.println( unsubscribeErrorMessage + "<%=isinteraction?"Interaction":"Object"%> Class Not Defined" );
-					i.printStackTrace();
+				} catch (<%=isinteraction?"Interaction":"Object"%>ClassNotDefined i) {
+					logger.error("{} <%=isinteraction?"Interaction":"Object"%> Class Not Defined", unsubscribeErrorMessage);
+					logger.error(i);
 					return;
-				} catch ( <%=isinteraction?"Interaction":"Object"%>ClassNotSubscribed i ) {
-					System.err.println( unsubscribeErrorMessage + "<%=isinteraction?"Interaction":"Object"%> Class Not Subscribed" );
-					i.printStackTrace();
+				} catch (<%=isinteraction?"Interaction":"Object"%>ClassNotSubscribed i) {
+					logger.error("{} <%=isinteraction?"Interaction":"Object"%> Class Not Subscribed", unsubscribeErrorMessage);
+					logger.error(i);
 					return;
-				} catch ( Exception e ) {
-					e.printStackTrace();
-					try { Thread.sleep( 50 ); } catch( Exception e1 ) { }
+				} catch (Exception e) {
+					logger.error(e);
+					CpswtUtils.sleepDefault();
 				}
 			}
 		}
@@ -346,7 +341,7 @@
 	* @return "true" if "handle" matches the value of the handle of this class
 	* (that is, the <%= classname %> <%=isinteraction?"interaction":"object"%> class).
 	*/
-	public static boolean match( int handle ) { return handle == get_handle(); }
+	public static boolean match(int handle) { return handle == get_handle(); }
 
 	/**
 	* Returns the handle (RTI assigned) of this instance's <%=isinteraction?"interaction":"object"%> class .
@@ -391,40 +386,36 @@
 	/**
 	* Publishes the <%=isinteraction?"interaction":"object"%> class of this instance of the class for a federate.
 	*
-	* @param rti handle to the RTI, usu. obtained through the
-	* {@link SynchronizedFederate#getRTI()} call
+	* @param rti handle to the Local RTI Component
 	*/
-	public void publish<%=isinteraction?"Interaction":"Object"%>( RTIambassador rti ) { publish( rti ); }
+	public void publish<%=isinteraction?"Interaction":"Object"%>(RTIambassador rti) { publish(rti); }
 
 	/**
 	* Unpublishes the <%=isinteraction?"interaction":"object"%> class of this instance of this class for a federate.
 	*
-	* @param rti handle to the RTI, usu. obtained through the
-	* {@link SynchronizedFederate#getRTI()} call
+	* @param rti handle to the Local RTI Component
 	*/
-	public void unpublish<%=isinteraction?"Interaction":"Object"%>( RTIambassador rti ) { unpublish( rti ); }
+	public void unpublish<%=isinteraction?"Interaction":"Object"%>(RTIambassador rti) { unpublish(rti); }
 
 	/**
 	* Subscribes a federate to the <%=isinteraction?"interaction":"object"%> class of this instance of this class.
 	*
-	* @param rti handle to the RTI, usu. obtained through the
-	* {@link SynchronizedFederate#getRTI()} call
+	* @param rti handle to the Local RTI Component
 	*/
-	public void subscribe<%=isinteraction?"Interaction":"Object"%>( RTIambassador rti ) { subscribe( rti ); }
+	public void subscribe<%=isinteraction?"Interaction":"Object"%>(RTIambassador rti) { subscribe(rti); }
 
 	/**
 	* Unsubscribes a federate from the <%=isinteraction?"interaction":"object"%> class of this instance of this class.
 	*
-	* @param rti handle to the RTI, usu. obtained through the
-	* {@link SynchronizedFederate#getRTI()} call
+	* @param rti handle to the Local RTI Component
 	*/
-	public void unsubscribe<%=isinteraction?"Interaction":"Object"%>( RTIambassador rti ) { unsubscribe( rti ); }
+	public void unsubscribe<%=isinteraction?"Interaction":"Object"%>(RTIambassador rti) { unsubscribe(rti); }
 
 	<% if(isinteraction){ %><% }else{ %>
 	/**
 	* Returns a data structure containing the handles of all attributes for this object
 	* class that are currently marked for subscription.  To actually subscribe to these
-	* attributes, a federate must call <objectclassname>.subscribe( RTIambassador rti ).
+	* attributes, a federate must call <objectclassname>.subscribe(RTIambassador rti).
 	*
 	* @return data structure containing the handles of all attributes for this object
 	* class that are currently marked for subscription
