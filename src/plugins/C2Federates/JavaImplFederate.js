@@ -76,14 +76,15 @@ define([
             context['javaimplfedspec']['groupId'] = self.mainPom.groupId.trim();
             context['javaimplfedspec']['artifactId'] = ejs.render(self.directoryNameTemplate, implDirSpec);
             context['javaimplfedspec']['projectName'] = self.projectName;
-            context['javaimplfedspec']['projectVersion'] = "0.0.1-SNAPSHOT";
-            context['javaimplfedspec']['c2wVersion'] = "0.4.0-SNAPSHOT";
+            context['javaimplfedspec']['projectVersion'] = "0.1.0-SNAPSHOT";
+            context['javaimplfedspec']['cpswtVersion'] = "0.5.0-SNAPSHOT";
             context['javaimplfedspec']['porticoPOM']['artifactId'] = self.porticoPOM.artifactId;
             context['javaimplfedspec']['porticoPOM']['groupId'] = self.porticoPOM.groupId;
             context['javaimplfedspec']['porticoPOM']['version'] = self.porticoPOM.version;
             context['javaimplfedspec']['porticoPOM']['scope'] = self.porticoPOM.scope;
             context['javaimplfedspec']['classname'] = self.core.getAttribute(node, 'name');
             context['javaimplfedspec']['simname'] = self.projectName;
+            context['javaimplfedspec']['configFile'] = self.core.getAttribute(node, 'name') + 'Config.json';
             context['javaimplfedspec']['timeconstrained'] = self.core.getAttribute(node, 'TimeConstrained');
             context['javaimplfedspec']['timeregulating'] = self.core.getAttribute(node, 'TimeRegulating');
             context['javaimplfedspec']['asynchronousdelivery'] = self.core.getAttribute(node, 'EnableROAsynchronousDelivery');

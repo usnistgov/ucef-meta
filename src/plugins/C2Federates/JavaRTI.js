@@ -14,7 +14,7 @@ define([
 
         this.initJavaRTI = function(){
             var self = this,
-                corePackagePath = ["c2w","hla"],
+                corePackagePath = ["org", "cpswt", "hla"],
                 corePackagePathStr = corePackagePath.join('.'),
                 renderContext = {
                     ejs: ejs, 

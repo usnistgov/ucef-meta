@@ -1,8 +1,8 @@
 {
   "id": "FederatesExporter",
   "name": "Federates Exporter",
-  "version": "0.2.1",
-  "description": "Export stuff",
+  "version": "0.5.0",
+  "description": "Export federates",
   "icon": {
     "src": "",
     "class": "fa fa-cogs"
@@ -15,7 +15,7 @@
           "name": "exportVersion",
           "displayName": "version",
           "description": "The version of the model to be exported",
-          "value": "0.0.1",
+          "value": "0.1.0",
           "valueType": "string",
           "readOnly": false
       },
@@ -36,10 +36,10 @@
           "readOnly": false
       },
       {
-          "name": "c2wVersion",
+          "name": "cpswtVersion",
           "displayName": "C2W version",
           "description": "The version of the C2W foundation to be used",
-          "value": "0.4.0-SNAPSHOT",
+          "value": "0.5.0-SNAPSHOT",
           "valueType": "string",
           "readOnly": false
       },

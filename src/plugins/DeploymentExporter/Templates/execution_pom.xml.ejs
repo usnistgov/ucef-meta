@@ -9,7 +9,7 @@
 	<properties>
 		<federation.name><%= projectName %></federation.name>
 		<federation.version><%= projectVersion %></federation.version>
-		<c2w.version><%= c2wVersion%></c2w.version>
+		<cpswt.version><%= cpswtVersion%></cpswt.version>
 		<nar.version>3.3.0</nar.version>
 	</properties>
 
@@ -110,7 +110,7 @@
 		      <version>2.19.1</version>
 		      <configuration>
 		        <forkMode>once</forkMode>
-		        <argLine>-Djava.library.path=${project.basedir}/target/nar/processid-${c2w.version}-amd64-Linux-gpp-jni/lib/amd64-Linux-gpp/jni/</argLine>
+		        <argLine>-Djava.library.path=${project.basedir}/target/nar/processid-${cpswt.version}-amd64-Linux-gpp-jni/lib/amd64-Linux-gpp/jni/</argLine>
 		      </configuration>
 		    </plugin>
 			<plugin>
@@ -170,8 +170,8 @@
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>3.5.1</version>
 				<configuration>
-					<source>1.5</source>
-					<target>1.5</target>
+					<source>1.8</source>
+					<target>1.8</target>
 				</configuration>
 			</plugin>
 			<plugin>
@@ -251,7 +251,7 @@
 				<dependency>
 					<groupId>org.cpswt</groupId>
 					<artifactId>fedmanager-host</artifactId>
-					<version>${c2w.version}</version>
+					<version>${cpswt.version}</version>
 				</dependency>
     		</dependencies>
 			<build>
@@ -264,7 +264,7 @@
 							<goal>java</goal>
 						</goals>
 						<configuration>
-							<mainClass>c2w.host.FederationManagerHostApplication</mainClass>
+							<mainClass>cpswt.host.FederationManagerHostApplication</mainClass>
 							<classpathScope>runtime</classpathScope>
 							<systemProperties>
 								<systemProperty>
@@ -307,13 +307,13 @@
 								<argument>-Xmx512m</argument>
 								<!-- For debugging purposes-->
 								<!--argument>-Xdiag</argument-->
-					            <argument>-Djava.library.path=${project.basedir}/target/nar/processid-${c2w.version}-amd64-Linux-gpp-jni/lib/amd64-Linux-gpp/jni/</argument>
+					            <argument>-Djava.library.path=${project.basedir}/target/nar/processid-${cpswt.version}-amd64-Linux-gpp-jni/lib/amd64-Linux-gpp/jni/</argument>
 					            <argument>-Djava.net.preferIPv4Stack=true</argument>
 					            <argument>-classpath</argument>
 					            <!-- automatically creates the classpath using all project dependencies,
 		                 		also adding the project build directory -->
 					            <classpath/>
-					            <argument>c2w.gui.hla.main.C2WSim</argument>
+					            <argument>cpswt.gui.hla.main.C2WSim</argument>
 					            <argument>--step</argument><argument>1.0</argument>
 					            <argument>--lookahead</argument><argument>0.1</argument>
 					            <argument>--realtime</argument>
@@ -356,7 +356,7 @@
 								<argument>-Xmx512m</argument>
 								<!-- For debugging purposes-->
 								<!--argument>-Xdiag</argument-->
-					            <!--<argument>-Djava.library.path=${project.basedir}/target/nar/processid-${c2w.version}-amd64-Linux-gpp-jni/lib/amd64-Linux-gpp/jni/</argument>-->
+					            <!--<argument>-Djava.library.path=${project.basedir}/target/nar/processid-${cpswt.version}-amd64-Linux-gpp-jni/lib/amd64-Linux-gpp/jni/</argument>-->
 					            <argument>-Djava.net.preferIPv4Stack=true</argument>
 					            <argument>-classpath</argument>
 					            <!-- automatically creates the classpath using all project dependencies,
@@ -407,7 +407,7 @@
 			          	<dependency><!-- The depenency for CPP execution assembly script-->
 							<groupId>org.cpswt</groupId>
 							<artifactId>ExecutionAssembler</artifactId>
-							<version>${c2w.version}</version>
+							<version>${cpswt.version}</version>
 						</dependency>
 					  </dependencies>
 			          <configuration>

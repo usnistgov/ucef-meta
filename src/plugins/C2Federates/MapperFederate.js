@@ -95,7 +95,7 @@ define([
                 self.javaPOM.artifactId = self.projectName + "-java";
                 self.javaPOM.directory = "java-federates";
                 self.javaPOM.version = self.project_version;
-                self.javaPOM.addMavenCompiler('1.7');
+                self.javaPOM.addMavenCompiler('1.8');
                 self.javaPOM.packaging = "pom";
                 self.javaPOM.dependencies.push(self.porticoPOM);
             }

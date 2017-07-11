@@ -86,7 +86,7 @@ define([
         pomModel.projectName = self.projectName;
         pomModel.groupId = self.getCurrentConfig().groupId.trim();
         pomModel.projectVersion = "0.0.1" + (self.getCurrentConfig().isRelease ? "" : "-SNAPSHOT");
-        pomModel.c2wVersion = self.getCurrentConfig().c2wVersion;
+        pomModel.cpswtVersion = self.getCurrentConfig().cpswtVersion;
         pomModel.repositoryUrlSnapshot = self.getCurrentConfig().repositoryUrlSnapshot;
         pomModel.repositoryUrlRelease = self.getCurrentConfig().repositoryUrlRelease;
         pomModel.federates = self.federates;

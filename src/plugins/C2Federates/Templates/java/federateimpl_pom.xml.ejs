@@ -13,9 +13,9 @@
     <properties>
         <federation.name><%= projectName %></federation.name>
         <package.name><%= projectName %></package.name>
-         <federate.name><%= classname %></federate.name>
-       <federation.version><%= projectVersion %></federation.version>
-        <c2w.version><%= c2wVersion %></c2w.version>
+        <federate.name><%= classname %></federate.name>
+        <federation.version><%= projectVersion %></federation.version>
+        <cpswt.version><%= cpswtVersion %></cpswt.version>
         <nar.version>3.3.0</nar.version>
     </properties>
 
@@ -38,12 +38,12 @@
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-api</artifactId>
-            <version>2.8.1</version>
+            <version>2.8.2</version>
         </dependency>
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-core</artifactId>
-            <version>2.8.1</version>
+            <version>2.8.2</version>
         </dependency>
         <dependency>
             <groupId>com.lmax</groupId>
@@ -96,7 +96,7 @@
               <version>2.19.1</version>
               <configuration>
                 <forkMode>once</forkMode>
-                <argLine>-Djava.library.path=${project.basedir}/target/nar/processid-${c2w.version}-amd64-Linux-gpp-jni/lib/amd64-Linux-gpp/jni/</argLine>
+                <argLine>-Djava.library.path=${project.basedir}/target/nar/processid-${cpswt.version}-amd64-Linux-gpp-jni/lib/amd64-Linux-gpp/jni/</argLine>
               </configuration>
             </plugin>
             <plugin>
@@ -136,8 +136,8 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.5.1</version>
                 <configuration>
-                    <source>1.7</source>
-                    <target>1.7</target>
+                    <source>1.8</source>
+                    <target>1.8</target>
                 </configuration>
             </plugin>
         </plugins>

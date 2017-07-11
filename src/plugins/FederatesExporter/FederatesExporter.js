@@ -114,7 +114,7 @@ define([
 
         self.projectName = self.core.getAttribute(self.rootNode, 'name');
         self.project_version = self.getCurrentConfig().exportVersion.trim() + (self.getCurrentConfig().isRelease ? "" : "-SNAPSHOT");
-        self.cpswt_version = self.getCurrentConfig().c2wVersion.trim();
+        self.cpswt_version = self.getCurrentConfig().cpswtVersion.trim();
         //self.directoryNameTemplate = self.getCurrentConfig().projectNameTemplate.trim();
         self.directoryNameTemplate= '<%=federation_name%><%=artifact_name?"-"+artifact_name:""%><%=language?"-"+language:""%>';
         self.generateExportPackages = self.getCurrentConfig().generateExportPackages;
