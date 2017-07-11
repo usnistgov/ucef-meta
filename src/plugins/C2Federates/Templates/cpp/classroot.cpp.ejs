@@ -33,7 +33,7 @@
 C2WLogger* <%=isinteraction?"Interaction":"Object"%>Root::_logger = &C2W_RTI_LOGGER_CLS::get_singleton();
 
 <% /*classcommon(classname=apMap.classfirstupper+"Root",hlaclassname=apMap.classfirstupper+"Root",...)*/ %>
-<%- ejs.render(TEMPLATES["classcommon.cpp.ejs"],
+<%- ejs.render(TEMPLATES["cpp/classcommon.cpp.ejs"],
 	{	isinteraction: isinteraction,
 		classname: isinteraction?"InteractionRoot":"ObjectRoot",
 		parentclassname: "",

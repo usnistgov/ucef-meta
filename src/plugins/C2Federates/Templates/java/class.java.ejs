@@ -44,7 +44,7 @@ public class <%=classname%> extends <%=parentclassname%> {
 	public static int get_<%=datamember.name%>_handle() { return _<%=datamember.name%>_handle; }
 	<%});%>
 	<% /*classcommon(...)*/ %>
-	<%- ejs.render(TEMPLATES["classcommon.java.ejs"],
+	<%- ejs.render(TEMPLATES["java/classcommon.java.ejs"],
 		{	isinteraction: isinteraction,
 			classname: classname,
 			parentclassname: parentclassname,

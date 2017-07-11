@@ -348,7 +348,7 @@ define([
             self.fileGenerators.push(function(artifact, callback){
                  
                 self.logger.debug('Rendering template to file: ' + outFileName);
-                artifact.addFile(outFileName, ejs.render(TEMPLATES['mapperfederate.java.ejs'], renderContext), function (err) {
+                artifact.addFile(outFileName, ejs.render(TEMPLATES['java/mapperfederate.java.ejs'], renderContext), function (err) {
                     if (err) {
                         callback(err);
                         return;

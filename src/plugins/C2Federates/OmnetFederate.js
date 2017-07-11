@@ -122,14 +122,14 @@ define([
                 renderContext['allinteractiondata'] = renderContext['publishedinteractiondata'].concat(renderContext['subscribedinteractiondata'])
 
                 self.logger.debug('Rendering template to file: ' + outFileName);
-                artifact.addFile(outFileName, ejs.render(TEMPLATES['omnetfilter.cpp.ejs'], renderContext), function (err) {
+                artifact.addFile(outFileName, ejs.render(TEMPLATES['cpp/omnetfilter.cpp.ejs'], renderContext), function (err) {
                     if (err) {
                         callback(err);
                         return;
                     }else{
                         outFileName = omnetOutFilePath + MavenPOM.mavenIncludePath + "/" + fileName + ".h";
                         self.logger.debug('Rendering template to file: ' + outFileName);
-                        artifact.addFile(outFileName, ejs.render(TEMPLATES['omnetfilter.hpp.ejs'], renderContext), function(err){
+                        artifact.addFile(outFileName, ejs.render(TEMPLATES['cpp/omnetfilter.hpp.ejs'], renderContext), function(err){
                             if(err){
                                 callback(err);
                                 return;

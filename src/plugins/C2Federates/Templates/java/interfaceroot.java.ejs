@@ -9,7 +9,7 @@ public interface <%=isinteraction?"Interaction":"Object"%>RootInterface
     public int getUniqueID();
 
     <%-ejs.render(
-        TEMPLATES["interfacecommon.java.ejs"],{
+        TEMPLATES["java/interfacecommon.java.ejs"],{
             isinteraction: isinteraction,
             classname: isinteraction?"InteractionRoot":"ObjectRoot",
             parentclassname: "",

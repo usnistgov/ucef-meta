@@ -51,7 +51,7 @@ define([
                 //         callback();
                 //         return;
                 //     }
-                //     artifact.addFile(implOutResPath + '/log4j2.xml', ejs.render(TEMPLATES['log4j2.xml.ejs'], java_implLog), function (err) {
+                //     artifact.addFile(implOutResPath + '/log4j2.xml', ejs.render(TEMPLATES['java/log4j2.xml.ejs'], java_implLog), function (err) {
                 //         if (err) {
                 //             callback(err);
                 //             return;
@@ -114,7 +114,7 @@ define([
                  
                 
 
-                artifact.addFile(fedPathDir + "/"+'pom.xml', ejs.render(TEMPLATES['federateimpl_pom.xml.ejs'], renderContext), function (err) {
+                artifact.addFile(fedPathDir + "/"+'pom.xml', ejs.render(TEMPLATES['java/federateimpl_pom.xml.ejs'], renderContext), function (err) {
                     if (err) {
                         callback(err);
                         return;
@@ -127,7 +127,7 @@ define([
             self.fileGenerators.push(function (artifact, callback) {
 
                 self.logger.debug('Rendering template to file: ' + context['javafedspec']['outFileName']);
-                artifact.addFile(context['javafedspec']['outFileName'], ejs.render(TEMPLATES['federatebase.java.ejs'], renderContext), function (err) {
+                artifact.addFile(context['javafedspec']['outFileName'], ejs.render(TEMPLATES['java/federatebase.java.ejs'], renderContext), function (err) {
                     if (err) {
                         callback(err);
                         return;
@@ -141,7 +141,7 @@ define([
 
                 self.logger.debug('Rendering template to file: ' + outFileName);
 
-                artifact.addFile(outFileName, ejs.render(TEMPLATES['federateimpl.java.ejs'], renderContext), function (err) {
+                artifact.addFile(outFileName, ejs.render(TEMPLATES['java/federateimpl.java.ejs'], renderContext), function (err) {
                     if (err) {
                         callback(err);
                         return;
@@ -157,7 +157,7 @@ define([
                     callback();
                     return;
                 }
-                artifact.addFile(fedPathDir + MavenPOM.mavenResourcePath + '/log4j2.xml', ejs.render(TEMPLATES['log4j2.xml.ejs'], java_implLog), function (err) {
+                artifact.addFile(fedPathDir + MavenPOM.mavenResourcePath + '/log4j2.xml', ejs.render(TEMPLATES['java/log4j2.xml.ejs'], java_implLog), function (err) {
                     if (err) {
                         callback(err);
                         return;

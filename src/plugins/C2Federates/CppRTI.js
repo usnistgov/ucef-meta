@@ -66,14 +66,14 @@ define([
 
                 var fullPath = outFilePath + MavenPOM.mavenCppPath + '/' + model.name +'.cpp'
                 self.logger.debug('Rendering template to file: ' + fullPath);
-                artifact.addFile( fullPath, ejs.render(TEMPLATES['class.cpp.ejs'], context), function(err){
+                artifact.addFile( fullPath, ejs.render(TEMPLATES['cpp/class.cpp.ejs'], context), function(err){
                     if (err) {
                         callback(err);
                         return;
                     }else{
                         fullPath = outFilePath + MavenPOM.mavenIncludePath + '/' + model.name +'.hpp'
                         self.logger.debug('Rendering template to file: ' + fullPath);
-                        artifact.addFile(fullPath , ejs.render(TEMPLATES['class.hpp.ejs'], context), callback);
+                        artifact.addFile(fullPath , ejs.render(TEMPLATES['cpp/class.hpp.ejs'], context), callback);
                     }
                 });
             }
@@ -125,14 +125,14 @@ define([
                     var fullPath = coreOutSrcFilePath + '/InteractionRoot.cpp';
                     renderContext['isinteraction'] = true;
                     self.logger.debug('Rendering template to file: ' + fullPath);
-                    artifact.addFile(fullPath, ejs.render(TEMPLATES['classroot.cpp.ejs'], renderContext), function (err) {
+                    artifact.addFile(fullPath, ejs.render(TEMPLATES['cpp/classroot.cpp.ejs'], renderContext), function (err) {
                         if (err) {
                             callback(err);
                             return;
                         }else{
                             fullPath = coreOutIncFilePath + '/InteractionRoot.hpp';
                             self.logger.debug('Rendering template to file: ' + fullPath);
-                            artifact.addFile(fullPath, ejs.render(TEMPLATES['classroot.hpp.ejs'], renderContext), function (err) {
+                            artifact.addFile(fullPath, ejs.render(TEMPLATES['cpp/classroot.hpp.ejs'], renderContext), function (err) {
                                 if (err) {
                                     callback(err);
                                     return;
@@ -149,13 +149,13 @@ define([
                 self.corefileGenerators.push(function(artifact, callback){
                     var fullPath = coreOutSrcFilePath + '/ObjectRoot.cpp';
                     renderContext['isinteraction'] = false;
-                    artifact.addFile(fullPath, ejs.render(TEMPLATES['classroot.cpp.ejs'], renderContext), function (err) {
+                    artifact.addFile(fullPath, ejs.render(TEMPLATES['cpp/classroot.cpp.ejs'], renderContext), function (err) {
                         if (err) {
                             callback(err);
                             return;
                         }else{
                             fullPath = coreOutIncFilePath + '/ObjectRoot.hpp';
-                            artifact.addFile(fullPath, ejs.render(TEMPLATES['classroot.hpp.ejs'], renderContext), function (err) {
+                            artifact.addFile(fullPath, ejs.render(TEMPLATES['cpp/classroot.hpp.ejs'], renderContext), function (err) {
                                 if (err) {
                                     callback(err);
                                     return;

@@ -137,7 +137,6 @@ define([], function () {
             if(hasProperties){
                 model['properties'] = propsJSON;
             }
-
         }
 
         if(this.dependencies && this.dependencies.length > 0){

@@ -79,7 +79,8 @@ define([
                 });
 
                 self.logger.debug('Rendering template to file: ' + fullPath);
-                artifact.addFile(fullPath , ejs.render(TEMPLATES['class.java.ejs'], context), callback);
+                var templ = TEMPLATES['java/class.java.ejs'];
+                artifact.addFile(fullPath , ejs.render(templ, context), callback);
             }  
         
             //
@@ -144,14 +145,14 @@ define([
                     var fullPath = coreOutFilePath + "/" + corePackagePath.join("/") + "/" + 'InteractionRoot.java';
                     renderContext['isinteraction'] = true;
                     self.logger.debug('Rendering template to file: ' + fullPath);
-                    artifact.addFile(fullPath, ejs.render(TEMPLATES['classroot.java.ejs'], renderContext), function (err) {
+                    artifact.addFile(fullPath, ejs.render(TEMPLATES['java/classroot.java.ejs'], renderContext), function (err) {
                         if (err) {
                             callback(err);
                             return;
                         }else{
                             fullPath = coreOutFilePath + "/" + corePackagePath.join("/") + "/" + 'InteractionRootInterface.java';
                             self.logger.debug('Rendering template to file: ' + fullPath);
-                            artifact.addFile(fullPath, ejs.render(TEMPLATES['interfaceroot.java.ejs'], renderContext), function (err) {
+                            artifact.addFile(fullPath, ejs.render(TEMPLATES['java/interfaceroot.java.ejs'], renderContext), function (err) {
                                 if (err) {
                                     callback(err);
                                     return;
@@ -173,14 +174,14 @@ define([
                     var fullPath = coreOutFilePath + "/" + corePackagePath.join("/") + "/" + 'ObjectRoot.java';
                     renderContext['isinteraction'] = false;
                     self.logger.debug('Rendering template to file: ' + fullPath);
-                    artifact.addFile(fullPath, ejs.render(TEMPLATES['classroot.java.ejs'], renderContext), function (err) {
+                    artifact.addFile(fullPath, ejs.render(TEMPLATES['java/classroot.java.ejs'], renderContext), function (err) {
                         if (err) {
                             callback(err);
                             return;
                         }else{
                             fullPath = coreOutFilePath + "/" + corePackagePath.join("/") + "/" + 'ObjectRootInterface.java';
                             self.logger.debug('Rendering template to file: ' + fullPath);
-                            artifact.addFile(fullPath, ejs.render(TEMPLATES['interfaceroot.java.ejs'], renderContext), function (err) {
+                            artifact.addFile(fullPath, ejs.render(TEMPLATES['java/interfaceroot.java.ejs'], renderContext), function (err) {
                                 if (err) {
                                     callback(err);
                                     return;

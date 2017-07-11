@@ -45,7 +45,7 @@ define([
                         callback();
                         return;
                     }
-                    artifact.addFile( self.cppPOM.directory + '/pom.xml', ejs.render(TEMPLATES['cppfedbase_pom.xml.ejs'], self.cppPOM), function (err) {
+                    artifact.addFile( self.cppPOM.directory + '/pom.xml', ejs.render(TEMPLATES['cpp/cppfedbase_pom.xml.ejs'], self.cppPOM), function (err) {
                         if (err) {
                             callback(err);
                             return;
@@ -85,7 +85,7 @@ define([
                     },
                     outFileName = baseOutFilePath + MavenPOM.mavenCppPath + "/" + "fedreate_version.cpp";
                     self.logger.debug('Rendering template to file: ' + outFileName);
-                    artifact.addFile(outFileName, ejs.render(TEMPLATES['federate_ver.cpp.ejs'], renderContext), function (err) {
+                    artifact.addFile(outFileName, ejs.render(TEMPLATES['cpp/federate_ver.cpp.ejs'], renderContext), function (err) {
                         if (err) {
                             callback(err);
                             return;
@@ -147,7 +147,7 @@ define([
                 renderContext['allinteractiondata'] = renderContext['publishedinteractiondata'].concat(renderContext['subscribedinteractiondata'])
 
                 self.logger.debug('Rendering template to file: ' + outFileName);
-                artifact.addFile(outFileName, ejs.render(TEMPLATES['federate.hpp.ejs'], renderContext), function (err) {
+                artifact.addFile(outFileName, ejs.render(TEMPLATES['cpp/federate.hpp.ejs'], renderContext), function (err) {
                     if (err) {
                         callback(err);
                         return;

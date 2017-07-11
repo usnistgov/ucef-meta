@@ -141,7 +141,7 @@ public class <%=isinteraction?"Interaction":"Object"%>Root implements <%=isinter
 <%}%>	
 	
 	<% /*classcommon(classname=%=isinteraction?"Interaction":"Object"%+"Root",hlaclassname=%=isinteraction?"Interaction":"Object"%+"Root",...)*/ %>
-	<%- ejs.render(TEMPLATES["classcommon.java.ejs"],
+	<%- ejs.render(TEMPLATES["java/classcommon.java.ejs"],
 		{
 			isinteraction: isinteraction,
 			classname: isinteraction?"InteractionRoot":"ObjectRoot",
