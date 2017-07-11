@@ -26,14 +26,14 @@ import hla.rti.EventRetractionHandle;
 import hla.rti.LogicalTime;
 import hla.rti.ReceivedInteraction;
 
-import c2w.hla.C2WInteractionRoot;
-import c2w.hla.InteractionRoot;
-import c2w.hla.SubscribedInteractionFilter;
-import c2w.hla.SynchronizedFederate;
+import org.cpswt.C2WInteractionRoot;
+import org.cpswt.InteractionRoot;
+import org.cpswt.SubscribedInteractionFilter;
+import org.cpswt.SynchronizedFederate;
 
 import org.cpswt.config.FederateConfig;
 
-import c2w.hla.*;
+import org.cpswt.*;
 <% if(melderpackagename){ -%>
 import <%= melderpackagename %>.<%= classname %>;
 import <%= melderpackagename %>.<%= classname %>RTIFactory;
@@ -98,7 +98,7 @@ public class <%= classname %>Base extends <% if(melderpackagename) { %><%= class
         <%= objectdata.name %>.subscribe_<%= a.name %>();<%});%>
         <%= objectdata.name %>.subscribe(getLRC());
         <%}); -%>
-        }
+	}
         
 <%/* publishedinteractiondata:create_interaction() */ -%>
 	<%publishedinteractiondata.forEach(function(interaction_data){%>
