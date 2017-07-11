@@ -7,7 +7,6 @@ federate(
 	isnonmapperfed,
 	timeconstrained,
 	timeregulating,
-	lookahead,
 	asynchronousdelivery,
 	publishedinteractiondata,
 	subscribedinteractiondata,
@@ -67,7 +66,7 @@ public class <%= classname %>Base extends <% if(melderpackagename) { %><%= class
 		enableTimeConstrained();
 <% } %>
 <% if(timeregulating){ -%>
-		enableTimeRegulation(getLookahead());
+		enableTimeRegulation(getLookAhead());
 <% } -%>
 <% if(asynchronousdelivery){ -%>
 		enableAsynchronousDelivery();

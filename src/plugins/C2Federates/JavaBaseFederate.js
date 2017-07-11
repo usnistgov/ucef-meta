@@ -104,7 +104,6 @@ define([
             context['javafedspec']['simname'] = self.projectName;
             context['javafedspec']['timeconstrained'] = self.core.getAttribute(node, 'TimeConstrained');
             context['javafedspec']['timeregulating'] = self.core.getAttribute(node, 'TimeRegulating');
-            context['javafedspec']['lookahead'] = self.core.getAttribute(node, 'Lookahead');
             context['javafedspec']['asynchronousdelivery'] = self.core.getAttribute(node, 'EnableROAsynchronousDelivery');
 
             self.federates[self.core.getPath(node)] = context['javafedspec'];
@@ -130,7 +129,6 @@ define([
                 isnonmapperfed: true,
                 timeconstrained: false,
                 timeregulating: false,
-                lookahead: null,
                 asynchronousdelivery: false,
                 publishedinteractiondata: [],
                 subscribedinteractiondata: [],

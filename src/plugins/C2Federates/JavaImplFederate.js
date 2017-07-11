@@ -86,7 +86,6 @@ define([
             context['javaimplfedspec']['simname'] = self.projectName;
             context['javaimplfedspec']['timeconstrained'] = self.core.getAttribute(node, 'TimeConstrained');
             context['javaimplfedspec']['timeregulating'] = self.core.getAttribute(node, 'TimeRegulating');
-            context['javaimplfedspec']['lookahead'] = self.core.getAttribute(node, 'Lookahead');
             context['javaimplfedspec']['asynchronousdelivery'] = self.core.getAttribute(node, 'EnableROAsynchronousDelivery');
 
             self.federates[self.core.getPath(node)] = context['javaimplfedspec'];
@@ -110,9 +109,6 @@ define([
             //Add impl POM from template
             self.fileGenerators.push(function (artifact, callback) {
                 self.logger.debug('Rendering template to file: ' + implDirPath + '/pom.xml');
-
-                 
-                
 
                 artifact.addFile(fedPathDir + "/"+'pom.xml', ejs.render(TEMPLATES['java/federateimpl_pom.xml.ejs'], renderContext), function (err) {
                     if (err) {
@@ -180,7 +176,6 @@ define([
                 isnonmapperfed: true,
                 timeconstrained: false,
                 timeregulating: false,
-                lookahead: null,
                 asynchronousdelivery: false,
                 publishedinteractiondata: [],
                 subscribedinteractiondata: [],
