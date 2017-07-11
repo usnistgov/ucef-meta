@@ -7,7 +7,7 @@
         <artifactId><%= projectName %>-java</artifactId>
         <version><%= projectVersion %></version>
     </parent>
-    <artifactId><%= projectName %></artifactId>
+    <artifactId><%= projectName %>-<%= classname %></artifactId>
     <packaging>jar</packaging>
 
     <properties>
@@ -17,6 +17,7 @@
         <federation.version><%= projectVersion %></federation.version>
         <cpswt.version><%= cpswtVersion %></cpswt.version>
         <nar.version>3.3.0</nar.version>
+        <configFile><%= configFile %></configFile>
     </properties>
 
     <dependencies>
@@ -153,27 +154,23 @@
 					<plugin>
 						<groupId>org.codehaus.mojo</groupId>
 						<artifactId>exec-maven-plugin</artifactId>
-						<version>1.4.0</version>
+						<version>1.5.0</version>
+						<goals>
+							<goal>java</goal>
+						</goals>
 						<configuration>
-							<executable>java</executable>
+							<systemProperties>
+								<systemProperty>
+									<key>java.net.preferIPv4Stack</key>
+									<value>true</value>
+                                </systemProperty>
+							</systemProperties>
+                            <classpathScope>runtime</classpathScope>
+							<mainClass>${federation.name}.${federate.name}</mainClass>
 							<arguments>
-								<argument>-Xmx512m</argument>
-								<!-- For debugging purposes-->
-								<!--argument>-Xdiag</argument-->
-					            <argument>-Djava.library.path=${project.basedir}/target/nar/processid-${c2w.version}-amd64-Linux-gpp-jni/lib/amd64-Linux-gpp/jni/</argument>
-					            <argument>-Djava.net.preferIPv4Stack=true</argument>
-					            <argument>-classpath</argument>
-					            <!-- automatically creates the classpath using all project dependencies,
-		                 		also adding the project build directory -->
-					            <classpath/>
-					            <argument>${package.name}.${federate.name}</argument>
-					            <argument>${federation.name}</argument>
-					            <argument>${federate.name}</argument>
-					            <argument>NORMAL</argument>
+                                <argument>-configFile</argument>
+                                <argument>${configFile}</argument>
 					    	</arguments>
-						    <environmentVariables>
-			                    <EXEDIR>${project.basedir}/target/${federate.name}</EXEDIR>
-			                </environmentVariables>
 						</configuration>
 					</plugin>
 				</plugins>

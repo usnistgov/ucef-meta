@@ -52,6 +52,11 @@ public class <%= classname %> extends <%= classname %>Base {
 
         startAdvanceTimeThread();
     
+        // this is the exit condition of the following while loop
+        // it is used to break the loop so that latejoiner federates can
+        // notify the federation manager that they left the federation
+        boolean exitCondition = false;
+
         while (true) {
             //////////////////////////////////////////////////////////////
             // TODO update step size for logical time progression below //
@@ -96,6 +101,10 @@ public class <%= classname %> extends <%= classname %>Base {
             putAdvanceTimeRequest(newATR);
             atr.requestSyncEnd();
             atr = newATR;
+
+            if(exitCondition) {
+                break;
+            }
         }
 
         // while loop finished, notify FederationManager about resign
