@@ -219,6 +219,34 @@ define([
             });
         });
 
+
+    self.experimentModel = {
+    'script': {
+        'federateTypesAllowed': [],
+        'expectedFederates': [],
+        'lateJoinerFederates': []
+    }
+    };    
+
+    // Experiment Config    
+    self.fileGenerators.push(function(artifact, callback){
+            self.federates.forEach(function (fed){
+                //self.scriptModel.script.expect.push({'@federateType':fed.name});
+                self.scriptModel.script.expect.push({'federateType':fed.name});
+                self.experimentModel.script.federateTypesAllowed.push(fed.name)
+                self.experimentModel.script.expectedFederates.push({"federateType":fed.name, "count":1})
+                self.experimentModel.script.lateJoinerFederates.push({"federateType":fed.name,"count":0})
+            });
+            artifact.addFile('conf/' + 'experimentConfig.json', JSON.stringify(self.experimentModel.script, null, 2), function (err) {
+                if (err) {
+                    callback(err);
+                    return;
+                }else{
+                    callback();
+                }
+            });
+        });
+
         // Add fedmgrconfig.yml 
         self.fileGenerators.push(function(artifact,callback){
             var fedmgrConfig = {
