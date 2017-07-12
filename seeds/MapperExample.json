@@ -14734,7 +14734,7 @@
                 "group": "org.cpswt",
                 "name": "BasePackage",
                 "type": "import",
-                "version": "0.0.1"
+                "version": "0.5.0"
             },
             "base": "31b366f8-bed3-583a-de30-3dde91117281",
             "meta": {},
