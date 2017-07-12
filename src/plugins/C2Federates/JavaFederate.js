@@ -30,7 +30,7 @@ define([
                 self.javaPOM.artifactId = self.projectName + "-java";
                 self.javaPOM.directory = "java-federates";
                 self.javaPOM.version = self.project_version;
-                self.javaPOM.addMavenCompiler('1.8');
+                self.javaPOM.addMavenCompiler(self.getCurrentConfig().mavenCompilerPluginJavaVersion);
                 self.javaPOM.packaging = "pom";
                 self.javaPOM.dependencies.push(self.porticoPOM);
             }               
@@ -40,7 +40,7 @@ define([
                 self.porticoPOM.artifactId = "portico";
                 self.porticoPOM.groupId = "org.porticoproject";
                 // Set the portico Release Version
-                self.porticoPOM.version = "2.1.0";
+                self.porticoPOM.version = self.getCurrentConfig().porticoReleaseNum;
                 self.porticoPOM.scope = "provided";
             }
 

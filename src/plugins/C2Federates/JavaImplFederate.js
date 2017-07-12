@@ -76,8 +76,8 @@ define([
             context['javaimplfedspec']['groupId'] = self.mainPom.groupId.trim();
             context['javaimplfedspec']['artifactId'] = ejs.render(self.directoryNameTemplate, implDirSpec);
             context['javaimplfedspec']['projectName'] = self.projectName;
-            context['javaimplfedspec']['projectVersion'] = "0.1.0-SNAPSHOT";
-            context['javaimplfedspec']['cpswtVersion'] = "0.5.0-SNAPSHOT";
+            context['javaimplfedspec']['projectVersion'] = self.project_version;
+            context['javaimplfedspec']['cpswtVersion'] = self.getCurrentConfig().cpswtVersion;
             context['javaimplfedspec']['porticoPOM']['artifactId'] = self.porticoPOM.artifactId;
             context['javaimplfedspec']['porticoPOM']['groupId'] = self.porticoPOM.groupId;
             context['javaimplfedspec']['porticoPOM']['version'] = self.porticoPOM.version;
