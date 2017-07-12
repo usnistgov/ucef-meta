@@ -23,10 +23,10 @@ define([
     TEMPLATES,
     RTIVisitors,
     PubSubVisitors
-    ) {
+) {
     'use strict';
 
-    pluginMetadata = JSON.parse(pluginMetadata); 
+    pluginMetadata = JSON.parse(pluginMetadata);
     /**
      * Initializes a new instance of DeploymentExporter.
      * @class
@@ -72,9 +72,9 @@ define([
         self.federates = [];
         self.interactions = {};
         self.interactionRoots = [];
-        self.objects      = {};
+        self.objects = {};
         self.objectRoots = [];
-        self.attributes   = {};
+        self.attributes = {};
 
         // COA related
         self.coaNodes = [];
@@ -91,17 +91,17 @@ define([
         pomModel.repositoryUrlRelease = self.getCurrentConfig().repositoryUrlRelease;
         pomModel.federates = self.federates;
 
-        pomModel.porticoPOM = {}       
+        pomModel.porticoPOM = {}
         pomModel.porticoPOM.artifactId = "portico";
         pomModel.porticoPOM.groupId = "org.porticoproject";
         pomModel.porticoPOM.version = self.getCurrentConfig().porticoReleaseNum;
         pomModel.porticoPOM.scope = "provided";
 
         //Add POM generator
-        self.fileGenerators.push(function(artifact, callback){
+        self.fileGenerators.push(function (artifact, callback) {
             pomModel['federatesByType'] = {};
-            pomModel.federates.forEach(function(fed){
-                if(!pomModel['federatesByType'][fed.FederateType]){
+            pomModel.federates.forEach(function (fed) {
+                if (!pomModel['federatesByType'][fed.FederateType]) {
                     pomModel['federatesByType'][fed.FederateType] = [];
                 }
                 pomModel['federatesByType'][fed.FederateType].push(fed);
@@ -111,7 +111,7 @@ define([
                 if (err) {
                     callback(err);
                     return;
-                }else{
+                } else {
                     callback();
                 }
             });
@@ -124,40 +124,40 @@ define([
         };
 
         //Add FED generator
-        self.fileGenerators.push(function(artifact, callback){
-            
-            var interactionTraverser = function(interaction){
+        self.fileGenerators.push(function (artifact, callback) {
+
+            var interactionTraverser = function (interaction) {
                 var intModel = {
-                    interaction:interaction,
-                    parameters:interaction.parameters,
-                    children:[]
+                    interaction: interaction,
+                    parameters: interaction.parameters,
+                    children: []
                 };
-                interaction.children.forEach(function(child){
+                interaction.children.forEach(function (child) {
                     intModel.children.push(interactionTraverser(child));
                 });
                 return ejs.render(TEMPLATES["fedfile_siminteraction.ejs"], intModel);
             }
 
             self.fomModel.interactions = [];
-            self.interactionRoots[0].children.forEach(function(inta){
+            self.interactionRoots[0].children.forEach(function (inta) {
                 self.fomModel.interactions.push(interactionTraverser(inta));
             });
-            
 
-            var objectTraverser = function(object){
+
+            var objectTraverser = function (object) {
                 var objModel = {
-                    name:object.name,
-                    attributes:object.attributes,
-                    children:[]
+                    name: object.name,
+                    attributes: object.attributes,
+                    children: []
                 };
-                object.children.forEach(function(child){
+                object.children.forEach(function (child) {
                     objModel.children.push(objectTraverser(child));
                 });
                 return ejs.render(TEMPLATES["fedfile_simobject.ejs"], objModel);
             }
 
             self.fomModel.objects = []
-            self.objectRoots[0].children.forEach(function(obj){
+            self.objectRoots[0].children.forEach(function (obj) {
                 self.fomModel.objects.push(objectTraverser(obj));
             });
 
@@ -165,12 +165,12 @@ define([
                 if (err) {
                     callback(err);
                     return;
-                }else{
+                } else {
                     callback();
                 }
             });
         });
-    
+
         self.scriptModel = {
             'script': {
                 'expect': [],
@@ -179,21 +179,23 @@ define([
                 'coaEdges': []
             }
         };
-            
+
         //Add Script.JSON
-        self.fileGenerators.push(function(artifact, callback){
-            self.federates.forEach(function (fed){
+        self.fileGenerators.push(function (artifact, callback) {
+            self.federates.forEach(function (fed) {
                 //self.scriptModel.script.expect.push({'@federateType':fed.name});
-                self.scriptModel.script.expect.push({'federateType':fed.name});
+                self.scriptModel.script.expect.push({
+                    'federateType': fed.name
+                });
             });
             self.scriptModel.script.coaNodes = self.coaNodes;
-            self.coaEdges.forEach(function (edge){
-                if (self.coaPaths.hasOwnProperty(edge.fromNode)){
+            self.coaEdges.forEach(function (edge) {
+                if (self.coaPaths.hasOwnProperty(edge.fromNode)) {
                     edge.fromNode = self.coaPaths[edge.fromNode];
                 } else {
                     edge.fromNode = ""
                 }
-                if (self.coaPaths.hasOwnProperty(edge.toNode)){
+                if (self.coaPaths.hasOwnProperty(edge.toNode)) {
                     edge.toNode = self.coaPaths[edge.toNode];
                 } else {
                     edge.toNode = ""
@@ -213,86 +215,134 @@ define([
                 if (err) {
                     callback(err);
                     return;
-                }else{
+                } else {
                     callback();
                 }
             });
         });
 
 
-    self.experimentModel = {
-    'script': {
-        'federateTypesAllowed': [],
-        'expectedFederates': [],
-        'lateJoinerFederates': []
-    }
-    };    
+        self.experimentModel = {
+            'script': {
+                'federateTypesAllowed': [],
+                'expectedFederates': [],
+                'lateJoinerFederates': []
+            }
+        };
 
-    // Experiment Config    
-    self.fileGenerators.push(function(artifact, callback){
-            self.federates.forEach(function (fed){
-                //self.scriptModel.script.expect.push({'@federateType':fed.name});
-                self.scriptModel.script.expect.push({'federateType':fed.name});
+        // Experiment Config    
+        self.fileGenerators.push(function (artifact, callback) {
+            self.federates.forEach(function (fed) {
                 self.experimentModel.script.federateTypesAllowed.push(fed.name)
-                self.experimentModel.script.expectedFederates.push({"federateType":fed.name, "count":1})
-                self.experimentModel.script.lateJoinerFederates.push({"federateType":fed.name,"count":0})
+                self.experimentModel.script.expectedFederates.push({
+                    "federateType": fed.name,
+                    "count": 1
+                })
+                self.experimentModel.script.lateJoinerFederates.push({
+                    "federateType": fed.name,
+                    "count": 0
+                })
             });
             artifact.addFile('conf/' + 'experimentConfig.json', JSON.stringify(self.experimentModel.script, null, 2), function (err) {
                 if (err) {
                     callback(err);
                     return;
-                }else{
+                } else {
                     callback();
                 }
             });
         });
 
-        // Add fedmgrconfig.yml 
-        self.fileGenerators.push(function(artifact,callback){
+        // Federate Config JSON
+        self.fileGenerators.push(function (artifact, callback) {
+
+            var FederateJsonModel = {
+                "federateRTIInitWaitTimeMs": 200,
+                "federateType": "",
+                "federationId": self.projectName,
+                "isLateJoiner": false,
+                "lookAhead": 0.1,
+                "stepSize": 1.0
+            }
+            var response = []
+            self.federates.forEach(function (fed) {
+                FederateJsonModel.federateType = fed.name
+                artifact.addFile('conf/' + fed.name + '.json', JSON.stringify(FederateJsonModel, null, 2), function (err) {
+                    response.push(err)
+                    if (response.length == self.federates.length) {
+                        if (response.includes(err)) {
+                            callback(err);
+                        } else {
+                            callback();
+                        }
+                    }
+                });
+            });
+        });
+
+        // Add fedmgrconfig.json 
+        self.fileGenerators.push(function (artifact, callback) {
             var fedmgrConfig = {
-                    fedfile : {} ,
-                    federationname: {}
-                };
-             fedmgrConfig.federationname = self.projectName
-             fedmgrConfig.fedfile = self.projectName + '.fed'   
-            artifact.addFile('fedmgrconfig.yml', ejs.render(TEMPLATES['fedmgrconfig.yml.ejs'], fedmgrConfig), function (err) {
+                'script': {
+                    "federateRTIInitWaitTimeMs": 200,
+                    "federateType": "FederationManager",
+                    "federationId": "",
+                    "isLateJoiner": false,
+                    "lookAhead": 0,
+                    "stepSize": 0,
+
+                    "bindHost": "0.0.0.0",
+                    "port": 8083,
+                    "controlEndpoint": "/fedmgr",
+                    "federatesEndpoint": "/federates",
+
+                    "autoStart": true,
+                    "federationEndTime": 20.0,
+                    "realTimeMode": true,
+                    "terminateOnCOAFinish": false,
+                    "fedFile": self.projectName + '.fed',
+                    "experimentConfig": "conf/experimentConfig.json"
+                }
+            };
+            fedmgrConfig.script.federationId = self.projectName
+            artifact.addFile('conf/fedmgrconfig.json', JSON.stringify(fedmgrConfig.script, null, 2), function (err) {
                 if (err) {
                     callback(err);
                     return;
-                }else{
+                } else {
                     callback();
                 }
             });
         });
 
-        generateFiles = function(artifact, doneBack){
-            if(numberOfFilesToGenerate > 0){ 
-                self.fileGenerators[self.fileGenerators.length - numberOfFilesToGenerate](artifact, function(err){
+        generateFiles = function (artifact, doneBack) {
+            if (numberOfFilesToGenerate > 0) {
+                self.fileGenerators[self.fileGenerators.length - numberOfFilesToGenerate](artifact, function (err) {
                     if (err) {
                         callback(err, self.result);
                         return;
                     }
                     numberOfFilesToGenerate--;
-                    if(numberOfFilesToGenerate > 0){
+                    if (numberOfFilesToGenerate > 0) {
 
                         generateFiles(artifact, doneBack);
-                    }else{
+                    } else {
                         doneBack();
-                     }
-                });                
-            }else{
+                    }
+                });
+            } else {
                 doneBack();
             }
         }
 
-        finishExport = function(err){
+        finishExport = function (err) {
 
             //var outFileName = self.projectName + '.json'
-            var artifact = self.blobClient.createArtifact(self.projectName.trim().replace(/\s+/g,'_') +'_deployment');
+            var artifact = self.blobClient.createArtifact(self.projectName.trim().replace(/\s+/g, '_') + '_deployment');
 
             numberOfFilesToGenerate = self.fileGenerators.length;
-            if(numberOfFilesToGenerate > 0){
-                generateFiles(artifact, function(err){
+            if (numberOfFilesToGenerate > 0) {
+                generateFiles(artifact, function (err) {
                     if (err) {
                         callback(err, self.result);
                         return;
@@ -309,14 +359,14 @@ define([
                             self.result.addArtifact(hashes[idx]);
 
                             var artifactMsg = 'Deployment package ' + self.blobClient.artifacts[idx].name + ' was generated with id:[' + hashes[idx] + ']';
-                            var buildURL = "'http://c2w-cdi.isis.vanderbilt.edu:8080/job/c2w-pull/buildWithParameters?GME_ARTIFACT_ID="+hashes[idx]+"'"
-                            artifactMsg += '<br><a title="Build package..." '+
-                                    'onclick="window.open(' + buildURL + ', \'Build System\'); return false;">Build artifact..</a>';
-                            self.createMessage(null, artifactMsg );
+                            var buildURL = "'http://c2w-cdi.isis.vanderbilt.edu:8080/job/c2w-pull/buildWithParameters?GME_ARTIFACT_ID=" + hashes[idx] + "'"
+                            artifactMsg += '<br><a title="Build package..." ' +
+                                'onclick="window.open(' + buildURL + ', \'Build System\'); return false;">Build artifact..</a>';
+                            self.createMessage(null, artifactMsg);
 
                         };
 
-                        
+
                         // This will save the changes. If you don't want to save;
                         // exclude self.save and call callback directly from this scope.
                         self.save('DeploymentExporter updated model.', function (err) {
@@ -330,15 +380,15 @@ define([
                     });
                 })
 
-            }else{
+            } else {
                 self.result.setSuccess(true);
                 callback(null, self.result);
             }
-            
+
         }
 
-        self.visitAllChildrenFromRootContainer(self.rootNode, function(err){
-            if(err)
+        self.visitAllChildrenFromRootContainer(self.rootNode, function (err) {
+            if (err)
                 self.logger.error(err);
             else
                 finishExport(err);
@@ -351,195 +401,229 @@ define([
     // COA node visitors
     ///////////////////////
 
-    DeploymentExporter.prototype.addCoaNode = function(node, obj){
+    DeploymentExporter.prototype.addCoaNode = function (node, obj) {
         var self = this;
 
         obj.name = self.core.getAttribute(node, 'name');
-        obj.nodeType  = self.core.getAttribute(self.getMetaType(node), 'name' );
+        obj.nodeType = self.core.getAttribute(self.getMetaType(node), 'name');
         obj.ID = self.core.getGuid(node);
 
         self.coaNodes.push(obj);
         self.coaPaths[self.core.getPath(node)] = self.core.getGuid(node);
     };
 
-    DeploymentExporter.prototype.visit_Action = function(node, parent, context){
+    DeploymentExporter.prototype.visit_Action = function (node, parent, context) {
         var self = this,
             interactionName = '',
             obj = {},
             paramValues = self.core.getAttribute(node, 'ParamValues');
 
-        paramValues.split(" ").forEach(function(param){
+        paramValues.split(" ").forEach(function (param) {
             try {
                 obj[param.split('=')[0]] = param.split('=')[1].split('"')[1]
-            } catch(err){
+            } catch (err) {
                 self.logger.debug('Erroneous param ' + param);
             }
         });
 
         self.addCoaNode(node, obj);
-        return {context:context};
+        return {
+            context: context
+        };
     };
 
-    DeploymentExporter.prototype.visit_Fork = function(node, parent, context){
+    DeploymentExporter.prototype.visit_Fork = function (node, parent, context) {
         var self = this,
             obj = {
-                isDecisionPoint : self.core.getAttribute(node, 'isDecisionPoint')
+                isDecisionPoint: self.core.getAttribute(node, 'isDecisionPoint')
             };
 
         self.addCoaNode(node, obj);
-        return {context:context};
+        return {
+            context: context
+        };
     };
 
-    DeploymentExporter.prototype.visit_ProbabilisticChoice = function(node, parent, context){
+    DeploymentExporter.prototype.visit_ProbabilisticChoice = function (node, parent, context) {
         var self = this,
             obj = {
-                isDecisionPoint : self.core.getAttribute(node, 'isDecisionPoint')
+                isDecisionPoint: self.core.getAttribute(node, 'isDecisionPoint')
             };
 
         self.addCoaNode(node, obj);
-        return {context:context};
+        return {
+            context: context
+        };
     };
 
-    DeploymentExporter.prototype.visit_SyncPoint = function(node, parent, context){
+    DeploymentExporter.prototype.visit_SyncPoint = function (node, parent, context) {
         var self = this,
             obj = {
-                time : self.core.getAttribute(node, 'time'),
-                minBranchesToSync : self.core.getAttribute(node, 'minBranchesToSync')
+                time: self.core.getAttribute(node, 'time'),
+                minBranchesToSync: self.core.getAttribute(node, 'minBranchesToSync')
             };
 
         self.addCoaNode(node, obj);
-        return {context:context};
+        return {
+            context: context
+        };
     };
 
-    DeploymentExporter.prototype.visit_Dur = function(node, parent, context){
+    DeploymentExporter.prototype.visit_Dur = function (node, parent, context) {
         var self = this,
             obj = {
-                time : self.core.getAttribute(node, 'time')
+                time: self.core.getAttribute(node, 'time')
             };
 
         self.addCoaNode(node, obj);
-        return {context:context};
+        return {
+            context: context
+        };
     };
 
-    DeploymentExporter.prototype.visit_RandomDur = function(node, parent, context){
+    DeploymentExporter.prototype.visit_RandomDur = function (node, parent, context) {
         var self = this,
             obj = {
-                lowerBound : self.core.getAttribute(node, 'lowerBound'),
-                upperBound : self.core.getAttribute(node, 'upperBound')
+                lowerBound: self.core.getAttribute(node, 'lowerBound'),
+                upperBound: self.core.getAttribute(node, 'upperBound')
             };
 
         self.addCoaNode(node, obj);
-        return {context:context};
+        return {
+            context: context
+        };
     };
 
-    DeploymentExporter.prototype.visit_AwaitN = function(node, parent, context){
+    DeploymentExporter.prototype.visit_AwaitN = function (node, parent, context) {
         var self = this,
             obj = {
-                minBranchesToAwait : self.core.getAttribute(node, 'minBranchesToAwait')
+                minBranchesToAwait: self.core.getAttribute(node, 'minBranchesToAwait')
             };
 
         self.addCoaNode(node, obj);
-        return {context:context};
+        return {
+            context: context
+        };
     };
 
-    DeploymentExporter.prototype.visit_Outcome = function(node, parent, context){
+    DeploymentExporter.prototype.visit_Outcome = function (node, parent, context) {
         var self = this,
             obj = {
-                interactionName : ""
+                interactionName: ""
             };
 
         self.addCoaNode(node, obj);
-        return {context:context};
+        return {
+            context: context
+        };
     };
-    
-    DeploymentExporter.prototype.visit_OutcomeFilter = function(node, parent, context){
+
+    DeploymentExporter.prototype.visit_OutcomeFilter = function (node, parent, context) {
         var self = this;
 
         self.addCoaNode(node, {});
-        return {context:context};
+        return {
+            context: context
+        };
     };
 
-    DeploymentExporter.prototype.visit_TerminateCOA = function(node, parent, context){
+    DeploymentExporter.prototype.visit_TerminateCOA = function (node, parent, context) {
         var self = this;
 
         self.addCoaNode(node, {});
-        return {context:context};
+        return {
+            context: context
+        };
     };
 
-    DeploymentExporter.prototype.addCoaEdge = function(node, obj){
+    DeploymentExporter.prototype.addCoaEdge = function (node, obj) {
         var self = this;
 
         obj.name = self.core.getAttribute(node, 'name');
-        obj.type  = self.core.getAttribute(self.getMetaType(node), 'name' );
+        obj.type = self.core.getAttribute(self.getMetaType(node), 'name');
         obj.ID = self.core.getGuid(node);
         obj.flowID = self.core.getAttribute(node, 'flowID');
-        obj.fromNode = self.core.getPointerPath(node,'src');
+        obj.fromNode = self.core.getPointerPath(node, 'src');
         obj.toNode = self.core.getPointerPath(node, 'dst');
 
         self.coaEdges.push(obj);
     };
 
-    DeploymentExporter.prototype.visit_COAFlow = function(node, parent, context){
+    DeploymentExporter.prototype.visit_COAFlow = function (node, parent, context) {
         var self = this;
 
         self.addCoaEdge(node, {});
-        return {context:context};
+        return {
+            context: context
+        };
     };
 
-    DeploymentExporter.prototype.visit_COAFlowWithProbability = function(node, parent, context){
+    DeploymentExporter.prototype.visit_COAFlowWithProbability = function (node, parent, context) {
         var self = this,
             obj = {
-                probability : self.core.getAttribute(node, 'probability')
+                probability: self.core.getAttribute(node, 'probability')
             };
 
         self.addCoaEdge(node, obj);
-        return {context:context};
+        return {
+            context: context
+        };
     };
 
-    DeploymentExporter.prototype.visit_Outcome2Filter = function(node, parent, context){
+    DeploymentExporter.prototype.visit_Outcome2Filter = function (node, parent, context) {
         var self = this;
 
         self.addCoaEdge(node, {});
-        return {context:context};
+        return {
+            context: context
+        };
     };
 
-    DeploymentExporter.prototype.visit_Filter2COAElement = function(node, parent, context){
+    DeploymentExporter.prototype.visit_Filter2COAElement = function (node, parent, context) {
         var self = this;
 
         self.addCoaEdge(node, {});
-        return {context:context};
+        return {
+            context: context
+        };
     };
 
-    DeploymentExporter.prototype.visit_COAException = function(node, parent, context){
+    DeploymentExporter.prototype.visit_COAException = function (node, parent, context) {
         var self = this;
 
         self.addCoaEdge(node, {});
-        return {context:context};
+        return {
+            context: context
+        };
     };
 
     ////////////////////////
     // END COA node visitors
     ///////////////////////
 
-    DeploymentExporter.prototype.visit_Federate = function(node, parent, context){
+    DeploymentExporter.prototype.visit_Federate = function (node, parent, context) {
         var self = this,
-            ret = {context:context},
-            nodeType = self.core.getAttribute( self.getMetaType( node ), 'name' ),
-            fed = {name:self.core.getAttribute(node, 'name')},
+            ret = {
+                context: context
+            },
+            nodeType = self.core.getAttribute(self.getMetaType(node), 'name'),
+            fed = {
+                name: self.core.getAttribute(node, 'name')
+            },
             nodeAttrNames;
         self.logger.info('Visiting a Federate');
 
         nodeAttrNames = self.core.getAttributeNames(node);
-        for ( var i = 0; i < nodeAttrNames.length; i += 1 ) {
-            fed[nodeAttrNames[i]] = self.core.getAttribute( node, nodeAttrNames[i]);
-        }   
+        for (var i = 0; i < nodeAttrNames.length; i += 1) {
+            fed[nodeAttrNames[i]] = self.core.getAttribute(node, nodeAttrNames[i]);
+        }
         fed['FederateType'] = nodeType;
         self.federates.push(fed);
 
-        if(nodeType != 'Federate'){
-            try{
+        if (nodeType != 'Federate') {
+            try {
                 ret = self['visit_' + nodeType](node, parent, context);
-            }catch(err){
+            } catch (err) {
                 self.logger.debug('No visitor function for ' + nodeType);
             }
         }
@@ -547,73 +631,73 @@ define([
         return ret;
     };
 
-    DeploymentExporter.prototype.getVisitorFuncName = function(nodeType){
+    DeploymentExporter.prototype.getVisitorFuncName = function (nodeType) {
         var self = this,
             visitorName = 'generalVisitor';
-        if(nodeType){
-            visitorName = 'visit_'+ nodeType;
-            if(nodeType.endsWith('Federate')){
+        if (nodeType) {
+            visitorName = 'visit_' + nodeType;
+            if (nodeType.endsWith('Federate')) {
                 visitorName = 'visit_' + 'Federate';
             }
-            
+
         }
         //self.logger.debug('Genarated visitor Name: ' + visitorName);
-        return visitorName;   
+        return visitorName;
     }
 
-    DeploymentExporter.prototype.getPostVisitorFuncName = function(nodeType){
+    DeploymentExporter.prototype.getPostVisitorFuncName = function (nodeType) {
         var self = this,
             visitorName = 'generalPostVisitor';
-        if(nodeType){
-            visitorName = 'post_visit_'+ nodeType;
-            if(nodeType.endsWith('Federate')){
+        if (nodeType) {
+            visitorName = 'post_visit_' + nodeType;
+            if (nodeType.endsWith('Federate')) {
                 visitorName = 'post_visit_' + 'Federate';
             }
         }
         //self.logger.debug('Genarated post-visitor Name: ' + visitorName);
         return visitorName;
-        
+
     }
 
-    DeploymentExporter.prototype.getChildSorterFunc = function(nodeType, self){
+    DeploymentExporter.prototype.getChildSorterFunc = function (nodeType, self) {
         var self = this,
             visitorName = 'generalChildSorter';
 
-        var generalChildSorter = function(a, b) {
+        var generalChildSorter = function (a, b) {
 
             //a is less than b by some ordering criterion : return -1;
             //a is greater than b by the ordering criterion: return 1;
             // a equal to b, than return 0;
-            var aName = self.core.getAttribute(a,'name');
-            var bName = self.core.getAttribute(b,'name');
+            var aName = self.core.getAttribute(a, 'name');
+            var bName = self.core.getAttribute(b, 'name');
             if (aName < bName) return -1;
             if (aName > bName) return 1;
             return 0;
 
         };
         return generalChildSorter;
-        
+
     }
 
-    DeploymentExporter.prototype.excludeFromVisit = function(node){
+    DeploymentExporter.prototype.excludeFromVisit = function (node) {
         var self = this,
             exclude = false;
 
         //exclude = exclude || self.isMetaTypeOf(node, self.META['Language [CASIM]']) || self.isMetaTypeOf(node, self.META['Language [C2WT]']);
         exclude = exclude || self.isMetaTypeOf(node, self.META['Language [C2WT]']);
-        
-        return exclude; 
+
+        return exclude;
 
     }
 
     /*
-    * Rest of TRAVERSAL CODE:
-    * - PubSubVisitors.js
-    * - RTIVisitors.js
-    * - C2Federates folder for Federate specific vistors
-    */
+     * Rest of TRAVERSAL CODE:
+     * - PubSubVisitors.js
+     * - RTIVisitors.js
+     * - C2Federates folder for Federate specific vistors
+     */
 
-    DeploymentExporter.prototype.ROOT_visitor = function(node){
+    DeploymentExporter.prototype.ROOT_visitor = function (node) {
         var self = this;
         self.logger.info('Visiting the ROOT');
 
@@ -624,12 +708,16 @@ define([
             "gme:children": []
         };
 
-        return {context:{parent: root}};
+        return {
+            context: {
+                parent: root
+            }
+        };
     }
-    
 
-    DeploymentExporter.prototype.calculateParentPath = function(path){
-        if(!path){
+
+    DeploymentExporter.prototype.calculateParentPath = function (path) {
+        if (!path) {
             return null;
         }
         var pathElements = path.split('/');
