@@ -315,6 +315,8 @@ define([
             }
             var response = []
             self.federates.forEach(function (fed) {
+                FederateJsonModel.lookAhead = fed.Lookahead
+                FederateJsonModel.stepSize = fed.Step
                 FederateJsonModel.federateType = fed.name
                 artifact.addFile('conf/' + fed.name.toLowerCase() + '.json', JSON.stringify(FederateJsonModel, null, 2), function (err) {
                     response.push(err)
