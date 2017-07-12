@@ -161,7 +161,7 @@ define([
                 self.fomModel.objects.push(objectTraverser(obj));
             });
 
-            artifact.addFile('src/fom/' + self.projectName + '.fed', ejs.render(TEMPLATES['fedfile.fed.ejs'], self.fomModel), function (err) {
+            artifact.addFile('fom/' + self.projectName + '.fed', ejs.render(TEMPLATES['fedfile.fed.ejs'], self.fomModel), function (err) {
                 if (err) {
                     callback(err);
                     return;
@@ -209,7 +209,7 @@ define([
                 self.fomModel.objects_xml.push(objectTraverser_xml(obj));
             });
 
-            artifact.addFile('src/fom/' + self.projectName + '.xml', ejs.render(TEMPLATES['fedfile.xml.ejs'], self.fomModel), function (err) {
+            artifact.addFile('fom/' + self.projectName + '.xml', ejs.render(TEMPLATES['fedfile.xml.ejs'], self.fomModel), function (err) {
                 if (err) {
                     callback(err);
                     return;
@@ -316,7 +316,7 @@ define([
             var response = []
             self.federates.forEach(function (fed) {
                 FederateJsonModel.federateType = fed.name
-                artifact.addFile('conf/' + fed.name + '.json', JSON.stringify(FederateJsonModel, null, 2), function (err) {
+                artifact.addFile('conf/' + fed.name.toLowerCase() + '.json', JSON.stringify(FederateJsonModel, null, 2), function (err) {
                     response.push(err)
                     if (response.length == self.federates.length) {
                         if (response.includes(err)) {
@@ -349,7 +349,7 @@ define([
                     "federationEndTime": 20.0,
                     "realTimeMode": true,
                     "terminateOnCOAFinish": false,
-                    "fedFile": self.projectName + '.fed',
+                    "fedFile": "fom/" +self.projectName + '.fed',
                     "experimentConfig": "conf/experimentConfig.json"
                 }
             };
