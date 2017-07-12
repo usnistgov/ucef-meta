@@ -85,7 +85,7 @@ define([
 
         pomModel.projectName = self.projectName;
         pomModel.groupId = self.getCurrentConfig().groupId.trim();
-        pomModel.projectVersion = "0.0.1" + (self.getCurrentConfig().isRelease ? "" : "-SNAPSHOT");
+        pomModel.projectVersion = self.getCurrentConfig().cpswtVersion; // + (self.getCurrentConfig().isRelease ? "" : "-SNAPSHOT");
         pomModel.cpswtVersion = self.getCurrentConfig().cpswtVersion;
         pomModel.repositoryUrlSnapshot = self.getCurrentConfig().repositoryUrlSnapshot;
         pomModel.repositoryUrlRelease = self.getCurrentConfig().repositoryUrlRelease;

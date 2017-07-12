@@ -4,7 +4,7 @@
     "start": "node app.js",
     "test": "node ./node_modules/mocha/bin/mocha --recursive test"
   },
-  "version": "0.0.1",
+  "version": "0.5.0",
   "dependencies": {
     "filendir": "^1.0.0",
     "fstream": "^1.0.10",
@@ -33,6 +33,5 @@
   "keywords": [
     "C2-NG"
   ],
-  "author": "Andras Nadas",
   "license": "ISC"
 }
