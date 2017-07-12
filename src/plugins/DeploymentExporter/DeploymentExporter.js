@@ -668,7 +668,8 @@ define([
         for (var i = 0; i < nodeAttrNames.length; i += 1) {
             fed[nodeAttrNames[i]] = self.core.getAttribute(node, nodeAttrNames[i]);
         }
-        fed['FederateType'] = nodeType;
+        fed.FederateType = nodeType;
+        fed.configFile = "conf/" + fed.name.toLowerCase() + ".json";
         self.federates.push(fed);
 
         if (nodeType != 'Federate') {
