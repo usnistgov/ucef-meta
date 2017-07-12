@@ -220,7 +220,7 @@ define([
 
         });
 
-        self.scriptModel = {
+        self.coaConfigModel = {
             'script': {
                 'expect': [],
                 'pauses': [],
@@ -229,15 +229,15 @@ define([
             }
         };
 
-        //Add Script.JSON
+        //Add COACONFIG.JSON
         self.fileGenerators.push(function (artifact, callback) {
             self.federates.forEach(function (fed) {
-                //self.scriptModel.script.expect.push({'@federateType':fed.name});
-                self.scriptModel.script.expect.push({
+                //self.coaConfigModel.script.expect.push({'@federateType':fed.name});
+                self.coaConfigModel.script.expect.push({
                     'federateType': fed.name
                 });
             });
-            self.scriptModel.script.coaNodes = self.coaNodes;
+            self.coaConfigModel.script.coaNodes = self.coaNodes;
             self.coaEdges.forEach(function (edge) {
                 if (self.coaPaths.hasOwnProperty(edge.fromNode)) {
                     edge.fromNode = self.coaPaths[edge.fromNode];
@@ -249,10 +249,10 @@ define([
                 } else {
                     edge.toNode = ""
                 }
-                self.scriptModel.script.coaEdges.push(edge);
+                self.coaConfigModel.script.coaEdges.push(edge);
             });
 
-            /*artifact.addFile('src/experiments/' + 'default' + '/' + 'script.xml', self._jsonToXml.convertToString( self.scriptModel ) , function (err) {
+            /*artifact.addFile('src/experiments/' + 'default' + '/' + 'script.xml', self._jsonToXml.convertToString( self.coaConfigModel ) , function (err) {
                 if (err) {
                     callback(err);
                     return;
@@ -260,7 +260,7 @@ define([
                     callback();
                 }
             });*/
-            artifact.addFile('src/experiments/' + 'default' + '/' + 'script.json', JSON.stringify(self.scriptModel, null, 2), function (err) {
+            artifact.addFile('conf/' + 'coaConfig.json', JSON.stringify(self.coaConfigModel, null, 2), function (err) {
                 if (err) {
                     callback(err);
                     return;
