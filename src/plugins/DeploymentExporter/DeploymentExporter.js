@@ -171,6 +171,55 @@ define([
             });
         });
 
+                //Add FED generator
+        self.fileGenerators.push(function(artifact, callback){
+            
+            var interactionTraverser = function(interaction){
+                var intModel = {
+                    interaction:interaction,
+                    parameters:interaction.parameters,
+                    children:[]
+                };
+                interaction.children.forEach(function(child){
+                    intModel.children.push(interactionTraverser(child));
+                });
+                return ejs.render(TEMPLATES["fedfile_siminteraction_xml.ejs"], intModel);
+            }
+
+            self.fomModel.interactions_xml = [];
+            self.interactionRoots[0].children.forEach(function(inta){
+                self.fomModel.interactions_xml.push(interactionTraverser(inta));
+            });
+            
+
+            var objectTraverser_xml = function(object){
+                var objModel = {
+                    name:object.name,
+                    attributes:object.attributes,
+                    children:[]
+                };
+                object.children.forEach(function(child){
+                    objModel.children.push(objectTraverser_xml(child));
+                });
+                return ejs.render(TEMPLATES["fedfile_simobject_xml.ejs"], objModel);
+            }
+
+            self.fomModel.objects_xml = []
+            self.objectRoots[0].children.forEach(function(obj){
+                self.fomModel.objects_xml.push(objectTraverser_xml(obj));
+            });
+
+            artifact.addFile('src/fom/' + self.projectName + '.xml', ejs.render(TEMPLATES['fedfile.xml.ejs'], self.fomModel), function (err) {
+                if (err) {
+                    callback(err);
+                    return;
+                }else{
+                    callback();
+                }
+            });
+
+        });
+
         self.scriptModel = {
             'script': {
                 'expect': [],

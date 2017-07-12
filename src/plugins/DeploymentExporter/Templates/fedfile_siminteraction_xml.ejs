@@ -1,0 +1,35 @@
+<% /*siminteraction(interaction,parameters,children) */ -%>
+<interactionClass>
+
+    <name><%= interaction.name %></name>
+    <% if(interaction.name==="HLAinteractionRoot" ||interaction.name==="C2WInteractionRoot" ) { %>
+    <sharing>Neither</sharing>
+    <% } else{%>
+    <sharing>PublishSubscribe</sharing>
+    <% } %>
+    <% if(interaction.delivery==="reliable") { %>
+    <transportation>HLAreliable</transportation> 
+    <% } else if(interaction.delivery==="best_effort") {%>
+    <transportation>HLAbestEffort</transportation>
+    <% } %>
+    <% if(interaction.order==="timestamp") { %>
+    <order>TimeStamp</order> 
+    <% } else if(interaction.order==="receive") {%>
+    <order>Receive</order>
+    <% } -%>
+    <% if(!parameters && !children){ %> 
+    <interactionClass></interactionClass>
+    <%} else{ %>
+    <interactionClass>
+    <% parameters.forEach(function(param){ %>  
+    <parameter> 
+        <name><%= param.name %></name>
+        <dataType><%= param.parameterType %></dataType>
+        <semantics></semantics>
+    </parameter>
+    <% }); -%>
+    <% if(children.length!=0) {children.forEach(function(child){ %><%- child %>
+    <% });} -%>
+    </interactionClass>
+    <% } -%>
+</interactionClass>
