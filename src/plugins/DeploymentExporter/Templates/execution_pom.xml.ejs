@@ -20,12 +20,13 @@
 			<artifactId><%= projectName %>-base-java</artifactId>
 			<version><%= projectVersion %></version>
 		</dependency>
-		<% if(federatesByType['JavaFederate']){%>
+		<% if(federatesByType['JavaFederate']){ federatesByType['JavaFederate'].forEach(function(fed) { %>
 		<dependency><!-- The depenency for the user written code-->
 			<groupId><%= groupId %></groupId>
-			<artifactId><%= projectName %></artifactId>
+			<artifactId><%= projectName %>-<%= fed.name %></artifactId>
 			<version><%= projectVersion %></version>
-		</dependency><%}%>
+		</dependency>
+		<%});}%>
 		<% if(federatesByType['MapperFederate']){%>
 		<dependency><!-- The depenency for the generated mapper codes-->
 			<groupId><%= groupId %></groupId>
@@ -54,7 +55,8 @@
 			<version><%= projectVersion %></version>
 			<type>nar</type>
 		</dependency>
-		<%});}%><%}%>
+		<%});}%>
+		<%}%>
 		<dependency>
 	        <groupId>junit</groupId>
 	        <artifactId>junit</artifactId>
