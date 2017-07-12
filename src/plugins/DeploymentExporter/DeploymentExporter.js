@@ -91,7 +91,7 @@ define([
         pomModel.repositoryUrlRelease = self.getCurrentConfig().repositoryUrlRelease;
         pomModel.federates = self.federates;
 
-        pomModel.porticoPOM = {}
+        pomModel.porticoPOM = {};
         pomModel.porticoPOM.artifactId = "portico";
         pomModel.porticoPOM.groupId = "org.porticoproject";
         pomModel.porticoPOM.version = self.getCurrentConfig().porticoReleaseNum;
@@ -156,7 +156,7 @@ define([
                 return ejs.render(TEMPLATES["fedfile_simobject.ejs"], objModel);
             }
 
-            self.fomModel.objects = []
+            self.fomModel.objects = [];
             self.objectRoots[0].children.forEach(function (obj) {
                 self.fomModel.objects.push(objectTraverser(obj));
             });
@@ -204,7 +204,7 @@ define([
                 return ejs.render(TEMPLATES["fedfile_simobject_xml.ejs"], objModel);
             }
 
-            self.fomModel.objects_xml = []
+            self.fomModel.objects_xml = [];
             self.objectRoots[0].children.forEach(function(obj){
                 self.fomModel.objects_xml.push(objectTraverser_xml(obj));
             });
@@ -285,12 +285,12 @@ define([
                 self.experimentModel.script.federateTypesAllowed.push(fed.name)
                 self.experimentModel.script.expectedFederates.push({
                     "federateType": fed.name,
-                    "count": 1
-                })
+                    "count": 0
+                });
                 self.experimentModel.script.lateJoinerFederates.push({
                     "federateType": fed.name,
-                    "count": 0
-                })
+                    "count": 1
+                });
             });
             artifact.addFile('conf/' + 'experimentConfig.json', JSON.stringify(self.experimentModel.script, null, 2), function (err) {
                 if (err) {
@@ -309,15 +309,15 @@ define([
                 "federateRTIInitWaitTimeMs": 200,
                 "federateType": "",
                 "federationId": self.projectName,
-                "isLateJoiner": false,
+                "isLateJoiner": true,
                 "lookAhead": 0.1,
                 "stepSize": 1.0
             }
             var response = []
             self.federates.forEach(function (fed) {
-                FederateJsonModel.lookAhead = fed.Lookahead
-                FederateJsonModel.stepSize = fed.Step
-                FederateJsonModel.federateType = fed.name
+                FederateJsonModel.lookAhead = fed.Lookahead;
+                FederateJsonModel.stepSize = fed.Step;
+                FederateJsonModel.federateType = fed.name;
                 artifact.addFile('conf/' + fed.name.toLowerCase() + '.json', JSON.stringify(FederateJsonModel, null, 2), function (err) {
                     response.push(err)
                     if (response.length == self.federates.length) {
@@ -355,7 +355,8 @@ define([
                     "experimentConfig": "conf/experimentConfig.json"
                 }
             };
-            fedmgrConfig.script.federationId = self.projectName
+            
+            fedmgrConfig.script.federationId = self.projectName;
             artifact.addFile('conf/fedmgrconfig.json', JSON.stringify(fedmgrConfig.script, null, 2), function (err) {
                 if (err) {
                     callback(err);
