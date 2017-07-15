@@ -1,7 +1,7 @@
 {
   "id": "RunFederation",
   "name": "Execute the Federation",
-  "version": "0.3.0",
+  "version": "0.5.0",
   "description": "Runs the simulation on the local VM and in the Cloud",
   "icon": {
     "src": "",

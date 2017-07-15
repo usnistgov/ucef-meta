@@ -18,6 +18,7 @@ define([
             
         JavaBaseFederate.call(this);
         JavaImplFederate.call(this);
+        var finalContext = {};
 
     	this.visit_JavaFederate = function(node, parent, context){
             var self = this,
@@ -50,7 +51,8 @@ define([
 
         this.post_visit_JavaFederate = function(node, context){
             this.post_visit_JavaBaseFederate(node, context);
-            return this.post_visit_JavaImplFederate(node, context);
+            finalContext = this.post_visit_JavaImplFederate(node, context);
+            return finalContext;
         };
     }
     return JavaFederateExporter;

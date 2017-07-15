@@ -11,6 +11,9 @@ import org.cpswt.utils.CpswtDefaults;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import hla.rti.SuppliedAttributes;
+import hla.rti.jlc.RtiFactory;
+
 /**
  * The <%= classname %> type of federate for the federation designed in WebGME.
  *
@@ -19,9 +22,63 @@ public class <%= classname %> extends <%= classname %>Base {
 
     private final static Logger logger = LogManager.getLogger(<%= classname %>.class);
     
+   ///////////////////////////////////////////////////////////////////////
+   // TODO Instatiate objects. that must be sent every logical time step 
+   //
+<% publishedobjectdata.forEach(function(object_data){ -%>
+   // <%=object_data.name%> v<%=object_data.name%> = new <%=object_data.name%>();
+<% }) -%>
+   //
+   ///////////////////////////////////////////////////////////////////////
+
     public <%= classname %>(FederateConfig params) throws Exception {
         super(params);
+
+        ///////////////////////////////////////////////////////////////////////
+        // TODO Must register object instances after super(args)
+        //
+<% publishedobjectdata.forEach(function(object_data){ -%>
+        // v<%=object_data.name%>.registerObject(getRTI());
+<% }) -%>
+        //
+        ///////////////////////////////////////////////////////////////////////
     }
+
+<% if (subscribedinteractiondata.length + subscribedobjectdata.length > 0) { -%>
+    private void CheckReceivedSubscriptions(String s) {
+
+        InteractionRoot interaction = null;
+        ObjectReflector reflector = null;
+
+<% if (subscribedinteractiondata.length > 0) { -%>
+<% var conditional = "if"; -%>
+            while ((interaction = getNextInteractionNoWait()) != null) {
+<% subscribedinteractiondata.forEach(function(interaction_data){ -%>
+                <%= conditional %> (interaction instanceof <%= interaction_data.name %>) {
+                    handleInteractionClass((<%= interaction_data.name %>) interaction);
+                }
+<% conditional = "else if"; -%>
+<% }) -%>        
+                log.info("Interaction received and handled: " + s);
+            }
+ <% } -%>
+
+<%if (subscribedobjectdata.length > 0) { -%>
+<% conditional = "if"; -%>
+            while ((reflector = getNextObjectReflectorNoWait()) != null) {
+                reflector.reflect();
+                ObjectRoot object = reflector.getObjectRoot();
+<%subscribedobjectdata.forEach(function(object_data){ -%>
+                <%= conditional %> (object instanceof <%= object_data.name %>) {
+                    handleObjectClass((<%= object_data.name %>) object);
+                }
+<% conditional = "else if"; -%>
+<%}) -%>
+            log.info("Object received and handled: " + s);
+            }
+<% } -%>    
+    }
+<% } -%>  
 
     private void execute() throws Exception {
         double currentTime = 0;
@@ -42,6 +99,13 @@ public class <%= classname %> extends <%= classname %>Base {
         if(!super.isLateJoiner()) {
             readyToPopulate();
         }
+
+        ///////////////////////////////////////////////////////////////////////
+        // Call CheckReceivedSubscriptions(<message>) here to receive 
+        // subscriptions published before the first time step.
+        ///////////////////////////////////////////////////////////////////////
+
+
         ///////////////////////////////////////////////////////////////////////
         // TODO perform initialization that depends on other federates below //
         ///////////////////////////////////////////////////////////////////////
@@ -64,36 +128,41 @@ public class <%= classname %> extends <%= classname %>Base {
             currentTime += super.getStepSize();
 
             atr.requestSyncStart();
-            <% if (publishedinteractiondata.length + publishedobjectdata.length > 0) { %>
-           ////////////////////////////////////////////////////////////////////////////////////////
-           // TODO send interactions and objects that must be sent every logical time step below //
-           ////////////////////////////////////////////////////////////////////////////////////////
-            <% } %>
+<% if (publishedinteractiondata.length > 0) { -%>
+            ////////////////////////////////////////////////////////////////////////////////////////
+            // TODO send interactions that must be sent every logical time step below.
+            // Set the interaction's parameters.
+            //
+<% publishedinteractiondata.forEach(function(interaction_data){ -%>
+            //    <%= interaction_data.name %> v<%= interaction_data.name %> = create_<%= interaction_data.name %>(); 
+<% interaction_data.parameters.forEach(function(parameter) { -%>
+            //    v<%= interaction_data.name %>.set_<%= parameter.name %>( < YOUR VALUE HERE > );
+<% }) -%>
+            //    v<%= interaction_data.name %>.sendInteraction(getRTI(), logicalTime);
+            //
+<% }) -%>
+            ////////////////////////////////////////////////////////////////////////////////////////
+<% } -%>
 
-           <% if (subscribedinteractiondata.length > 0) { %>
-            <% var conditional = "if"; %>
-            while ((interaction = getNextInteractionNoWait()) != null) {
-                <% subscribedinteractiondata.forEach(function(interaction_data){ %>
-                <%= conditional %> (interaction instanceof <%= interaction_data.name %>) {
-                        handleInteractionClass((<%= interaction_data.name %>) interaction);
-                }
-            <% conditional = "else if"; %>
-            <% }) %>        
-            }
-           <% } %>
-           <%if (subscribedobjectdata.length > 0) { %>
-            <% conditional = "if"; %>
-            while ((reflector = getNextObjectReflectorNoWait()) != null) {
-                reflector.reflect();
-                ObjectRoot object = reflector.getObjectRoot();
-                <%subscribedobjectdata.forEach(function(object_data){ %>
-                <%= conditional %> (object instanceof <%= object_data.name %>) {
-                    handleObjectClass((<%= object_data.name %>) object);
-                }
-             <% conditional = "else if"; %>
-             <%}) %>
-            }
-           <% } %>
+<% if (publishedobjectdata.length > 0) { -%>
+            ////////////////////////////////////////////////////////////////////////////////////////
+            // TODO objects that must be sent every logical time step 
+            //
+<% publishedobjectdata.forEach(function(object_data){ -%>
+<% if (object_data.parameters.length > 0) { -%>
+<% object_data.parameters.forEach(function(parameter) { -%>
+            //    v<%= object_data.name %>.set_<%= parameter.name %>(<YOUR VALUE HERE >);
+<% }) -%>
+<% } -%>
+            //    v<%= object_data.name %>.updateAttributeValues(getRTI(), logicalTime);
+            //
+<% }) -%>
+            //////////////////////////////////////////////////////////////////////////////////////////
+<% } -%>
+
+<% if (subscribedinteractiondata.length + subscribedobjectdata.length > 0) { -%>
+           CheckReceivedSubscriptions("Main Loop");
+<% } -%>
             // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             // DO NOT MODIFY FILE BEYOND THIS LINE
             // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

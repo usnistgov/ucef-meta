@@ -171,7 +171,7 @@ define([
             });
         });
 
-                //Add FED generator
+        //Add FED generator
         self.fileGenerators.push(function(artifact, callback){
             
             var interactionTraverser = function(interaction){
@@ -278,6 +278,18 @@ define([
                 'lateJoinerFederates': []
             }
         };
+
+        //Add default RID file
+        self.fileGenerators.push(function(artifact, callback){
+            artifact.addFile('RTI.rid', ejs.render(TEMPLATES['rti.rid.ejs'], {}) , function (err) {
+                if (err) {
+                    callback(err);
+                    return;
+                }else{
+                    callback();
+                }
+            });
+        });
 
         // Experiment Config    
         self.fileGenerators.push(function (artifact, callback) {

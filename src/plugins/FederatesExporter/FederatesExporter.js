@@ -281,7 +281,7 @@ define([
                 finishExport(err);
             }
         });
-
+        self.postAllVisits(self);
     };
 
     FederatesExporter.prototype.getChildSorterFunc = function(nodeType, self){

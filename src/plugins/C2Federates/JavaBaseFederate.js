@@ -42,24 +42,7 @@ define([
                     self.java_federateBasePOM.groupId = 'org.cpswt'
                     self.java_federateBasePOM.artifactId = 'federate-base';
                     self.java_federateBasePOM.version = self.cpswt_version;   
-                }
-                
-                //Add sim POM generator
-                self.fileGenerators.push(function(artifact, callback){
-                    if(!self.javaPOM){
-                        callback();
-                        return;
-                    }
-                    artifact.addFile( self.javaPOM.directory + '/pom.xml', self._jsonToXml.convertToString( self.javaPOM.toJSON() ), function (err) {
-                        if (err) {
-                            callback(err);
-                            return;
-                        }else{
-                            callback();
-                        }
-                    });
-                });
-                
+                }             
                 
                 //Add base POM generator
                 self.fileGenerators.push(function(artifact, callback){
@@ -104,6 +87,7 @@ define([
             context['javafedspec']['simname'] = self.projectName;
             context['javafedspec']['timeconstrained'] = self.core.getAttribute(node, 'TimeConstrained');
             context['javafedspec']['timeregulating'] = self.core.getAttribute(node, 'TimeRegulating');
+            context['javafedspec']['lookahead'] = self.core.getAttribute(node, 'Lookahead');
             context['javafedspec']['asynchronousdelivery'] = self.core.getAttribute(node, 'EnableROAsynchronousDelivery');
 
             self.federates[self.core.getPath(node)] = context['javafedspec'];
@@ -129,6 +113,7 @@ define([
                 isnonmapperfed: true,
                 timeconstrained: false,
                 timeregulating: false,
+                lookahead: null,
                 asynchronousdelivery: false,
                 publishedinteractiondata: [],
                 subscribedinteractiondata: [],

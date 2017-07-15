@@ -120,7 +120,9 @@ define([], function () {
         if(this.projects && this.projects.length > 0){
             model['modules']={'module':[]};
             this.projects.forEach(function(proj){
-                model['modules']['module'].push({'#text': proj.directory?proj.directory:proj.artifactId});
+                if (proj.directory || proj.artifactId) {
+                    model['modules']['module'].push({'#text': proj.directory?proj.directory:proj.artifactId});
+                }
             });
         }
 
