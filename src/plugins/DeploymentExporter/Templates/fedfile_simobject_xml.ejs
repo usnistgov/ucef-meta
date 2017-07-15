@@ -1,22 +1,19 @@
-<% /*simobject(name,attributes,children) */ -%>
-<objectClass>
-<name><%= name %></name>
-<% for(var i=0; i<attributes.length; i++){ %>
-  <attribute>
-      <name><%= attributes[i].name %></name>
-      <dataType><%= attributes[i].parameterType %></dataType>
-      <% if(attributes[i].delivery==="reliable") { %>
-      <transportation>HLAreliable</transportation> 
-      <% } else if(attributes[i].delivery==="best_effort") {%>
-      <transportation>HLAbestEffort</transportation>
-      <% } %>
-      <% if(attributes[i].order==="timestamp") { %>
-      <order>TimeStamp</order> 
-      <% } else if(attributes[i].order==="receive") {%>
-      <order>Receive</order>
-      <% } -%>
+<% /*simobject(name,sharing,delivery,order,attributes,children) */ -%>
 
-  </attribute><% } -%>
-<% children.forEach(function(child){ %>  <%- child %>
-<% }); -%> 
-</objectClass>
+        <objectClass>
+            <name><%= name %></name>
+            <sharing><%= sharing %></sharing>
+            <semantics></semantics>
+            <% for(var i=0; i<attributes.length; i++){ %>
+            <attribute>
+              <name><%= attributes[i].name %></name>
+              <dataType><%= attributes[i].parameterType %></dataType>
+              <transportation><%= attributes[i].delivery %></transportation>
+              <order><%= attributes[i].order %></order>
+              <semantics></semantics>
+            </attribute>
+            <% } -%>
+            <% children.forEach(function(child){ %>
+                    <%- child %>
+            <% }); -%>
+        </objectClass>
