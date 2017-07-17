@@ -76,6 +76,10 @@ define([
         self.objectRoots = [];
         self.attributes = {};
 
+        // Experiment Related
+        self.experimentNodes = [];
+        self.experimentPaths = {};
+
         // COA related
         self.coaNodes = [];
         self.coaEdges = [];
@@ -448,6 +452,30 @@ define([
 
     };
 
+    //////////////////
+    // Experiment Visitors
+    ////////////////////
+
+    DeploymentExporter.prototype.addExperimentNode = function (node, obj) {
+        var self = this;
+
+        obj.name = self.core.getAttribute(node, 'name');
+        obj.nodeType = self.core.getAttribute(self.getMetaType(node), 'name');
+        obj.ID = self.core.getGuid(node);
+
+        self.experimentNodes.push(obj);
+        self.experimentPaths[self.core.getPath(node)] = self.core.getGuid(node);
+    };
+
+    DeploymentExporter.prototype.visit_Experiment = function (node, parent, context) {
+        var self = this;
+        console.log("Visint Experiment Node")
+        self.addExperimentNode(node,{})
+        return {
+            context: context
+        };
+    };
+
 
     ////////////////////////
     // COA node visitors
@@ -587,6 +615,9 @@ define([
             context: context
         };
     };
+
+
+
 
     DeploymentExporter.prototype.addCoaEdge = function (node, obj) {
         var self = this;
