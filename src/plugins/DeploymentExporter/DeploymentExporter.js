@@ -77,8 +77,9 @@ define([
         self.attributes = {};
 
         // Experiment Related
-        self.experimentNodes = [];
-        self.experimentPaths = {};
+        self.experimentModelConfig =[[]]
+        self.experimentPaths= []
+
 
         // COA related
         self.coaNodes = [];
@@ -274,6 +275,63 @@ define([
             });
         });
 
+        //////////////////
+        // New Experiment Config
+        /////////////////
+        self.fileGenerators.push(function (artifact, callback) {
+            var response = []
+
+            self.experimentPaths.forEach(function (objPath) {
+
+                    var experimentmodel = {
+
+                        name: "",
+                        exptConfig: {
+                            'federateTypesAllowed': [],
+                            'expectedFederates': [],
+                            'lateJoinerFederates': []
+
+                        }
+                    }
+
+                    self.experimentModelConfig[objPath].forEach(function (expSet) {
+
+                        var reference_name = self.core.getAttribute(expSet, "name").split("-")[0];
+                        // var expFed = self.federates.filter(function(el){
+                        //     return el.name==reference_name
+                        // })
+
+                        experimentmodel.name = self.core.getAttribute(self.core.getParent(expSet), "name")
+                        experimentmodel.exptConfig.federateTypesAllowed.push(reference_name)
+                        if (!self.core.getAttribute(expSet, "isLateJoiner")) {
+                            experimentmodel.exptConfig.expectedFederates.push({
+                                "federateType": reference_name,
+                                "count": self.core.getAttribute(expSet, "count")
+                            })
+                        }
+                        else {
+                            experimentmodel.exptConfig.lateJoinerFederates.push({
+                                "federateType": reference_name,
+                                "count": self.core.getAttribute(expSet, "count")
+                            })
+                        }
+
+                    })
+
+                    artifact.addFile('conf/' + experimentmodel.name.toLowerCase() + '.json', JSON.stringify(experimentmodel.exptConfig, null, 2), function (err) {
+                        response.push(err)
+                        if (response.length == self.experimentPaths.length) {
+                            if (response.includes(err)) {
+                                callback(err);
+                            } else {
+                                callback();
+                            }
+                        }
+                    });
+                }
+            )
+
+        });
 
         self.experimentModel = {
             'script': {
@@ -452,29 +510,22 @@ define([
 
     };
 
-    //////////////////
-    // Experiment Visitors
-    ////////////////////
 
-    DeploymentExporter.prototype.addExperimentNode = function (node, obj) {
+    DeploymentExporter.prototype.visit_FederateExecution = function (node, parent, context){
+
         var self = this;
 
-        obj.name = self.core.getAttribute(node, 'name');
-        obj.nodeType = self.core.getAttribute(self.getMetaType(node), 'name');
-        obj.ID = self.core.getGuid(node);
+        if(self.experimentPaths.indexOf(self.core.getPath(parent)) === -1){
+            self.experimentPaths.push(self.core.getPath(parent))
+        }
+        self.experimentModelConfig[self.core.getPath(parent)] = self.experimentModelConfig[self.core.getPath(parent)] || []
+        self.experimentModelConfig[self.core.getPath(parent)].push(node)
 
-        self.experimentNodes.push(obj);
-        self.experimentPaths[self.core.getPath(node)] = self.core.getGuid(node);
-    };
-
-    DeploymentExporter.prototype.visit_Experiment = function (node, parent, context) {
-        var self = this;
-        console.log("Visint Experiment Node")
-        self.addExperimentNode(node,{})
         return {
             context: context
         };
-    };
+
+    }
 
 
     ////////////////////////
