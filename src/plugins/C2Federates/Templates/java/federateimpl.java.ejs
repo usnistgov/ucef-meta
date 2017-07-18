@@ -22,6 +22,8 @@ public class <%= classname %> extends <%= classname %>Base {
 
     private final static Logger log = LogManager.getLogger(<%= classname %>.class);
     
+        double currentTime = 0;
+
    ///////////////////////////////////////////////////////////////////////
    // TODO Instatiate objects. that must be sent every logical time step 
    //
@@ -47,7 +49,6 @@ public class <%= classname %> extends <%= classname %>Base {
 <% if (subscribedinteractiondata.length + subscribedobjectdata.length > 0) { -%>
     private void CheckReceivedSubscriptions(String s) {
 
-        double currentTime = 0;
         InteractionRoot interaction = null;
         ObjectReflector reflector = null;
 
@@ -137,7 +138,7 @@ public class <%= classname %> extends <%= classname %>Base {
 <% interaction_data.parameters.forEach(function(parameter) { -%>
             //    v<%= interaction_data.name %>.set_<%= parameter.name %>( < YOUR VALUE HERE > );
 <% }) -%>
-            //    v<%= interaction_data.name %>.sendInteraction(getLRC(), logicalTime);
+            //    v<%= interaction_data.name %>.sendInteraction(getLRC(), currentTime);
             //
 <% }) -%>
             ////////////////////////////////////////////////////////////////////////////////////////
@@ -153,7 +154,7 @@ public class <%= classname %> extends <%= classname %>Base {
             //    v<%= object_data.name %>.set_<%= parameter.name %>(<YOUR VALUE HERE >);
 <% }) -%>
 <% } -%>
-            //    v<%= object_data.name %>.updateAttributeValues(getLRC(), logicalTime);
+            //    v<%= object_data.name %>.updateAttributeValues(getLRC(), currentTime);
             //
 <% }) -%>
             //////////////////////////////////////////////////////////////////////////////////////////
@@ -178,23 +179,25 @@ public class <%= classname %> extends <%= classname %>Base {
         // while loop finished, notify FederationManager about resign
         super.notifyFederationOfResign();
     }
-    <%/* allinteractiondata:createInteraction() */ -%>
-        <%subscribedinteractiondata.forEach(function(interaction_data){ %>
+<%/* allinteractiondata:createInteraction() */ -%>
+<%subscribedinteractiondata.forEach(function(interaction_data){ -%>
 
         private void handleInteractionClass(<%= interaction_data.name %> interaction) {
             //////////////////////////////////////////////////////////////////////////
             // TODO implement how to handle reception of the interaction            //
             //////////////////////////////////////////////////////////////////////////
-        } <%}); %>
+        }
+<%}); -%>
 
-    <%/* allobjectdata:createObject() */ -%>
-        <%subscribedobjectdata.forEach(function(object_data){ %>
+<%/* allobjectdata:createObject() */ -%>
+<%subscribedobjectdata.forEach(function(object_data){ -%>
 
         private void handleObjectClass(<%= object_data.name %> object) {
             //////////////////////////////////////////////////////////////////////////
             // TODO implement how to handle reception of the object                 //
             //////////////////////////////////////////////////////////////////////////
-        } <%}); %>
+        } 
+<%}); -%>
 
     public static void main(String[] args) {
         try {
