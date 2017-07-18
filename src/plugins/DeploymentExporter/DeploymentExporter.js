@@ -171,7 +171,7 @@ define([
             });
         });
 
-                //Add FED generator
+                //Add fom.xml generator
         self.fileGenerators.push(function(artifact, callback){
             
             var interactionTraverser = function(interaction){
@@ -180,6 +180,26 @@ define([
                     parameters:interaction.parameters,
                     children:[]
                 };
+                if(interaction.name === "InteractionRoot" ||interaction.name==="C2WInteractionRoot"){
+                    interaction.sharing = "Neither"
+                }else{
+                    interaction.sharing = "PublishSubscribe"
+                }
+                if(interaction.delivery==="reliable") {
+                    interaction.delivery = "HLAreliable"
+                }
+                else {
+                    interaction.delivery="HLAbestEffort"
+                }
+
+                if(interaction.order==="timestamp")
+                {
+                    interaction.order="TimeStamp"
+                }else{
+                    interaction.order="Receive"
+                }
+
+
                 interaction.children.forEach(function(child){
                     intModel.children.push(interactionTraverser(child));
                 });
@@ -187,7 +207,7 @@ define([
             }
 
             self.fomModel.interactions_xml = [];
-            self.interactionRoots[0].children.forEach(function(inta){
+            self.interactionRoots.forEach(function(inta){
                 self.fomModel.interactions_xml.push(interactionTraverser(inta));
             });
             
@@ -196,8 +216,33 @@ define([
                 var objModel = {
                     name:object.name,
                     attributes:object.attributes,
-                    children:[]
+                    children:[],
+                    sharing:"",
+                    semantics:""
                 };
+
+                if(object.name === "ObjectRoot" ){
+                    objModel.sharing = "Neither"
+                }else{
+                    objModel.sharing = "PublishSubscribe"
+                }
+                objModel.attributes.forEach(function(attr){
+                    if(attr.delivery==="reliable") {
+                        attr.delivery = "HLAreliable"
+                    }
+                    else {
+                        attr.delivery="HLAbestEffort"
+                    }
+
+                    if(attr.order==="timestamp")
+                    {
+                        attr.order="TimeStamp"
+                    }else{
+                        attr.order="Receive"
+                    }
+                })
+
+
                 object.children.forEach(function(child){
                     objModel.children.push(objectTraverser_xml(child));
                 });
@@ -205,9 +250,12 @@ define([
             }
 
             self.fomModel.objects_xml = [];
-            self.objectRoots[0].children.forEach(function(obj){
+
+            self.objectRoots.forEach(function(obj){
                 self.fomModel.objects_xml.push(objectTraverser_xml(obj));
-            });
+            })
+
+
 
             artifact.addFile('fom/' + self.projectName + '.xml', ejs.render(TEMPLATES['fedfile.xml.ejs'], self.fomModel), function (err) {
                 if (err) {
