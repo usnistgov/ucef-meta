@@ -20,7 +20,7 @@ import hla.rti.jlc.RtiFactory;
  */
 public class <%= classname %> extends <%= classname %>Base {
 
-    private final static Logger logger = LogManager.getLogger(<%= classname %>.class);
+    private final static Logger log = LogManager.getLogger(<%= classname %>.class);
     
    ///////////////////////////////////////////////////////////////////////
    // TODO Instatiate objects. that must be sent every logical time step 
@@ -38,7 +38,7 @@ public class <%= classname %> extends <%= classname %>Base {
         // TODO Must register object instances after super(args)
         //
 <% publishedobjectdata.forEach(function(object_data){ -%>
-        // v<%=object_data.name%>.registerObject(getRTI());
+        // v<%=object_data.name%>.registerObject(getLRC());
 <% }) -%>
         //
         ///////////////////////////////////////////////////////////////////////
@@ -47,6 +47,7 @@ public class <%= classname %> extends <%= classname %>Base {
 <% if (subscribedinteractiondata.length + subscribedobjectdata.length > 0) { -%>
     private void CheckReceivedSubscriptions(String s) {
 
+        double currentTime = 0;
         InteractionRoot interaction = null;
         ObjectReflector reflector = null;
 
@@ -81,9 +82,7 @@ public class <%= classname %> extends <%= classname %>Base {
 <% } -%>  
 
     private void execute() throws Exception {
-        double currentTime = 0;
-        InteractionRoot interaction = null;
-        ObjectReflector reflector = null;
+
         
         if(super.isLateJoiner()) {
             currentTime = super.getLBTS() - super.getLookAhead() + CpswtDefaults.EPSILON;
@@ -138,7 +137,7 @@ public class <%= classname %> extends <%= classname %>Base {
 <% interaction_data.parameters.forEach(function(parameter) { -%>
             //    v<%= interaction_data.name %>.set_<%= parameter.name %>( < YOUR VALUE HERE > );
 <% }) -%>
-            //    v<%= interaction_data.name %>.sendInteraction(getRTI(), logicalTime);
+            //    v<%= interaction_data.name %>.sendInteraction(getLRC(), logicalTime);
             //
 <% }) -%>
             ////////////////////////////////////////////////////////////////////////////////////////
@@ -154,7 +153,7 @@ public class <%= classname %> extends <%= classname %>Base {
             //    v<%= object_data.name %>.set_<%= parameter.name %>(<YOUR VALUE HERE >);
 <% }) -%>
 <% } -%>
-            //    v<%= object_data.name %>.updateAttributeValues(getRTI(), logicalTime);
+            //    v<%= object_data.name %>.updateAttributeValues(getLRC(), logicalTime);
             //
 <% }) -%>
             //////////////////////////////////////////////////////////////////////////////////////////
@@ -204,8 +203,8 @@ public class <%= classname %> extends <%= classname %>Base {
             <%= classname %> federate = new <%= classname %>(federateConfig);
             federate.execute();
         } catch (Exception e) {
-            logger.error("There was a problem executing the <%= classname %> federate: {}", e.getMessage());
-            logger.error(e);
+            log.error("There was a problem executing the <%= classname %> federate: {}", e.getMessage());
+            log.error(e);
         }
     }
 }

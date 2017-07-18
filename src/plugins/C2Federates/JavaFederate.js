@@ -29,7 +29,7 @@ define([
             if(!self.javaPOM){
                 self.javaPOM = new MavenPOM(self.mainPom);
                 self.javaPOM.artifactId = self.projectName + "-java";
-                self.javaPOM.directory = "java-federates";
+                self.javaPOM.directory = self.projectName + "-java-federates";
                 self.javaPOM.version = self.project_version;
                 self.javaPOM.addMavenCompiler(self.getCurrentConfig().mavenCompilerPluginJavaVersion);
                 self.javaPOM.packaging = "pom";

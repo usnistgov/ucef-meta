@@ -30,7 +30,7 @@ define([
                    return;
                 }
 
-               var baseDirBasePath = 'java-federates/';
+               var baseDirBasePath = self.projectName + '-java-federates/';
                baseDirSpec = {federation_name: self.projectName, artifact_name: "base", language:"java"};
                var baseDirPath =  baseDirBasePath + ejs.render(self.directoryNameTemplate, baseDirSpec);
                console.log('baseDirPath=' + baseDirPath);
