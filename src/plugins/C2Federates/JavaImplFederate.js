@@ -29,7 +29,7 @@ define([
                     return;
                 }
 
-                var dirPath = 'java-federates/';
+                var dirPath = self.projectName + '-java-federates/';
                 implDirSpec = {
                     federation_name: self.projectName,
                     artifact_name: "impl",
