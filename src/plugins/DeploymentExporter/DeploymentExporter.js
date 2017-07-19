@@ -176,7 +176,7 @@ define([
             });
         });
 
-                //Add fom.xml generator
+        //Add fom.xml generator
         self.fileGenerators.push(function(artifact, callback){
             
             var interactionTraverser = function(interaction){
@@ -389,6 +389,32 @@ define([
             }
         };
 
+        //Add default RID file
+        self.fileGenerators.push(function(artifact, callback){
+           artifact.addFile('RTI.rid', ejs.render(TEMPLATES['rti.rid.ejs'], {}) , function (err) {
+                if (err) {
+                    callback(err);
+                    return;
+                }else{
+                    callback();
+                }
+            });
+        });
+
+            //Add impl log config from template
+        self.fileGenerators.push(function (artifact, callback) {
+        var java_implLog = {};
+        java_implLog.projectName = self.projectName;
+                artifact.addFile('conf/' + 'log4j2.xml', ejs.render(TEMPLATES['log4j2.xml.ejs'], self), function (err) {
+                if (err) {
+                    callback(err);
+                    return;
+                } else {
+                    callback();
+                }
+            });
+        });
+
         // Experiment Config    
         self.fileGenerators.push(function (artifact, callback) {
             self.federates.forEach(function (fed) {
@@ -449,16 +475,16 @@ define([
                     "federateType": "FederationManager",
                     "federationId": "",
                     "isLateJoiner": false,
-                    "lookAhead": 0,
-                    "stepSize": 0,
+                    "lookAhead": 0.1,
+                    "stepSize": 1.0,
 
-                    "bindHost": "0.0.0.0",
+                    "bindHost": "127.0.0.1",
                     "port": 8083,
                     "controlEndpoint": "/fedmgr",
                     "federatesEndpoint": "/federates",
 
                     "autoStart": true,
-                    "federationEndTime": 20.0,
+                    "federationEndTime": 0.0,
                     "realTimeMode": true,
                     "terminateOnCOAFinish": false,
                     "fedFile": "fom/" +self.projectName + '.fed',

@@ -18,6 +18,7 @@ define([
             
         JavaBaseFederate.call(this);
         JavaImplFederate.call(this);
+        var finalContext = {};
 
     	this.visit_JavaFederate = function(node, parent, context){
             var self = this,
@@ -27,8 +28,8 @@ define([
 
             if(!self.javaPOM){
                 self.javaPOM = new MavenPOM(self.mainPom);
-                self.javaPOM.artifactId = self.projectName + "-java";
-                self.javaPOM.directory = "java-federates";
+                self.javaPOM.artifactId = self.projectName + "-java-federates";
+                self.javaPOM.directory = self.projectName + "-java-federates";
                 self.javaPOM.version = self.project_version;
                 self.javaPOM.addMavenCompiler(self.getCurrentConfig().mavenCompilerPluginJavaVersion);
                 self.javaPOM.packaging = "pom";
@@ -50,7 +51,8 @@ define([
 
         this.post_visit_JavaFederate = function(node, context){
             this.post_visit_JavaBaseFederate(node, context);
-            return this.post_visit_JavaImplFederate(node, context);
+            finalContext = this.post_visit_JavaImplFederate(node, context);
+            return finalContext;
         };
     }
     return JavaFederateExporter;

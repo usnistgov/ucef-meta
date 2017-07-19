@@ -266,7 +266,7 @@
 							<goal>java</goal>
 						</goals>
 						<configuration>
-							<mainClass>org.cpswt.host.FederationManagerHostApplication</mainClass>
+							<mainClass>org.cpswt.host.FederationManagerHostApp</mainClass>
 							<classpathScope>runtime</classpathScope>
 							<systemProperties>
 								<systemProperty>
@@ -288,7 +288,7 @@
 			</build>
 		</profile>
 		<profile>
-			<id>JavaFed</id>
+			<id>ExecJava</id>
 			<dependencies>
 				<dependency>
 					<groupId><%= porticoPOM.groupId %></groupId>
@@ -302,25 +302,27 @@
 						<groupId>org.codehaus.mojo</groupId>
 						<artifactId>exec-maven-plugin</artifactId>
 						<version>1.5.0</version>
-						<configuration>
-							<executable>java</executable>
+                        <goals>
+                            <goal>java</goal>
+                        </goals>
+                        <configuration>
+                            <systemProperties>
+                                <systemProperty>
+                                    <key>java.net.preferIPv4Stack</key>
+                                    <value>true</value>
+                                </systemProperty>
+                                <systemProperty>
+                                    <key>log4j.configurationFile</key>
+                                    <value>conf/log4j2.xml</value>
+                                </systemProperty>
+                            </systemProperties>
+
+                            <classpathScope>runtime</classpathScope>
+                            <mainClass><%= projectName %>.${federate.name}</mainClass>
 							<arguments>
-								<argument>-Xmx512m</argument>
-								<!-- For debugging purposes-->
-								<!--argument>-Xdiag</argument-->
-					            <!--<argument>-Djava.library.path=${project.basedir}/target/nar/processid-${cpswt.version}-amd64-Linux-gpp-jni/lib/amd64-Linux-gpp/jni/</argument>-->
-					            <argument>-Djava.net.preferIPv4Stack=true</argument>
-					            <argument>-classpath</argument>
-					            <!-- automatically creates the classpath using all project dependencies,
-		                 		also adding the project build directory -->
-					            <classpath/>
-					            <argument><%= projectName %>.${federate.name}</argument>
-					            <argument>${federation.name}</argument>
-					            <argument>${federate.name}</argument>
+                                <argument>-configFile</argument>
+                                <argument>${federate.configFile}</argument>
 					    	</arguments>
-						    <environmentVariables>
-			                    <EXEDIR>${project.basedir}/target/${federate.name}</EXEDIR>
-			                </environmentVariables>
 						</configuration>
 					</plugin>
 				</plugins>

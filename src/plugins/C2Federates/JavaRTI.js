@@ -260,7 +260,7 @@ define([
             // SIM RTI - Begin
             //
 
-            var simDirBasePath = 'java-federates/',
+            var simDirBasePath = self.projectName + '-java-federates/',
                 simDirSpec = {federation_name: self.projectName, artifact_name: "rti", language:"java"},
                 simDirPath =  simDirBasePath + ejs.render(self.directoryNameTemplate, simDirSpec),
                 simOutFilePath = simDirPath + MavenPOM.mavenJavaPath; 

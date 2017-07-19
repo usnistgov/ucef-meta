@@ -17,8 +17,6 @@ define([
             implDirSpec,
             implDirPath;
 
-        var java_implLog = {};
-
         this.federateTypes = this.federateTypes || {};
         this.federateTypes['JavaImplFederate'] = {
             includeInExport: false,
@@ -29,7 +27,7 @@ define([
                     return;
                 }
 
-                var dirPath = 'java-federates/';
+                var dirPath = self.projectName + '-java-federates/';
                 implDirSpec = {
                     federation_name: self.projectName,
                     artifact_name: "impl",
@@ -45,21 +43,21 @@ define([
                 console.log('implOutResPath=' + implOutResPath);
                 self.projectName = self.core.getAttribute(self.rootNode, 'name');
 
-                // //Add impl log config from template
-                // self.fileGenerators.push(function (artifact, callback) {
-                //     if (!java_implLog) {
-                //         callback();
-                //         return;
-                //     }
-                //     artifact.addFile(implOutResPath + '/log4j2.xml', ejs.render(TEMPLATES['java/log4j2.xml.ejs'], java_implLog), function (err) {
-                //         if (err) {
-                //             callback(err);
-                //             return;
-                //         } else {
-                //             callback();
-                //         }
-                //     });
-                // });
+                //Add sim POM generator
+                self.fileGenerators.push(function(artifact, callback){
+                    if(!self.javaPOM){
+                        callback();
+                        return;
+                    }
+                   artifact.addFile( self.javaPOM.directory + '/pom.xml', self._jsonToXml.convertToString( self.javaPOM.toJSON() ), function (err) {
+                        if (err) {
+                            callback(err);
+                            return;
+                        }else{
+                            callback();
+                        }
+                    });
+                });
                 self.javaImplFedInitDone = true;
             }
         };
@@ -70,7 +68,12 @@ define([
 
             self.logger.info('Visiting a JavaImplFederate');
 
-            java_implLog.projectName = self.projectName;
+            if(!self.java_implPOM){
+                self.java_implPOM = new MavenPOM(self.javaPOM);
+                self.java_implPOM.artifactId = ejs.render(self.directoryNameTemplate, implDirSpec);
+                self.java_implPOM.version = self.project_version;
+                self.java_implPOM.packaging = "jar";
+            }
 
             context['javaimplfedspec'] = self.createJavaImplFederateCodeModel();
             context['javaimplfedspec']['groupId'] = self.mainPom.groupId.trim();
@@ -87,6 +90,7 @@ define([
             context['javaimplfedspec']['configFile'] = self.core.getAttribute(node, 'name') + 'Config.json';
             context['javaimplfedspec']['timeconstrained'] = self.core.getAttribute(node, 'TimeConstrained');
             context['javaimplfedspec']['timeregulating'] = self.core.getAttribute(node, 'TimeRegulating');
+            context['javaimplfedspec']['lookahead'] = self.core.getAttribute(node, 'Lookahead');
             context['javaimplfedspec']['asynchronousdelivery'] = self.core.getAttribute(node, 'EnableROAsynchronousDelivery');
 
             self.federates[self.core.getPath(node)] = context['javaimplfedspec'];
@@ -94,6 +98,42 @@ define([
             return {
                 context: context
             };
+        };
+
+        var findUserInteractionParameters = function(interactions, publishedinteractiondata) {
+             publishedinteractiondata.forEach(function (publishedinteraction) {
+             if (publishedinteraction.parameters === undefined) {
+                publishedinteraction.parameters = [];
+             }
+               interactions.forEach(function(interaction) {
+                    if (interaction.fullName.endsWith(publishedinteraction.name)) {
+                        interaction.parameters.forEach(function (parameter) {
+                            if (!parameter.inherited) {
+                               publishedinteraction.parameters.push(parameter);
+                            }
+                        });
+                     }
+                });
+            });
+            return publishedinteractiondata;
+        };
+
+       var findUserObjectAttributes = function(objects, publishedobjectdata) {
+             publishedobjectdata.forEach(function (publishedobject) {
+             if (publishedobject.parameters === undefined) {
+                publishedobject.parameters = [];
+              }
+               objects.forEach(function(object) {
+                    if (object.fullName.endsWith(publishedobject.name)) {
+                        object.parameters.forEach(function (parameter) {
+                           if (!parameter.inherited) {
+                               publishedobject.parameters.push(parameter);
+                            }
+                        });
+                     }
+                });
+            });
+            return publishedobjectdata;
         };
 
         this.post_visit_JavaImplFederate = function (node, context) {
@@ -111,7 +151,8 @@ define([
             self.fileGenerators.push(function (artifact, callback) {
                 self.logger.debug('Rendering template to file: ' + implDirPath + '/pom.xml');
 
-                artifact.addFile(fedPathDir + "/"+'pom.xml', ejs.render(TEMPLATES['java/federateimpl_pom.xml.ejs'], renderContext), function (err) {
+                //artifact.addFile(fedPathDir + "/"+'pom.xml', ejs.render(TEMPLATES['java/federateimpl_pom.xml.ejs'], renderContext), function (err) {
+                artifact.addFile(fedPathDir + "/"+'pom.xml', ejs.render(TEMPLATES['java/federateimpl_uberpom.xml.ejs'], renderContext), function (err) {
                     if (err) {
                         callback(err);
                         return;
@@ -124,6 +165,11 @@ define([
             self.fileGenerators.push(function (artifact, callback) {
 
                 self.logger.debug('Rendering template to file: ' + context['javafedspec']['outFileName']);
+
+                renderContext.moduleCollection.push(renderContext.classname);
+                renderContext['publishedinteractiondata'] = findUserInteractionParameters(Object.values(self.interactions), Object.values(context['javaimplfedspec']['publishedinteractiondata']));
+                renderContext['publishedobjectdata'] = findUserObjectAttributes(Object.values(self.objects), Object.values(context['javaimplfedspec']['publishedobjectdata']));
+
                 artifact.addFile(context['javafedspec']['outFileName'], ejs.render(TEMPLATES['java/federatebase.java.ejs'], renderContext), function (err) {
                     if (err) {
                         callback(err);
@@ -148,13 +194,33 @@ define([
                 });
             });
 
+            //Add federate RTi.rid file
+            self.fileGenerators.push(function (artifact, callback) {
+                artifact.addFile(implDirPath + '/RTI.rid', ejs.render(TEMPLATES['java/rti.rid.ejs'], renderContext), function (err) {
+                    if (err) {
+                        callback(err);
+                        return;
+                    } else {
+                        callback();
+                    }
+                });
+            });
+
+            //Add federate config file
+            self.fileGenerators.push(function (artifact, callback) {
+                artifact.addFile(implDirPath + '/conf/' + renderContext.configFile, ejs.render(TEMPLATES['java/federate-config.json.ejs'], renderContext), function (err) {
+                    if (err) {
+                        callback(err);
+                        return;
+                    } else {
+                        callback();
+                    }
+                });
+            });
+
             //Add impl log config from template
             self.fileGenerators.push(function (artifact, callback) {
-                if (!java_implLog) {
-                    callback();
-                    return;
-                }
-                artifact.addFile(fedPathDir + MavenPOM.mavenResourcePath + '/log4j2.xml', ejs.render(TEMPLATES['java/log4j2.xml.ejs'], java_implLog), function (err) {
+                artifact.addFile(implDirPath + '/conf/log4j2.xml', ejs.render(TEMPLATES['java/log4j2.xml.ejs'], self), function (err) {
                     if (err) {
                         callback(err);
                         return;
@@ -169,6 +235,30 @@ define([
             };
         };
 
+        this.postAllVisits = function(context) {
+
+            self.fileGenerators.push(function (artifact, callback) {
+                if (!context.federates) {
+                    callback();
+                    return;
+                }
+                context["artifactId"]= ejs.render(self.directoryNameTemplate, implDirSpec);
+                artifact.addFile(implDirPath + '/pom.xml', ejs.render(TEMPLATES['java/federateimpl_pom.xml.ejs'], context), function (err) {
+                    if (err) {
+                        callback(err);
+                        return;
+                    } else {
+                        callback();
+                    }
+                });
+            });
+
+             return {
+                context: context
+            };      
+        };
+
+
         this.createJavaImplFederateCodeModel = function () {
             return {
                 simname: "",
@@ -177,6 +267,7 @@ define([
                 isnonmapperfed: true,
                 timeconstrained: false,
                 timeregulating: false,
+                lookahead: null,
                 asynchronousdelivery: false,
                 publishedinteractiondata: [],
                 subscribedinteractiondata: [],
@@ -187,6 +278,7 @@ define([
                 porticoPOM: {},
                 helpers: {},
                 ejs: ejs,
+                moduleCollection: [],
                 TEMPLATES: TEMPLATES
             };
         }
