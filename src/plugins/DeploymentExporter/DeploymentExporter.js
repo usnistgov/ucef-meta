@@ -368,13 +368,13 @@ define([
                     "lookAhead": 0,
                     "stepSize": 0,
 
-                    "bindHost": "0.0.0.0",
+                    "bindHost": "127.0.0.1",
                     "port": 8083,
                     "controlEndpoint": "/fedmgr",
                     "federatesEndpoint": "/federates",
 
                     "autoStart": true,
-                    "federationEndTime": 20.0,
+                    "federationEndTime": 0.0,
                     "realTimeMode": true,
                     "terminateOnCOAFinish": false,
                     "fedFile": "fom/" +self.projectName + '.fed',
