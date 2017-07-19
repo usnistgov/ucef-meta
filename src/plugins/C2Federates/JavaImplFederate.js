@@ -17,8 +17,6 @@ define([
             implDirSpec,
             implDirPath;
 
-        var java_implLog = {};
-
         this.federateTypes = this.federateTypes || {};
         this.federateTypes['JavaImplFederate'] = {
             includeInExport: false,
@@ -51,7 +49,6 @@ define([
                         callback();
                         return;
                     }
-                   self.java_implPOM = new MavenPOM(self.javaPOM);
                    artifact.addFile( self.javaPOM.directory + '/pom.xml', self._jsonToXml.convertToString( self.javaPOM.toJSON() ), function (err) {
                         if (err) {
                             callback(err);
@@ -70,8 +67,6 @@ define([
                 nodeType = self.core.getAttribute(self.getMetaType(node), 'name');
 
             self.logger.info('Visiting a JavaImplFederate');
-
-            java_implLog.projectName = self.projectName;
 
             if(!self.java_implPOM){
                 self.java_implPOM = new MavenPOM(self.javaPOM);
@@ -199,13 +194,21 @@ define([
                 });
             });
 
+            //Add federate config file
+            self.fileGenerators.push(function (artifact, callback) {
+                artifact.addFile(implDirPath + '/conf/' + renderContext.configFile, ejs.render(TEMPLATES['java/federate-config.json.ejs'], renderContext), function (err) {
+                    if (err) {
+                        callback(err);
+                        return;
+                    } else {
+                        callback();
+                    }
+                });
+            });
+
             //Add impl log config from template
             self.fileGenerators.push(function (artifact, callback) {
-                if (!java_implLog) {
-                    callback();
-                    return;
-                }
-                artifact.addFile(fedPathDir + MavenPOM.mavenResourcePath + '/log4j2.xml', ejs.render(TEMPLATES['java/log4j2.xml.ejs'], java_implLog), function (err) {
+                artifact.addFile(implDirPath + '/conf/' + 'log4j2.xml', ejs.render(TEMPLATES['java/log4j2.xml.ejs'], self), function (err) {
                     if (err) {
                         callback(err);
                         return;
