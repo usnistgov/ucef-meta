@@ -101,37 +101,28 @@
               </configuration>
             </plugin>
             <plugin>
-                <groupId>com.github.maven-nar</groupId>
-                <artifactId>nar-maven-plugin</artifactId>
-                <version>${nar.version}</version>
-                <extensions>true</extensions>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>1.8</version>
                 <executions>
                     <execution>
-                        <id>nar-download</id>
+                        <phase>package</phase>
                         <goals>
-                            <goal>nar-download</goal>
+                            <goal>run</goal>
                         </goals>
-                    </execution>
-                    <execution>
-                        <id>nar-unpack</id>
-                        <goals>
-                            <goal>nar-unpack</goal>
-                        </goals>
-                    </execution>
-                    <execution>
-                        <id>nar-test-unpack</id>
-                        <goals>
-                            <goal>nar-test-unpack</goal>
-                        </goals>
-                    </execution>
-                    <execution>
-                        <id>nar-integration-test</id>
-                        <goals>
-                            <goal>nar-integration-test</goal>
-                        </goals>
+                        <configuration>
+                            <tasks>
+                                <copy todir="${basedir}/target/conf" overwrite="true">
+                                    <fileset dir="${basedir}/../conf" />
+                                </copy>
+                                <copy todir="${basedir}/target" overwrite="true">
+                                    <fileset file="${basedir}/../RTI.rid" />
+                                </copy>
+                            </tasks>
+                        </configuration>
                     </execution>
                 </executions>
-              </plugin>
+            </plugin>
               <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -143,38 +134,38 @@
             </plugin>
         </plugins>
     </build>
-	<profiles>
+        <profiles>
         <profile>
             <id>${federate.name}</id>
         </profile>
-		<profile>
-			<id>JavaFed</id>
+        <profile>
+            <id>JavaFed</id>
             <build>
-				<plugins>
-					<plugin>
-						<groupId>org.codehaus.mojo</groupId>
-						<artifactId>exec-maven-plugin</artifactId>
-						<version>1.5.0</version>
-						<goals>
-							<goal>java</goal>
-						</goals>
-						<configuration>
-							<systemProperties>
-								<systemProperty>
-									<key>java.net.preferIPv4Stack</key>
-									<value>true</value>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>exec-maven-plugin</artifactId>
+                        <version>1.5.0</version>
+                        <goals>
+                            <goal>java</goal>
+                        </goals>
+                        <configuration>
+                            <systemProperties>
+                                <systemProperty>
+                                    <key>java.net.preferIPv4Stack</key>
+                                    <value>true</value>
                                 </systemProperty>
-							</systemProperties>
+                            </systemProperties>
                             <classpathScope>runtime</classpathScope>
-							<mainClass>${package.name}.${federate.name}</mainClass>
-							<arguments>
+                            <mainClass>${package.name}.${federate.name}</mainClass>
+                            <arguments>
                                 <argument>-configFile</argument>
                                 <argument>${configFile}</argument>
-					    	</arguments>
-						</configuration>
-					</plugin>
-				</plugins>
-			</build>	
-		</profile>
+                            </arguments>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>	
+        </profile>
     </profiles>
 </project>

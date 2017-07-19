@@ -194,6 +194,18 @@ define([
                 });
             });
 
+            //Add federate RTi.rid file
+            self.fileGenerators.push(function (artifact, callback) {
+                artifact.addFile(implDirPath + '/RTI.rid', ejs.render(TEMPLATES['java/rti.rid.ejs'], renderContext), function (err) {
+                    if (err) {
+                        callback(err);
+                        return;
+                    } else {
+                        callback();
+                    }
+                });
+            });
+
             //Add federate config file
             self.fileGenerators.push(function (artifact, callback) {
                 artifact.addFile(implDirPath + '/conf/' + renderContext.configFile, ejs.render(TEMPLATES['java/federate-config.json.ejs'], renderContext), function (err) {
@@ -208,7 +220,7 @@ define([
 
             //Add impl log config from template
             self.fileGenerators.push(function (artifact, callback) {
-                artifact.addFile(implDirPath + '/conf/' + 'log4j2.xml', ejs.render(TEMPLATES['java/log4j2.xml.ejs'], self), function (err) {
+                artifact.addFile(implDirPath + '/conf/log4j2.xml', ejs.render(TEMPLATES['java/log4j2.xml.ejs'], self), function (err) {
                     if (err) {
                         callback(err);
                         return;
