@@ -291,6 +291,23 @@ define([
             });
         });
 
+            //Add impl log config from template
+            self.fileGenerators.push(function (artifact, callback) {
+                 artifact.addFile('conf/' + 'log4j2.xml', ejs.render(TEMPLATES['java/log4j2.xml.ejs'], self), function (err) {
+                    if (err) {
+                        callback(err);
+                        return;
+                    } else {
+                        callback();
+                    }
+                });
+            });
+
+            return {
+                context: context
+            };
+        };
+
         // Experiment Config    
         self.fileGenerators.push(function (artifact, callback) {
             self.federates.forEach(function (fed) {
