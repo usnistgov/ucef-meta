@@ -281,7 +281,7 @@ define([
 
         //Add default RID file
         self.fileGenerators.push(function(artifact, callback){
-            artifact.addFile('RTI.rid', ejs.render(TEMPLATES['rti.rid.ejs'], {}) , function (err) {
+           artifact.addFile('RTI.rid', ejs.render(TEMPLATES['rti.rid.ejs'], {}) , function (err) {
                 if (err) {
                     callback(err);
                     return;
@@ -292,21 +292,18 @@ define([
         });
 
             //Add impl log config from template
-            self.fileGenerators.push(function (artifact, callback) {
-                 artifact.addFile('conf/' + 'log4j2.xml', ejs.render(TEMPLATES['java/log4j2.xml.ejs'], self), function (err) {
-                    if (err) {
-                        callback(err);
-                        return;
-                    } else {
-                        callback();
-                    }
-                });
+        self.fileGenerators.push(function (artifact, callback) {
+        var java_implLog = {};
+        java_implLog.projectName = self.projectName;
+                artifact.addFile('conf/' + 'log4j2.xml', ejs.render(TEMPLATES['log4j2.xml.ejs'], self), function (err) {
+                if (err) {
+                    callback(err);
+                    return;
+                } else {
+                    callback();
+                }
             });
-
-            return {
-                context: context
-            };
-        };
+        });
 
         // Experiment Config    
         self.fileGenerators.push(function (artifact, callback) {
