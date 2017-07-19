@@ -365,8 +365,8 @@ define([
                     "federateType": "FederationManager",
                     "federationId": "",
                     "isLateJoiner": false,
-                    "lookAhead": 0,
-                    "stepSize": 0,
+                    "lookAhead": 0.1,
+                    "stepSize": 1.0,
 
                     "bindHost": "127.0.0.1",
                     "port": 8083,
