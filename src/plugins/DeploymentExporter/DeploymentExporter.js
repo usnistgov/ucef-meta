@@ -329,55 +329,61 @@ define([
         self.fileGenerators.push(function (artifact, callback) {
             var response = []
 
-            self.experimentPaths.forEach(function (objPath) {
+            if(self.experimentPaths.length !=0 ){
+                self.experimentPaths.forEach(function (objPath) {
 
-                    var experimentmodel = {
+                        var experimentmodel = {
 
-                        name: "",
-                        exptConfig: {
-                            'federateTypesAllowed': [],
-                            'expectedFederates': [],
-                            'lateJoinerFederates': []
+                            name: "",
+                            exptConfig: {
+                                'federateTypesAllowed': [],
+                                'expectedFederates': [],
+                                'lateJoinerFederates': []
 
-                        }
-                    }
-
-                    self.experimentModelConfig[objPath].forEach(function (expSet) {
-
-                        var reference_name = self.core.getAttribute(expSet, "name").split("-")[0];
-                        // var expFed = self.federates.filter(function(el){
-                        //     return el.name==reference_name
-                        // })
-
-                        experimentmodel.name = self.core.getAttribute(self.core.getParent(expSet), "name")
-                        experimentmodel.exptConfig.federateTypesAllowed.push(reference_name)
-                        if (!self.core.getAttribute(expSet, "isLateJoiner")) {
-                            experimentmodel.exptConfig.expectedFederates.push({
-                                "federateType": reference_name,
-                                "count": self.core.getAttribute(expSet, "count")
-                            })
-                        }
-                        else {
-                            experimentmodel.exptConfig.lateJoinerFederates.push({
-                                "federateType": reference_name,
-                                "count": self.core.getAttribute(expSet, "count")
-                            })
-                        }
-
-                    })
-
-                    artifact.addFile('conf/' + experimentmodel.name.toLowerCase() + '.json', JSON.stringify(experimentmodel.exptConfig, null, 2), function (err) {
-                        response.push(err)
-                        if (response.length == self.experimentPaths.length) {
-                            if (response.includes(err)) {
-                                callback(err);
-                            } else {
-                                callback();
                             }
                         }
-                    });
-                }
-            )
+
+                        self.experimentModelConfig[objPath].forEach(function (expSet) {
+
+                            var reference_name = self.core.getAttribute(expSet, "name").split("-")[0];
+                            // var expFed = self.federates.filter(function(el){
+                            //     return el.name==reference_name
+                            // })
+
+                            experimentmodel.name = self.core.getAttribute(self.core.getParent(expSet), "name")
+                            experimentmodel.exptConfig.federateTypesAllowed.push(reference_name)
+                            if (!self.core.getAttribute(expSet, "isLateJoiner")) {
+                                experimentmodel.exptConfig.expectedFederates.push({
+                                    "federateType": reference_name,
+                                    "count": self.core.getAttribute(expSet, "count")
+                                })
+                            }
+                            else {
+                                experimentmodel.exptConfig.lateJoinerFederates.push({
+                                    "federateType": reference_name,
+                                    "count": self.core.getAttribute(expSet, "count")
+                                })
+                            }
+
+                        })
+
+                        artifact.addFile('conf/' + experimentmodel.name.toLowerCase() + '.json', JSON.stringify(experimentmodel.exptConfig, null, 2), function (err) {
+                            response.push(err)
+                            if (response.length == self.experimentPaths.length) {
+                                if (response.includes(err)) {
+                                    callback(err);
+                                } else {
+                                    callback();
+                                }
+                            }
+                        });
+                    }
+                )
+
+            }
+            else {
+                callback();
+            }
 
         });
 
