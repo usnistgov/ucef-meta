@@ -8,11 +8,19 @@ echo Rebuilding templates.
 echo =================================================
 DIR=`pwd`
 cd src/plugins/C2Federates/Templates
-node combine_templates.js
+echo "Combining scripts in $(pwd)"
+node combine_templates.js > /dev/null 2>&1
 cd $DIR
 cd src/plugins/DeploymentExporter/Templates
-node combine_templates.js
+echo "Combining scripts in $(pwd)"
+node combine_templates.js > /dev/null 2>&1
 cd $DIR
 cd src/plugins/RunFederation/Templates
-node combine_templates.js
+echo "Combining scripts in $(pwd)"
+node combine_templates.js > /dev/null 2>&1
+
+echo =================================================
+echo Templates generated.
+echo =================================================
+
 cd $DIR

@@ -1,7 +1,7 @@
 {
   "name": "c2-ng_modeler",
   "scripts": {
-    "start": "node app.js",
+    "start": "./build.sh && node app.js",
     "test": "node ./node_modules/mocha/bin/mocha --recursive test"
   },
   "version": "0.5.0",
