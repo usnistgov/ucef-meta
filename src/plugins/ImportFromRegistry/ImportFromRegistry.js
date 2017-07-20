@@ -91,11 +91,11 @@ define([
         self.rootNode = this._currentConfig['rootNode'] || self.rootNode;
         self.activeNode = this._currentConfig['activeNode'] || self.activeNode;
         self.META = this._currentConfig['META'] || self.META;
-        self.multiplier = this._currentConfig['multiplier'] || 1;
+        self.multiplier = this._currentConfig['multiplier'];
         self.container = self.activeNode;
 
-        if (self.multiplier < 1){
-            self.multiplier = 1
+        if (self.multiplier < 0){
+            self.multiplier = 0
         }
         if (self.multiplier > 100){
             self.multiplier = 100;
@@ -244,28 +244,33 @@ define([
             federateNode,
             federateNodes = [],
             baseType = 'Federate',
-            i = 1;
+            fedNameSuffix = 1,
+            loopCount = 0;
 
         if (self.object){
             // Create federate
             baseType = self.object['__FEDERATE_BASE__'] || 'Federate';
-            while (i <= self.multiplier){
-                federateNode = self.core.createNode(
-                   {parent: self.container, base:self.META[baseType]});
-                federateNodes.push(federateNode);
+            while (loopCount <= self.multiplier){
+                if (self.multiplier > 0) {
+                    federateNode = self.core.createNode(
+                       {parent: self.container, base:self.META[baseType]});
+                    federateNodes.push(federateNode);
 
-                // Add attributes
-                var attrNames = Object.keys(self.object.attributes);
-                attrNames.map(function (attrName) {
-                    var attrValue = self.object.attributes[attrName];
-                    if (attrName == 'name'){
-                        attrValue = attrValue + "_" + i;
-                    }
-                    self.core.setAttribute(
-                        federateNode,
-                        attrName,
-                        attrValue);
-                });
+                    // Add attributes
+                    var attrNames = Object.keys(self.object.attributes);
+                    attrNames.map(function (attrName) {
+                        var attrValue = self.object.attributes[attrName];
+                        if (attrName == 'name'){
+                            attrValue = attrValue + "_" + fedNameSuffix;
+                        }
+                        self.core.setAttribute(
+                            federateNode,
+                            attrName,
+                            attrValue);
+                    });
+
+                    fedNameSuffix++;
+                }
 
                 // Add new connections
                 // For now assume all the interactions are in the local context
@@ -293,7 +298,11 @@ define([
                     }
                 });
 
-                i++;
+                loopCount++;
+                // Makes right no. of loops when multiplier is 0 or > 0
+                if (loopCount == 1 && self.multiplier > 0) {
+                    loopCount++;
+                }
             }
 
 
@@ -322,14 +331,18 @@ define([
                 if (self.object.resolvedInputs[inputName].selected){
                     var interaction = self.object.resolvedInputs[inputName];
                     self.core.addMember(self.container, ccId, interaction.gmeNode);
-                    self.core.addMember(self.container, ccId, interaction.gmeConnection);
+                    if (self.multiplier > 0) {
+                        self.core.addMember(self.container, ccId, interaction.gmeConnection);
+                    }
                 }
             });
             outputNames.map(function (inputName) {
                 if (self.object.resolvedOutputs[inputName].selected){
                     var interaction = self.object.resolvedOutputs[inputName];
                     self.core.addMember(self.container, ccId, interaction.gmeNode);
-                    self.core.addMember(self.container, ccId, interaction.gmeConnection);
+                    if (self.multiplier > 0) {
+                        self.core.addMember(self.container, ccId, interaction.gmeConnection);
+                    }
                 }
             });
         }
