@@ -450,7 +450,7 @@ define([
             var FederateJsonModel = {
                 "federateRTIInitWaitTimeMs": 200,
                 "federateType": "",
-                "federationId": self.projectName,
+                "federationId": "FedManager",
                 "isLateJoiner": true,
                 "lookAhead": 0.1,
                 "stepSize": 1.0
