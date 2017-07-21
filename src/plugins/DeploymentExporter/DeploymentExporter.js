@@ -479,8 +479,8 @@ define([
                 'script': {
                     "federateRTIInitWaitTimeMs": 200,
                     "federateType": "FederationManager",
-                    "federationId": "",
-                    "isLateJoiner": false,
+                    "federationId": "FedManager",
+                    "isLateJoiner": true,
                     "lookAhead": 0.1,
                     "stepSize": 1.0,
 
@@ -498,7 +498,6 @@ define([
                 }
             };
             
-            fedmgrConfig.script.federationId = self.projectName;
             artifact.addFile('conf/fedmgrconfig.json', JSON.stringify(fedmgrConfig.script, null, 2), function (err) {
                 if (err) {
                     callback(err);
