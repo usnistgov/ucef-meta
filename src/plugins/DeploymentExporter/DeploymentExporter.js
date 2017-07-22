@@ -86,6 +86,11 @@ define([
         self.coaEdges = [];
         self.coaPaths = {};
 
+        // COAS related
+        self.coasNode = [[]];
+        self.coasPath = [];
+
+
         self.projectName = self.core.getAttribute(self.rootNode, 'name');
 
         pomModel.projectName = self.projectName;
@@ -272,6 +277,25 @@ define([
             });
 
         });
+
+        //////////////////////
+        /// COA Groups
+        //////////////////////
+
+        self.fileGenerators.push(function (artifact, callback) {
+        
+        var saveObj = {
+            "COAs":{
+
+            }
+        }
+
+        callback()
+        });
+
+
+
+
 
         self.coaConfigModel = {
             'script': {
@@ -610,6 +634,29 @@ define([
     ////////////////////////
     // COA node visitors
     ///////////////////////
+
+
+    DeploymentExporter.prototype.visit_COA = function (node, parent, context) {
+        var self = this,
+            obj = {}
+
+        //self.coasNode.push(node);
+        self.coasNode[self.core.getAttribute(node,"name")] =  self.coasNode[self.core.getAttribute(node,"name")] || []
+        self.core.getChildrenPaths(node).forEach(function(path){
+            self.coasNode[self.core.getAttribute(node,"name")].push(path)
+        });
+
+
+
+       // self.coasPath.push(self.getAttribute(self.core.node,))
+        //self.addCoaNode(node, obj);
+        return {
+            context: context
+        };
+    };
+
+
+
 
     DeploymentExporter.prototype.addCoaNode = function (node, obj) {
         var self = this;
