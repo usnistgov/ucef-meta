@@ -513,7 +513,6 @@ define([
                     "controlEndpoint": "/fedmgr",
                     "federatesEndpoint": "/federates",
 
-                    "autoStart": true,
                     "federationEndTime": 0.0,
                     "realTimeMode": true,
                     "terminateOnCOAFinish": false,
