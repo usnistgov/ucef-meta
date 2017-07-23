@@ -23,7 +23,7 @@
 		<% if(federatesByType['JavaFederate']){ federatesByType['JavaFederate'].forEach(function(fed) { %>
 		<dependency><!-- The depenency for the user written code-->
 			<groupId><%= groupId %></groupId>
-			<artifactId><%= projectName %>-<%= fed.name %></artifactId>
+			<artifactId><%= fed.name %></artifactId>
 			<version><%= projectVersion %></version>
 		</dependency>
 		<%});}%>
