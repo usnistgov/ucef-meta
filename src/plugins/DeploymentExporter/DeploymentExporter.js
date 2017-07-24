@@ -85,6 +85,8 @@ define([
         self.coaNodes = [];
         self.coaEdges = [];
         self.coaPaths = {};
+        self.coaPathNode = {}
+        self.coaPathEdge = {}
 
         // COAS related
         self.coasNode = [[]];
@@ -283,14 +285,37 @@ define([
         //////////////////////
 
         self.fileGenerators.push(function (artifact, callback) {
-        
         var saveObj = {
-            "COAs":{
+            COAs:{
 
             }
         }
+        self.coasPath.forEach(function(obj){
+            if( !saveObj.COAs.hasOwnProperty(obj))
+            {
+                saveObj.COAs[obj]={nodes:[],edges:[]}
+            }
+            console.log(obj) // path
+            self.coasNode[obj].forEach(function (nodes){
+                if(self.coaPathNode.hasOwnProperty(nodes)){
+                    saveObj.COAs[obj].nodes.push(self.coaPathNode[nodes])
+                }
+                else if(self.coaPathEdge.hasOwnProperty(nodes)){
+                    self.coaPathEdge[nodes].fromNode = self.coaPaths[self.coaPathEdge[nodes].fromNode]
+                    self.coaPathEdge[nodes].toNode = self.coaPaths[self.coaPathEdge[nodes].toNode]
+                   saveObj.COAs[obj].edges.push(self.coaPathEdge[nodes])
+                }
+            })
+        })
 
-        callback()
+        artifact.addFile('conf/' + 'NewcoaConfig.json', JSON.stringify(saveObj, null, 2), function (err) {
+            if (err) {
+                callback(err);
+                return;
+            } else {
+                callback();
+            }
+        });
         });
 
 
@@ -645,6 +670,9 @@ define([
             self.coasNode[self.core.getAttribute(node,"name")].push(path)
         });
 
+        if( !self.coasPath[self.core.getAttribute(node,"name") ])
+            self.coasPath.push(self.core.getAttribute(node,"name"))
+
 
 
        // self.coasPath.push(self.getAttribute(self.core.node,))
@@ -666,6 +694,8 @@ define([
 
         self.coaNodes.push(obj);
         self.coaPaths[self.core.getPath(node)] = self.core.getGuid(node);
+        self.coaPathNode[self.core.getPath(node)] = obj
+        //self.coaPathNode[self.core.getPath(node)] = ;
     };
 
     DeploymentExporter.prototype.visit_Action = function (node, parent, context) {
@@ -806,6 +836,9 @@ define([
         obj.toNode = self.core.getPointerPath(node, 'dst');
 
         self.coaEdges.push(obj);
+
+        self.coaPathEdge[self.core.getPath(node)] = obj;
+
     };
 
     DeploymentExporter.prototype.visit_COAFlow = function (node, parent, context) {
