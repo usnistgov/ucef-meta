@@ -127,6 +127,7 @@ public class <%= classname %> extends <%= classname %>Base {
             currentTime += super.getStepSize();
 
             atr.requestSyncStart();
+            enteredTimeGrantedState();
 <% if (publishedinteractiondata.length > 0) { -%>
 
             ////////////////////////////////////////////////////////////////////////////////////////
