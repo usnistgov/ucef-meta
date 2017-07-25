@@ -461,7 +461,7 @@ define([
                              cmb.forEach(function(a){
                                  console.log(a)
                                  var estr = a.toString();
-                                 estr = estr.replace(",","-")
+                                 estr = estr.replace(/,/g,"-")
 
                                  if(a.length != 0)
                                  {
