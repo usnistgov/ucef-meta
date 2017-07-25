@@ -415,7 +415,10 @@ define([
 
                         if (self.experimentsGuid.hasOwnProperty(objPath)) {
                             var coa_selection_name=[]
+                            var required_coa_selection_name=[]
+
                             var coa_selection_nodes= [[]]
+
 
                             self.experimentsGuid[objPath].forEach(function (coagroup) {
                                     //console.log("SelectAllCOAsInEachRun:",coagroup.SelectAllCOAsInEachRun)
@@ -443,7 +446,8 @@ define([
                                           //  console.log("   coaNode:", coanode.name)
                                            // console.log("   coaID:", coanode.guid)
                                         })
-                                        coa_selection_name.push(array.SelectionName)
+                                        // coa_selection_name.push(array.SelectionName)
+                                        required_coa_selection_name.push(array.SelectionName)
                                         coa_selection_nodes[array.SelectionName] = coa_selection_nodes[array.SelectionName] || []
                                         coa_selection_nodes[array.SelectionName] = array.coaNodes
                                     }
@@ -456,28 +460,57 @@ define([
                                     }
                                 })
                             var cmb, a;
-                             cmb = combinations.power(coa_selection_name);
 
-                             cmb.forEach(function(a){
-                                 console.log(a)
-                                 var estr = a.toString();
-                                 estr = estr.replace(/,/g,"-")
+                            if(coa_selection_name.length!=0){
+                                cmb = combinations.power(coa_selection_name);
 
-                                 if(a.length != 0)
-                                 {
-                                     experimentmodel.exptConfig.coaselection[estr] = experimentmodel.exptConfig.coaselection[estr] || []
-                                     a.forEach(function(element){
-                                         if(a!="" || a!=0)
-                                         {
-                                             experimentmodel.exptConfig.coaselection[estr].push(coa_selection_nodes[element])
-                                             console.log(coa_selection_nodes[element])
+                                cmb.forEach(function(a){
+                                    console.log(a)
+                                    if(required_coa_selection_name.length!=0)
+                                    {
+                                        var estr = a.toString()+"-"+required_coa_selection_name.toString()
 
-                                         }
-                                     });
-                                 }
+                                    }
+                                    else {
+                                        var estr = a.toString()
 
-                                 
-                             });
+                                    }
+                                    estr = estr.replace(/,/g,"-")
+
+                                    if(a.length != 0)
+                                    {
+                                        experimentmodel.exptConfig.coaselection[estr] = experimentmodel.exptConfig.coaselection[estr] || []
+                                        if(required_coa_selection_name.length!=0)
+                                        {experimentmodel.exptConfig.coaselection[estr].push(coa_selection_nodes[required_coa_selection_name])}
+
+                                        a.forEach(function(element){
+                                            if(a!="" || a!=0)
+                                            {
+                                                experimentmodel.exptConfig.coaselection[estr].push(coa_selection_nodes[element])
+
+                                                console.log(coa_selection_nodes[element])
+
+                                            }
+                                        });
+                                    }
+
+
+                                });
+                            }
+                            else{
+                                var estr = required_coa_selection_name.toString()
+                                estr = estr.replace(/,/g,"-")
+                                experimentmodel.exptConfig.coaselection[estr] = experimentmodel.exptConfig.coaselection[estr] || []
+                                //experimentmodel.exptConfig.coaselection[estr].push(coa_selection_nodes[required_coa_selection_name])
+                                required_coa_selection_name.forEach(function(element){
+                                    if(element!=0 || element!=null){
+                                        experimentmodel.exptConfig.coaselection[estr].push(coa_selection_nodes[element])
+
+                                    }
+                                })
+
+                            }
+
 
                         }
 
