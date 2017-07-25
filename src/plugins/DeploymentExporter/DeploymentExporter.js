@@ -407,51 +407,77 @@ define([
                             exptConfig: {
                                 'federateTypesAllowed': [],
                                 'expectedFederates': [],
-                                'lateJoinerFederates': []
+                                'lateJoinerFederates': [],
+                                'coaselection':{}
 
                             }
                         }
 
                         if (self.experimentsGuid.hasOwnProperty(objPath)) {
-//                            var cmb, a;
-//                             cmb = combinations.power(['a','b','c']);
-//                             cmb.forEach(function(a){ console.log(a) });
-//                             console.log("this experiment has a coaGroup")
+                            var coa_selection_name=[]
+                            var coa_selection_nodes= [[]]
 
-                                self.experimentsGuid[objPath].forEach(function (coagroup) {
+                            self.experimentsGuid[objPath].forEach(function (coagroup) {
                                     //console.log("SelectAllCOAsInEachRun:",coagroup.SelectAllCOAsInEachRun)
 
-                                    console.log("==>coaGroup", coagroup.name)
-                                    console.log("   coaGroupID:", coagroup.guid)
-                                    console.log("   SelectALl?:",coagroup.SelectAllCOAsInEachRun)
+//                                     console.log("==>coaGroup", coagroup.name)
+//                                     console.log("   coaGroupID:", coagroup.guid)
+//                                     console.log("   SelectALl?:",coagroup.SelectAllCOAsInEachRun)
                                      var array = {
                                             SelectionName:"",
                                             SelectionID:"",
                                             coaNodes:[]
                                      }
-
                                     if(coagroup.SelectAllCOAsInEachRun===true){
                                        
                                         self.coaGroupNodes[coagroup.guid].forEach(function (coanode) {
+
                                             if(array.SelectionName.length!=0)
                                                 array.SelectionName=array.SelectionName+"-"+coanode.name;
                                             else{
                                                 array.SelectionName=coanode.name;
 
-                                            }    
+                                            }
+
                                             array.coaNodes.push({Name:coanode.name, ID:coanode.guid})
                                           //  console.log("   coaNode:", coanode.name)
                                            // console.log("   coaID:", coanode.guid)
                                         })
-
+                                        coa_selection_name.push(array.SelectionName)
+                                        coa_selection_nodes[array.SelectionName] = coa_selection_nodes[array.SelectionName] || []
+                                        coa_selection_nodes[array.SelectionName] = array.coaNodes
                                     }
-                                    console.log(array)
-
-                                    // self.coaGroupNodes[coagroup.guid].forEach(function (coanode) {
-                                    //     console.log("   coaNode:", coanode.name)
-                                    //     console.log("   coaID:", coanode.guid)
-                                    // })
+                                    else{
+                                        self.coaGroupNodes[coagroup.guid].forEach(function (coanode) {
+                                            coa_selection_name.push(coanode.name)
+                                            coa_selection_nodes[coanode.name] = coa_selection_nodes[coanode.name] || []
+                                            coa_selection_nodes[coanode.name].push({Name:coanode.name, ID: coanode.guid})
+                                        })
+                                    }
                                 })
+                            var cmb, a;
+                             cmb = combinations.power(coa_selection_name);
+
+                             cmb.forEach(function(a){
+                                 console.log(a)
+                                 var estr = a.toString();
+                                 estr = estr.replace(",","-")
+
+                                 if(a.length != 0)
+                                 {
+                                     experimentmodel.exptConfig.coaselection[estr] = experimentmodel.exptConfig.coaselection[estr] || []
+                                     a.forEach(function(element){
+                                         if(a!="" || a!=0)
+                                         {
+                                             experimentmodel.exptConfig.coaselection[estr].push(coa_selection_nodes[element])
+                                             console.log(coa_selection_nodes[element])
+
+                                         }
+                                     });
+                                 }
+
+                                 
+                             });
 
                         }
 
