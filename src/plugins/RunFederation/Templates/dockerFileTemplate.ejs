@@ -2,6 +2,7 @@
 services: 
   fedManager:
     build: .
+    tty: true
     image: "cpswt/c2wtcore_v002:170626"
     command: "sh start.sh FedManager"
     sysctls:

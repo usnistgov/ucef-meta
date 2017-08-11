@@ -485,7 +485,7 @@ define([
                     "lookAhead": 0.1,
                     "stepSize": 1.0,
 
-                    "bindHost": "127.0.0.1",
+                    "bindHost": "0.0.0.0",
                     "port": 8083,
                     "controlEndpoint": "/fedmgr",
                     "federatesEndpoint": "/federates",
