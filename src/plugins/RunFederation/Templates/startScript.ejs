@@ -56,5 +56,5 @@ else
   #mvn package exec:exec -P $1  2>&1 | tee -a /root/Projects/c2wt/logs/log.txt
   waitforfedmgrRESTup
   initializefedmgr
-  mvn exec:exec -P $1  2>&1 | tee -a /root/Projects/c2wt/logs/log.txt
+  mvn exec:java -P $1  2>&1 | tee -a /root/Projects/c2wt/logs/log.txt
 fi
