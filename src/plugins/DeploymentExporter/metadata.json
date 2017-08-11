@@ -67,7 +67,20 @@
         "value": "2.1.0",
         "valueType": "string",
         "readOnly": true  
+    },
+    {
+        "name": "bindAddress",
+        "displayName": "RTI BindAddress",
+        "description": "Bind Address to associate for the Federation",
+        "value": "SITE_LOCAL",
+        "valueType": "string",
+        "valueItems":[
+         "GLOBAL",
+         "SITE_LOCAL",
+        "LINK_LOCAL",
+        "NON_LOOPBACK",
+        "LOOPBACK"],
+        "readOnly": false
     }
-
   ]
 }

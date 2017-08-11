@@ -117,7 +117,7 @@ define([
 	self.modelName = self.core.getAttribute(modelNode, 'name');
 
 	self.dockerInfoMap = {
-	    'JavaFed': {
+	    'ExecJava': {
 		'name': 'cpswt/c2wtcore_v002',
 		'tag': '170626'
 	    },
@@ -183,7 +183,7 @@ define([
 	    self.federationModel.JavaFederate_list.map((fed) => {
 		self.fedInfos.push({
 		    name: fed.name,
-		    type: 'JavaFed'
+		    type: 'ExecJava'
 		});
 	    });
 	}
@@ -196,6 +196,7 @@ define([
 		});
 	    });
 	}
+	console.log(self.fedInfos)
 
 	self.dockerFileData = ejs.render(
 	    TEMPLATES['dockerFileTemplate.ejs'],

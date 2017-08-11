@@ -17,7 +17,7 @@ fedInfos.map(function(fedInfo) {
   <%- fedInfo.type %>_<%- fedInfo.name %>:
     build: .
     image: "<%- dockerInfoMap[fedInfo.type].name %>:<%- dockerInfoMap[fedInfo.type].tag %>"
-    command: "sh start.sh <%- fedInfo.type %>,<%- fedInfo.name %>" 
+    command: "sh start.sh <%- fedInfo.name %>,<%- fedInfo.type %>" 
     sysctls:
       - net.ipv6.conf.all.disable_ipv6=1
     extra_hosts:

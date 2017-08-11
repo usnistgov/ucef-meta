@@ -87,6 +87,7 @@ define([
         self.coaPaths = {};
 
         self.projectName = self.core.getAttribute(self.rootNode, 'name');
+        self.bindAddress = self.getCurrentConfig().bindAddress.trim();
 
         pomModel.projectName = self.projectName;
         pomModel.groupId = self.getCurrentConfig().groupId.trim();
@@ -397,7 +398,7 @@ define([
 
         //Add default RID file
         self.fileGenerators.push(function(artifact, callback){
-           artifact.addFile('RTI.rid', ejs.render(TEMPLATES['rti.rid.ejs'], {}) , function (err) {
+           artifact.addFile('RTI.rid', ejs.render(TEMPLATES['rti.rid.ejs'], self) , function (err) {
                 if (err) {
                     callback(err);
                     return;
