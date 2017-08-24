@@ -37,7 +37,9 @@ define([
                 'MediumPrio': coreNamespace,
                 'LowPrio': coreNamespace,
                 'VeryLowPrio': coreNamespace,
-                'FederateObject': coreNamespace
+                'FederateObject': coreNamespace,
+                'FederateResignInteraction':coreNamespace,
+                'FederateJoinInteraction':coreNamespace
             };
 
             var renderToFile = function(outFilePath, isinteraction, model, artifact, callback){
