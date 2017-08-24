@@ -428,11 +428,11 @@ define([
                 self.experimentModel.script.federateTypesAllowed.push(fed.name)
                 self.experimentModel.script.expectedFederates.push({
                     "federateType": fed.name,
-                    "count": 0
+                    "count": 1
                 });
                 self.experimentModel.script.lateJoinerFederates.push({
                     "federateType": fed.name,
-                    "count": 1
+                    "count": 0
                 });
             });
             artifact.addFile('conf/' + 'experimentConfig.json', JSON.stringify(self.experimentModel.script, null, 2), function (err) {
@@ -451,8 +451,8 @@ define([
             var FederateJsonModel = {
                 "federateRTIInitWaitTimeMs": 200,
                 "federateType": "",
-                "federationId": "FedManager",
-                "isLateJoiner": true,
+                "federationId": self.projectName,
+                "isLateJoiner": false,
                 "lookAhead": 0.1,
                 "stepSize": 1.0
             }
@@ -480,7 +480,7 @@ define([
                 'script': {
                     "federateRTIInitWaitTimeMs": 200,
                     "federateType": "FederationManager",
-                    "federationId": "FedManager",
+                    "federationId": self.projectName,
                     "isLateJoiner": true,
                     "lookAhead": 0.1,
                     "stepSize": 1.0,
