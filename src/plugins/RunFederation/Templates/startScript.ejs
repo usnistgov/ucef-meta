@@ -56,5 +56,10 @@ else
   #mvn package exec:exec -P $1  2>&1 | tee -a /root/Projects/c2wt/logs/log.txt
   waitforfedmgrRESTup
   initializefedmgr
-  mvn exec:java -P $1  2>&1 | tee -a /root/Projects/c2wt/logs/log.txt
+  if echo $1 | grep "ExecJava"
+  then
+      mvn exec:java -P $1  2>&1 | tee -a /root/Projects/c2wt/logs/log.txt
+  else
+      mvn package exec:exec -P $1  2>&1 | tee -a /root/Projects/c2wt/logs/log.txt
+  fi
 fi
