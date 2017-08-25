@@ -87,6 +87,7 @@ define([
         self.coaPaths = {};
 
         self.projectName = self.core.getAttribute(self.rootNode, 'name');
+        self.bindAddress = self.getCurrentConfig().bindAddress.trim();
 
         pomModel.projectName = self.projectName;
         pomModel.groupId = self.getCurrentConfig().groupId.trim();
@@ -397,7 +398,7 @@ define([
 
         //Add default RID file
         self.fileGenerators.push(function(artifact, callback){
-           artifact.addFile('RTI.rid', ejs.render(TEMPLATES['rti.rid.ejs'], {}) , function (err) {
+           artifact.addFile('RTI.rid', ejs.render(TEMPLATES['rti.rid.ejs'], self) , function (err) {
                 if (err) {
                     callback(err);
                     return;
@@ -427,11 +428,11 @@ define([
                 self.experimentModel.script.federateTypesAllowed.push(fed.name)
                 self.experimentModel.script.expectedFederates.push({
                     "federateType": fed.name,
-                    "count": 0
+                    "count": 1
                 });
                 self.experimentModel.script.lateJoinerFederates.push({
                     "federateType": fed.name,
-                    "count": 1
+                    "count": 0
                 });
             });
             artifact.addFile('conf/' + 'experimentConfig.json', JSON.stringify(self.experimentModel.script, null, 2), function (err) {
@@ -450,8 +451,8 @@ define([
             var FederateJsonModel = {
                 "federateRTIInitWaitTimeMs": 200,
                 "federateType": "",
-                "federationId": "FedManager",
-                "isLateJoiner": true,
+                "federationId": self.projectName,
+                "isLateJoiner": false,
                 "lookAhead": 0.1,
                 "stepSize": 1.0
             }
@@ -479,12 +480,12 @@ define([
                 'script': {
                     "federateRTIInitWaitTimeMs": 200,
                     "federateType": "FederationManager",
-                    "federationId": "FedManager",
+                    "federationId": self.projectName,
                     "isLateJoiner": true,
                     "lookAhead": 0.1,
                     "stepSize": 1.0,
 
-                    "bindHost": "127.0.0.1",
+                    "bindHost": "0.0.0.0",
                     "port": 8083,
                     "controlEndpoint": "/fedmgr",
                     "federatesEndpoint": "/federates",

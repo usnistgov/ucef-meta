@@ -39,7 +39,7 @@
         "name": "cpswtVersion",
         "displayName": "C2W version",
         "description": "The version of the C2W foundation to be used",
-        "value": "0.5.0-SNAPSHOT",
+        "value": "0.6.0-SNAPSHOT",
         "valueType": "string",
         "readOnly": false
     },
@@ -67,7 +67,20 @@
         "value": "2.1.0",
         "valueType": "string",
         "readOnly": true  
+    },
+    {
+        "name": "bindAddress",
+        "displayName": "RTI BindAddress",
+        "description": "Bind Address to associate for the Federation",
+        "value": "SITE_LOCAL",
+        "valueType": "string",
+        "valueItems":[
+         "GLOBAL",
+         "SITE_LOCAL",
+        "LINK_LOCAL",
+        "NON_LOOPBACK",
+        "LOOPBACK"],
+        "readOnly": false
     }
-
   ]
 }
