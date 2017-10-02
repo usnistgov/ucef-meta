@@ -387,9 +387,8 @@
 							<workingDirectory>${project.basedir}/target/bin-exec</workingDirectory>
               				<executable>./<%= projectName %>-${federate.name}-cpp</executable>
 							<arguments>
-								<argument>${federation.name}</argument>
-					            <argument>${federate.name}</argument>
-					            <argument>${federate.loglevel}</argument>
+								 <argument>--configFile</argument>
+                                <argument>${project.basedir}/${federate.configFile}</argument>
 					    	</arguments>
 					    	<environmentVariables>
 			                    <EXEDIR>${project.basedir}/target/${federate.name}</EXEDIR>
