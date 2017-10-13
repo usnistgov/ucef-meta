@@ -331,7 +331,7 @@ define([
                 })
             })
 
-            artifact.addFile('conf/' + 'NewcoaConfig.json', JSON.stringify(saveObj, null, 2), function (err) {
+            artifact.addFile('conf/' + 'NewcoaConfig.json', JSON.stringify(saveObj.COAs, null, 2), function (err) {
                 if (err) {
                     callback(err);
                     return;
