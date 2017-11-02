@@ -14,16 +14,16 @@ define([
     'DeploymentExporter/Templates/Templates',
     'FederatesExporter/RTIVisitors',
     'FederatesExporter/PubSubVisitors',
-], function (
-    pluginMetadata,
-    PluginBase,
-    ejs,
-    JSON2XMLConverter,
-    ModelTraverserMixin,
-    TEMPLATES,
-    RTIVisitors,
-    PubSubVisitors
-) {
+    'combinatorics/combinatorics'
+], function (pluginMetadata,
+             PluginBase,
+             ejs,
+             JSON2XMLConverter,
+             ModelTraverserMixin,
+             TEMPLATES,
+             RTIVisitors,
+             PubSubVisitors,
+             combinations) {
     'use strict';
 
     pluginMetadata = JSON.parse(pluginMetadata);
@@ -77,14 +77,27 @@ define([
         self.attributes = {};
 
         // Experiment Related
-        self.experimentModelConfig =[[]]
-        self.experimentPaths= []
+        self.experimentModelConfig = [[]]
+        self.experimentPaths = []
 
 
         // COA related
         self.coaNodes = [];
         self.coaEdges = [];
         self.coaPaths = {};
+        self.coaPathNode = {}
+        self.coaPathEdge = {}
+
+        // COAS related
+        self.coasNode = [[]];
+        self.coasPath = [];
+
+        // COA Sequence
+        self.coaSequenceGroup = [[]]
+        self.coaGroupNodes = []
+
+        self.experimentsGuid = [[]]
+
 
         self.projectName = self.core.getAttribute(self.rootNode, 'name');
         self.bindAddress = self.getCurrentConfig().bindAddress.trim();
@@ -178,78 +191,76 @@ define([
         });
 
         //Add fom.xml generator
-        self.fileGenerators.push(function(artifact, callback){
-            
-            var interactionTraverser = function(interaction){
+        self.fileGenerators.push(function (artifact, callback) {
+
+            var interactionTraverser = function (interaction) {
                 var intModel = {
-                    interaction:interaction,
-                    parameters:interaction.parameters,
-                    children:[]
+                    interaction: interaction,
+                    parameters: interaction.parameters,
+                    children: []
                 };
-                if(interaction.name === "InteractionRoot" ||interaction.name==="C2WInteractionRoot"){
+                if (interaction.name === "InteractionRoot" || interaction.name === "C2WInteractionRoot") {
                     interaction.sharing = "Neither"
-                }else{
+                } else {
                     interaction.sharing = "PublishSubscribe"
                 }
-                if(interaction.delivery==="reliable") {
+                if (interaction.delivery === "reliable") {
                     interaction.delivery = "HLAreliable"
                 }
                 else {
-                    interaction.delivery="HLAbestEffort"
+                    interaction.delivery = "HLAbestEffort"
                 }
 
-                if(interaction.order==="timestamp")
-                {
-                    interaction.order="TimeStamp"
-                }else{
-                    interaction.order="Receive"
+                if (interaction.order === "timestamp") {
+                    interaction.order = "TimeStamp"
+                } else {
+                    interaction.order = "Receive"
                 }
 
 
-                interaction.children.forEach(function(child){
+                interaction.children.forEach(function (child) {
                     intModel.children.push(interactionTraverser(child));
                 });
                 return ejs.render(TEMPLATES["fedfile_siminteraction_xml.ejs"], intModel);
             }
 
             self.fomModel.interactions_xml = [];
-            self.interactionRoots.forEach(function(inta){
+            self.interactionRoots.forEach(function (inta) {
                 self.fomModel.interactions_xml.push(interactionTraverser(inta));
             });
-            
 
-            var objectTraverser_xml = function(object){
+
+            var objectTraverser_xml = function (object) {
                 var objModel = {
-                    name:object.name,
-                    attributes:object.attributes,
-                    children:[],
-                    sharing:"",
-                    semantics:""
+                    name: object.name,
+                    attributes: object.attributes,
+                    children: [],
+                    sharing: "",
+                    semantics: ""
                 };
 
-                if(object.name === "ObjectRoot" ){
+                if (object.name === "ObjectRoot") {
                     objModel.sharing = "Neither"
-                }else{
+                } else {
                     objModel.sharing = "PublishSubscribe"
                 }
-                objModel.attributes.forEach(function(attr){
-                    if(attr.delivery==="reliable") {
+                objModel.attributes.forEach(function (attr) {
+                    if (attr.delivery === "reliable") {
                         attr.delivery = "HLAreliable"
                     }
                     else {
-                        attr.delivery="HLAbestEffort"
+                        attr.delivery = "HLAbestEffort"
                     }
 
-                    if(attr.order==="timestamp")
-                    {
-                        attr.order="TimeStamp"
-                    }else{
-                        attr.order="Receive"
+                    if (attr.order === "timestamp") {
+                        attr.order = "TimeStamp"
+                    } else {
+                        attr.order = "Receive"
                     }
                 })
 
 
-                object.children.forEach(function(child){
+                object.children.forEach(function (child) {
                     objModel.children.push(objectTraverser_xml(child));
                 });
                 return ejs.render(TEMPLATES["fedfile_simobject_xml.ejs"], objModel);
@@ -257,22 +268,80 @@ define([
 
             self.fomModel.objects_xml = [];
 
-            self.objectRoots.forEach(function(obj){
+            self.objectRoots.forEach(function (obj) {
                 self.fomModel.objects_xml.push(objectTraverser_xml(obj));
             })
-
 
 
             artifact.addFile('fom/' + self.projectName + '.xml', ejs.render(TEMPLATES['fedfile.xml.ejs'], self.fomModel), function (err) {
                 if (err) {
                     callback(err);
                     return;
-                }else{
+                } else {
                     callback();
                 }
             });
 
         });
+
+
+        self.fileGenerators.push(function (artifact, callback) {
+
+            Object.keys(self.experimentsGuid).forEach(function (key) {
+                //console.log("value",self.experimentsGuid[key])
+                console.log("## Experiment:", key)
+                self.experimentsGuid[key].forEach(function (coagroup) {
+                    //console.log("SelectAllCOAsInEachRun:",coagroup.SelectAllCOAsInEachRun)
+                    console.log("==>coaGroup", coagroup.name)
+                    console.log("   coaGroupID:", coagroup.guid)
+
+
+                    self.coaGroupNodes[coagroup.guid].forEach(function (coanode) {
+                        console.log("   coaNode:", coanode.name)
+                        console.log("   coaID:", coanode.guid)
+                    })
+                })
+            });
+
+            callback()
+        })
+
+
+        //////////////////////
+        /// COA Groups
+        //////////////////////
+
+        self.fileGenerators.push(function (artifact, callback) {
+            var saveObj = {
+                COAs: {}
+            }
+            self.coasPath.forEach(function (obj) {
+                if (!saveObj.COAs.hasOwnProperty(obj)) {
+                    saveObj.COAs[obj] = {nodes: [], edges: []}
+                }
+                console.log(obj) // path
+                self.coasNode[obj].forEach(function (nodes) {
+                    if (self.coaPathNode.hasOwnProperty(nodes)) {
+                        saveObj.COAs[obj].nodes.push(self.coaPathNode[nodes])
+                    }
+                    else if (self.coaPathEdge.hasOwnProperty(nodes)) {
+                        self.coaPathEdge[nodes].fromNode = self.coaPaths[self.coaPathEdge[nodes].fromNode]
+                        self.coaPathEdge[nodes].toNode = self.coaPaths[self.coaPathEdge[nodes].toNode]
+                        saveObj.COAs[obj].edges.push(self.coaPathEdge[nodes])
+                    }
+                })
+            })
+
+            artifact.addFile('conf/' + 'NewcoaConfig.json', JSON.stringify(saveObj.COAs, null, 2), function (err) {
+                if (err) {
+                    callback(err);
+                    return;
+                } else {
+                    callback();
+                }
+            });
+        });
+
 
         self.coaConfigModel = {
             'script': {
@@ -307,13 +376,13 @@ define([
             });
 
             /*artifact.addFile('src/experiments/' + 'default' + '/' + 'script.xml', self._jsonToXml.convertToString( self.coaConfigModel ) , function (err) {
-                if (err) {
-                    callback(err);
-                    return;
-                }else{
-                    callback();
-                }
-            });*/
+             if (err) {
+             callback(err);
+             return;
+             }else{
+             callback();
+             }
+             });*/
             artifact.addFile('conf/' + 'coaConfig.json', JSON.stringify(self.coaConfigModel, null, 2), function (err) {
                 if (err) {
                     callback(err);
@@ -330,7 +399,7 @@ define([
         self.fileGenerators.push(function (artifact, callback) {
             var response = []
 
-            if(self.experimentPaths.length !=0 ){
+            if (self.experimentPaths.length != 0) {
                 self.experimentPaths.forEach(function (objPath) {
 
                         var experimentmodel = {
@@ -339,10 +408,113 @@ define([
                             exptConfig: {
                                 'federateTypesAllowed': [],
                                 'expectedFederates': [],
-                                'lateJoinerFederates': []
+                                'lateJoinerFederates': [],
+                                'coaselection':{}
 
                             }
                         }
+
+                        if (self.experimentsGuid.hasOwnProperty(objPath)) {
+                            var coa_selection_name=[]
+                            var required_coa_selection_name=[]
+
+                            var coa_selection_nodes= [[]]
+
+
+                            self.experimentsGuid[objPath].forEach(function (coagroup) {
+                                    //console.log("SelectAllCOAsInEachRun:",coagroup.SelectAllCOAsInEachRun)
+
+//                                     console.log("==>coaGroup", coagroup.name)
+//                                     console.log("   coaGroupID:", coagroup.guid)
+//                                     console.log("   SelectALl?:",coagroup.SelectAllCOAsInEachRun)
+                                     var array = {
+                                            SelectionName:"",
+                                            SelectionID:"",
+                                            coaNodes:[]
+                                     }
+                                    if(coagroup.SelectAllCOAsInEachRun===true){
+                                       
+                                        self.coaGroupNodes[coagroup.guid].forEach(function (coanode) {
+
+                                            if(array.SelectionName.length!=0)
+                                                array.SelectionName=array.SelectionName+"-"+coanode.name;
+                                            else{
+                                                array.SelectionName=coanode.name;
+
+                                            }
+
+                                            array.coaNodes.push({Name:coanode.name, ID:coanode.guid})
+                                          //  console.log("   coaNode:", coanode.name)
+                                           // console.log("   coaID:", coanode.guid)
+                                        })
+                                        // coa_selection_name.push(array.SelectionName)
+                                        required_coa_selection_name.push(array.SelectionName)
+                                        coa_selection_nodes[array.SelectionName] = coa_selection_nodes[array.SelectionName] || []
+                                        coa_selection_nodes[array.SelectionName] = array.coaNodes
+                                    }
+                                    else{
+                                        self.coaGroupNodes[coagroup.guid].forEach(function (coanode) {
+                                            coa_selection_name.push(coanode.name)
+                                            coa_selection_nodes[coanode.name] = coa_selection_nodes[coanode.name] || []
+                                            coa_selection_nodes[coanode.name].push({Name:coanode.name, ID: coanode.guid})
+                                        })
+                                    }
+                                })
+                            var cmb, a;
+
+                            if(coa_selection_name.length!=0){
+                                cmb = combinations.power(coa_selection_name);
+
+                                cmb.forEach(function(a){
+                                    console.log(a)
+                                    if(required_coa_selection_name.length!=0)
+                                    {
+                                        var estr = a.toString()+"-"+required_coa_selection_name.toString()
+
+                                    }
+                                    else {
+                                        var estr = a.toString()
+
+                                    }
+                                    estr = estr.replace(/,/g,"-")
+
+                                    if(a.length != 0)
+                                    {
+                                        experimentmodel.exptConfig.coaselection[estr] = experimentmodel.exptConfig.coaselection[estr] || []
+                                        if(required_coa_selection_name.length!=0)
+                                        {experimentmodel.exptConfig.coaselection[estr].push(coa_selection_nodes[required_coa_selection_name])}
+
+                                        a.forEach(function(element){
+                                            if(a!="" || a!=0)
+                                            {
+                                                experimentmodel.exptConfig.coaselection[estr].push(coa_selection_nodes[element])
+
+                                                console.log(coa_selection_nodes[element])
+
+                                            }
+                                        });
+                                    }
+
+
+                                });
+                            }
+                            else{
+                                var estr = required_coa_selection_name.toString()
+                                estr = estr.replace(/,/g,"-")
+                                experimentmodel.exptConfig.coaselection[estr] = experimentmodel.exptConfig.coaselection[estr] || []
+                                //experimentmodel.exptConfig.coaselection[estr].push(coa_selection_nodes[required_coa_selection_name])
+                                required_coa_selection_name.forEach(function(element){
+                                    if(element!=0 || element!=null){
+                                        experimentmodel.exptConfig.coaselection[estr].push(coa_selection_nodes[element])
+
+                                    }
+                                })
+
+                            }
+
+
+                        }
+
 
                         self.experimentModelConfig[objPath].forEach(function (expSet) {
 
@@ -397,22 +569,27 @@ define([
         };
 
         //Add default RID file
+//<<<<<<< cpp_json
         self.fileGenerators.push(function(artifact, callback){
            artifact.addFile('RTI.rid', ejs.render(TEMPLATES['rti.rid.ejs'], self) , function (err) {
+//=======
+        //self.fileGenerators.push(function (artifact, callback) {
+          //  artifact.addFile('RTI.rid', ejs.render(TEMPLATES['rti.rid.ejs'], {}), function (err) {
+//>>>>>>> coa-group-config
                 if (err) {
                     callback(err);
                     return;
-                }else{
+                } else {
                     callback();
                 }
             });
         });
 
-            //Add impl log config from template
+        //Add impl log config from template
         self.fileGenerators.push(function (artifact, callback) {
-        var java_implLog = {};
-        java_implLog.projectName = self.projectName;
-                artifact.addFile('conf/' + 'log4j2.xml', ejs.render(TEMPLATES['log4j2.xml.ejs'], self), function (err) {
+            var java_implLog = {};
+            java_implLog.projectName = self.projectName;
+            artifact.addFile('conf/' + 'log4j2.xml', ejs.render(TEMPLATES['log4j2.xml.ejs'], self), function (err) {
                 if (err) {
                     callback(err);
                     return;
@@ -493,11 +670,11 @@ define([
                     "federationEndTime": 0.0,
                     "realTimeMode": true,
                     "terminateOnCOAFinish": false,
-                    "fedFile": "fom/" +self.projectName + '.fed',
+                    "fedFile": "fom/" + self.projectName + '.fed',
                     "experimentConfig": "conf/experimentConfig.json"
                 }
             };
-            
+
             artifact.addFile('conf/fedmgrconfig.json', JSON.stringify(fedmgrConfig.script, null, 2), function (err) {
                 if (err) {
                     callback(err);
@@ -557,7 +734,8 @@ define([
                                 'onclick="window.open(' + buildURL + ', \'Build System\'); return false;">Build artifact..</a>';
                             self.createMessage(null, artifactMsg);
 
-                        };
+                        }
+                        ;
 
 
                         // This will save the changes. If you don't want to save;
@@ -590,15 +768,16 @@ define([
     };
 
 
-    DeploymentExporter.prototype.visit_FederateExecution = function (node, parent, context){
+    DeploymentExporter.prototype.visit_FederateExecution = function (node, parent, context) {
 
         var self = this;
 
-        if(self.experimentPaths.indexOf(self.core.getPath(parent)) === -1){
-            self.experimentPaths.push(self.core.getPath(parent))
+        if (self.experimentPaths.indexOf(self.core.getGuid(parent)) === -1) {
+            self.experimentPaths.push(self.core.getGuid(parent))
         }
-        self.experimentModelConfig[self.core.getPath(parent)] = self.experimentModelConfig[self.core.getPath(parent)] || []
-        self.experimentModelConfig[self.core.getPath(parent)].push(node)
+        self.experimentModelConfig[self.core.getGuid(parent)] = self.experimentModelConfig[self.core.getGuid(parent)] || []
+        self.experimentModelConfig[self.core.getGuid(parent)].push(node)
+
 
         return {
             context: context
@@ -606,10 +785,79 @@ define([
 
     }
 
+    /////////////////////////
+    // COA Sequence Visitors
+    /////////////////////////
+    DeploymentExporter.prototype.visit_COARef = function (node, parent, context) {
+        var self = this,
+            obj = {}
+
+        self.core.loadPointer(node, "ref", function (err, result) {
+            if (err) {
+                console.log("error", err)
+            }
+            else {
+                obj.guid = self.core.getGuid(result)
+                obj.name = self.core.getAttribute(result, "name")
+                self.coaGroupNodes[self.core.getGuid(parent)] = self.coaGroupNodes[self.core.getGuid(parent)] || []
+                self.coaGroupNodes[self.core.getGuid(parent)].push(obj)
+            }
+        })
+
+        return {
+            context: context
+        };
+    };
+
+
+    DeploymentExporter.prototype.visit_COASequencesGroup = function (node, parent, context) {
+        var self = this,
+            obj = {}
+
+        obj.guid = self.core.getGuid(node)
+        obj.name = self.core.getAttribute(node, "name")
+        obj.SelectAllCOAsInEachRun = self.core.getAttribute(node, "SelectAllCOAsInEachRun")
+        obj.experiment = self.core.getAttribute(parent, "name")
+
+        self.coaSequenceGroup[obj.guid] = self.coaSequenceGroup[obj.guid] || []
+        self.coaSequenceGroup[obj.guid] = obj
+
+        var parentGuid = self.core.getGuid(parent)
+
+        self.experimentsGuid[parentGuid] = self.experimentsGuid[parentGuid] || []
+        self.experimentsGuid[parentGuid].push(obj)
+
+
+        return {
+            context: context
+        };
+    };
+
 
     ////////////////////////
     // COA node visitors
     ///////////////////////
+    DeploymentExporter.prototype.visit_COA = function (node, parent, context) {
+        var self = this,
+            obj = {}
+
+        //self.coasNode.push(node);
+        self.coasNode[self.core.getAttribute(node, "name")] = self.coasNode[self.core.getAttribute(node, "name")] || []
+        self.core.getChildrenPaths(node).forEach(function (path) {
+            self.coasNode[self.core.getAttribute(node, "name")].push(path)
+        });
+
+        if (!self.coasPath[self.core.getAttribute(node, "name")])
+            self.coasPath.push(self.core.getAttribute(node, "name"))
+
+
+        // self.coasPath.push(self.getAttribute(self.core.node,))
+        //self.addCoaNode(node, obj);
+        return {
+            context: context
+        };
+    };
+
 
     DeploymentExporter.prototype.addCoaNode = function (node, obj) {
         var self = this;
@@ -620,6 +868,8 @@ define([
 
         self.coaNodes.push(obj);
         self.coaPaths[self.core.getPath(node)] = self.core.getGuid(node);
+        self.coaPathNode[self.core.getPath(node)] = obj
+        //self.coaPathNode[self.core.getPath(node)] = ;
     };
 
     DeploymentExporter.prototype.visit_Action = function (node, parent, context) {
@@ -747,8 +997,6 @@ define([
     };
 
 
-
-
     DeploymentExporter.prototype.addCoaEdge = function (node, obj) {
         var self = this;
 
@@ -760,6 +1008,9 @@ define([
         obj.toNode = self.core.getPointerPath(node, 'dst');
 
         self.coaEdges.push(obj);
+
+        self.coaPathEdge[self.core.getPath(node)] = obj;
+
     };
 
     DeploymentExporter.prototype.visit_COAFlow = function (node, parent, context) {
