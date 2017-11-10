@@ -393,6 +393,7 @@ define([
             });
         });
 
+
         //////////////////
         // New Experiment Config
         /////////////////
@@ -409,10 +410,13 @@ define([
                                 'federateTypesAllowed': [],
                                 'expectedFederates': [],
                                 'lateJoinerFederates': [],
-                                'coaselection':{}
-
+                                "coaDefinition": 'conf/' + 'NewcoaConfig.json',
+                                'coaSelection':'',
+                                "terminateOnCOAFinish": false
                             }
                         }
+
+                        var experimentmodelcoaselection = {}    
 
                         if (self.experimentsGuid.hasOwnProperty(objPath)) {
                             var coa_selection_name=[]
@@ -480,14 +484,18 @@ define([
 
                                     if(a.length != 0)
                                     {
-                                        experimentmodel.exptConfig.coaselection[estr] = experimentmodel.exptConfig.coaselection[estr] || []
+                                        
+                                        experimentmodelcoaselection[estr] = experimentmodelcoaselection[estr] || []
+                                        // experimentmodel.exptConfig.coaselection[estr] = experimentmodel.exptConfig.coaselection[estr] || []
                                         if(required_coa_selection_name.length!=0)
-                                        {experimentmodel.exptConfig.coaselection[estr].push(coa_selection_nodes[required_coa_selection_name])}
+                                        {experimentmodelcoaselection[estr].push(coa_selection_nodes[required_coa_selection_name])}
+                                        // {experimentmodel.exptConfig.coaselection[estr].push(coa_selection_nodes[required_coa_selection_name])}
 
                                         a.forEach(function(element){
                                             if(a!="" || a!=0)
                                             {
-                                                experimentmodel.exptConfig.coaselection[estr].push(coa_selection_nodes[element])
+                                                experimentmodelcoaselection[estr].push(coa_selection_nodes[element])
+                                                // experimentmodel.exptConfig.coaselection[estr].push(coa_selection_nodes[element])
 
                                                 console.log(coa_selection_nodes[element])
 
@@ -501,11 +509,13 @@ define([
                             else{
                                 var estr = required_coa_selection_name.toString()
                                 estr = estr.replace(/,/g,"-")
-                                experimentmodel.exptConfig.coaselection[estr] = experimentmodel.exptConfig.coaselection[estr] || []
+                                experimentmodelcoaselection[estr] = experimentmodelcoaselection[estr] || []
+                                // experimentmodel.exptConfig.coaselection[estr] = experimentmodel.exptConfig.coaselection[estr] || []
                                 //experimentmodel.exptConfig.coaselection[estr].push(coa_selection_nodes[required_coa_selection_name])
                                 required_coa_selection_name.forEach(function(element){
                                     if(element!=0 || element!=null){
-                                        experimentmodel.exptConfig.coaselection[estr].push(coa_selection_nodes[element])
+                                        experimentmodelcoaselection[estr].push(coa_selection_nodes[element])
+                                        // experimentmodel.exptConfig.coaselection[estr].push(coa_selection_nodes[element])
 
                                     }
                                 })
@@ -539,6 +549,18 @@ define([
                             }
 
                         })
+                       experimentmodel.exptConfig.coaSelection='conf/' + 'coaSelection_'+experimentmodel.name.toLowerCase()+ '.json'
+                        // This will be the coaselection for the experiment
+                        artifact.addFile('conf/' + 'coaSelection_'+experimentmodel.name.toLowerCase()+ '.json', JSON.stringify(experimentmodelcoaselection, null, 2), function (err) {
+                            response.push(err)
+                            if (response.length == self.experimentPaths.length) {
+                                if (response.includes(err)) {
+                                    callback(err);
+                                } else {
+                                    callback();
+                                }
+                            }
+                        });
 
                         artifact.addFile('conf/' + experimentmodel.name.toLowerCase() + '.json', JSON.stringify(experimentmodel.exptConfig, null, 2), function (err) {
                             response.push(err)
@@ -559,7 +581,6 @@ define([
             }
 
         });
-
         self.experimentModel = {
             'script': {
                 'federateTypesAllowed': [],
@@ -669,7 +690,6 @@ define([
 
                     "federationEndTime": 0.0,
                     "realTimeMode": true,
-                    "terminateOnCOAFinish": false,
                     "fedFile": "fom/" + self.projectName + '.fed',
                     "experimentConfig": "conf/experimentConfig.json"
                 }

@@ -105,6 +105,8 @@ define([
         self.attributes   = {};
         self.federates = {};
 
+        self.javafederateName = {}
+
         self.fedFilterMap = {};
         self.fedFilterMap["MAPPER_FEDERATES"] = "MAPPER";
         self.fedFilterMap["NON-MAPPER_FEDERATES"] = "NON_MAPPER";
