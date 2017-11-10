@@ -10,8 +10,8 @@
    <artifactId><%= artifactId %></artifactId>
     <packaging>pom</packaging>
     <modules>
-        <% for (federate in federates) { %>
-        <module><%= federates[federate].classname %></module>
+        <% for (federate in javafederateName) { %>
+        <module><%= javafederateName[federate] %></module>
         <% } %>
     </modules>
 </project>
