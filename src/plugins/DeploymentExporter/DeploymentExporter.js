@@ -805,6 +805,17 @@ define([
 
     }
 
+    DeploymentExporter.prototype.visit_Interaction = function (node, parent, context) {
+
+        var self = this;
+
+        console.log(self.core.getAttribute(node,"name"))
+        return {
+            context: context
+        };
+
+    }
+
     /////////////////////////
     // COA Sequence Visitors
     /////////////////////////
@@ -894,9 +905,11 @@ define([
 
     DeploymentExporter.prototype.visit_Action = function (node, parent, context) {
         var self = this,
-            interactionName = '',
+            interactionName = self.interactions[self.core.getPointerPath(node,"ref")].fullName,
             obj = {},
             paramValues = self.core.getAttribute(node, 'ParamValues');
+
+                 
 
         paramValues.split(" ").forEach(function (param) {
             try {
@@ -989,7 +1002,7 @@ define([
     DeploymentExporter.prototype.visit_Outcome = function (node, parent, context) {
         var self = this,
             obj = {
-                interactionName: ""
+                interactionName: self.interactions[self.core.getPointerPath(node,"ref")].fullName
             };
 
         self.addCoaNode(node, obj);
@@ -1126,7 +1139,7 @@ define([
             }
 
         }
-        //self.logger.debug('Genarated visitor Name: ' + visitorName);
+        self.logger.debug('Genarated visitor Name: ' + visitorName);
         return visitorName;
     }
 
