@@ -805,17 +805,6 @@ define([
 
     }
 
-    DeploymentExporter.prototype.visit_Interaction = function (node, parent, context) {
-
-        var self = this;
-
-        console.log(self.core.getAttribute(node,"name"))
-        return {
-            context: context
-        };
-
-    }
-
     /////////////////////////
     // COA Sequence Visitors
     /////////////////////////
