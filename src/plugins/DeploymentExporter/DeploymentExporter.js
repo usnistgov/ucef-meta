@@ -331,7 +331,14 @@ define([
                 console.log(obj) // path
                 self.coasNode[obj].forEach(function (nodes) {
                     if (self.coaPathNode.hasOwnProperty(nodes)) {
-                        saveObj.COAs[obj].nodes.push(self.coaPathNode[nodes])
+                        var tempNode ={}
+                        tempNode= self.coaPathNode[nodes]
+                        if(tempNode.nodeType == "Outcome"){
+                            tempNode.interactionName = self.interactions[tempNode.interactionName].fullName
+                        }
+
+                        saveObj.COAs[obj].nodes.push(tempNode)
+                        
                     } else if (self.coaPathEdge.hasOwnProperty(nodes)) {
                         self.coaPathEdge[nodes].fromNode = self.coaPaths[self.coaPathEdge[nodes].fromNode]
                         self.coaPathEdge[nodes].toNode = self.coaPaths[self.coaPathEdge[nodes].toNode]
@@ -369,6 +376,8 @@ define([
                 });
             });
             self.coaConfigModel.script.coaNodes = self.coaNodes;
+
+
             self.coaEdges.forEach(function (edge) {
                 if (self.coaPaths.hasOwnProperty(edge.fromNode)) {
                     edge.fromNode = self.coaPaths[edge.fromNode];
@@ -745,10 +754,12 @@ define([
     }
 
     self.visitAllChildrenFromRootContainer(self.rootNode, function (err) {
-        if (err)
+        if (err) {
             self.logger.error(err);
-        else
-            finishExport(err);
+            return callback(err, self.result);
+        }
+
+        finishExport(err);
     });
 
 };
@@ -860,7 +871,7 @@ DeploymentExporter.prototype.addCoaNode = function (node, obj) {
 
 DeploymentExporter.prototype.visit_Action = function (node, parent, context) {
     var self = this,
-        interactionName = self.interactions[self.core.getPointerPath(node, "ref")].fullName,
+        //interactionName = self.interactions[self.core.getPointerPath(node, "ref")].fullName,
         obj = {},
         paramValues = self.core.getAttribute(node, 'ParamValues');
 
@@ -957,7 +968,8 @@ DeploymentExporter.prototype.visit_AwaitN = function (node, parent, context) {
 DeploymentExporter.prototype.visit_Outcome = function (node, parent, context) {
     var self = this,
         obj = {
-            interactionName: self.interactions[self.core.getPointerPath(node, "ref")].fullName
+            //interactionName: self.interactions[self.core.getPointerPath(node, "ref")].fullName
+            interactionName: self.core.getPointerPath(node, "ref")
         };
 
     self.addCoaNode(node, obj);
