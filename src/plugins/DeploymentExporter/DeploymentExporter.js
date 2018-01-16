@@ -567,6 +567,33 @@ define([
             'lateJoinerFederates': []
         }
     };
+    // list of experiments.json
+    self.fileGenerators.push(function (artifact, callback) {
+        var experimentlist = []
+        if (self.experimentPaths.length != 0) {
+             self.experimentPaths.forEach(function (objPath) {
+                 self.experimentModelConfig[objPath].forEach(function (expSet) {
+                     if(experimentlist.indexOf(self.core.getAttribute(self.core.getParent(expSet), "name"))==-1){
+                        experimentlist.push(self.core.getAttribute(self.core.getParent(expSet), "name"))
+                     }
+                     
+                 })
+                
+             })
+
+            artifact.addFile('conf/' + 'experimentlist.json', JSON.stringify(experimentlist, null, 2), function (err) {
+            if (err) {
+                callback(err);
+                return;
+            } else {
+                callback();
+            }
+        });     
+        }
+    })
+
+
+
 
     //Add default RID file
     //<<<<<<< cpp_json
