@@ -291,26 +291,26 @@ define([
         });
 
 
-        self.fileGenerators.push(function (artifact, callback) {
+        // self.fileGenerators.push(function (artifact, callback) {
 
-            Object.keys(self.experimentsGuid).forEach(function (key) {
-                //console.log("value",self.experimentsGuid[key])
-                console.log("## Experiment:", key)
-                self.experimentsGuid[key].forEach(function (coagroup) {
-                    //console.log("SelectAllCOAsInEachRun:",coagroup.SelectAllCOAsInEachRun)
-                    console.log("==>coaGroup", coagroup.name)
-                    console.log("   coaGroupID:", coagroup.guid)
+        //     Object.keys(self.experimentsGuid).forEach(function (key) {
+        //         //console.log("value",self.experimentsGuid[key])
+        //         console.log("## Experiment:", key)
+        //         self.experimentsGuid[key].forEach(function (coagroup) {
+        //             //console.log("SelectAllCOAsInEachRun:",coagroup.SelectAllCOAsInEachRun)
+        //             console.log("==>coaGroup", coagroup.name)
+        //             console.log("   coaGroupID:", coagroup.guid)
 
 
-                    self.coaGroupNodes[coagroup.guid].forEach(function (coanode) {
-                        console.log("   coaNode:", coanode.name)
-                        console.log("   coaID:", coanode.guid)
-                    })
-                })
-            });
+        //             self.coaGroupNodes[coagroup.guid].forEach(function (coanode) {
+        //                 console.log("   coaNode:", coanode.name)
+        //                 console.log("   coaID:", coanode.guid)
+        //             })
+        //         })
+        //     });
 
-            callback()
-        })
+        //     callback()
+        // })
 
 
         //////////////////////
@@ -358,57 +358,58 @@ define([
         });
 
 
-        self.coaConfigModel = {
-            'script': {
-                'expect': [],
-                'pauses': [],
-                'coaNodes': [],
-                'coaEdges': []
-            }
-        };
+        // self.coaConfigModel = {
+        //     'script': {
+        //         'expect': [],
+        //         'pauses': [],
+        //         'coaNodes': [],
+        //         'coaEdges': []
+        //     }
+        // };
 
-        //Add COACONFIG.JSON
-        self.fileGenerators.push(function (artifact, callback) {
-            self.federates.forEach(function (fed) {
-                //self.coaConfigModel.script.expect.push({'@federateType':fed.name});
-                self.coaConfigModel.script.expect.push({
-                    'federateType': fed.name
-                });
-            });
-            self.coaConfigModel.script.coaNodes = self.coaNodes;
+        // //Add COACONFIG.JSON
+        // self.fileGenerators.push(function (artifact, callback) {
+        //     self.federates.forEach(function (fed) {
+        //         //self.coaConfigModel.script.expect.push({'@federateType':fed.name});
+        //         self.coaConfigModel.script.expect.push({
+        //             'federateType': fed.name
+        //         });
+        //     });
+        //     self.coaConfigModel.script.coaNodes = self.coaNodes;
 
 
-            self.coaEdges.forEach(function (edge) {
-                if (self.coaPaths.hasOwnProperty(edge.fromNode)) {
-                    edge.fromNode = self.coaPaths[edge.fromNode];
-                } else {
-                    edge.fromNode = ""
-                }
-                if (self.coaPaths.hasOwnProperty(edge.toNode)) {
-                    edge.toNode = self.coaPaths[edge.toNode];
-                } else {
-                    edge.toNode = ""
-                }
-                self.coaConfigModel.script.coaEdges.push(edge);
-            });
+        //     self.coaEdges.forEach(function (edge) {
+        //         if (self.coaPaths.hasOwnProperty(edge.fromNode)) {
+        //             edge.fromNode = self.coaPaths[edge.fromNode];
+        //         } else {
+        //             edge.fromNode = ""
+        //         }
+        //         if (self.coaPaths.hasOwnProperty(edge.toNode)) {
+        //             edge.toNode = self.coaPaths[edge.toNode];
+        //         } else {
+        //             edge.toNode = ""
+        //         }
+        //         self.coaConfigModel.script.coaEdges.push(edge);
+        //     });
 
-            /*artifact.addFile('src/experiments/' + 'default' + '/' + 'script.xml', self._jsonToXml.convertToString( self.coaConfigModel ) , function (err) {
-             if (err) {
-             callback(err);
-             return;
-             }else{
-             callback();
-             }
-             });*/
-            artifact.addFile('conf/' + 'coaConfig.json', JSON.stringify(self.coaConfigModel, null, 2), function (err) {
-                if (err) {
-                    callback(err);
-                    return;
-                } else {
-                    callback();
-                }
-            });
-        });
+        //     /*artifact.addFile('src/experiments/' + 'default' + '/' + 'script.xml', self._jsonToXml.convertToString( self.coaConfigModel ) , function (err) {
+        //      if (err) {
+        //      callback(err);
+        //      return;
+        //      }else{
+        //      callback();
+        //      }
+        //      });*/
+        //     artifact.addFile('conf/' + 'coaConfig.json', JSON.stringify(self.coaConfigModel, null, 2), function (err) {
+        //         if (err) {
+        //             callback(err);
+        //             return;
+        //         } else {
+        //             callback();
+        //         }
+        //     });
+        // });
+
 
 
         //////////////////
@@ -429,7 +430,8 @@ define([
                                     'lateJoinerFederates': [],
                                     "coaDefinition": 'conf/' + 'NewcoaConfig.json',
                                     'coaSelection': '',
-                                    "terminateOnCOAFinish": false
+                                    "terminateOnCOAFinish": false,
+                                    "COASelectionToExecute":""
                                 }
                             }
 
@@ -539,6 +541,7 @@ define([
                             }
                         });
 
+                        experimentmodel.exptConfig.COASelectionToExecute = Object.keys(experimentmodelcoaselection)[0]    
                         artifact.addFile('conf/' + experimentmodel.name.toLowerCase() + "/"+ experimentmodel.name.toLowerCase() + '.json', JSON.stringify(experimentmodel.exptConfig, null, 2), function (err) {
                             response.push(err)
                             if (response.length == self.experimentPaths.length) {
