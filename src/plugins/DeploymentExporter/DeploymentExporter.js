@@ -333,7 +333,7 @@ define([
                     if (self.coaPathNode.hasOwnProperty(nodes)) {
                         var tempNode ={}
                         tempNode= self.coaPathNode[nodes]
-                        if(tempNode.nodeType == "Outcome"){
+                        if(tempNode.nodeType === "Outcome" || tempNode.nodeType === "Action"){
                             tempNode.interactionName = self.interactions[tempNode.interactionName].fullName
                         }
 
@@ -902,7 +902,11 @@ DeploymentExporter.prototype.addCoaNode = function (node, obj) {
 DeploymentExporter.prototype.visit_Action = function (node, parent, context) {
     var self = this,
         //interactionName = self.interactions[self.core.getPointerPath(node, "ref")].fullName,
-        obj = {},
+
+        obj = {
+            interactionName: self.core.getPointerPath(node, "ref")
+        },
+
         paramValues = self.core.getAttribute(node, 'ParamValues');
 
 
