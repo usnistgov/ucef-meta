@@ -560,13 +560,98 @@ define([
             }
 
         });
-    self.experimentModel = {
-        'script': {
-            'federateTypesAllowed': [],
-            'expectedFederates': [],
-            'lateJoinerFederates': []
-        }
-    };
+
+
+   /// Generating the Docker Compose for each experiment type:
+   /// 
+    self.fileGenerators.push(function (artifact, callback) {
+            var timestamp = (new Date()).getTime();
+            self.basePath = '/home/vagrant/nistDemo/'+timestamp ;
+            self.inputPrefix = self.basePath + '/input/';
+            self.outputPrefix = self.basePath + '/output/';
+
+                self.dockerInfoMap = {
+                    
+                    'JavaFederate': {
+                    'name': 'cpswt/c2wtcore_v002',
+                    'tag': '170626'
+                    },
+                    
+                    'CppFederate': {
+                    'name': 'cpswt/c2wtcore_v002',
+                    'tag': '170626'
+                    },
+                    
+                };
+                var response = []
+
+                if (self.experimentPaths.length != 0) {
+                    self.experimentPaths.forEach(function (objPath) {
+
+                            var experimentmodel = {
+                                name: "",
+                                exptConfig: {
+                                    'federateTypesAllowed': [],
+                                }
+                            }
+
+                            var experimentmodelcoaselection = {}
+
+    
+                            self.experimentModelConfig[objPath].forEach(function (expSet) {
+                            //  This is the reference name or the experiment name
+                            var reference_name = self.core.getAttribute(expSet, "name").split("-")[0];
+
+                            experimentmodel.name = self.core.getAttribute(self.core.getParent(expSet), "name")
+                            var temp = self.federates.filter(function(key){if (key["name"]==reference_name){return( key["FederateType"])}})
+                            // experimentmodel.exptConfig.federateTypesAllowed.push(reference_name)
+                            var DockerImageType = temp[0].FederateType
+                            experimentmodel.exptConfig.federateTypesAllowed.push({name:reference_name, type: DockerImageType, count :self.core.getAttribute(expSet, "count")})
+
+                        })
+                        console.log(JSON.stringify(experimentmodel.exptConfig, null, 2))
+
+                        self.dockerFileData = ejs.render(
+                            TEMPLATES['dockerFileTemplate.ejs'],
+                            {
+                            cpswtng_archiva_ip: "10.0.2.15",
+                            inputPrefix: self.inputPrefix,
+                            outputPrefix: self.outputPrefix,
+                            fedInfos: experimentmodel.exptConfig.federateTypesAllowed,
+                            dockerInfoMap: self.dockerInfoMap
+                            }
+                        );
+
+                        experimentmodel.exptConfig.COASelectionToExecute = Object.keys(experimentmodelcoaselection)[0]    
+                        artifact.addFile('conf/' + experimentmodel.name.toLowerCase() + "/"+ "docker-compose.yml", self.dockerFileData, function (err) {
+                            response.push(err)
+                            if (response.length == self.experimentPaths.length) {
+                                if (response.includes(err)) {
+                                    callback(err);
+                                } else {
+                                    callback();
+                                }
+                            }
+                        });
+
+                        artifact.addFile('conf/' + experimentmodel.name.toLowerCase() + "/"+ "start.sh", ejs.render(TEMPLATES['startScript.ejs'], {}), function (err) {
+                            response.push(err)
+                            if (response.length == self.experimentPaths.length) {
+                                if (response.includes(err)) {
+                                    callback(err);
+                                } else {
+                                    callback();
+                                }
+                            }
+                        });
+                    })
+            } else {
+                callback();
+            }
+
+        });
+
+    ///--------------------------------------
     // list of experiments.json
     self.fileGenerators.push(function (artifact, callback) {
         var experimentlist = []
@@ -626,28 +711,36 @@ define([
         });
     });
 
-    // Experiment Config    
-    self.fileGenerators.push(function (artifact, callback) {
-        self.federates.forEach(function (fed) {
-            self.experimentModel.script.federateTypesAllowed.push(fed.name)
-            self.experimentModel.script.expectedFederates.push({
-                "federateType": fed.name,
-                "count": 1
-            });
-            self.experimentModel.script.lateJoinerFederates.push({
-                "federateType": fed.name,
-                "count": 0
-            });
-        });
-        artifact.addFile('conf/' + 'experimentConfig.json', JSON.stringify(self.experimentModel.script, null, 2), function (err) {
-            if (err) {
-                callback(err);
-                return;
-            } else {
-                callback();
-            }
-        });
-    });
+
+    // self.experimentModel = {
+    //     'script': {
+    //         'federateTypesAllowed': [],
+    //         'expectedFederates': [],
+    //         'lateJoinerFederates': []
+    //     }
+    // };
+    // // Experiment Config    
+    // self.fileGenerators.push(function (artifact, callback) {
+    //     self.federates.forEach(function (fed) {
+    //         self.experimentModel.script.federateTypesAllowed.push(fed.name)
+    //         self.experimentModel.script.expectedFederates.push({
+    //             "federateType": fed.name,
+    //             "count": 1
+    //         });
+    //         self.experimentModel.script.lateJoinerFederates.push({
+    //             "federateType": fed.name,
+    //             "count": 0
+    //         });
+    //     });
+    //     artifact.addFile('conf/' + 'experimentConfig.json', JSON.stringify(self.experimentModel.script, null, 2), function (err) {
+    //         if (err) {
+    //             callback(err);
+    //             return;
+    //         } else {
+    //             callback();
+    //         }
+    //     });
+    // });
 
     // Federate Config JSON
     self.fileGenerators.push(function (artifact, callback) {
