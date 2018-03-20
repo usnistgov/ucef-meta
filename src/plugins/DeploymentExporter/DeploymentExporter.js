@@ -71,7 +71,7 @@ define([
             finishExport,
             // getUserIdAsync,
             pomModel = {};
-        self.workingDir="/home/vagrant/blobdir"     
+        self.workingDir="/home/ubuntu/blobdir"     
         
         self.fileGenerators = [];
         self.fom_sheets = {};
