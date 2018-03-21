@@ -70,9 +70,6 @@ define([
         // Using the coreAPI to make changes.
 
         nodeObject = self.activeNode;
-
-
-
         // Obtain the current user configuration.
         var currentConfig = self.getCurrentConfig();
         // What did the user select for our configuration?
@@ -93,8 +90,14 @@ define([
             .then(function (metaData) {
                 console.log("metadata.name", metaData.name)
                 console.log(metaData)
-                self.deploymentFilesName = metaData.name;
-                return self.blobClient.getObject(self.deploymentFiles);
+                if(metaData.mime=="application/zip"){
+                    self.deploymentFilesName = metaData.name;
+                    return self.blobClient.getObject(self.deploymentFiles);
+                }else{
+                     throw "File Type Not Supported! Supports Only ZIP archives currently";                
+                    }
+                
+                
             })
             .then(function (objbuffer) {
                 return self.writeInputs(objbuffer);
