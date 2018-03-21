@@ -23,5 +23,8 @@ config.seedProjects = {
 config.client.log.level = 'debug';
 
 
+config.plugin.allowServerExecution = true
+
+
 validateConfig(config);
 module.exports = config;
