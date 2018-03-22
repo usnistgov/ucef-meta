@@ -69,7 +69,9 @@ define([
         self.projectPath = ""
         self.runDir = ""  
 
-        self.workingDir = "/home/ubuntu/blobdir"
+       // self.workingDir = "/home/ubuntu/blobdir"
+        self.workingDir="/home/ubuntu/file-server"
+
         // Using the coreAPI to make changes.
 
         nodeObject = self.activeNode;

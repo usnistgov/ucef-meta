@@ -71,8 +71,9 @@ define([
             finishExport,
             // getUserIdAsync,
             pomModel = {};
-        self.workingDir="/home/ubuntu/blobdir"     
-        
+        //self.workingDir="/home/ubuntu/blobdir"     
+        self.workingDir="/home/ubuntu/file-server"
+ 
         self.fileGenerators = [];
         self.fom_sheets = {};
         self.federates = [];
