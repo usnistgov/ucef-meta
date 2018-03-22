@@ -11,12 +11,15 @@ define([
     'plugin/PluginConfig',
     'text!./metadata.json',
     'plugin/PluginBase',
-    'q'
+    'q',
+    'superagent'
+
 ], function (
     PluginConfig,
     pluginMetadata,
     PluginBase,
-    Q) {
+    Q,
+    superagent) {
     'use strict';
 
     pluginMetadata = JSON.parse(pluginMetadata);
@@ -66,7 +69,7 @@ define([
         self.projectPath = ""
         self.runDir = ""  
 
-        self.workingDir = "/home/vagrant/blobdir"
+        self.workingDir = "/home/ubuntu/blobdir"
         // Using the coreAPI to make changes.
 
         nodeObject = self.activeNode;

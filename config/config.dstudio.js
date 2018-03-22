@@ -11,14 +11,21 @@ config.authentication.inferredUsersCanCreate = true;
 config.authentication.allowGuests = false;
 config.authentication.allowUserRegistration = false;
 
-config.authentication.logInUrl = 'http://cps-vo.org/group/CPSWTTE/c2wtte-meta'
-config.authentication.logOutUrl = 'http://cps-vo.org/group/CPSWTTE/c2wtte-meta'
+config.authentication.logInUrl = 'https://cps-vo.org/group/CPSWTTE/c2wtte-meta';
+config.authentication.logOutUrl = 'https://cps-vo.org/group/CPSWTTE/c2wtte-meta';
 
-config.authentication.jwt.privateKey = path.join(__dirname, '..', '..', 'token_keys', 'private_key');
-config.authentication.jwt.publicKey = path.join(__dirname, '..', '..', 'token_keys', 'public_key');
+config.authentication.jwt.privateKey ='/home/ubuntu/token_keys/private_key';
+config.authentication.jwt.publicKey = '/home/ubuntu/token_keys/public_key';
 
-
-
+/*config.server.log.transports = [{
+			transportType: 'File',
+			options: {
+				name: 'error-file',
+				filename: './server-debug.log',
+				level: 'debug',
+				handleExceptions: true,
+				json: false
+			}}];*/
 // Add/overwrite any additional settings here
 config.server.port = 8088;
 //config.server.port = 80
