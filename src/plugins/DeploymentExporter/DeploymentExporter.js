@@ -784,7 +784,16 @@ define([
                             
                             // console.log(self.project.projectId)
                             // console.log(self.project.projectName)
-                            self.getUserIdAsync(function ( err, userInfo){
+
+                            self.getUserDir(function(err, filestoreDir){
+                                if(err){
+                                    callback(err, self.result);
+                                    return;
+                                }
+                                
+                                self.workingDir = filestoreDir
+                                console.log("workingDIr:",self.workingDir)
+                                   self.getUserIdAsync(function ( err, userInfo){
                                  if (err) {
                                     callback(err, self.result);
                                     return;
@@ -835,7 +844,8 @@ define([
                                 
                                 if(!fs.existsSync(userProjectJSON)) {
                                     console.log("File not found");
-                                    var obj = [self.project.projectName]
+                                    var obj = {}
+                                    obj[self.project.projectName] =self.project.projectName
                                     let data = JSON.stringify(obj, null, 2);
 
                                     fs.writeFile(userProjectJSON, data, (err) => {  
@@ -851,8 +861,8 @@ define([
                                         if (err) throw err; // we'll not consider error handling for now
                                         var obj = JSON.parse(data);
                                         
-                                        if (obj.indexOf(self.project.projectName) == -1) {
-                                            obj.push(self.project.projectName)
+                                        if (!(obj.hasOwnProperty(self.project.projectName))) {
+                                            obj[self.project.projectName]=self.project.projectName
                                             let data = JSON.stringify(obj, null, 2);
 
                                             fs.writeFile(userProjectJSON, data, (err) => {  
@@ -862,6 +872,9 @@ define([
 
 
                                         }
+                                        else{
+                                            console.log("entry already present")
+                                        }
                                         console.log(obj)
                                     
                                     });
@@ -870,6 +883,10 @@ define([
                             
 
                             
+                                
+                            })
+
+                         
                             // self.logger.info( 'Current input XML for desert ' + inputXml );    
 
                         })
@@ -926,6 +943,32 @@ define([
 
 };
 
+
+ DeploymentExporter.prototype.getUserDir = function (callback) {
+        var deferred,
+            req;
+
+        deferred = Q.defer();
+        req = superagent.get(this.blobClient.origin + '/api/componentSettings/UserDir');
+        console.log(this.blobClient.origin);
+
+        if (typeof this.blobClient.webgmeToken === 'string') {
+            // We're running on the server set the token.
+            req.set('Authorization', 'Bearer ' + this.blobClient.webgmeToken);
+        } else {
+            // We're running inside the browser cookie will be used at the request..
+        }
+
+        req.end(function (err, res) {
+            if (err) {
+                deferred.reject(err);
+            } else {
+                deferred.resolve(res.body.folder);
+            }
+        });
+
+        return deferred.promise.nodeify(callback);
+    };
 
  DeploymentExporter.prototype.getUserIdAsync = function (callback) {
         var deferred,
