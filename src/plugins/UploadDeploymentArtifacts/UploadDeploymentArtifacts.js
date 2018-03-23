@@ -1,4 +1,4 @@
-/*globals define*/
+/*globals define, WebGMEGlobal*/
 /*jshint node:true, browser:true*/
 
 /**
@@ -82,7 +82,23 @@ define([
         self.deploymentFiles = currentConfig.deploymentFiles;
         self.logger.info('Current configuration ' + JSON.stringify(currentConfig, null, 4));
 
-        return self.getUserIdAsync()
+
+        if (typeof WebGMEGlobal !== 'undefined') {
+            console.log("testing")
+	        
+            self.workingDir=WebGMEGlobal.componentSettings[ 'folder' ];
+            console.log("self.workingDir::",self.workingDir)
+        }
+
+
+        return self.getUserDir()
+        .then(function (componentID) {
+                // self.federationModel = federationModel;
+            console.log("componentID:",componentID)
+            self.workingDir = componentID
+            return self.getUserIdAsync()
+            // return self.createDir(userInfo)
+        })
         .then(function (userInfo) {
                 // self.federationModel = federationModel;
             console.log("userInfo")
@@ -142,6 +158,46 @@ define([
 		self.sendNotification(prefix+splitMsg);
 	    });
 	}
+    };
+
+
+  UploadDeploymentArtifacts.prototype.getUserDir = function () {
+        var self = this;
+        
+        var deferred,
+            req;
+
+        // if (typeof this.project.userName === 'string') {
+        //     // Running from bin script
+        //     return Q(this.project.userName)//.nodeify(callback);
+        // }
+
+        // if (this.gmeConfig.authentication.enable === false) {
+        //     return Q(this.gmeConfig.authentication.guestAccount)//.nodeify(callback);
+        // }
+
+        deferred = Q.defer();
+        req = superagent.get(this.blobClient.origin + '/api/componentSettings/UserDir');
+        console.log(this.blobClient.origin);
+
+        if (typeof this.blobClient.webgmeToken === 'string') {
+            // We're running on the server set the token.
+            req.set('Authorization', 'Bearer ' + this.blobClient.webgmeToken);
+        } else {
+            // We're running inside the browser cookie will be used at the request..
+        }
+
+        req.end(function (err, res) {
+            if (err) {
+                console.log("error")
+                deferred.reject(err);
+            } else {
+                console.log("response:",res.body.folder)
+                deferred.resolve(res.body.folder);
+            }
+        });
+
+        return deferred.promise//.nodeify(callback);
     };
 
 
