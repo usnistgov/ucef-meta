@@ -1,7 +1,7 @@
 {
   "name": "c2-ng_modeler",
   "scripts": {
-    "start": "./build.sh && node app.js",
+    "start": "./build.sh && NODE_ENV=vagrant node app.js",
     "start-dstudio": "./build.sh && NODE_ENV=dstudio node app.js",
     "test": "node ./node_modules/mocha/bin/mocha --recursive test"
   },
