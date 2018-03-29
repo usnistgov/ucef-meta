@@ -588,12 +588,14 @@ define([
                     
                     'JavaFederate': {
                     'name': 'cpswt/c2wtcore_v002',
-                    'tag': '170626'
+                    'tag': '170626',
+                    'profile':"ExecJava"
                     },
                     
                     'CppFederate': {
                     'name': 'cpswt/c2wtcore_v002',
-                    'tag': '170626'
+                    'tag': '170626',
+                    'profile':"ExecCpp"
                     },
                     
                 };
@@ -640,7 +642,7 @@ define([
                         artifact.addFile('conf/' + experimentmodel.name.toLowerCase() + "/"+ "docker-compose.yml", self.dockerFileData, function (err) {
                             response.push(err)
                             if (response.length == self.experimentPaths.length) {
-                                if (response.includes(err)) {
+                                if (response.indexOf(err) == -1) {
                                     callback(err);
                                 } else {
                                     callback();
@@ -651,7 +653,7 @@ define([
                         artifact.addFile('conf/' + experimentmodel.name.toLowerCase() + "/"+ "start.sh", ejs.render(TEMPLATES['startScript.ejs'], {}), function (err) {
                             response.push(err)
                             if (response.length == self.experimentPaths.length) {
-                                if (response.includes(err)) {
+                                if (response.indexOf(err) == -1) {
                                     callback(err);
                                 } else {
                                     callback();
