@@ -580,22 +580,39 @@ define([
    /// 
     self.fileGenerators.push(function (artifact, callback) {
             var timestamp = (new Date()).getTime();
-            self.basePath = '/home/vagrant/nistDemo/'+timestamp ;
-            self.inputPrefix = self.basePath + '/input/';
-            self.outputPrefix = self.basePath + '/output/';
+
+
+            self.getDockerDetails(function(err, DockerDetails){
+                                if(err){
+                                    callback(err, self.result);
+                                    return;
+                                }
+                                console.log("DockerDIR:",DockerDetails.DIR)
+                                console.log("DockerJAVA:",DockerDetails.Java)
+                                console.log("DockerCPP:",DockerDetails.CPP)
+                                 
+            
+            self.inputPrefix = DockerDetails.DIR + '/input/';
+            self.outputPrefix = DockerDetails.DIR + '/output/';           
+                            
+           
+
 
                 self.dockerInfoMap = {
                     
                     'JavaFederate': {
-                    'name': 'cpswt/c2wtcore_v002',
-                    'tag': '170626',
+                    'name': DockerDetails.Java,
                     'profile':"ExecJava"
                     },
                     
                     'CppFederate': {
-                    'name': 'cpswt/c2wtcore_v002',
-                    'tag': '170626',
+                    'name': DockerDetails.CPP,
+                    
                     'profile':"ExecCpp"
+                    },
+                    'FedManager': {
+                    'name': DockerDetails.FedMgr,
+                    'profile':"ExecJava"
                     },
                     
                 };
@@ -630,11 +647,11 @@ define([
                         self.dockerFileData = ejs.render(
                             TEMPLATES['dockerFileTemplate.ejs'],
                             {
-                            cpswtng_archiva_ip: "10.0.2.15",
+                            cpswtng_archiva_ip: DockerDetails.cpswtng_archiva,
                             inputPrefix: self.inputPrefix,
                             outputPrefix: self.outputPrefix,
                             fedInfos: experimentmodel.exptConfig.federateTypesAllowed,
-                            dockerInfoMap: self.dockerInfoMap
+                            dockerInfoMap: self.dockerInfoMap,
                             }
                         );
 
@@ -664,6 +681,8 @@ define([
             } else {
                 callback();
             }
+
+             });
 
         });
 
@@ -1037,6 +1056,27 @@ define([
     });
 
 };
+
+
+DeploymentExporter.prototype.getDockerDetails = function (callback) {
+        var deferred,
+            req;
+
+        deferred = Q.defer();
+        req = superagent.get(this.blobClient.origin + '/api/componentSettings/DockerDetails');
+        console.log(this.blobClient.origin);
+
+        req.end(function (err, res) {
+            if (err) {
+                deferred.reject(err);
+            } else {
+                deferred.resolve(res.body);
+            }
+        });
+
+        return deferred.promise.nodeify(callback);
+    };
+
 
 
  DeploymentExporter.prototype.getUserDir = function (callback) {

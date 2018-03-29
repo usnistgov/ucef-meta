@@ -39,5 +39,13 @@
     },
 "UserDir": {
     "folder": "/home/vagrant/blobdir"
-    }
+    },
+    
+    "DockerDetails": {
+        "Java":"cpswt/c2wtcore_v002:170626",
+        "CPP":"cpswt/c2wtcore_v002:170626",
+        "FedMgr":"cpswt/c2wtcore_v002:170626",
+        "DIR":"$PWD",
+        "cpswtng_archiva":"10.0.2.15"
+        }
 }

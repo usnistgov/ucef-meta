@@ -3,7 +3,7 @@ services:
   fedManager:
     build: .
     tty: true
-    image: "cpswt/c2wtcore_v002:170626"
+    image: "<%- dockerInfoMap["FedManager"].name  %>"
     command: "sh start.sh FedManager"
     sysctls:
       - net.ipv6.conf.all.disable_ipv6=1
@@ -18,7 +18,7 @@ for(var i=0; i<fedInfo.count; i++){
 -%>
   <%- fedInfo.type %>_<%- fedInfo.name %>_<%- i %>:
     build: .
-    image: "<%- dockerInfoMap[fedInfo.type].name %>:<%- dockerInfoMap[fedInfo.type].tag %>"
+    image: "<%- dockerInfoMap[fedInfo.type].name %>"
     command: "sh start.sh <%- fedInfo.name %>,<%- dockerInfoMap[fedInfo.type].profile %>" 
     sysctls:
       - net.ipv6.conf.all.disable_ipv6=1
