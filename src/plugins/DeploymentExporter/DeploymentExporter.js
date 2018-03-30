@@ -1065,6 +1065,12 @@ DeploymentExporter.prototype.getDockerDetails = function (callback) {
         deferred = Q.defer();
         req = superagent.get(this.blobClient.origin + '/api/componentSettings/DockerDetails');
         console.log(this.blobClient.origin);
+        if (typeof this.blobClient.webgmeToken === 'string') {
+            // We're running on the server set the token.
+            req.set('Authorization', 'Bearer ' + this.blobClient.webgmeToken);
+        } else {
+            // We're running inside the browser cookie will be used at the request..
+        }
 
         req.end(function (err, res) {
             if (err) {
