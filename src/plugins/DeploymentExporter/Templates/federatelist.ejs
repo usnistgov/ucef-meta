@@ -2,7 +2,8 @@
 fedInfos.map(function(fedInfo) {
 for(var i=0; i<fedInfo.count; i++){ 
 -%>
-<%-fedInfo.type %>_<%- fedInfo.name %>_<%- i %>
+/input/<%-fedInfo.type %>_<%- fedInfo.name %>_<%- i %>
+/output/<%-fedInfo.type %>_<%- fedInfo.name %>_<%- i %>
 <%
 }
 })
