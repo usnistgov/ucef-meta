@@ -48,22 +48,5 @@ config.server.port = 8088;
 //config.server.port = 80
 config.mongo.uri = 'mongodb://127.0.0.1:27017/c2webgme';
 
-
-
-// Enable Authentication
-config.authentication.enable = true;
-config.authentication.inferredUsersCanCreate = true;
-config.authentication.allowGuests = false;
-config.authentication.allowUserRegistration = true;
-
-// config.authentication.logInUrl = 'https://cps-vo.org/group/CPSWTTE/c2wtte-meta';
-// config.authentication.logOutUrl = 'https://cps-vo.org/group/CPSWTTE/c2wtte-meta';
-
-// config.authentication.jwt.privateKey ='/home/ubuntu/token_keys/private_key';
-// config.authentication.jwt.publicKey = '/home/ubuntu/token_keys/public_key';
-
-
-
-
 validateConfig(config);
 module.exports = config;

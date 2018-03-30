@@ -41,9 +41,9 @@
         "folder":"/home/ubuntu/file-server"
         },
     "DockerDetails": {
-        "Java":"docker.vulcan.isis.vanderbilt.edu/c2wtng/cpswt/c2wtcore_v002:170322",
-        "CPP":"docker.vulcan.isis.vanderbilt.edu/c2wtng/cpswt/c2wtcore_v002:170322",
-        "FedMgr":"docker.vulcan.isis.vanderbilt.edu/c2wtng/cpswt/c2wtcore_v002:170322",
+        "Java":"docker.vulcan.isis.vanderbilt.edu/c2wtng/cpswt/c2wtcore_v002:170626",
+        "CPP":"docker.vulcan.isis.vanderbilt.edu/c2wtng/cpswt/c2wtcore_v002:170626",
+        "FedMgr":"docker.vulcan.isis.vanderbilt.edu/c2wtng/cpswt/c2wtcore_v002:170626",
         "DIR":"$PWD/",
         "cpswtng_archiva":"${ARCHIVA_URL}"
         }
