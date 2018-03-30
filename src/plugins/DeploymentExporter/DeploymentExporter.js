@@ -677,6 +677,24 @@ define([
                                 }
                             }
                         });
+
+                        artifact.addFile('conf/' + experimentmodel.name.toLowerCase() + "/"+ "federatelist.txt", ejs.render(TEMPLATES['federatelist.ejs'], {
+                            cpswtng_archiva_ip: DockerDetails.cpswtng_archiva,
+                            inputPrefix: self.inputPrefix,
+                            outputPrefix: self.outputPrefix,
+                            fedInfos: experimentmodel.exptConfig.federateTypesAllowed,
+                            dockerInfoMap: self.dockerInfoMap,
+                            }), function (err) {
+                            response.push(err)
+                            if (response.length == self.experimentPaths.length) {
+                                if (response.indexOf(err) == -1) {
+                                    callback(err);
+                                } else {
+                                    callback();
+                                }
+                            }
+                        });
+
                     })
             } else {
                 callback();

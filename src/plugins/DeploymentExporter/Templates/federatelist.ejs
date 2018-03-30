@@ -1,0 +1,9 @@
+<%
+fedInfos.map(function(fedInfo) {
+for(var i=0; i<fedInfo.count; i++){ 
+-%>
+<%-fedInfo.type %>_<%- fedInfo.name %>_<%- i %>
+<%
+}
+})
+-%>
