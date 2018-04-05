@@ -10,8 +10,8 @@ services:
     extra_hosts:
       - "cpswtng_archiva:<%- cpswtng_archiva_ip %>"
     volumes:
-      - <%- inputPrefix %>/FedManager:/root/Projects/c2wt/input
-      - <%- outputPrefix %>/FedManager:/root/Projects/c2wt/logs
+      - <%- inputPrefix %>/fedManager:/root/Projects/c2wt/input
+      - <%- outputPrefix %>/fedManager:/root/Projects/c2wt/logs
 <%
 fedInfos.map(function(fedInfo) {
 for(var i=0; i<fedInfo.count; i++){ 
@@ -27,8 +27,8 @@ for(var i=0; i<fedInfo.count; i++){
     links:
       - fedManager  
     volumes:
-      - <%- inputPrefix %>/<%- fedInfo.name %>:/root/Projects/c2wt/input
-      - <%- outputPrefix %>/<%- fedInfo.name %>:/root/Projects/c2wt/logs
+      - <%- inputPrefix %>/<%- fedInfo.type %>_<%- fedInfo.name %>_<%- i %>:/root/Projects/c2wt/input
+      - <%- outputPrefix %>/<%- fedInfo.type %>_<%- fedInfo.name %>_<%- i %>:/root/Projects/c2wt/logs
 <%
 }
 })
