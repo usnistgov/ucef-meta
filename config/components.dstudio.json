@@ -45,6 +45,6 @@
         "CPP":"docker.vulcan.isis.vanderbilt.edu/c2wtng/cpswt/c2wtcore_v003:180405",
         "FedMgr":"docker.vulcan.isis.vanderbilt.edu/c2wtng/cpswt/c2wtcore_v003:180405",
         "DIR":"$PWD/",
-        "cpswtng_archiva":"${ARCHIVA_URL}"
+        "cpswtng_archiva":"129.59.107.51"
         }
 }
