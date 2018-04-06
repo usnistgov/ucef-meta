@@ -608,7 +608,7 @@ define([
                     'CppFederate': {
                     'name': DockerDetails.CPP,
                     
-                    'profile':"ExecCpp"
+                    'profile':"CppFed"
                     },
                     'FedManager': {
                     'name': DockerDetails.FedMgr,
