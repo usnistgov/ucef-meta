@@ -61,6 +61,7 @@ define([], function () {
             subscription['handler'] = function(federate, interaction){
                 var interactiondata = {
                     name: interaction.name,
+                    fullName: interaction.fullName,
                     subscribedLoglevel: subscription['LogLevel'],
                     //* Interaction might get connected to a Mapper on a different FOMSheet. 
                     //* Resolve correct filter at render time.
@@ -150,6 +151,7 @@ define([], function () {
             subscription['handler'] = function(federate, object){
                 var objectdata = {
                     name: object.name,
+                    fullName: object.fullName,
                     subscribedLoglevel: subscription['LogLevel'],
                 };
                 objectdata['subscribedAttributeData']=[];
