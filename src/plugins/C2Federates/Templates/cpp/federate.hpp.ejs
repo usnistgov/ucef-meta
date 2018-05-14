@@ -30,6 +30,8 @@ federate(
 #include "<%=interactiondata.name%>.hpp"<%});%>
 #include "C2WLogger.hpp"
 
+#include "FederateConfig.h"
+
 class <%=classname%>Base : public SynchronizedFederate {
 
 public:
@@ -50,24 +52,12 @@ private:
 	SubscribedInteractionFilter _subscribedInteractionFilter;
 
 protected:
-	void init( ArgVector argVector ) {
+	void init() {
 
 		createRTI();
-		joinFederation( argVector[ 0 ], argVector[ 1 ] );
+		joinFederation();
 		
-		std::string loglevel="";
-		ArgVector loggerArgVector;
-		if ( argVector.size() == 3 ) {
-			loggerArgVector.push_back( argVector[ 2 ] );
-		} else if ( argVector.size() > 3 ) {
-			loggerArgVector.push_back( argVector[ 3 ] );
-		}
-		_logger->init(loggerArgVector);
-		
-		if ( argVector.size() == 5 ) {
-			loglevel = argVector[ 4 ];
-		}
-			
+					
 <% if(timeconstrained){ %>
 		enableTimeConstrained();
 <%}%>
@@ -105,47 +95,15 @@ protected:
    
         
          // enable pubsub log
-         if( argVector.size() > 2 ){
-			<% /*publishedinteractiondata:publoginter()*/ %>
-			<% publishedinteractiondata.forEach(function(interactiondata){ %>
-			<%=interactiondata.name%>::enablePublishLog("<%=interactiondata.name%>", "<%=classname%>", "<%=interactiondata.publishedLoglevel%>", loglevel);<%});%>  
-			<% /*subscribedinteractiondata:subloginter()*/ %>
-			<% subscribedinteractiondata.forEach(function(interactiondata){ %>
-			<%=interactiondata.name%>::enableSubscribeLog("<%=interactiondata.name%>", "<%=classname%>", "<%=interactiondata.subscribedLoglevel%>", loglevel);<%});%>  
-			<% /*publishedobjectdata:publogobject()*/ %>
-			<% publishedobjectdata.forEach(function(objectdata){ %>
-			<% objectdata.logPublishedAttributeData.forEach(function(attributedata){ %>
-			<%=objectdata.name%>::enablePublishLog("<%=objectdata.name%>", "<%=attributedata.name%>", "<%= classname %>", "<%= objectdata.publishedLoglevel %>", loglevel);<%});%><%});%>  
-			<% /*subscribedobjectdata:sublogobject()*/ %>
-			<% subscribedobjectdata.forEach(function(objectdata){ %>
-			<% objectdata.logSubscribedAttributeData.forEach(function(attributedata){ %>
-			<%=objectdata.name%>::enableSubscribeLog("<%=objectdata.name%>", "<%=attributedata.name%>", "<%= classname %>", "<%= objectdata.subscribedLoglevel %>", loglevel);<%});%> <%});%>  
-		}
+         
 
 	}
 
-	void init( int argc, char *argv[] ) {
-		ArgVector argVector;
-		for( int ix = 1 ; ix < argc ; ++ix ) argVector.push_back( argv[ ix ] );
-		init( argVector );
-	}
-	
-	void init( const std::string &federation_id, const std::string &federate_id ) {
-		ArgVector argVector;
-		argVector.push_back( federation_id );
-		argVector.push_back( federate_id );
-		init( argVector );
-	}
-	
 public:	
-	// default constructor
-	<%=classname%>Base( void ) { }
-	
-	// constructor
-	<%=classname%>Base( const std::string &federation_id, const std::string &federate_id ) { init( federation_id, federate_id ); }
-
 	// constructor	
-	<%=classname%>Base( int argc, char *argv[] ) { init( argc, argv ); }
+	<%=classname%>Base(FederateConfig *fedconfig): Super(fedconfig) { init(); }
+
+
 
 	<% /*publishedinteractiondata:create_interaction()*/ %>
 	<% publishedinteractiondata.forEach(function(interactiondata){ %>

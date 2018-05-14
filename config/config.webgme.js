@@ -33,7 +33,9 @@ config.requirejsPaths = {
   'C2Federates': './src/plugins/C2Federates',
   'RunFederation':'./src/plugins/RunFederation',
   'panels/CodeEditor': './node_modules/webgme-codeeditor/src/visualizers/panels/CodeEditor',
-  'widgets/CodeEditor': './node_modules/webgme-codeeditor/src/visualizers/widgets/CodeEditor'
+  'widgets/CodeEditor': './node_modules/webgme-codeeditor/src/visualizers/widgets/CodeEditor',
+   "combinatorics": './node_modules/js-combinatorics/'
+
 };
 
 
