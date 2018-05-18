@@ -1,0 +1,40 @@
+<% /* federateimpl(classname) */ -%>
+#ifndef _<%=classname.toUpperCase()%>_CLASS
+#define _<%=classname.toUpperCase()%>_CLASS
+
+#include "<%=classname%>Base.hpp"
+#include "FederateConfigParser.h"
+#include "FederateConfig.h"
+
+
+class <%=classname%> : public <%=classname%>Base {
+private:
+    double m_currentTime;
+
+public:
+    typedef <%=classname%>Base Super;
+
+    <%=classname%>(FederateConfig *configuration): Super(configuration) {}
+
+    virtual ~<%=classname%>( void ) throw (RTI::FederateInternalError) {}
+
+    class <%=classname%>ATRCallback : public ATRCallback {
+        private:
+            <%=classname%> &m_federateInstance;
+        public:
+            <%=classname%>ATRCallback(<%=classname%> &federateInstance): m_federateInstance(federateInstance) {}
+                
+            virtual void execute( void ) {
+                m_federateInstance.execute();
+            }
+
+            virtual SP clone( void ) {
+                return SP(new <%=classname%>ATRCallback(*this));
+            }
+    };
+
+    void initialize( void );
+    void execute( void );
+};
+
+#endif

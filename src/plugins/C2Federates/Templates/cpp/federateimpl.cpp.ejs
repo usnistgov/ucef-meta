@@ -1,0 +1,38 @@
+<% /* federateimpl(classname) */ -%>
+#include "<%=classname%>.hpp"
+
+void <%=classname%>::initialize( void ) {
+    <%=classname%>ATRCallback advanceTimeRequest(*this);
+    m_currentTime = 0;
+    
+    if (this->get_IsLateJoiner()) {
+        m_currentTime = getLBTS() - getLookAhead();
+        disableTimeRegulation();
+    }
+
+    putAdvanceTimeRequest(m_currentTime, advanceTimeRequest);
+
+    if(!this->get_IsLateJoiner()){
+        readyToPopulate();
+        readyToRun();
+    }
+}
+
+void <%=classname%>::execute( void ) {
+    m_currentTime += 1;
+    <%=classname%>ATRCallback advanceTimeRequest(*this);
+    putAdvanceTimeRequest(m_currentTime, advanceTimeRequest);
+}
+
+int main(int argc, char *argv[]) {
+    FederateConfigParser *configParser = new FederateConfigParser();
+    FederateConfig *config = configParser->parseArgs(argc, argv);
+
+    std::cout << "Creating <%=classname%> instance" << std::endl;
+    <%=classname%> federateInstance(config);
+    federateInstance.initialize();
+    std::cout << "Running <%=classname%> instance" << std::endl;
+    federateInstance.run();
+
+    return 0;
+}
