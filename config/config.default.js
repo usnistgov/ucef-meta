@@ -17,7 +17,8 @@ config.seedProjects = {
             enable: true,
             allowDuplication: true, //requires mongodb >= 2.6
             defaultProject: 'BasicCASIM',
-            basePaths: [path.join(__dirname, '../seeds')]
+            basePaths: [path.join(__dirname, '../seeds')],
+            createAtStartup: []
         };
 
 config.client.log.level = 'debug';
