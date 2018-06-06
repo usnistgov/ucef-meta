@@ -31,6 +31,10 @@
       "FindObjects": {
         "src": "src/plugins/FindObjects",
         "test": "test/plugins/FindObjects"
+      },
+      "UploadDeploymentArtifacts": {
+        "src": "src/plugins/UploadDeploymentArtifacts",
+        "test": "test/plugins/UploadDeploymentArtifacts"
       }
     },
     "addons": {},
