@@ -13,13 +13,11 @@ config.mongo.uri = 'mongodb://127.0.0.1:27017/c2webgme';
 config.requirejsPaths['webgme-to-json'] = "./node_modules/webgme-to-json/"
 
 config.visualization.decoratorPaths.push('./src/decorators');
-config.seedProjects = {
-            enable: true,
-            allowDuplication: true, //requires mongodb >= 2.6
-            defaultProject: 'BasicCASIM',
-            basePaths: [path.join(__dirname, '../seeds')],
-            createAtStartup: []
-        };
+
+config.seedProjects.enable = true;
+config.seedProjects.allowDuplication = true;
+config.seedProjects.defaultProject = "BasicCASIM";
+config.seedProjects.basePaths = [path.join(__dirname, '../seeds')];
 
 config.client.log.level = 'debug';
 
