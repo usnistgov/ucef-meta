@@ -1,0 +1,16 @@
+<% /* simobject(name, attributes, indent, children, sharing) */ -%>
+<%= indent%>  <objectClass>
+<%= indent%>    <name><%= name %></name>
+<%= indent%>    <sharing><%= sharing %></sharing><% -%>
+<% attributes.forEach(function(attrib){ -%>
+<%   if (!attrib.inherited) { %>
+<%= indent%>    <attribute>
+<%= indent%>      <name><%= attrib.name %></name>
+<%= indent%>      <dataType><%= attrib.parameterType %></dataType>
+<%= indent%>      <updateType>NA</updateType>
+<%= indent%>      <ownership>NoTransfer</ownership>
+<%= indent%>      <transportation><%= attrib.delivery %></transportation>
+<%= indent%>      <order><%= attrib.order %></order>
+<%= indent%>    </attribute><% }}); %>
+<% children.forEach(function(child){ %><%- child %><% }); -%>
+<%= indent%>  </objectClass>
