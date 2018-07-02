@@ -159,6 +159,12 @@ public class <%= classname %> extends <%= classname %>Base {
             CheckReceivedSubscriptions("Main Loop");
 <% } -%>
 
+            ////////////////////////////////////////////////////////////////////////////////////////
+            // TODO break here if ready to resign and break out of while loop
+            //	break;
+            ////////////////////////////////////////////////////////////////////////////////////////
+
+
             // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             // DO NOT MODIFY Method BEYOND THIS LINE
             // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -167,9 +173,6 @@ public class <%= classname %> extends <%= classname %>Base {
             atr.requestSyncEnd();
             atr = newATR;
 
-            if(selfResign) {
-                break;
-            }
         }
 
 		// call exitGracefully to shut down federate
