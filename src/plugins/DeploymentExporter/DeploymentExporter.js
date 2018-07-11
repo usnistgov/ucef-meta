@@ -580,6 +580,7 @@ define([
                  })
                 
              })
+        }
 
             artifact.addFile('conf/' + 'experimentlist.json', JSON.stringify(experimentlist, null, 2), function (err) {
             if (err) {
@@ -589,7 +590,6 @@ define([
                 callback();
             }
         });     
-        }
     })
 
 
