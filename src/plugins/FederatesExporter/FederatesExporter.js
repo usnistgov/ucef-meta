@@ -8,28 +8,19 @@ on Wed Dec 02 2015 15:05:52 GMT-0600 (CST).
 
 Modified by T. Kramer 
 
-Reformatted in C style, as far as possible.
-
-The original version of this had 'C2Federates/Templates/Templates'
-where there is now 'FederatesExporter/Templates/Templates'
-The TEMPLATES were not being used. They are now being used.
-
-Code changes are marked "added" or "changed". Documentation changes are
-not marked.
-
 */
 
 define
 ([
   'text!./metadata.json',
   'plugin/PluginBase',
-  'common/util/ejs',             // added
+  'common/util/ejs',
   'C2Core/ModelTraverserMixin',
   'C2Core/xmljsonconverter',
   'C2Core/MavenPOM',
   'FederatesExporter/PubSubVisitors',
   'FederatesExporter/RTIVisitors',
-  'FederatesExporter/Templates/Templates', // modified
+  'FederatesExporter/Templates/Templates',
   'C2Federates/GenericFederate',
   'C2Federates/JavaFederate',
   'C2Federates/MapperFederate',
@@ -38,13 +29,13 @@ define
   'C2Federates/CPNFederate'],
  function (pluginMetadata,
 	   PluginBase,
-	   ejs,                 // added
+	   ejs,
 	   ModelTraverserMixin,
 	   JSON2XMLConverter,
 	   MavenPOM,
 	   PubSubVisitors,
 	   RTIVisitors,
-	   TEMPLATES,           // modified
+	   TEMPLATES,
 	   GenericFederate,
 	   JavaFederate,
 	   MapperFederate,
@@ -191,14 +182,13 @@ define
 			       });
           });
        
-       // Added fom.xml generator (copied from DeploymentExporter.js)
        // This file generator uses a traverser as well as a file writer
 	 
-       self.fomModel = {federationname: self.projectName, //added
+       self.fomModel = {federationname: self.projectName,
 			version: self.getCurrentConfig().exportVersion.trim(),
-			pocOrg: self.mainPom.groupId, //added
+			pocOrg: self.mainPom.groupId,
 			objects: [],
-			dateString: "", //added
+			dateString: "",
 			interactions: []};
 
        self.fileGenerators.push(function (artifact, callback)
@@ -246,10 +236,10 @@ define
 	       return ejs.render(TEMPLATES["fedfile_siminteraction_xml.ejs"],
 				 intModel);
 	     }
-	   var today = new Date();         //added
-	   var year = today.getFullYear(); //added
-	   var month = today.getMonth();   //added
-	   var day = today.getDate();      //added
+	   var today = new Date();
+	   var year = today.getFullYear();
+	   var month = today.getMonth();
+	   var day = today.getDate();
 	   self.fomModel.interactions_xml = [];
 	   self.fomModel.dateString = year + "-" +
 	     ((month < 10) ? "0" : "") + month + "-" +
@@ -278,7 +268,7 @@ define
 	     {
 	       var objModel = {name: object.name,
 			       attributes: object.attributes,
-			       indent: space, // added
+			       indent: space,
 			       children: [],
 			       sharing: ""};
 	       if (object.name === "ObjectRoot")
@@ -350,7 +340,6 @@ define
 				}
 			    });
 	 });
-       //end added file generator code
        
      generateFiles = function(artifact, fileGenerators, doneBack)
        {
