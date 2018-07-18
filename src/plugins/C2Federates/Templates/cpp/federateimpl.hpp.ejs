@@ -21,12 +21,14 @@ class <%=classname%> : public <%=classname%>Base {
 <%} -%>
 <% subscribedobjectdata.forEach(function(object_data) { -%>
 
-        void handleObjectClass(<%=object_data.name%> object);
+        void handleObjectClass(boost::shared_ptr<<%=object_data.name%>> object);
 <% }); -%>
 <% subscribedinteractiondata.forEach(function(interaction_data) { -%>
 
-        void handleInteractionClass(<%=interaction_data.name%> interaction);
+        void handleInteractionClass(boost::shared_ptr<<%=interaction_data.name%>> interaction);
 <% }); -%>
+
+        void checkReceivedSubscriptions();
 
     public:
         typedef <%=classname%>Base Super;
