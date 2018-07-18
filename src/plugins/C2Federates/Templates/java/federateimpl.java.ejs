@@ -51,11 +51,12 @@ public class <%= classname %> extends <%= classname %>Base {
 <% } -%>
     }
 <% if (subscribedinteractiondata.length + subscribedobjectdata.length > 0) { -%>
-
-    private void CheckReceivedSubscriptions() {
-        log.debug("in CheckReceivedSubscriptions");
-<% if (subscribedinteractiondata.length > 0) { -%>
 <% var conditional = "if"; -%>
+
+    private void checkReceivedSubscriptions() {
+        log.debug("in checkReceivedSubscriptions");
+<% if (subscribedinteractiondata.length > 0) { -%>
+<% conditional = "if"; -%>
 
         InteractionRoot interaction = null;
         while ((interaction = getNextInteractionNoWait()) != null) {
@@ -111,11 +112,6 @@ public class <%= classname %> extends <%= classname %>Base {
         }
 
         ///////////////////////////////////////////////////////////////////////
-        // Call CheckReceivedSubscriptions(<message>) here to receive
-        // subscriptions published before the first time step.
-        ///////////////////////////////////////////////////////////////////////
-
-        ///////////////////////////////////////////////////////////////////////
         // TODO perform initialization that depends on other federates below //
         ///////////////////////////////////////////////////////////////////////
 
@@ -141,7 +137,7 @@ public class <%= classname %> extends <%= classname %>Base {
 <% interaction_data.parameters.forEach(function(parameter) { -%>
             //    v<%= interaction_data.name %>.set_<%= parameter.name %>( < YOUR VALUE HERE > );
 <% }) -%>
-            //    v<%= interaction_data.name %>.sendInteraction(getLRC(), currentTime);
+            //    v<%= interaction_data.name %>.sendInteraction(getLRC(), currentTime + getLookAhead());
             //
 <% }) -%>
             ////////////////////////////////////////////////////////////////////////////////////////
@@ -157,19 +153,16 @@ public class <%= classname %> extends <%= classname %>Base {
             //    v<%= object_data.name %>.set_<%= parameter.name %>(<YOUR VALUE HERE >);
 <% }) -%>
 <% } -%>
-            //    v<%= object_data.name %>.updateAttributeValues(getLRC(), currentTime);
+            //    v<%= object_data.name %>.updateAttributeValues(getLRC(), currentTime + getLookAhead());
             //
 <% }) -%>
             //////////////////////////////////////////////////////////////////////////////////////////
 <% } -%>
 <% if (subscribedinteractiondata.length + subscribedobjectdata.length > 0) { -%>
 
-            CheckReceivedSubscriptions();
+            checkReceivedSubscriptions();
 <% } -%>
 
-            // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-            // DO NOT MODIFY FILE BEYOND THIS LINE
-            // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             currentTime += super.getStepSize();
             AdvanceTimeRequest newATR = new AdvanceTimeRequest(currentTime);
             putAdvanceTimeRequest(newATR);
