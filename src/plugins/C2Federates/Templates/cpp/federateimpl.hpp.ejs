@@ -8,33 +8,50 @@
 
 
 class <%=classname%> : public <%=classname%>Base {
-private:
-    double m_currentTime;
+    private:
+        double m_currentTime;
+<% if (publishedobjectdata.length > 0) { -%>
 
-public:
-    typedef <%=classname%>Base Super;
+        // TODO declare all the published object instances
+<% publishedobjectdata.forEach(function(object_data) { -%>
+        // <%=object_data.name%> v<%=object_data.name%>;
+<% }) -%>
 
-    <%=classname%>(FederateConfig *configuration): Super(configuration) {}
+        void initObjectInstances();
+<%} -%>
+<% subscribedobjectdata.forEach(function(object_data) { -%>
 
-    virtual ~<%=classname%>( void ) throw (RTI::FederateInternalError) {}
+        void handleObjectClass(<%=object_data.name%> object);
+<% }); -%>
+<% subscribedinteractiondata.forEach(function(interaction_data) { -%>
 
-    class <%=classname%>ATRCallback : public ATRCallback {
-        private:
-            <%=classname%> &m_federateInstance;
-        public:
-            <%=classname%>ATRCallback(<%=classname%> &federateInstance): m_federateInstance(federateInstance) {}
+        void handleInteractionClass(<%=interaction_data.name%> interaction);
+<% }); -%>
+
+    public:
+        typedef <%=classname%>Base Super;
+
+        <%=classname%>(FederateConfig *configuration): Super(configuration) {}
+
+        virtual ~<%=classname%>( void ) throw (RTI::FederateInternalError) {}
+
+        class <%=classname%>ATRCallback : public ATRCallback {
+            private:
+                <%=classname%> &m_federateInstance;
+            public:
+                <%=classname%>ATRCallback(<%=classname%> &federateInstance): m_federateInstance(federateInstance) {}
                 
-            virtual void execute( void ) {
-                m_federateInstance.execute();
-            }
+                virtual void execute( void ) {
+                    m_federateInstance.execute();
+                }
 
-            virtual SP clone( void ) {
-                return SP(new <%=classname%>ATRCallback(*this));
-            }
-    };
+                virtual SP clone( void ) {
+                    return SP(new <%=classname%>ATRCallback(*this));
+                }
+        };
 
-    void initialize( void );
-    void execute( void );
+        void initialize( void );
+        void execute( void );
 };
 
 #endif
