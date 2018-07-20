@@ -184,6 +184,12 @@ define([
                             }
                         }
                     };
+
+                    for(var oid in self.objects){
+                        if(self.objects[oid].name != "ObjectRoot" && self.cppCorePackageOISpecs.hasOwnProperty(self.objects[oid].name)){
+                            objToRender.push(self.objects[oid]);
+                        }
+                    }
                     renderNextObject();
                 });
 

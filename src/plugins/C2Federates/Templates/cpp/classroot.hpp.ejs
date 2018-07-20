@@ -312,7 +312,7 @@ public:
 	
 	static int get_<%=isinteraction?"parameter":"attribute"%>_handle( const std::string &className, const std::string &datamemberName ) {
 	
-		StringIntegerMap::iterator simItr = getDatamemberNameHandleMap().find( className + "," + datamemberName );
+		StringIntegerMap::iterator simItr = getDatamemberNameHandleMap().find( className + "." + datamemberName );
 		if ( simItr == getDatamemberNameHandleMap().end() ) {
 			std::cerr << "Bad <%=isinteraction?"parameter":"attribute"%> \"" << datamemberName << "\" for class \"" << className << "\" on get_<%=isinteraction?"parameter":"attribute"%>_handle." << std::endl;
 			return -1;
