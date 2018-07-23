@@ -1,0 +1,23 @@
+{
+  "id": "UploadDeploymentArtifacts",
+  "name": "UploadDeploymentArtifacts",
+  "version": "0.1.0",
+  "description": "",
+  "icon": {
+    "class": "glyphicon glyphicon-cog",
+    "src": ""
+  },
+  "disableServerSideExecution": false,
+  "disableBrowserSideExecution": true,
+  "writeAccessRequired": false,
+  "configStructure": [
+  {
+        "name": "deploymentFiles",
+        "displayName": "Deployment artifacts",
+        "description": "Currently need only the pom.xml and any model files",
+        "value": "",
+        "valueType": "asset",
+        "readOnly": false
+    }
+  ]
+}

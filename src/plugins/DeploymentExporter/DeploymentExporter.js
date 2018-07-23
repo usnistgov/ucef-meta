@@ -14,7 +14,9 @@ define([
     'DeploymentExporter/Templates/Templates',
     'FederatesExporter/RTIVisitors',
     'FederatesExporter/PubSubVisitors',
-    'combinatorics/combinatorics'
+    'combinatorics/combinatorics',
+    'q',
+    'superagent'
 ], function (pluginMetadata,
     PluginBase,
     ejs,
@@ -23,7 +25,9 @@ define([
     TEMPLATES,
     RTIVisitors,
     PubSubVisitors,
-    combinations) {
+    combinations,
+    Q,
+    superagent) {
     'use strict';
 
     pluginMetadata = JSON.parse(pluginMetadata);
@@ -65,8 +69,11 @@ define([
             generateFiles,
             numberOfFilesToGenerate,
             finishExport,
+            // getUserIdAsync,
             pomModel = {};
-
+        //self.workingDir="/home/ubuntu/blobdir"     
+        self.workingDir="/home/ubuntu/file-server"
+ 
         self.fileGenerators = [];
         self.fom_sheets = {};
         self.federates = [];
@@ -106,7 +113,6 @@ define([
             []
         ]
 
-
         self.projectName = self.core.getAttribute(self.rootNode, 'name');
         self.bindAddress = self.getCurrentConfig().bindAddress.trim();
 
@@ -123,6 +129,14 @@ define([
         pomModel.porticoPOM.groupId = "org.porticoproject";
         pomModel.porticoPOM.version = self.getCurrentConfig().porticoReleaseNum;
         pomModel.porticoPOM.scope = "provided";
+
+       	self.runningOnClient = false;
+
+        if (typeof WebGMEGlobal !== 'undefined') {
+	        self.runningOnClient = true;
+	        self.notify('error', 'Cannot compile while running in client! Please re-run the plugin and enable server execution!');
+            return self.result.success = false;
+        }
 
         //Add POM generator
         self.fileGenerators.push(function (artifact, callback) {
@@ -533,7 +547,7 @@ define([
                         artifact.addFile('conf/' + experimentmodel.name.toLowerCase() + '/coaSelection_' + experimentmodel.name.toLowerCase() + '.json', JSON.stringify(experimentmodelcoaselection, null, 2), function (err) {
                             response.push(err)
                             if (response.length == self.experimentPaths.length) {
-                                if (response.includes(err)) {
+                                if (response.indexOf(err) == -1) {
                                     callback(err);
                                 } else {
                                     callback();
@@ -545,7 +559,7 @@ define([
                         artifact.addFile('conf/' + experimentmodel.name.toLowerCase() + "/"+ experimentmodel.name.toLowerCase() + '.json', JSON.stringify(experimentmodel.exptConfig, null, 2), function (err) {
                             response.push(err)
                             if (response.length == self.experimentPaths.length) {
-                                if (response.includes(err)) {
+                                if (response.indexOf(err) == -1) {
                                     callback(err);
                                 } else {
                                     callback();
@@ -560,37 +574,161 @@ define([
             }
 
         });
-    self.experimentModel = {
-        'script': {
-            'federateTypesAllowed': [],
-            'expectedFederates': [],
-            'lateJoinerFederates': []
-        }
-    };
-    // list of experiments.json
-    self.fileGenerators.push(function (artifact, callback) {
-        var experimentlist = []
-        if (self.experimentPaths.length != 0) {
-             self.experimentPaths.forEach(function (objPath) {
-                 self.experimentModelConfig[objPath].forEach(function (expSet) {
-                     if(experimentlist.indexOf(self.core.getAttribute(self.core.getParent(expSet), "name"))==-1){
-                        experimentlist.push(self.core.getAttribute(self.core.getParent(expSet), "name"))
-                     }
-                     
-                 })
-                
-             })
 
-            artifact.addFile('conf/' + 'experimentlist.json', JSON.stringify(experimentlist, null, 2), function (err) {
-            if (err) {
-                callback(err);
-                return;
+
+   /// Generating the Docker Compose for each experiment type:
+   /// 
+    self.fileGenerators.push(function (artifact, callback) {
+            var timestamp = (new Date()).getTime();
+
+
+            self.getDockerDetails(function(err, DockerDetails){
+                                if(err){
+                                    callback(err, self.result);
+                                    return;
+                                }
+                                console.log("DockerDIR:",DockerDetails.DIR)
+                                console.log("DockerJAVA:",DockerDetails.Java)
+                                console.log("DockerCPP:",DockerDetails.CPP)
+                                 
+            
+            self.inputPrefix = DockerDetails.DIR + '/input/';
+            self.outputPrefix = DockerDetails.DIR + '/output/';           
+                            
+           
+
+
+                self.dockerInfoMap = {
+                    
+                    'JavaFederate': {
+                    'name': DockerDetails.Java,
+                    'profile':"ExecJava"
+                    },
+                    
+                    'CppFederate': {
+                    'name': DockerDetails.CPP,
+                    
+                    'profile':"CppFed"
+                    },
+                    'FedManager': {
+                    'name': DockerDetails.FedMgr,
+                    'profile':"ExecJava"
+                    },
+                    
+                };
+                var response = []
+
+                if (self.experimentPaths.length != 0) {
+                    self.experimentPaths.forEach(function (objPath) {
+
+                            var experimentmodel = {
+                                name: "",
+                                exptConfig: {
+                                    'federateTypesAllowed': [],
+                                }
+                            }
+
+                            var experimentmodelcoaselection = {}
+
+    
+                            self.experimentModelConfig[objPath].forEach(function (expSet) {
+                            //  This is the reference name or the experiment name
+                            var reference_name = self.core.getAttribute(expSet, "name").split("-")[0];
+
+                            experimentmodel.name = self.core.getAttribute(self.core.getParent(expSet), "name")
+                            var temp = self.federates.filter(function(key){if (key["name"]==reference_name){return( key["FederateType"])}})
+                            // experimentmodel.exptConfig.federateTypesAllowed.push(reference_name)
+                            var DockerImageType = temp[0].FederateType
+                            experimentmodel.exptConfig.federateTypesAllowed.push({name:reference_name, type: DockerImageType, count :self.core.getAttribute(expSet, "count")})
+
+                        })
+                        console.log(JSON.stringify(experimentmodel.exptConfig, null, 2))
+
+                        self.dockerFileData = ejs.render(
+                            TEMPLATES['dockerFileTemplate.ejs'],
+                            {
+                            cpswtng_archiva_ip: DockerDetails.cpswtng_archiva,
+                            inputPrefix: self.inputPrefix,
+                            outputPrefix: self.outputPrefix,
+                            fedInfos: experimentmodel.exptConfig.federateTypesAllowed,
+                            dockerInfoMap: self.dockerInfoMap,
+                            }
+                        );
+
+                        experimentmodel.exptConfig.COASelectionToExecute = Object.keys(experimentmodelcoaselection)[0]    
+                        artifact.addFile('conf/' + experimentmodel.name.toLowerCase() + "/"+ "docker-compose.yml", self.dockerFileData, function (err) {
+                            response.push(err)
+                            if (response.length == self.experimentPaths.length) {
+                                if (response.indexOf(err) == -1) {
+                                    callback(err);
+                                } else {
+                                    callback();
+                                }
+                            }
+                        });
+
+                        artifact.addFile('conf/' + experimentmodel.name.toLowerCase() + "/"+ "start.sh", ejs.render(TEMPLATES['startScript.ejs'], {}), function (err) {
+                            response.push(err)
+                            if (response.length == self.experimentPaths.length) {
+                                if (response.indexOf(err) == -1) {
+                                    callback(err);
+                                } else {
+                                    callback();
+                                }
+                            }
+                        });
+
+                        artifact.addFile('conf/' + experimentmodel.name.toLowerCase() + "/"+ "federatelist.txt", ejs.render(TEMPLATES['federatelist.ejs'], {
+                            cpswtng_archiva_ip: DockerDetails.cpswtng_archiva,
+                            inputPrefix: self.inputPrefix,
+                            outputPrefix: self.outputPrefix,
+                            fedInfos: experimentmodel.exptConfig.federateTypesAllowed,
+                            dockerInfoMap: self.dockerInfoMap,
+                            }), function (err) {
+                            response.push(err)
+                            if (response.length == self.experimentPaths.length) {
+                                if (response.indexOf(err) == -1) {
+                                    callback(err);
+                                } else {
+                                    callback();
+                                }
+                            }
+                        });
+
+                    })
             } else {
                 callback();
             }
-        });     
-        }
-    })
+
+             });
+
+        });
+
+    ///--------------------------------------
+    // list of experiments.json
+    if (self.experimentPaths.length != 0) {
+
+        self.fileGenerators.push(function (artifact, callback) {
+
+            var experimentlist = {}
+
+                 self.experimentPaths.forEach(function (objPath) {
+                     self.experimentModelConfig[objPath].forEach(function (expSet) {
+                        experimentlist[self.core.getAttribute(self.core.getParent(expSet), "name").toLowerCase()] = self.core.getAttribute(self.core.getParent(expSet), "name").toLowerCase()
+                     })
+                 })
+
+                artifact.addFile('conf/' + 'experimentlist.json', JSON.stringify(experimentlist, null, 2), function (err) {
+                if (err) {
+                    callback(err);
+                    return;
+                } else {
+                    callback();
+                }
+            });     
+        });
+    }
+
 
 
 
@@ -626,28 +764,36 @@ define([
         });
     });
 
-    // Experiment Config    
-    self.fileGenerators.push(function (artifact, callback) {
-        self.federates.forEach(function (fed) {
-            self.experimentModel.script.federateTypesAllowed.push(fed.name)
-            self.experimentModel.script.expectedFederates.push({
-                "federateType": fed.name,
-                "count": 1
-            });
-            self.experimentModel.script.lateJoinerFederates.push({
-                "federateType": fed.name,
-                "count": 0
-            });
-        });
-        artifact.addFile('conf/' + 'experimentConfig.json', JSON.stringify(self.experimentModel.script, null, 2), function (err) {
-            if (err) {
-                callback(err);
-                return;
-            } else {
-                callback();
-            }
-        });
-    });
+
+    // self.experimentModel = {
+    //     'script': {
+    //         'federateTypesAllowed': [],
+    //         'expectedFederates': [],
+    //         'lateJoinerFederates': []
+    //     }
+    // };
+    // // Experiment Config    
+    // self.fileGenerators.push(function (artifact, callback) {
+    //     self.federates.forEach(function (fed) {
+    //         self.experimentModel.script.federateTypesAllowed.push(fed.name)
+    //         self.experimentModel.script.expectedFederates.push({
+    //             "federateType": fed.name,
+    //             "count": 1
+    //         });
+    //         self.experimentModel.script.lateJoinerFederates.push({
+    //             "federateType": fed.name,
+    //             "count": 0
+    //         });
+    //     });
+    //     artifact.addFile('conf/' + 'experimentConfig.json', JSON.stringify(self.experimentModel.script, null, 2), function (err) {
+    //         if (err) {
+    //             callback(err);
+    //             return;
+    //         } else {
+    //             callback();
+    //         }
+    //     });
+    // });
 
     // Federate Config JSON
     self.fileGenerators.push(function (artifact, callback) {
@@ -668,7 +814,7 @@ define([
             artifact.addFile('conf/' + fed.name.toLowerCase() + '.json', JSON.stringify(FederateJsonModel, null, 2), function (err) {
                 response.push(err)
                 if (response.length == self.federates.length) {
-                    if (response.includes(err)) {
+                    if (response.indexOf(err) == -1) {
                         callback(err);
                     } else {
                         callback();
@@ -731,7 +877,13 @@ define([
         }
     }
 
+   
+
     finishExport = function (err) {
+        
+        var path = require('path')
+	    var filendir = require('filendir')
+        var fs  = require('fs')
 
         //var outFileName = self.projectName + '.json'
         var artifact = self.blobClient.createArtifact(self.projectName.trim().replace(/\s+/g, '_') + '_deployment');
@@ -743,12 +895,141 @@ define([
                     callback(err, self.result);
                     return;
                 }
-
+                    
                 self.blobClient.saveAllArtifacts(function (err, hashes) {
                     if (err) {
                         callback(err, self.result);
                         return;
                     }
+
+                    if(!self.runningOnClient){
+                        for (var idx = 0; idx < hashes.length; idx++) {
+                        // self.logger.info( 'Meta data for desert config: ' + JSON.stringify( metadata, null, 2 ) );
+                        console.log(hashes[0])    
+
+                        self.blobClient.getObject( hashes[idx], function ( err, content ) {
+                            if ( err ) {
+                                self.logger.error( 'Failed obtaining desert configuration, err: ' + err.toString() );
+                                return callback( 'Failed obtaining desert configuration, err: ' + err.toString() );
+                            }
+                            // Setup directories and file-paths.
+                            
+                            // console.log(self.project.projectId)
+                            // console.log(self.project.projectName)
+
+                            self.getUserDir(function(err, filestoreDir){
+                                if(err){
+                                    callback(err, self.result);
+                                    return;
+                                }
+                                
+                                self.workingDir = filestoreDir
+                                console.log("workingDIr:",self.workingDir)
+                                   self.getUserIdAsync(function ( err, userInfo){
+                                 if (err) {
+                                    callback(err, self.result);
+                                    return;
+                                }
+
+                                // console.log(self.workingDir,hashes[0])
+                                var userDir = path.normalize(path.join(self.workingDir,userInfo))
+                                var projectDir = self.project.projectName
+                                
+                                var projectPath = path.join( userDir,projectDir) 
+
+                                // var tmppath =path.join( self.workingDir, hashes[0]) 
+                                var runDir = path.normalize( projectPath);
+                                console.log(runDir)    
+                                
+                                console.log(runDir)
+                                if ( !fs.existsSync(userDir) ) {
+                                    self.logger.info( 'Directory"' + userDir + '"does not exist' );
+                                    fs.mkdirSync( userDir );
+                                    self.logger.info( 'Created directory for "' + userDir + '".' );
+                                }
+                                
+                                if ( !fs.existsSync( runDir ) ) {
+                                    self.logger.info( 'Directory"' + runDir + '"does not exist' );
+                                    fs.mkdirSync( runDir );
+                                    self.logger.info( 'Created directory for "' + runDir + '".' );
+                                }
+                                
+                                var inputZip = path.normalize( path.join( runDir, "deployer.zip" ) );
+                                fs.writeFile( inputZip, content, function ( err ) {
+                                    var cmd;
+                                    if ( err ) {
+                                        self.logger.error( 'Failed writing out ZIP, err: ' + err.toString() );
+                                        return callback( 'Failed writing out ZIP, err: ' + err.toString() );
+                                    }
+                                    self.logger.info( 'Created input XML at ' + inputZip );
+                                   const unzip =require('unzip')
+                                   fs.createReadStream(inputZip).pipe(unzip.Extract({ path: runDir }));
+
+                                })
+
+                                // Next we need to add this project to the user project list
+                                var userProjectJSON = path.join(userDir,'UserProjects.json') 
+                                // var userProjects = require(userProjectJSON);
+                                // var fs = require('fs');
+
+                                // Check that the file exists locally
+                                
+                                if(!fs.existsSync(userProjectJSON)) {
+                                    console.log("File not found");
+                                    var obj = {}
+                                    obj[self.project.projectName] =self.project.projectName
+                                    let data = JSON.stringify(obj, null, 2);
+
+                                    fs.writeFile(userProjectJSON, data, (err) => {  
+                                        if (err) throw err;
+                                            console.log('Data written to file');
+                                        });
+
+
+                                }
+                                // The file *does* exist
+                                else {
+                                    fs.readFile(userProjectJSON, 'utf8', function (err, data) {
+                                        if (err) throw err; // we'll not consider error handling for now
+                                        var obj = JSON.parse(data);
+                                        
+                                        if (!(obj.hasOwnProperty(self.project.projectName))) {
+                                            obj[self.project.projectName]=self.project.projectName
+                                            let data = JSON.stringify(obj, null, 2);
+
+                                            fs.writeFile(userProjectJSON, data, (err) => {  
+                                            if (err) throw err;
+                                                console.log('Data written to file');
+                                            });
+
+
+                                        }
+                                        else{
+                                            console.log("entry already present")
+                                        }
+                                        console.log(obj)
+                                    
+                                    });
+                                }    
+                            })
+                            
+
+                            
+                                
+                            })
+
+                         
+                            // self.logger.info( 'Current input XML for desert ' + inputXml );    
+
+                        })
+                                                            
+                    }; 
+                        
+                    }   
+                    // Next we save all the artifacts to a directory location:
+                       
+
+
 
                     // This will add a download hyperlink in the result-dialog.
                     for (var idx = 0; idx < hashes.length; idx++) {
@@ -769,7 +1050,7 @@ define([
                         if (err) {
                             callback(err, self.result);
                             return;
-                        }
+                        } 
                         self.result.setSuccess(true);
                         callback(null, self.result);
                     });
@@ -794,6 +1075,94 @@ define([
 
 };
 
+
+DeploymentExporter.prototype.getDockerDetails = function (callback) {
+        var deferred,
+            req;
+
+        deferred = Q.defer();
+        req = superagent.get(this.blobClient.origin + '/api/componentSettings/DockerDetails');
+        console.log(this.blobClient.origin);
+        if (typeof this.blobClient.webgmeToken === 'string') {
+            // We're running on the server set the token.
+            req.set('Authorization', 'Bearer ' + this.blobClient.webgmeToken);
+        } else {
+            // We're running inside the browser cookie will be used at the request..
+        }
+
+        req.end(function (err, res) {
+            if (err) {
+                deferred.reject(err);
+            } else {
+                deferred.resolve(res.body);
+            }
+        });
+
+        return deferred.promise.nodeify(callback);
+    };
+
+
+
+ DeploymentExporter.prototype.getUserDir = function (callback) {
+        var deferred,
+            req;
+
+        deferred = Q.defer();
+        req = superagent.get(this.blobClient.origin + '/api/componentSettings/UserDir');
+        console.log(this.blobClient.origin);
+
+        if (typeof this.blobClient.webgmeToken === 'string') {
+            // We're running on the server set the token.
+            req.set('Authorization', 'Bearer ' + this.blobClient.webgmeToken);
+        } else {
+            // We're running inside the browser cookie will be used at the request..
+        }
+
+        req.end(function (err, res) {
+            if (err) {
+                deferred.reject(err);
+            } else {
+                deferred.resolve(res.body.folder);
+            }
+        });
+
+        return deferred.promise.nodeify(callback);
+    };
+
+ DeploymentExporter.prototype.getUserIdAsync = function (callback) {
+        var deferred,
+            req;
+
+        if (typeof this.project.userName === 'string') {
+            // Running from bin script
+            return Q(this.project.userName).nodeify(callback);
+        }
+
+        if (this.gmeConfig.authentication.enable === false) {
+            return Q(this.gmeConfig.authentication.guestAccount).nodeify(callback);
+        }
+
+        deferred = Q.defer();
+        req = superagent.get(this.blobClient.origin + '/api/user');
+        console.log(this.blobClient.origin);
+
+        if (typeof this.blobClient.webgmeToken === 'string') {
+            // We're running on the server set the token.
+            req.set('Authorization', 'Bearer ' + this.blobClient.webgmeToken);
+        } else {
+            // We're running inside the browser cookie will be used at the request..
+        }
+
+        req.end(function (err, res) {
+            if (err) {
+                deferred.reject(err);
+            } else {
+                deferred.resolve(res.body._id);
+            }
+        });
+
+        return deferred.promise.nodeify(callback);
+    };
 
 DeploymentExporter.prototype.visit_FederateExecution = function (node, parent, context) {
 
