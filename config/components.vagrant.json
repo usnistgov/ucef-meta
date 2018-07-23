@@ -1,0 +1,51 @@
+{
+        "CodeEditor": {
+        "theme": "default",
+        "keyBinding": "sublime",
+        "autoSaveInterval": "2000",
+        "syntaxToModeMap": {
+            "Java": {"name":"text/x-java"},
+            "UNIX": {"name":"gfm"}
+        },
+        "attrToSyntaxMap": {
+            "SimpleMappingConnection": {
+                "guardCondition": "Java",
+                "mapSpecs": "Java"
+            },
+            "ComplexMappingConnection": {
+                "guardCondition": "Java",
+                "mapSpecs": "Java"
+            },
+            "Action": {
+                "ParamValues": "UNIX"
+            },
+            "OutcomeFilter": {
+                "Expression": "Java"
+            },
+            "COAException": {
+                "branchesFinishedCondition": "UNIX"
+            },
+            "InteractionMapping": {
+                "guardCondition": "Java",
+                "mapSpecs": "Java"
+            },
+            "FederateExecution": {
+                "Command": "UNIX"
+            }
+        }
+    },
+    "Registry": {
+        "useRemote": false
+    },
+"UserDir": {
+    "folder": "/home/vagrant/blobdir"
+    },
+    
+    "DockerDetails": {
+        "Java":"cpswt/c2wtcore_v002:170626",
+        "CPP":"cpswt/c2wtcore_v002:170626",
+        "FedMgr":"cpswt/c2wtcore_v002:170626",
+        "DIR":"$PWD",
+        "cpswtng_archiva":"10.0.2.15"
+        }
+}
