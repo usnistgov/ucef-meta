@@ -150,7 +150,7 @@ public:
 	}
 
 <% }); -%>
-private:
+protected:
 <% /*datamembers:objectmembers()*/ -%>
 <% datamembers.forEach(function(datamember){ -%>
 	Attribute< int, <%- helpers.cppjavaTypeMap(datamember.parameterType) %> > _<%=datamember.name%>;
