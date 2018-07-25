@@ -10,6 +10,7 @@ import org.cpswt.hla.ObjectRoot;
 import org.cpswt.hla.InteractionRoot;
 <% } -%>
 import org.cpswt.hla.base.AdvanceTimeRequest;
+import org.cpswt.utils.CpswtDefaults;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -166,7 +167,7 @@ public class <%= classname %> extends <%= classname %>Base {
 
 
             // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-            // DO NOT MODIFY Method BEYOND THIS LINE
+            // DO NOT MODIFY METHOD BEYOND THIS LINE
             // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             AdvanceTimeRequest newATR = new AdvanceTimeRequest(currentTime);
             putAdvanceTimeRequest(newATR);

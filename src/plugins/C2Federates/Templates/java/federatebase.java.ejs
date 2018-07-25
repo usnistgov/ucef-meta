@@ -21,21 +21,17 @@ package <%= simname %>;
 import hla.rti.EventRetractionHandle;
 import hla.rti.LogicalTime;
 import hla.rti.ReceivedInteraction;
-import hla.rti.ResignAction;
 
 import org.cpswt.hla.C2WInteractionRoot;
 import org.cpswt.hla.InteractionRoot;
 import org.cpswt.hla.SubscribedInteractionFilter;
 import org.cpswt.hla.SynchronizedFederate;
-import org.cpswt.hla.SimEnd;
 
 import org.cpswt.config.FederateConfig;
 import org.cpswt.utils.CpswtDefaults;
 
 import org.cpswt.*;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 
 <% if(melderpackagename){ -%>
@@ -45,8 +41,6 @@ import <%= melderpackagename %>.<%= classname %>RTIFactory;
 
 public class <%= classname %>Base extends <% if(melderpackagename) { %><%= classname %><% }else{ %>SynchronizedFederate<% } %> {
 
-	private static final Logger logger = LogManager.getLogger(<%= classname %>Base.class);
-	boolean exitCondition = false;	// set to true when SimEnd is received
 
 <% if(melderpackagename){ -%>
 	static {
@@ -156,46 +150,5 @@ public class <%= classname %>Base extends <% if(melderpackagename) { %><%= class
 		super.receiveInteraction( interactionClass, theInteraction, userSuppliedTag, theTime, retractionHandle );			
 	}
 
-    /**
-     * Handles a simEnd interaction. Overrides the SynchronizedFederate default behavior which is to abort 
-     *
-     * @return void
-     */
-	@Override
-    protected void handleIfSimEnd(int interactionClass, ReceivedInteraction theInteraction, LogicalTime theTime) {
-        if (SimEnd.match(interactionClass)) {
-            logger.info("{}: SimEnd interaction received, exiting...", getFederateId());
-            
-            // this one will set flag allowing foreground federate to gracefully shut down
-            exitCondition = true;
-        }
-    }
-    
-	/**
-	 * Processes graceful shut-down of hla federate
-	 *
-	 * @return void
-	 * @throws hla.rti.ConcurrentAccessAttempted 
-	 */    
-	public void exitGracefully() throws hla.rti.ConcurrentAccessAttempted
-	{
-
-		// notify FederationManager about resign
-		super.notifyFederationOfResign();
-
-		try {
-			// getLRC().tick();
-			getLRC().resignFederationExecution(ResignAction.DELETE_OBJECTS);
-		} catch (Exception e) {
-			logger.error("Error during resigning federate: {}", getFederateId());
-			logger.error(e.getMessage());
-		}
-
-		// Wait for 10 seconds for Federation Manager to recognize that the federate has resigned.
-		try {
-			Thread.sleep(CpswtDefaults.SimEndWaitingTimeMillis);
-		} catch (Exception e) {
-			logger.error(e.getMessage());
-		}
-	}
+   
 }
