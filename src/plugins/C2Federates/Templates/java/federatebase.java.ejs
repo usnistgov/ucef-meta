@@ -32,15 +32,12 @@ import org.cpswt.utils.CpswtDefaults;
 
 import org.cpswt.*;
 
-
-
 <% if(melderpackagename){ -%>
 import <%= melderpackagename %>.<%= classname %>;
 import <%= melderpackagename %>.<%= classname %>RTIFactory;
 <% } -%>
 
 public class <%= classname %>Base extends <% if(melderpackagename) { %><%= classname %><% }else{ %>SynchronizedFederate<% } %> {
-
 
 <% if(melderpackagename){ -%>
 	static {
@@ -149,6 +146,4 @@ public class <%= classname %>Base extends <% if(melderpackagename) { %><%= class
 
 		super.receiveInteraction( interactionClass, theInteraction, userSuppliedTag, theTime, retractionHandle );			
 	}
-
-   
 }
