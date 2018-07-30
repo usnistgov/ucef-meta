@@ -576,6 +576,7 @@ define([
         });
 
 
+
    /// Generating the Docker Compose for each experiment type:
    /// 
     self.fileGenerators.push(function (artifact, callback) {
@@ -706,28 +707,30 @@ define([
 
     ///--------------------------------------
     // list of experiments.json
-    if (self.experimentPaths.length != 0) {
-
-        self.fileGenerators.push(function (artifact, callback) {
-
-            var experimentlist = {}
-
-                 self.experimentPaths.forEach(function (objPath) {
-                     self.experimentModelConfig[objPath].forEach(function (expSet) {
-                        experimentlist[self.core.getAttribute(self.core.getParent(expSet), "name").toLowerCase()] = self.core.getAttribute(self.core.getParent(expSet), "name").toLowerCase()
-                     })
+    self.fileGenerators.push(function (artifact, callback) {
+        var experimentlist = []
+        if (self.experimentPaths.length != 0) {
+             self.experimentPaths.forEach(function (objPath) {
+                 self.experimentModelConfig[objPath].forEach(function (expSet) {
+                     if(experimentlist.indexOf(self.core.getAttribute(self.core.getParent(expSet), "name"))==-1){
+                        experimentlist.push(self.core.getAttribute(self.core.getParent(expSet), "name"))
+                     }
+                     
                  })
+                
+             })
+            }
 
-                artifact.addFile('conf/' + 'experimentlist.json', JSON.stringify(experimentlist, null, 2), function (err) {
-                if (err) {
-                    callback(err);
-                    return;
-                } else {
-                    callback();
-                }
-            });     
-        });
-    }
+            artifact.addFile('conf/' + 'experimentlist.json', JSON.stringify(experimentlist, null, 2), function (err) {
+            if (err) {
+                callback(err);
+                return;
+            } else {
+                callback();
+            }
+        });     
+    })
+
 
 
 
@@ -765,35 +768,35 @@ define([
     });
 
 
-    // self.experimentModel = {
-    //     'script': {
-    //         'federateTypesAllowed': [],
-    //         'expectedFederates': [],
-    //         'lateJoinerFederates': []
-    //     }
-    // };
-    // // Experiment Config    
-    // self.fileGenerators.push(function (artifact, callback) {
-    //     self.federates.forEach(function (fed) {
-    //         self.experimentModel.script.federateTypesAllowed.push(fed.name)
-    //         self.experimentModel.script.expectedFederates.push({
-    //             "federateType": fed.name,
-    //             "count": 1
-    //         });
-    //         self.experimentModel.script.lateJoinerFederates.push({
-    //             "federateType": fed.name,
-    //             "count": 0
-    //         });
-    //     });
-    //     artifact.addFile('conf/' + 'experimentConfig.json', JSON.stringify(self.experimentModel.script, null, 2), function (err) {
-    //         if (err) {
-    //             callback(err);
-    //             return;
-    //         } else {
-    //             callback();
-    //         }
-    //     });
-    // });
+     self.experimentModel = {
+         'script': {
+             'federateTypesAllowed': [],
+             'expectedFederates': [],
+             'lateJoinerFederates': []
+         }
+     };
+     // Experiment Config    
+     self.fileGenerators.push(function (artifact, callback) {
+         self.federates.forEach(function (fed) {
+             self.experimentModel.script.federateTypesAllowed.push(fed.name)
+             self.experimentModel.script.expectedFederates.push({
+                 "federateType": fed.name,
+                 "count": 1
+             });
+             self.experimentModel.script.lateJoinerFederates.push({
+                 "federateType": fed.name,
+                 "count": 0
+             });
+         });
+         artifact.addFile('conf/' + 'experimentConfig.json', JSON.stringify(self.experimentModel.script, null, 2), function (err) {
+             if (err) {
+                 callback(err);
+                 return;
+             } else {
+                 callback();
+             }
+         });
+     });
 
     // Federate Config JSON
     self.fileGenerators.push(function (artifact, callback) {
