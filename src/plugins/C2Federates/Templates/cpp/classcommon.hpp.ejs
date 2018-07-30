@@ -1,4 +1,4 @@
-<% /*classcommon(isinteraction,classname,parentclassname,hlaclassname,datamembers,alldatamembers) ::= <<*/ %>
+<% /*classcommon(isinteraction,classname,parentclassname,hlaclassname,datamembers,alldatamembers) ::= <<*/ -%>
 private:
 	static int &getHandle( void ) {
 		static int handle;
@@ -19,8 +19,8 @@ private:
 		static StringVector allDatamemberNames;
 		return allDatamemberNames;
 	}
+<% if(!isinteraction){ -%>
 
-<% if(!isinteraction){ %>
 private:
 	static RTI::AttributeHandleSet &getPublishedAttributeHandleSet_var( void ) {
 		static RTI::AttributeHandleSet *publishedAttributeHandleSetPtr = RTI::AttributeHandleSetFactory::create( <%= alldatamembers.length %> );
@@ -29,8 +29,8 @@ private:
 	static StringVector &getPublishAttributeNameVector( void ) {
 		static StringVector publishAttributeNameVector;
 		return publishAttributeNameVector;
-	}	
-	
+	}
+
 	static RTI::AttributeHandleSet &getSubscribedAttributeHandleSet_var( void ) {
 		static RTI::AttributeHandleSet *subscribedAttributeHandleSet = RTI::AttributeHandleSetFactory::create( <%= alldatamembers.length %> );
 		return *subscribedAttributeHandleSet;
@@ -38,19 +38,19 @@ private:
 	static StringVector &getSubscribeAttributeNameVector( void ) {
 		static StringVector subscribeAttributeNameVector;
 		return subscribeAttributeNameVector;
-	}	
-<%}%>
+	}
+<% } -%>
 
 private:
-<% if(isinteraction){ %>
+<% if(isinteraction){ -%>
 	static InteractionRoot::SP factory( void ) {
 		return InteractionRoot::SP( new <%=classname%>() );
 	}
-<% }else{ %>
+<% }else{ -%>
 	static ObjectRoot::SP factory( void ) {
 		return ObjectRoot::SP( new <%=classname%>() );
 	}
-<%}%>
+<% } -%>
 
 	static std::string &getInitErrorMessage( void ) {
 		static std::string initErrorMessage( "Error:  <%=classname%>:  could not initialize:  " );
@@ -59,21 +59,21 @@ private:
 
 protected:
 	static void init( RTI::RTIambassador *rti );
-	
+
 private:
 	static bool &getIsPublished( void ) {
 		static bool isPublished = false;
 		return isPublished;
 	}
-	
+
 	static std::string &getPublishErrorMessage( void ) {
 		static std::string publishErrorMessage = "Error:  <%=classname%>:  could not publish:  ";
 		return publishErrorMessage;
 	}
-	
+
 public:
 	static void publish( RTI::RTIambassador *rti );
-	
+
 private:
 	static std::string &getUnpublishErrorMessage( void ) {
 		static std::string unpublishErrorMessage = "Error:  <%=classname%>:  could not unpublish:  ";
@@ -95,24 +95,39 @@ private:
 
 public:
 	static void subscribe( RTI::RTIambassador *rti );
-		
+
 private:
 	static std::string getUnsubscribeErrorMessage( void ) {
 		static std::string unsubscribeErrorMessage = "Error:  <%=classname%>:  could not unsubscribe:  ";
 		return unsubscribeErrorMessage;
 	}
-	
+
 public:
 	static void unsubscribe( RTI::RTIambassador *rti );
-	
+
 	static bool static_init( void );
-	
+
 	static bool match( int handle ) { return handle == get_handle(); }
 
 	virtual int getClassHandle( void ) const { return get_handle(); }
 	virtual std::string getClassName( void ) const { return get_class_name(); }
 	virtual StringVector get<%=isinteraction?"Parameter":"Attribute"%>Names( void ) const { return get_<%=isinteraction?"parameter":"attribute"%>_names(); }
 	virtual StringVector getAll<%=isinteraction?"Parameter":"Attribute"%>Names( void ) const { return get_all_<%=isinteraction?"parameter":"attribute"%>_names(); }
+<% if(alldatamembers && alldatamembers.length > 0){ -%>
+
+	virtual std::string get<%=isinteraction?"Parameter":"Attribute"%>Name( int datamemberHandle ) const {
+<% for(var i = 0; i<alldatamembers.length; i++ ){ -%>
+<%= i == 0 ? '		if' : ' else if'%> (datamemberHandle == get_<%=alldatamembers[i].name%>_handle()) {
+			return std::string("<%=alldatamembers[i].name%>");
+		}<% } %> else {
+<% if(parentclassname){ -%>
+			return <%=parentclassname%>::get<%=isinteraction?"Parameter":"Attribute"%>Name(datamemberHandle);
+<% } else { -%>
+			return std::string();
+<% } -%>
+		}
+	}
+<% } -%>
 
 	virtual void publish<%=isinteraction?"Interaction":"Object"%>( RTI::RTIambassador *rti ) { publish( rti ); }
 	virtual void subscribe<%=isinteraction?"Interaction":"Object"%>( RTI::RTIambassador *rti ) { subscribe( rti ); }
@@ -120,7 +135,7 @@ public:
 	virtual <%=isinteraction?"Interaction":"Object"%>Root::SP clone( void ) {
 		return <%=isinteraction?"Interaction":"Object"%>Root::SP(  new <%=classname%>( *this )  );
 	}
+<% if(!isinteraction){ -%>
 
-<% if(!isinteraction){%>
 	virtual const RTI::AttributeHandleSet &getSubscribedAttributeHandleSet( void ) { return getSubscribedAttributeHandleSet_var(); }
-<%}%>
+<% } -%>

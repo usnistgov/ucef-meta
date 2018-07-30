@@ -1,0 +1,59 @@
+<% /* federateimpl(classname) */ -%>
+#ifndef _<%=classname.toUpperCase()%>_CLASS
+#define _<%=classname.toUpperCase()%>_CLASS
+
+#include "<%=classname%>Base.hpp"
+#include "FederateConfigParser.h"
+#include "FederateConfig.h"
+
+
+class <%=classname%> : public <%=classname%>Base {
+    private:
+        double m_currentTime;
+<% if (publishedobjectdata.length > 0) { -%>
+
+        // TODO declare all the published object instances
+<% publishedobjectdata.forEach(function(object_data) { -%>
+        // <%=object_data.name%> v<%=object_data.name%>;
+<% }) -%>
+
+        void initObjectInstances();
+<%} -%>
+<% subscribedobjectdata.forEach(function(object_data) { -%>
+
+        void handleObjectClass(boost::shared_ptr<<%=object_data.name%>> object);
+<% }); -%>
+<% subscribedinteractiondata.forEach(function(interaction_data) { -%>
+
+        void handleInteractionClass(boost::shared_ptr<<%=interaction_data.name%>> interaction);
+<% }); -%>
+
+        void checkReceivedSubscriptions();
+
+    public:
+        typedef <%=classname%>Base Super;
+
+        <%=classname%>(FederateConfig *configuration): Super(configuration) {}
+
+        virtual ~<%=classname%>( void ) throw (RTI::FederateInternalError) {}
+
+        class <%=classname%>ATRCallback : public ATRCallback {
+            private:
+                <%=classname%> &m_federateInstance;
+            public:
+                <%=classname%>ATRCallback(<%=classname%> &federateInstance): m_federateInstance(federateInstance) {}
+                
+                virtual void execute( void ) {
+                    m_federateInstance.execute();
+                }
+
+                virtual SP clone( void ) {
+                    return SP(new <%=classname%>ATRCallback(*this));
+                }
+        };
+
+        void initialize( void );
+        void execute( void );
+};
+
+#endif

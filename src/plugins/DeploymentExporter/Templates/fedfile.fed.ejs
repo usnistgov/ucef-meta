@@ -1,4 +1,4 @@
-<% /*fed(federationname,objects,interactions) ::= << */ %>
+<% /*fed(federationname,objects,interactions) ::= << */ -%>
 (FED
   (Federation <%= federationname %>)
   (FEDversion v1.3)
@@ -49,8 +49,8 @@
           (attribute ObjectsReflected reliable receive)
         )
       )
-<% objects.forEach(function(object){ %>
-<%- object %><%});%>   ) 
+<% objects.forEach(function(object){ %><%- object %><% }); -%>
+    ) 
   )
 <% /*interactions_root(interactions) */ -%>
   (interactions
@@ -60,7 +60,7 @@
 <% /*manager_interaction()*/ -%>
       (class Manager reliable receive
 <% /*federate_interaction()*/ -%>
-		(class Federate reliable receive
+        (class Federate reliable receive
           (parameter Federate)
 <% /*request_interaction()*/ -%>
           (class Request reliable receive
@@ -326,8 +326,7 @@
           )
         )
       )
-<% interactions.forEach(function(interaction){ %>
-<%- interaction %><%});%>  
+<% interactions.forEach(function(interaction){ %><%- interaction %><% }); -%>
     )
   )
 )
