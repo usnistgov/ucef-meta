@@ -41,20 +41,19 @@ StaticInteractionPublish and sources (src) of StaticInteractionSubscribe.
 The interactions whose paths are on the list are found using 
 self.interactions[pubSubInteractions[i]]. Inversely, the path of an
 interaction is its id.
-
 */
 
 define
 ([
   'text!./metadata.json',
   'plugin/PluginBase',
-  'common/util/ejs',             // added
+  'common/util/ejs',
   'C2Core/ModelTraverserMixin',
   'C2Core/xmljsonconverter',
   'C2Core/MavenPOM',
   'FederatesExporter/PubSubVisitors',
   'FederatesExporter/RTIVisitors',
-  'FederatesExporter/Templates/Templates', // modified
+  'FederatesExporter/Templates/Templates',
   'C2Federates/GenericFederate',
   'C2Federates/JavaFederate',
   'C2Federates/MapperFederate',
@@ -215,7 +214,7 @@ define
                                    }
                                });
           });
-       
+
         // Code added fom.xml generator (copied from DeploymentExporter.js)
         // This file generator uses a traverser as well as a file writer
          
