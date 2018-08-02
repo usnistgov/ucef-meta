@@ -17,6 +17,31 @@ The TEMPLATES were not being used. They are now being used.
 Code changes are marked "added" or "changed". Documentation changes are
 not marked.
 
+The "define" construct is not part of standard JavaScript as described
+by the 1078-page book "JavaScript The Definitive Guide", which does
+not mention "define" anywhere. "define" is described in
+https://github.com/amdjs/amdjs-api/wiki/AMD .
+
+The "define" construct covers the whole file. A "define" can have an
+id at the beginning, but no id is used in the cpswt "define"s.  The
+other two parts of a define are (1) a list of paths to .js files
+without the .js suffix and (2) a top level function whose arguments
+match the list of files.  The return value of a "define" is the value
+returned by the top level function of the define.
+
+In this file, the functions defined in the "define" arguments are
+executed by calls such as, for example, PubSubVisitors.call(this),
+which in a sane language would be written as this.call(PubSubVisitors).
+
+All of the .js files in the cpswt/cpswt-meta/src directory seem to be
+"define" constructs.
+
+The pubSubInteractions is a list of the paths to destinations (dst) of 
+StaticInteractionPublish and sources (src) of StaticInteractionSubscribe.
+The interactions whose paths are on the list are found using 
+self.interactions[pubSubInteractions[i]]. Inversely, the path of an
+interaction is its id.
+
 */
 
 define
@@ -37,24 +62,23 @@ define
   'C2Federates/OmnetFederate',
   'C2Federates/CPNFederate'],
  function (pluginMetadata,
-	   PluginBase,
-	   ejs,                 // added
-	   ModelTraverserMixin,
-	   JSON2XMLConverter,
-	   MavenPOM,
-	   PubSubVisitors,
-	   RTIVisitors,
-	   TEMPLATES,           // modified
-	   GenericFederate,
-	   JavaFederate,
-	   MapperFederate,
-	   CppFederate,
-	   OmnetFederate,
-	   CPNFederate)
+           PluginBase,
+           ejs,                 // added
+           ModelTraverserMixin,
+           JSON2XMLConverter,
+           MavenPOM,
+           PubSubVisitors,
+           RTIVisitors,
+           TEMPLATES,           // modified
+           GenericFederate,
+           JavaFederate,
+           MapperFederate,
+           CppFederate,
+           OmnetFederate,
+           CPNFederate)
  {
    'use strict';
 
-   // console.log(pluginMetadata);
    pluginMetadata = JSON.parse(pluginMetadata);
 
    /**
@@ -66,13 +90,12 @@ define
     */
    var FederatesExporter = function()
      {
-       // Call base class' constructor.
-       this.federateTypes = this.federateTypes || {};  
-       
+       this.federateTypes = this.federateTypes || {};
+       this.pubSubInteractions = this.pubSubInteractions || []; //added
        PluginBase.call(this);
        ModelTraverserMixin.call(this);
        PubSubVisitors.call(this);
-       RTIVisitors.call(this);
+       RTIVisitors.call(this);    // builds interactionRoots tree
        GenericFederate.call(this);
        JavaFederate.call(this);
        MapperFederate.call(this);
@@ -142,29 +165,30 @@ define
        self.mainPom.groupId = self.getCurrentConfig().groupId.trim();
        self.mainPom.addRepository(
          {
- 	   'id': 'archiva.internal',
-	   'name': 'Internal Release Repository',
-	   'url': self.getCurrentConfig().repositoryUrlRelease.trim()
-	 });
+           'id': 'archiva.internal',
+           'name': 'Internal Release Repository',
+           'url': self.getCurrentConfig().repositoryUrlRelease.trim()
+         });
         
        self.mainPom.addSnapshotRepository(
          {
             'id': 'archiva.snapshots',
             'name': 'Internal Snapshot Repository',
             'url': self.getCurrentConfig().repositoryUrlSnapshot.trim()
-	 });
+         });
 
-        self.getCurrentConfig().includedFederateTypes.trim().split(" ").forEach(function(e)
+        self.getCurrentConfig().includedFederateTypes.trim().split(" ").
+         forEach(function(e)
           {
             if (self.federateTypes.hasOwnProperty(e))
-	      {
+              {
                 self.federateTypes[e].includeInExport = true;
                 if (self.federateTypes[e].hasOwnProperty('init'))
-		  {
-		    self.federateTypes[e].init.call(self); 
-		  }
-	      }
-	  });
+                  {
+                    self.federateTypes[e].init.call(self); 
+                  }
+              }
+          });
 
         // Using the logger.
         //self.logger.debug('This is a debug message.');
@@ -172,413 +196,493 @@ define
         //self.logger.warn('This is a warning message.');
         //self.logger.error('This is an error message.');
 
-        //Add POM generator
+        //Add POM generator to file generators
         self.fileGenerators.push(function(artifact, callback)
-          {
-	    artifact.addFile('pom.xml',
-			     self._jsonToXml.convertToString(self.mainPom.toJSON() ),
-			     function (err)
-			       {
-				   if (err)
-				   {
-				       callback(err);
-				       return;
-				   }
-				   else
-				   {
-				       callback();
-				   }
-			       });
+          { // add POM file to artifact
+            artifact.addFile('pom.xml',
+                             self._jsonToXml.convertToString(self.mainPom.
+                                                             toJSON()),
+                             function (err)
+                               {
+                                   if (err)
+                                   {
+                                       callback(err);
+                                       return;
+                                   }
+                                   else
+                                   {
+                                       callback();
+                                   }
+                               });
           });
        
-       // Added fom.xml generator (copied from DeploymentExporter.js)
-       // This file generator uses a traverser as well as a file writer
-	 
-       self.fomModel = {federationname: self.projectName, //added
-			version: self.getCurrentConfig().exportVersion.trim(),
-			pocOrg: self.mainPom.groupId, //added
-			objects: [],
-			dateString: "", //added
-			interactions: []};
+        // Code added fom.xml generator (copied from DeploymentExporter.js)
+        // This file generator uses a traverser as well as a file writer
+         
+        self.fomModel = {federationname: self.projectName, //added
+                         version: self.getCurrentConfig().exportVersion.trim(),
+                         pocOrg: self.mainPom.groupId, //added
+                         objects: [],
+                         dateString: "", //added
+                         interactions: []};
 
-       self.fileGenerators.push(function (artifact, callback)
-	{ 
-	   var interactionTraverser_xml = function (interaction, space)
-	     {
-	       var intModel = {interaction: interaction,
-			       indent: space,
-			       parameters: interaction.parameters,
-			       children: []};
-	       if (interaction.name === "InteractionRoot" ||
-		   interaction.name === "C2WInteractionRoot")
-		 {
-		   interaction.sharing = "Neither";
-		 }
-	       else
-		 {
-		   interaction.sharing = "PublishSubscribe";
-		 }
-	       if (interaction.delivery === "reliable")
-		 {
-		   interaction.delivery = "HLAreliable";
-		 }
-	       else
-		 {
-		   interaction.delivery = "HLAbestEffort";
-		 }
-	       if (interaction.order === "timestamp")
-		 {
-		   interaction.order = "TimeStamp";
-		 }
-	       else
-		 {
-		   interaction.order = "Receive";
-		 }
-	       // here interactionTraverser_xml calls itself recursively to
-	       // generate XML for the children before generating
-	       // XML for the parent
-	       interaction.children.forEach(function (child)
-	         {
-		     intModel.children.
-			 push(interactionTraverser_xml(child, space + "  "));
-		 });
-	       // now generate XML for the parent
-	       return ejs.render(TEMPLATES["fedfile_siminteraction_xml.ejs"],
-				 intModel);
-	     }
-	   var today = new Date();         //added
-	   var year = today.getFullYear(); //added
-	   var month = today.getMonth();   //added
-	   var day = today.getDate();      //added
-	   self.fomModel.interactions_xml = [];
-	   self.fomModel.dateString = year + "-" +
-	     ((month < 10) ? "0" : "") + month + "-" +
-	     ((day < 10) ? "0" : "") + day;
-	   self.interactionRoots.forEach(function (inta)
-	     {
-		 self.fomModel.interactions_xml.
-		   push(interactionTraverser_xml(inta, "  "));
-	     });
-	   
-	   // The objectTraverser_xml is a recursive function that takes
-	   // an object of some sort that may have children (which are
-	   // objects of the same sort or a similar sort) and builds
-	   // an objModel from it. The objModel is given the same name
-	   // and attributes as the object and is given children that
-	   // are XML code built by a recursive call to itself on the
-	   // children of the object.
-	   // Then XML for the objModel is generated (and saved) by
-	   // calling ejs.render using the fedfile_simobject_xml XML
-	   // Template.
-	   // The original call to this function is a few lines below
-	   // the function definition where fomModel.objects is built
-	   // by calling it on each object in objectRoots (which seems
-	   // to be expected to have only one member).
-	   var objectTraverser_xml = function (object, space)
-	     {
-	       var objModel = {name: object.name,
-			       attributes: object.attributes,
-			       indent: space, // added
-			       children: [],
-			       sharing: ""};
-	       if (object.name === "ObjectRoot")
-		 {
-		   objModel.sharing = "Neither";
-		 }
-	       else
-		 {
-		   objModel.sharing = "PublishSubscribe";
-		 }
-	       // Some properties of the attributes of the objModel (which
-	       // are the attributes of the object) are modified in place
-	       // as follows.
-	       objModel.attributes.forEach(function (attr)
-	         {
-		   if (attr.delivery === "reliable")
-		     {
-		       attr.delivery = "HLAreliable";
-		     }
-		   else
-		     {
-		       attr.delivery = "HLAbestEffort";
-		     }
-		   if (attr.order === "timestamp")
-		     {
-		       attr.order = "TimeStamp";
-		     }
-		   else
-		     {
-		       attr.order = "Receive";
-		     }
-		 })
-	       
-	       // here objectTraverser_xml calls itself recursively to
-	       // generate XML for the children before generating
-	       // XML for the parent
-	       object.children.forEach(function (child)
-	         { // changed - we do not want to include the FederateObject
-		   if (child.name != "FederateObject")
-		     {
-		       objModel.children.
-			 push(objectTraverser_xml(child, space + "  "));
-		     }
-		 });
-	       // now generate XML for the parent
-	       return ejs.render(TEMPLATES["fedfile_simobject_xml.ejs"],
-				 objModel);
-	     }
-	   
-	   self.fomModel.objects_xml = [];
-	   self.objectRoots.forEach(function (obj) // normally is only one root
-	     { // add all the XML for objects to fomModel
-	       self.fomModel.objects_xml.push(objectTraverser_xml(obj, "  "));
-	     });
-	     
-	   artifact.addFile('fom/' + self.projectName + '.xml',
-			    ejs.render(TEMPLATES['fedfile.xml.ejs'],
-				       self.fomModel),
-			    function (err)
-			    {
-			      if (err)
-				{
-				  callback(err);
-				  return;
-				}
-			      else
-				{
-				  callback();
-				}
-			    });
-	 });
-       //end added file generator code
-       
-     generateFiles = function(artifact, fileGenerators, doneBack)
-       {
-	 if (numberOfFilesToGenerate > 0)
-	   { 
-	     fileGenerators[fileGenerators.length -
-			    numberOfFilesToGenerate](artifact, function(err)
-	       {
-		 if (err)
-		   {
-		     callback(err, self.result);
-		     return;
-		   }
-		 numberOfFilesToGenerate--;
-		 if (numberOfFilesToGenerate > 0)
-		   {
-		     generateFiles(artifact, fileGenerators, doneBack);
-		   }
-		 else
-		   {
-		     doneBack();
-		   }
-	       });                
-	   }
-	 else
-	   {
-	     doneBack();
-	   }
-       }
-       
-     saveAndReturn = function(err)
-       {
-	 var errorRaised = false;
-	 for(var i = 0; i < self.result.getMessages().length; i++)
-	   {
-	     var msg = self.result.getMessages()[i];
-	     if (msg.severity == 'error')
-	       {
-		 errorRaised = true;
-	       }
-	   }
-	 if (!errorRaised)
-	   {
-	     self.blobClient.saveAllArtifacts(function (err, hashes)
-               {
-		 if (err)
-		   {
-		     callback(err, self.result);
-		     return;
-		   }
-		 
-		 // This will add a download hyperlink in the result-dialog.
-		 for (var idx = 0; idx < hashes.length; idx++)
-		   {
-		     self.result.addArtifact(hashes[idx]);
-		     
-		     var artifactMsg =
-		       'Code package ' +
-		       self.blobClient.artifacts[idx].name +
-		       ' was generated with id:[' + hashes[idx] + ']';
-		     var buildURL =
-		       "'http://c2w-cdi.isis.vanderbilt.edu:8080/job/c2w-pull/buildWithParameters?GME_ARTIFACT_ID=" + hashes[idx] + "'";
-		     artifactMsg += '<br><a title="Build package..." '+
-		       'onclick="window.open(' + buildURL + ', \'Build System\'); return false;">Build artifact..</a>';
-		     self.createMessage(null, artifactMsg );
-		   };
+        // add fom generator to generators
+        self.fileGenerators.push(function(artifact, callback)
+          {
+            // The interactionTraverser_check function is modeled after
+            // the interactionTraverser_xml function. By calling itself
+            // recursively, it goes through the interaction tree from bottom
+            // up. If an interaction is on the pubSubInteractions, the id
+            // of the parent of the interaction is added to the
+            // pubSubInteractions, if it is not already there.
+            // The final effect is that any interaction that is an
+            // ancestor of any interaction originally put on the
+            // pubSubInteractions in PubSubVisitors is also on
+            // pubSubInteractions.
+
+            var interactionTraverser_check = function(interaction)
+              {
+                var parentId;
+                var i;
+                console.log("running interactionTraverser_check");
+                interaction.children.forEach(function (child)
+                  {
+                    interactionTraverser_check(child);
+                  });
+                if (interaction.name != 'InteractionRoot')
+                  {
+                    parentId = 0;
+                    for (i = 0; i < self.pubSubInteractions.length; i++)
+                      {
+                        if (interaction.id == self.pubSubInteractions[i])
+                          { // If the child is on the pubSubInteractions
+                            // list, put its parent on the list if the
+                            // the parent is not there already.
+                            parentId = interaction.basePath;
+                            break;
+                          }
+                      }
+                    if (parentId != 0)
+                      {
+                        for (i = 0; i < self.pubSubInteractions.length; i++)
+                          {
+                            if (parentId == self.pubSubInteractions[i])
+                              {
+                                parentId = 0;
+                                break;
+                              }
+                          }
+                      }
+                    if (parentId != 0)
+                      {
+                        self.pubSubInteractions.push(parentId);
+                      }
+                  }
+              };
+            self.interactionRoots.forEach(function (interactionRoot)
+              {
+                interactionTraverser_check(interactionRoot);
+              });
+
+            // the interactionTraverser_xml was copied
+            // from DeploymentExporter.js and edited
+            var interactionTraverser_xml = function(interaction, space)
+              {
+                var intModel = {interaction: interaction,
+                                indent: space,
+                                parameters: interaction.parameters,
+                                children: []};
+                if (interaction.name === "InteractionRoot" ||
+                    interaction.name === "C2WInteractionRoot")
+                  {
+                    interaction.sharing = "Neither";
+                  }
+                else
+                  {
+                    interaction.sharing = "PublishSubscribe";
+                  }
+                if (interaction.delivery === "reliable")
+                  {
+                   interaction.delivery = "HLAreliable";
+                  }
+                else
+                  {
+                    interaction.delivery = "HLAbestEffort";
+                  }
+                if (interaction.order === "timestamp")
+                  {
+                    interaction.order = "TimeStamp";
+                  }
+                else
+                  {
+                    interaction.order = "Receive";
+                  }
+                // here interactionTraverser_xml calls itself recursively to
+                // generate XML for the children before generating
+                // XML for the parent
+                interaction.children.forEach(function (child)
+                  {
+                    for (var i = 0; i < self.pubSubInteractions.length; i++)
+                      {
+                        if (child.id == self.pubSubInteractions[i])
+                          {
+                            intModel.children.
+                              push(interactionTraverser_xml(child,
+                                                            space + "    "));
+                            break;
+                          }
+                      }
+                  });
+                
+                // now generate XML for the parent if on pubSubInteractions
+                for (var i = 0; i < self.pubSubInteractions.length; i++)
+                 {
+                   if (interaction.id == self.pubSubInteractions[i])
+                     {
+                       // On the next line, a newline after 'return' causes
+                       // an immediate return because of the automatic insertion
+                       // of semicolons -- so don't put a newline there.
+                return ejs.render(TEMPLATES["fedfile_siminteraction_xml.ejs"],
+                           intModel);
+                     }
+                 }
+              }; // end of interactionTraverser_xml function and var set
+            
+            var today = new Date();         //added
+            var year = today.getFullYear(); //added
+            var month = today.getMonth();   //added
+            var day = today.getDate();      //added
+            self.fomModel.interactions_xml = [];
+            self.fomModel.dateString = year + "-" +
+              ((month < 10) ? "0" : "") + month + "-" +
+              ((day < 10) ? "0" : "") + day;
+            // now call the interactionTraverser_xml for interactionRoots
+            self.interactionRoots.forEach(function (inta)
+              {
+                self.fomModel.interactions_xml.
+                  push(interactionTraverser_xml(inta, "    "));
+              });
+           
+            // The objectTraverser_xml is a recursive function that takes
+            // an object of some sort that may have children (which are
+            // objects of the same sort or a similar sort) and builds
+            // an objModel from it. The objModel is given the same name
+            // and attributes as the object and is given children that
+            // are XML code built by a recursive call to itself on the
+            // children of the object.
+            // Then XML for the objModel is generated (and saved) by
+            // calling ejs.render using the fedfile_simobject_xml XML
+            // Template.
+            // The original call to this function is a few lines below
+            // the function definition where fomModel.objects is built
+            // by calling it on each object in objectRoots (which seems
+            // to be expected to have only one member).
+            var objectTraverser_xml = function (object, space)
+              {
+                var objModel = {name: object.name,
+                                attributes: object.attributes,
+                                indent: space, // added
+                                children: [],
+                                sharing: ""};
+                if (object.name === "ObjectRoot")
+                  {
+                    objModel.sharing = "Neither";
+                  }
+                else
+                  {
+                    objModel.sharing = "PublishSubscribe";
+                  }
+                // Some properties of the attributes of the objModel (which
+                // are the attributes of the object) are modified in place
+                // as follows.
+                objModel.attributes.forEach(function (attr)
+                  {
+                    if (attr.delivery === "reliable")
+                      {
+                        attr.delivery = "HLAreliable";
+                      }
+                    else
+                     {
+                       attr.delivery = "HLAbestEffort";
+                     }
+                    if (attr.order === "timestamp")
+                      {
+                        attr.order = "TimeStamp";
+                      }
+                    else
+                      { 
+                        attr.order = "Receive";
+                      }
+                  })
+               
+                // here objectTraverser_xml calls itself recursively to
+                // generate XML for the children before generating
+                // XML for the parent
+                object.children.forEach(function (child)
+                  { // changed - we do not want to include the FederateObject
+                    if (child.name != "FederateObject")
+                      {
+                        objModel.children.
+                          push(objectTraverser_xml(child, space + "    "));
+                      }
+                  });
+                // now generate XML for the parent
+                return ejs.render(TEMPLATES["fedfile_simobject_xml.ejs"],
+                                  objModel);
+              }
+           
+            self.fomModel.objects_xml = [];
+            self.objectRoots.forEach(function (obj) // normally is only one root
+              { // add all the XML for objects to fomModel
+                self.fomModel.objects_xml.push(objectTraverser_xml(obj,
+								   "    "));
+              });
+ 
+            // add fom to artifact
+            artifact.addFile('fom/' + self.projectName + '.xml',
+                             ejs.render(TEMPLATES['fedfile.xml.ejs'],
+                                        self.fomModel),
+                             function (err)
+                             {
+                               if (err)
+                                 {
+                                   callback(err);
+                                   return;
+                                 }
+                               else
+                                 {
+                                   callback();
+                                 }
+                             });
+          });
+        //end added file generator code
+
+      generateFiles = function(artifact, fileGenerators, doneBack)
+        {
+          if (numberOfFilesToGenerate > 0)
+            { 
+              fileGenerators[fileGenerators.length -
+                             numberOfFilesToGenerate](artifact, function(err)
+                {
+                  if (err)
+                    {
+                      callback(err, self.result);
+                      return;
+                    }
+                  numberOfFilesToGenerate--;
+                  if (numberOfFilesToGenerate > 0)
+                    {
+                      generateFiles(artifact, fileGenerators, doneBack);
+                    }
+                  else
+                    {
+                      doneBack();
+                    }
+                });                
+            }
+          else
+            {
+              doneBack();
+            }
+        }
+        
+      saveAndReturn = function(err)
+        {
+          var errorRaised = false;
+          for(var i = 0; i < self.result.getMessages().length; i++)
+            {
+              var msg = self.result.getMessages()[i];
+              if (msg.severity == 'error')
+                {
+                  errorRaised = true;
+                }
+            }
+          if (!errorRaised)
+            {
+              self.blobClient.saveAllArtifacts(function (err, hashes)
+                {
+                  if (err)
+                    {
+                      callback(err, self.result);
+                      return;
+                    }
+                  
+                  // This will add a download hyperlink in the result-dialog.
+                  for (var idx = 0; idx < hashes.length; idx++)
+                    {
+                      self.result.addArtifact(hashes[idx]);
+                      
+                      var artifactMsg =
+                        'Code package ' +
+                        self.blobClient.artifacts[idx].name +
+                        ' was generated with id:[' + hashes[idx] + ']';
+                      var buildURL =
+                        "'http://c2w-cdi.isis.vanderbilt.edu:8080/job/c2w-pull/buildW ithParameters?GME_ARTIFACT_ID=" + hashes[idx] + "'";
+                      artifactMsg += '<br><a title="Build package..." '+
+                        'onclick="window.open(' + buildURL + ', \'Build System\'); return false;">Build artifact..</a>';
+                      self.createMessage(null, artifactMsg );
+                    };
                     
-		 // This will save the changes. If you don't want to save;
-		 // exclude self.save and call callback directly from this scope.
-		 self.save('FederatesExporter updated model.', function (err)
-		   {
-		     if (err)
-		       {
-			 callback(err, self.result);
-			 return;
-		       }
-		     self.result.setSuccess(true);
-		     callback(null, self.result);
-		     return;
-		   });
-	       });
-	   }
-	 else
-	   {
-	     self.result.setSuccess(false);
-	     callback(null, self.result);
-	     return;
-	   }
-       }
+                  // This will save the changes. If you don't want to save;
+                  // exclude self.save and call callback directly from this
+                  // scope.
+                  self.save('FederatesExporter updated model.', function (err)
+                    {
+                      if (err)
+                        {
+                          callback(err, self.result);
+                          return;
+                        }
+                      self.result.setSuccess(true);
+                      callback(null, self.result);
+                      return;
+                    });
+               });
+            }
+          else
+            {
+              self.result.setSuccess(false);
+              callback(null, self.result);
+              return;
+            }
+        }
        
-     finishExport = function(err)
-       {
-	 var artifact =
-	   self.blobClient.createArtifact(self.projectName.trim().
-					  replace(/\s+/g,'_') +
-					  '_generated');
-	 if (self.generateExportPackages)
-	   {
-	     var coreArtifact =
-	       self.blobClient.createArtifact('generated_Core_Files');
-	   }
-	 numberOfFilesToGenerate = self.fileGenerators.length;
-	 if (numberOfFilesToGenerate > 0)
-	   {
-	     generateFiles(artifact, self.fileGenerators, function(err)
-	       {
-		 if (err)
-		   {
-		     callback(err, self.result);
-		     return;
-		   }
-		 numberOfFilesToGenerate = self.corefileGenerators.length;
-		 if (self.generateExportPackages &&
-		     numberOfFilesToGenerate > 0)
-		   {
-		     generateFiles(coreArtifact,
-				   self.corefileGenerators, function(err)
-		       {
-			 if (err)
-			   {
-			     callback(err, self.result);
-			     return;
-			   }
-			 saveAndReturn();
-			 return;
+      finishExport = function(err)
+        {
+          var artifact =
+            self.blobClient.createArtifact(self.projectName.trim().
+                                           replace(/\s+/g,'_') +
+                                           '_generated');
+          if (self.generateExportPackages)
+            {
+              var coreArtifact =
+                self.blobClient.createArtifact('generated_Core_Files');
+            }
+          numberOfFilesToGenerate = self.fileGenerators.length;
+          if (numberOfFilesToGenerate > 0)
+            {
+              generateFiles(artifact, self.fileGenerators, function(err)
+                {
+                  if (err)
+                    {
+                      callback(err, self.result);
+                      return;
+                    }
+                  numberOfFilesToGenerate = self.corefileGenerators.length;
+                  if (self.generateExportPackages &&
+                      numberOfFilesToGenerate > 0)
+                    {
+                      generateFiles(coreArtifact,
+                                    self.corefileGenerators, function(err)
+                        {
+                          if (err)
+                            {
+                              callback(err, self.result);
+                              return;
+                            }
+                          saveAndReturn();
+                          return;
                         });
-		   }
-		 else
-		   {
-		     saveAndReturn();
-		     return;
-		   } 
-	       });
-	   }
-	 else
-	   {
-	     self.result.setSuccess(true);
-	     callback(null, self.result);
-	   } 
-       }
+                     }
+                  else
+                    {
+                      saveAndReturn();
+                      return;
+                    } 
+                });
+             }
+          else
+            {
+              self.result.setSuccess(true);
+              callback(null, self.result);
+            } 
+        }
        
-       self.visitAllChildrenFromRootContainer(self.rootNode, function(err)
-         {
-	   if (err)
-	     {
-	       self.logger.error(err);
-	       self.createMessage(null, err, 'error');
-	       self.result.setSuccess(false);
-	       callback(null, self.result);
-	     }
-	   else
-	     {
-	       finishExport(err);
-	     }
-	 });
-       self.postAllVisits(self);
-     }; // end of ...prototype.main
+        self.visitAllChildrenFromRootContainer(self.rootNode, function(err)
+          {
+            if (err)
+              {
+                self.logger.error(err);
+                self.createMessage(null, err, 'error');
+                self.result.setSuccess(false);
+                callback(null, self.result);
+              }
+            else
+              {
+                finishExport(err);
+              }
+          });
+        self.postAllVisits(self);
+      }; // end of ...prototype.main
 
-   FederatesExporter.prototype.getChildSorterFunc = function(nodeType, self)
-     {
-        var self = this,
-            visitorName = 'generalChildSorter';
-        var generalChildSorter = function(a, b)
-	  {
-            //a is less than b by some ordering criterion : return -1;
-            //a is greater than b by the ordering criterion: return 1;
-            // a equal to b, than return 0;
-            var aName = self.core.getAttribute(a,'name');
-            var bName = self.core.getAttribute(b,'name');
-            if (aName < bName) return -1;
-            if (aName > bName) return 1;
-            return 0;
-	  };
-        return generalChildSorter;
-     }
+    FederatesExporter.prototype.getChildSorterFunc = function(nodeType, self)
+      {
+         var self = this,
+             visitorName = 'generalChildSorter';
+         var generalChildSorter = function(a, b)
+           {
+             //a is less than b by some ordering criterion : return -1;
+             //a is greater than b by the ordering criterion: return 1;
+             // a equal to b, than return 0;
+             var aName = self.core.getAttribute(a,'name');
+             var bName = self.core.getAttribute(b,'name');
+             if (aName < bName) return -1;
+             if (aName > bName) return 1;
+             return 0;
+           };
+         return generalChildSorter;
+      }
    
-   FederatesExporter.prototype.excludeFromVisit =
-     function(node)
-     {
-       var self = this,
-       exclude = false;
-       
-       if (self.rootNode != node)
-	 {    
-	   var nodeTypeName =
-	     self.core.getAttribute(self.getMetaType(node),'name');
-	   exclude = exclude 
-	     || self.isMetaTypeOf(node, self.META['Language [C2WT]'])
-	     || (self.federateTypes.hasOwnProperty(nodeTypeName) &&
-		 !self.federateTypes[nodeTypeName].includeInExport);
-	 }
-       if (exclude)
-	  {
-	    
-	  }
-       return exclude;
-     }
-
-   FederatesExporter.prototype.getVisitorFuncName =
-     function(nodeType)
-     {
-       var self = this,
-       visitorName = 'generalVisitor';
-       if (nodeType)
-	 {
-	   visitorName = 'visit_'+ nodeType;
-	   if (nodeType.endsWith('Federate'))
-	     {
-	       visitorName = 'visit_'+ 'Federate';
-	     }
-	 }
-       return visitorName;   
-     }
-
-    FederatesExporter.prototype.getPostVisitorFuncName =
-      function(nodeType)
+    FederatesExporter.prototype.excludeFromVisit = function(node)
       {
         var self = this,
-	visitorName = 'generalPostVisitor';
-	
+        exclude = false;
+        
+        if (self.rootNode != node)
+          {    
+            var nodeTypeName =
+              self.core.getAttribute(self.getMetaType(node),'name');
+            exclude = exclude 
+              || self.isMetaTypeOf(node, self.META['Language [C2WT]'])
+              || (self.federateTypes.hasOwnProperty(nodeTypeName) &&
+                  !self.federateTypes[nodeTypeName].includeInExport);
+          }
+        if (exclude)
+           {
+             
+           }
+        return exclude;
+      }
+
+    FederatesExporter.prototype.getVisitorFuncName =
+      function(nodeType)
+      {
+        var self = this, // seems pointless, self is not used
+        visitorName = 'generalVisitor';
         if (nodeType)
-	  {
-	    visitorName = 'post_visit_'+ nodeType;
+          {
+            visitorName = 'visit_'+ nodeType;
             if (nodeType.endsWith('Federate'))
-	      {
+              {
+                visitorName = 'visit_'+ 'Federate';
+              }
+          }
+        return visitorName;   
+      }
+
+    FederatesExporter.prototype.getPostVisitorFuncName = function(nodeType)
+      {
+        var self = this,
+        visitorName = 'generalPostVisitor';
+        
+        if (nodeType)
+          {
+            visitorName = 'post_visit_'+ nodeType;
+            if (nodeType.endsWith('Federate'))
+              {
                 visitorName = 'post_visit_'+ 'Federate';
-	      }
-	  }
+              }
+          }
         //self.logger.debug('Generated post-visitor Name: ' + visitorName);
         return visitorName;
     }
@@ -597,9 +701,9 @@ define
         self.logger.info('Visiting the ROOT');
 
         var root = {"@id": 'model:' + '/root',
-		    "@type": "gme:root",
-		    "model:name": self.projectName,
-		    "gme:children": []};
+                    "@type": "gme:root",
+                    "model:name": self.projectName,
+                    "gme:children": []};
         return {context:{parent: root}};
       }
     
@@ -608,9 +712,9 @@ define
       function(path)
       {
         if (!path)
-	  {
+          {
             return null;
-	  }
+          }
         var pathElements = path.split('/');
         pathElements.pop();
         return pathElements.join('/');

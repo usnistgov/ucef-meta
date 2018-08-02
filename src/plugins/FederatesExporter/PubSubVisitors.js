@@ -5,16 +5,25 @@ Modified by T. Kramer
 Reformatted in C style, as far as possible.
 probably dst = destination, src = source
 
-The var PubSubVisitors has six functions (some of which have sub-functions):
-   this.visit_StaticInteractionPublish
-   this.visit_StaticInteractionSubscribe
-   this.visit_StaticObjectPublish
-   this.visit_StaticObjectSubscribe
-   this.visit_StaticObjectAttributePublish
-   this.visit_StaticObjectAttributeSubscribe
+The var PubSubVisitors defines six functions (some have sub-functions):
+   this.visit_StaticInteractionPublish(node, parent, context)
+   this.visit_StaticInteractionSubscribe(node, parent, context)
+   this.visit_StaticObjectPublish(node, parent, context)
+   this.visit_StaticObjectSubscribe(node, parent, context)
+   this.visit_StaticObjectAttributePublish(node, parent, context)
+   this.visit_StaticObjectAttributeSubscribe(node, parent, context)
 
-These functions are never called in this file or any other file in src. Presumably they execute automatically he arguments to the functions
-do not have values
+As called, the "this" is the FederatesExporter in FederatesExporter.js.
+
+The first four of these functions are called in the atModelNode function
+of ModelTraverserMixin.js (at ret = ...).  The "parent"
+argument is not used in any of the functions, but is needed to be a
+placeholder in the arguments. All of the visit_XXX functions (many of
+which are defined elsewhere but are called from atModelNode take the
+arguments (node, parent, context). They are called by constructing
+the name by concatenating 'visit_' with the name of the type of node.
+
+It is not clear whether the last two functions are used anywhere.
 
 */
 
@@ -26,6 +35,7 @@ define
 
     var PubSubVisitors  = function ()
       {
+	console.log("in PubSubVisitors function");
         this.visit_StaticInteractionPublish = function(node, parent, context)
 	{
 	  var self = this,
@@ -33,6 +43,7 @@ define
 			 federate: self.core.getPointerPath(node,'src')},
 	  nodeAttrNames = self.core.getAttributeNames(node);
 
+	  console.log("in PubSubVisitors/visit_StaticInteractionPublish function");
 	  if (!publication.interaction )
 	    {
 	      self.createMessage(node,
@@ -45,6 +56,7 @@ define
 		  '[ERROR] Invalid src pointer in StaticInteractionPublish!',
 				 'error');
             }
+	  self.pubSubInteractions.push(publication.interaction); //added
 	  for ( var i = 0; i < nodeAttrNames.length; i += 1 )
 	    {
                 publication[nodeAttrNames[i]] =
@@ -85,6 +97,7 @@ define
 		 '[ERROR] Invalid dst pointer in StaticInteractionSubscribe!',
 				 'error');
             }
+	  self.pubSubInteractions.push(subscription.interaction); //added
 	  for ( var i = 0; i < nodeAttrNames.length; i += 1 )
 	    {
 	      subscription[nodeAttrNames[i]] =
