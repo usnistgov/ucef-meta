@@ -103,42 +103,6 @@ define([
             };
         };
 
-        var findUserInteractionParameters = function(interactions, publishedinteractiondata) {
-             publishedinteractiondata.forEach(function (publishedinteraction) {
-             if (publishedinteraction.parameters === undefined) {
-                publishedinteraction.parameters = [];
-             }
-               interactions.forEach(function(interaction) {
-                    if (interaction.fullName.endsWith(publishedinteraction.name)) {
-                        interaction.parameters.forEach(function (parameter) {
-                            if (!parameter.inherited) {
-                               publishedinteraction.parameters.push(parameter);
-                            }
-                        });
-                     }
-                });
-            });
-            return publishedinteractiondata;
-        };
-
-       var findUserObjectAttributes = function(objects, publishedobjectdata) {
-             publishedobjectdata.forEach(function (publishedobject) {
-             if (publishedobject.parameters === undefined) {
-                publishedobject.parameters = [];
-              }
-               objects.forEach(function(object) {
-                    if (object.fullName.endsWith(publishedobject.name)) {
-                        object.parameters.forEach(function (parameter) {
-                           if (!parameter.inherited) {
-                               publishedobject.parameters.push(parameter);
-                            }
-                        });
-                     }
-                });
-            });
-            return publishedobjectdata;
-        };
-
         this.post_visit_JavaImplFederate = function (node, context) {
             var self = this,
                 renderContext = context['javaimplfedspec']
@@ -170,8 +134,8 @@ define([
                 self.logger.debug('Rendering template to file: ' + context['javafedspec']['outFileName']);
 
                 renderContext.moduleCollection.push(renderContext.classname);
-                renderContext['publishedinteractiondata'] = findUserInteractionParameters(Object.values(self.interactions), Object.values(context['javaimplfedspec']['publishedinteractiondata']));
-                renderContext['publishedobjectdata'] = findUserObjectAttributes(Object.values(self.objects), Object.values(context['javaimplfedspec']['publishedobjectdata']));
+                renderContext['publishedinteractiondata'] = context['javaimplfedspec']['publishedinteractiondata'];
+                renderContext['publishedobjectdata'] = context['javaimplfedspec']['publishedobjectdata'];
 
                 artifact.addFile(context['javafedspec']['outFileName'], ejs.render(TEMPLATES['java/federatebase.java.ejs'], renderContext), function (err) {
                     if (err) {

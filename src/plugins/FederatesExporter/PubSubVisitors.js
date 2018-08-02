@@ -25,6 +25,8 @@ define([], function () {
             publication['handler'] = function(federate, interaction){
                 var interactiondata = {
                     name: interaction.name,
+                    fullName: interaction.fullName,
+                    parameters: interaction.parameters,
                     publishedLoglevel: publication['LogLevel']
                 };
 
@@ -61,6 +63,8 @@ define([], function () {
             subscription['handler'] = function(federate, interaction){
                 var interactiondata = {
                     name: interaction.name,
+                    fullName: interaction.fullName,
+                    parameters: interaction.parameters,
                     subscribedLoglevel: subscription['LogLevel'],
                     //* Interaction might get connected to a Mapper on a different FOMSheet. 
                     //* Resolve correct filter at render time.
@@ -105,6 +109,8 @@ define([], function () {
             publication['handler'] = function(federate, object){
                 var objectdata = {
                     name: object.name,
+                    fullName: object.fullName,
+                    parameters: object.parameters,
                     publishedLoglevel: publication['LogLevel']
                 };
                 objectdata['publishedAttributeData']=[];
@@ -150,6 +156,8 @@ define([], function () {
             subscription['handler'] = function(federate, object){
                 var objectdata = {
                     name: object.name,
+                    fullName: object.fullName,
+                    parameters: object.parameters,
                     subscribedLoglevel: subscription['LogLevel'],
                 };
                 objectdata['subscribedAttributeData']=[];
