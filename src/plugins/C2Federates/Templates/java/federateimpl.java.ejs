@@ -22,8 +22,6 @@ public class <%= classname %> extends <%= classname %>Base {
     private final static Logger log = LogManager.getLogger();
 
     private double currentTime = 0;
-    
-    private boolean exitCondition = false;
 <% if (publishedobjectdata.length > 0) { -%>
 
     ///////////////////////////////////////////////////////////////////////
@@ -208,8 +206,10 @@ public class <%= classname %> extends <%= classname %>Base {
             <%= classname %> federate = new <%= classname %>(federateConfig);
             federate.execute();
             log.info("Done.");
+            System.exit(0);
         } catch (Exception e) {
             log.error(e);
+            System.exit(1);
         }
     }
 }
