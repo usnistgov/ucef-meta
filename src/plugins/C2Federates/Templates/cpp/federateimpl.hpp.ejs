@@ -28,8 +28,10 @@ class <%=classname%> : public <%=classname%>Base {
         void handleInteractionClass(boost::shared_ptr<<%=interaction_data.name%>> interaction);
 <% }); -%>
 
+<% if (subscribedobjectdata.length + subscribedinteractiondata.length > 0) { -%>
         void checkReceivedSubscriptions();
 
+<% } -%>
     public:
         typedef <%=classname%>Base Super;
 

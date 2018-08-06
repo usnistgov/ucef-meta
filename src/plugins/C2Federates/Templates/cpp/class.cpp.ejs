@@ -33,16 +33,12 @@ void C2WInteractionRoot::sendInteraction( RTI::RTIambassador *rti ) {
 
 <%=classname%>::AttributeHandleValuePairSetSP <%=classname%>::createDatamemberHandleValuePairSet( bool force ) {
 	AttributeHandleValuePairSetSP datamembers = AttributeHandleValuePairSetSP(RTI::AttributeSetFactory::create(<%=alldatamembers.length%>));
-
-	// searching the published attribute name vector is a very inefficient solution
-	// however, strings are more reliable than integer handles when dealing with inherited attributes
-	const StringVector &publishedNames = getPublishAttributeNameVector();
 	std::string stringConversion;
 	bool isPublished;
 
 <% /*alldatamembers:{ d |<supplied_attribute(classname=classname,datamember=d)>}*/ -%>
 <% alldatamembers.forEach(function(datamember){ -%>
-	isPublished = (std::find(publishedNames.begin(), publishedNames.end(), "<%=datamember.name%>") != publishedNames.end());
+	isPublished = (m_publishedAttributeNames.find("<%=datamember.name%>") != m_publishedAttributeNames.end());
 	if (  isPublished && _<%=datamember.name%>.shouldBeUpdated( force )  ) {
 		stringConversion = static_cast< std::string >(  TypeMedley( get_<%=datamember.name%>() )  );
 		datamembers->add( get_<%=datamember.name%>_handle(), stringConversion.c_str(), stringConversion.size() );
@@ -52,5 +48,7 @@ void C2WInteractionRoot::sendInteraction( RTI::RTIambassador *rti ) {
 <% }); -%>
 	return datamembers;
 }
+
+boost::unordered_set< std::string > <%=classname%>::m_publishedAttributeNames;
 <% } -%>
 <% } -%>
