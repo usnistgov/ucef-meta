@@ -58,6 +58,11 @@
 
 #include "<%=parentclassname%>.hpp"
 #include "C2WException.hpp"
+<% if(!isinteraction){ -%>
+<% if(alldatamembers && alldatamembers.length > 0){ -%>
+
+#include <boost/unordered_set.hpp>
+<% }} -%>
 
 class <%=classname%> : public <%=parentclassname%> {
 public:
@@ -78,6 +83,10 @@ public:
 <% if(alldatamembers && alldatamembers.length > 0){ -%>
 
 private:
+<% if(!isinteraction){ -%>
+	static boost::unordered_set< std::string > m_publishedAttributeNames;
+
+<% } -%>
 <% /*alldatamembers:handle()*/ -%>
 <% alldatamembers.forEach(function(datamember){ -%>
 	static int &get_<%=datamember.name%>_handle_var( void ) {
@@ -134,10 +143,12 @@ public:
 <% /*alldatamembers:{ a |<publish(classname=classname,attribute=a)> }*/ -%>
 	static void publish_<%=attribute.name%>( void ) {
 		getPublishAttributeNameVector().push_back( "<%=attribute.name%>" );
+		m_publishedAttributeNames.emplace( "<%=attribute.name%>" );
 	}
 
 	static void unpublish_<%=attribute.name%>( void ) {
 		getPublishAttributeNameVector().erase( std::remove( getPublishAttributeNameVector().begin(), getPublishAttributeNameVector().end(), "<%=attribute.name%>" ), getPublishAttributeNameVector().end() );
+		m_publishedAttributeNames.erase( "<%=attribute.name%>" );
 	}
 
 <% /*alldatamembers:{ a |<subscribe(classname=classname,attribute=a)> }*/ -%>

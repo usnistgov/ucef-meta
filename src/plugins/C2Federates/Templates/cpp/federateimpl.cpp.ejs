@@ -73,7 +73,9 @@ void <%=classname%>::checkReceivedSubscriptions() {
 <% } -%>
 
 void <%=classname%>::execute( void ) {
+<% if (subscribedobjectdata.length + subscribedinteractiondata.length > 0) { -%>
     checkReceivedSubscriptions();
+<% } -%>
 <% if (publishedobjectdata.length > 0) { -%>
 
     // TODO update registered object instances
