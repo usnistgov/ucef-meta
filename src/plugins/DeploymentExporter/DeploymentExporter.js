@@ -134,8 +134,9 @@ define([
 
         if (typeof WebGMEGlobal !== 'undefined') {
 	        self.runningOnClient = true;
-	        self.notify('error', 'Cannot compile while running in client! Please re-run the plugin and enable server execution!');
-            return self.result.success = false;
+            var errMsg = 'This plugin is only supported to run on the server side!';
+            self.logger.error( errMsg);
+            return callback( errMsg );
         }
 
         //Add POM generator
@@ -706,28 +707,30 @@ define([
 
     ///--------------------------------------
     // list of experiments.json
-    if (self.experimentPaths.length != 0) {
-
-        self.fileGenerators.push(function (artifact, callback) {
-
-            var experimentlist = {}
-
-                 self.experimentPaths.forEach(function (objPath) {
-                     self.experimentModelConfig[objPath].forEach(function (expSet) {
-                        experimentlist[self.core.getAttribute(self.core.getParent(expSet), "name").toLowerCase()] = self.core.getAttribute(self.core.getParent(expSet), "name").toLowerCase()
-                     })
+    self.fileGenerators.push(function (artifact, callback) {
+        var experimentlist = []
+        if (self.experimentPaths.length != 0) {
+             self.experimentPaths.forEach(function (objPath) {
+                 self.experimentModelConfig[objPath].forEach(function (expSet) {
+                     if(experimentlist.indexOf(self.core.getAttribute(self.core.getParent(expSet), "name"))==-1){
+                        experimentlist.push(self.core.getAttribute(self.core.getParent(expSet), "name"))
+                     }
+                    
                  })
+                
+             })
+            }
 
-                artifact.addFile('conf/' + 'experimentlist.json', JSON.stringify(experimentlist, null, 2), function (err) {
-                if (err) {
-                    callback(err);
-                    return;
-                } else {
-                    callback();
-                }
-            });     
-        });
-    }
+            artifact.addFile('conf/' + 'experimentlist.json', JSON.stringify(experimentlist, null, 2), function (err) {
+            if (err) {
+                callback(err);
+                return;
+            } else {
+                callback();
+            }
+        });     
+    })
+
 
 
 
@@ -765,35 +768,35 @@ define([
     });
 
 
-    // self.experimentModel = {
-    //     'script': {
-    //         'federateTypesAllowed': [],
-    //         'expectedFederates': [],
-    //         'lateJoinerFederates': []
-    //     }
-    // };
-    // // Experiment Config    
-    // self.fileGenerators.push(function (artifact, callback) {
-    //     self.federates.forEach(function (fed) {
-    //         self.experimentModel.script.federateTypesAllowed.push(fed.name)
-    //         self.experimentModel.script.expectedFederates.push({
-    //             "federateType": fed.name,
-    //             "count": 1
-    //         });
-    //         self.experimentModel.script.lateJoinerFederates.push({
-    //             "federateType": fed.name,
-    //             "count": 0
-    //         });
-    //     });
-    //     artifact.addFile('conf/' + 'experimentConfig.json', JSON.stringify(self.experimentModel.script, null, 2), function (err) {
-    //         if (err) {
-    //             callback(err);
-    //             return;
-    //         } else {
-    //             callback();
-    //         }
-    //     });
-    // });
+     self.experimentModel = {
+         'script': {
+             'federateTypesAllowed': [],
+             'expectedFederates': [],
+             'lateJoinerFederates': []
+         }
+     };
+     // Experiment Config    
+     self.fileGenerators.push(function (artifact, callback) {
+         self.federates.forEach(function (fed) {
+             self.experimentModel.script.federateTypesAllowed.push(fed.name)
+             self.experimentModel.script.expectedFederates.push({
+                 "federateType": fed.name,
+                 "count": 1
+             });
+             self.experimentModel.script.lateJoinerFederates.push({
+                 "federateType": fed.name,
+                 "count": 0
+             });
+         });
+         artifact.addFile('conf/default/' + 'experimentConfig.json', JSON.stringify(self.experimentModel.script, null, 2), function (err) {
+             if (err) {
+                 callback(err);
+                 return;
+             } else {
+                 callback();
+             }
+         });
+     });
 
     // Federate Config JSON
     self.fileGenerators.push(function (artifact, callback) {
@@ -843,7 +846,7 @@ define([
                 "federationEndTime": 0.0,
                 "realTimeMode": true,
                 "fedFile": "fom/" + self.projectName + '.fed',
-                "experimentConfig": "conf/experimentConfig.json"
+                "experimentConfig": "conf/default/experimentConfig.json"
             }
         };
 
@@ -880,10 +883,28 @@ define([
    
 
     finishExport = function (err) {
-        
-        var path = require('path')
-	    var filendir = require('filendir')
-        var fs  = require('fs')
+
+        if (err) {
+            self.logger.error(err);
+            return callback(err, self.result);
+        }
+
+        var path;
+        var filendir;
+        var fs;
+
+        if ( self.runningOnClient )
+        {
+            require(['path'], function (path) {});
+            require(['filendir'], function (filendir) {});
+            require(['fs'], function (fs) {});
+        }
+        else
+        {
+            path = require('path')
+            filendir = require('filendir')
+            fs  = require('fs')
+        }
 
         //var outFileName = self.projectName + '.json'
         var artifact = self.blobClient.createArtifact(self.projectName.trim().replace(/\s+/g, '_') + '_deployment');

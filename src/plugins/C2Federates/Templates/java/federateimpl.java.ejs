@@ -10,7 +10,6 @@ import org.cpswt.hla.ObjectRoot;
 import org.cpswt.hla.InteractionRoot;
 <% } -%>
 import org.cpswt.hla.base.AdvanceTimeRequest;
-import org.cpswt.utils.CpswtDefaults;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -20,10 +19,11 @@ import org.apache.logging.log4j.Logger;
  *
  */
 public class <%= classname %> extends <%= classname %>Base {
+    private final static Logger log = LogManager.getLogger();
 
-    private final static Logger log = LogManager.getLogger(<%= classname %>.class);
-
-    double currentTime = 0;
+    private double currentTime = 0;
+    
+    private boolean exitCondition = false;
 <% if (publishedobjectdata.length > 0) { -%>
 
     ///////////////////////////////////////////////////////////////////////
@@ -51,20 +51,24 @@ public class <%= classname %> extends <%= classname %>Base {
 <% } -%>
     }
 <% if (subscribedinteractiondata.length + subscribedobjectdata.length > 0) { -%>
-
-    private void CheckReceivedSubscriptions(String s) {
-<% if (subscribedinteractiondata.length > 0) { -%>
 <% var conditional = "if"; -%>
+
+    private void checkReceivedSubscriptions() {
+        log.debug("in checkReceivedSubscriptions");
+<% if (subscribedinteractiondata.length > 0) { -%>
+<% conditional = "if"; -%>
 
         InteractionRoot interaction = null;
         while ((interaction = getNextInteractionNoWait()) != null) {
-<% subscribedinteractiondata.forEach(function(interaction_data){ -%>
+<% (subscribedinteractiondata.sort(function(a, b){return b.fullName.length-a.fullName.length})).forEach(function(interaction_data){ -%>
             <%= conditional %> (interaction instanceof <%= interaction_data.name %>) {
                 handleInteractionClass((<%= interaction_data.name %>) interaction);
             }
 <% conditional = "else if"; -%>
 <% }) -%>
-            log.info("Interaction received and handled: " + s);
+            else {
+                log.warn("unhandled interaction: {}", interaction.getClassName());
+            }
         }
  <% } -%>
 <%if (subscribedobjectdata.length > 0) { -%>
@@ -74,13 +78,15 @@ public class <%= classname %> extends <%= classname %>Base {
         while ((reflector = getNextObjectReflectorNoWait()) != null) {
             reflector.reflect();
             ObjectRoot object = reflector.getObjectRoot();
-<%subscribedobjectdata.forEach(function(object_data){ -%>
+<% (subscribedobjectdata.sort(function(a, b){return b.fullName.length-a.fullName.length})).forEach(function(object_data){ -%>
             <%= conditional %> (object instanceof <%= object_data.name %>) {
                 handleObjectClass((<%= object_data.name %>) object);
             }
 <% conditional = "else if"; -%>
 <%}) -%>
-            log.info("Object received and handled: " + s);
+            else {
+                log.warn("unhandled object reflection: {}", object.getClassName());
+            }
         }
 <% } -%>
     }
@@ -88,6 +94,7 @@ public class <%= classname %> extends <%= classname %>Base {
 
     private void execute() throws Exception {
         if(super.isLateJoiner()) {
+            log.info("turning off time regulation (late joiner)");
             currentTime = super.getLBTS() - super.getLookAhead();
             super.disableTimeRegulation();
         }
@@ -100,32 +107,23 @@ public class <%= classname %> extends <%= classname %>Base {
         putAdvanceTimeRequest(atr);
 
         if(!super.isLateJoiner()) {
+            log.info("waiting on readyToPopulate");
             readyToPopulate();
         }
-
-        ///////////////////////////////////////////////////////////////////////
-        // Call CheckReceivedSubscriptions(<message>) here to receive
-        // subscriptions published before the first time step.
-        ///////////////////////////////////////////////////////////////////////
 
         ///////////////////////////////////////////////////////////////////////
         // TODO perform initialization that depends on other federates below //
         ///////////////////////////////////////////////////////////////////////
 
         if(!super.isLateJoiner()) {
+            log.info("waiting on readyToRun");
             readyToRun();
         }
 
         startAdvanceTimeThread();
+        log.info("started logical time progression");
 
-        // this is the exit condition of the following while loop
-        // it is used to break the loop so that latejoiner federates can
-        // notify the federation manager that they left the federation
-        boolean exitCondition = false;
-
-        while (true) {
-            currentTime += super.getStepSize();
-
+        while (!exitCondition) {
             atr.requestSyncStart();
             enteredTimeGrantedState();
 <% if (publishedinteractiondata.length > 0) { -%>
@@ -139,7 +137,7 @@ public class <%= classname %> extends <%= classname %>Base {
 <% interaction_data.parameters.forEach(function(parameter) { -%>
             //    v<%= interaction_data.name %>.set_<%= parameter.name %>( < YOUR VALUE HERE > );
 <% }) -%>
-            //    v<%= interaction_data.name %>.sendInteraction(getLRC(), currentTime);
+            //    v<%= interaction_data.name %>.sendInteraction(getLRC(), currentTime + getLookAhead());
             //
 <% }) -%>
             ////////////////////////////////////////////////////////////////////////////////////////
@@ -155,27 +153,21 @@ public class <%= classname %> extends <%= classname %>Base {
             //    v<%= object_data.name %>.set_<%= parameter.name %>(<YOUR VALUE HERE >);
 <% }) -%>
 <% } -%>
-            //    v<%= object_data.name %>.updateAttributeValues(getLRC(), currentTime);
+            //    v<%= object_data.name %>.updateAttributeValues(getLRC(), currentTime + getLookAhead());
             //
 <% }) -%>
             //////////////////////////////////////////////////////////////////////////////////////////
 <% } -%>
 <% if (subscribedinteractiondata.length + subscribedobjectdata.length > 0) { -%>
 
-            CheckReceivedSubscriptions("Main Loop");
+            checkReceivedSubscriptions();
 <% } -%>
 
-            // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-            // DO NOT MODIFY FILE BEYOND THIS LINE
-            // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            currentTime += super.getStepSize();
             AdvanceTimeRequest newATR = new AdvanceTimeRequest(currentTime);
             putAdvanceTimeRequest(newATR);
             atr.requestSyncEnd();
             atr = newATR;
-
-            if(exitCondition) {
-                break;
-            }
         }
 
         // while loop finished, notify FederationManager about resign
@@ -206,13 +198,9 @@ public class <%= classname %> extends <%= classname %>Base {
             FederateConfig federateConfig = federateConfigParser.parseArgs(args, FederateConfig.class);
             <%= classname %> federate = new <%= classname %>(federateConfig);
             federate.execute();
-
-            System.exit(0);
+            log.info("Done.");
         } catch (Exception e) {
-            log.error("There was a problem executing the <%= classname %> federate: {}", e.getMessage());
             log.error(e);
-
-            System.exit(1);
         }
     }
 }
