@@ -166,11 +166,13 @@ public class <%= classname %> extends <%= classname %>Base {
             ////////////////////////////////////////////////////////////////////////////////////////
 
 
-            currentTime += super.getStepSize();
-            AdvanceTimeRequest newATR = new AdvanceTimeRequest(currentTime);
-            putAdvanceTimeRequest(newATR);
-            atr.requestSyncEnd();
-            atr = newATR;
+            if (!exitCondition) {
+                currentTime += super.getStepSize();
+                AdvanceTimeRequest newATR = new AdvanceTimeRequest(currentTime);
+                putAdvanceTimeRequest(newATR);
+                atr.requestSyncEnd();
+                atr = newATR;
+            }
         }
 
         // call exitGracefully to shut down federate
