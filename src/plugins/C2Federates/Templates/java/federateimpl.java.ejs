@@ -52,7 +52,6 @@ public class <%= classname %> extends <%= classname %>Base {
 <% var conditional = "if"; -%>
 
     private void checkReceivedSubscriptions() {
-        log.debug("in checkReceivedSubscriptions");
 <% if (subscribedinteractiondata.length > 0) { -%>
 <% conditional = "if"; -%>
 
@@ -65,7 +64,7 @@ public class <%= classname %> extends <%= classname %>Base {
 <% conditional = "else if"; -%>
 <% }) -%>
             else {
-                log.warn("unhandled interaction: {}", interaction.getClassName());
+                log.debug("unhandled interaction: {}", interaction.getClassName());
             }
         }
  <% } -%>
@@ -83,7 +82,7 @@ public class <%= classname %> extends <%= classname %>Base {
 <% conditional = "else if"; -%>
 <%}) -%>
             else {
-                log.warn("unhandled object reflection: {}", object.getClassName());
+                log.debug("unhandled object reflection: {}", object.getClassName());
             }
         }
 <% } -%>
@@ -105,8 +104,9 @@ public class <%= classname %> extends <%= classname %>Base {
         putAdvanceTimeRequest(atr);
 
         if(!super.isLateJoiner()) {
-            log.info("waiting on readyToPopulate");
+            log.info("waiting on readyToPopulate...");
             readyToPopulate();
+            log.info("...synchronized on readyToPopulate");
         }
 
         ///////////////////////////////////////////////////////////////////////
@@ -114,8 +114,9 @@ public class <%= classname %> extends <%= classname %>Base {
         ///////////////////////////////////////////////////////////////////////
 
         if(!super.isLateJoiner()) {
-            log.info("waiting on readyToRun");
+            log.info("waiting on readyToRun...");
             readyToRun();
+            log.info("...synchronized on readyToRun");
         }
 
         startAdvanceTimeThread();
