@@ -93,7 +93,7 @@ define([
             context['javaimplfedspec']['lookahead'] = self.core.getAttribute(node, 'Lookahead');
             context['javaimplfedspec']['asynchronousdelivery'] = self.core.getAttribute(node, 'EnableROAsynchronousDelivery');
             context['javaimplfedspec']['bindAddress'] = self.getCurrentConfig().bindAddress.trim();
-        
+
             self.javafederateName[self.core.getPath(node)] = self.core.getAttribute(node, 'name');
 
             self.federates[self.core.getPath(node)] = context['javaimplfedspec'];
