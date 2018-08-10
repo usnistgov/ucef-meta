@@ -9,6 +9,7 @@
 	<properties>
 		<federation.name><%= projectName %></federation.name>
 		<federation.version><%= projectVersion %></federation.version>
+		<experiment.name>default</experiment.name>
 		<cpswt.version><%= cpswtVersion%></cpswt.version>
 		<nar.version>3.3.0</nar.version>
 	</properties>
@@ -246,7 +247,7 @@
             <id><%= fed.name %></id>
             <properties>
                 <federate.name><%= fed.name %></federate.name>
-                <federate.configFile><%= fed.configFile %></federate.configFile>
+                <federate.configFile><%= fed.configFilename %></federate.configFile>
             </properties>
         </profile><% }); %>
 		<profile>
@@ -323,7 +324,7 @@
                             <mainClass><%= projectName %>.${federate.name}</mainClass>
 							<arguments>
                                 <argument>-configFile</argument>
-                                <argument>${federate.configFile}</argument>
+                                <argument>conf/${experiment.name}/${federate.configFile}</argument>
 					    	</arguments>
 						</configuration>
 					</plugin>
@@ -390,7 +391,7 @@
               				<executable>./<%= projectName %>-${federate.name}-cpp</executable>
 							<arguments>
 								 <argument>--configFile</argument>
-                                <argument>${project.basedir}/${federate.configFile}</argument>
+                                <argument>${project.basedir}/conf/${experiment.name}/${federate.configFile}</argument>
 					    	</arguments>
 					    	<environmentVariables>
 			                    <EXEDIR>${project.basedir}/target/${federate.name}</EXEDIR>

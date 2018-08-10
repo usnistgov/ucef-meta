@@ -541,7 +541,6 @@ define([
                                     "count": self.core.getAttribute(expSet, "count")
                                 })
                             }
-
                         }) 
                         experimentmodel.exptConfig.coaSelection = 'conf/' + experimentmodel.name.toLowerCase() +  '/coaSelection_' + experimentmodel.name.toLowerCase() + '.json'
                         // This will be the coaselection for the experiment
@@ -731,11 +730,6 @@ define([
         });     
     })
 
-
-
-
-
-
     //Add default RID file
     //<<<<<<< cpp_json
     self.fileGenerators.push(function (artifact, callback) {
@@ -798,6 +792,60 @@ define([
          });
      });
 
+    self.fileGenerators.push(function (artifact, callback) {
+        if (self.experimentPaths.length != 0) {
+            var federateConfigurations = []; // each element is one configuration file to generate
+
+            var federateLookup = {}; // to speed up access to federate attributes
+            self.federates.forEach(function (federate) {
+                federateLookup[federate.name] = federate;
+            });
+
+
+            self.experimentPaths.forEach(function (experimentPath) {
+                self.experimentModelConfig[experimentPath].forEach(function (federateReference) {
+                    var experimentName = self.core.getAttribute(self.core.getParent(federateReference), "name");
+                    // this is wrong (and also how it's been done everywhere) because a user can change the name field
+                    // this should use self.core.getPointerPath on 'ref' to get the pointer to the federate node
+                    // however, I have no idea how to get the WebGME node from its string path
+                    var federateType = self.core.getAttribute(federateReference, "name").split("-")[0];
+
+                    var federateJsonObject = {
+                        "federateRTIInitWaitTimeMs": 200,
+                        "federateType": federateType,
+                        "federationId": self.projectName,
+                        "isLateJoiner": self.core.getAttribute(federateReference, "isLateJoiner"),
+                        "lookAhead": federateLookup[federateType].Lookahead,
+                        "stepSize": federateLookup[federateType].Step
+                    }
+
+                    // filePath needs work because if an experiment is called 'default' I assume it breaks terribly
+                    var federateConfiguration = {
+                        "jsonObject": federateJsonObject,
+                        "filePath": "conf/" + experimentName.toLowerCase() + "/" + federateType.toLowerCase() + ".json"
+                    }
+                    federateConfigurations.push(federateConfiguration);
+                })
+            })
+
+            var response = [] // no idea what this is but all the cool kids are doing it (and it doesn't work without it)
+            federateConfigurations.forEach(function (configuration) {
+                artifact.addFile(configuration.filePath, JSON.stringify(configuration.jsonObject, null, 2), function (err) {
+                    response.push(err);
+                    if (response.length == federateConfigurations.length) {
+                        if (response.indexOf(err) == -1) {
+                            callback(err);
+                        } else {
+                            callback();
+                        }
+                    }
+                });
+            });
+        } else {
+            callback();
+        }
+    });
+
     // Federate Config JSON
     self.fileGenerators.push(function (artifact, callback) {
 
@@ -814,7 +862,7 @@ define([
             FederateJsonModel.lookAhead = fed.Lookahead;
             FederateJsonModel.stepSize = fed.Step;
             FederateJsonModel.federateType = fed.name;
-            artifact.addFile('conf/' + fed.name.toLowerCase() + '.json', JSON.stringify(FederateJsonModel, null, 2), function (err) {
+            artifact.addFile('conf/default/' + fed.name.toLowerCase() + '.json', JSON.stringify(FederateJsonModel, null, 2), function (err) {
                 response.push(err)
                 if (response.length == self.federates.length) {
                     if (response.indexOf(err) == -1) {
@@ -1506,7 +1554,7 @@ DeploymentExporter.prototype.visit_Federate = function (node, parent, context) {
         fed[nodeAttrNames[i]] = self.core.getAttribute(node, nodeAttrNames[i]);
     }
     fed.FederateType = nodeType;
-    fed.configFile = "conf/" + fed.name.toLowerCase() + ".json";
+    fed.configFilename = fed.name.toLowerCase() + ".json";
     self.federates.push(fed);
 
     if (nodeType != 'Federate') {
