@@ -1,19 +1,22 @@
 <% /*simobject(name,sharing,delivery,order,attributes,children) */ -%>
-
         <objectClass>
             <name><%= name %></name>
             <sharing><%= sharing %></sharing>
             <semantics></semantics>
-            <% for(var i=0; i<attributes.length; i++){ %>
+<% for(var i=0; i<attributes.length; i++){ -%>
+<% if(!attributes[i].inherited) { -%>
             <attribute>
-              <name><%= attributes[i].name %></name>
-              <dataType><%= attributes[i].parameterType %></dataType>
-              <transportation><%= attributes[i].delivery %></transportation>
-              <order><%= attributes[i].order %></order>
-              <semantics></semantics>
+                <name><%= attributes[i].name %></name>
+                <dataType><%= attributes[i].parameterType %></dataType>
+                <updateType>NA</updateType>
+                <ownership>NoTransfer</ownership>
+                <sharing><%= sharing %></sharing>
+                <dimensions></dimensions>
+                <transportation><%= attributes[i].delivery %></transportation>
+                <order><%= attributes[i].order %></order>
+                <semantics></semantics>
             </attribute>
-            <% } -%>
-            <% children.forEach(function(child){ %>
-                    <%- child %>
-            <% }); -%>
+<% } -%>
+<% } -%>
+<% children.forEach(function(child){ -%><%- child %><% }); -%>
         </objectClass>

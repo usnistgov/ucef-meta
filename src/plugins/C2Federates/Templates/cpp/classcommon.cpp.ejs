@@ -1,13 +1,14 @@
-<% /*classcommon(isinteraction,classname,parentclassname,hlaclassname,datamembers,alldatamembers) ::= << */ %>
-
+<% /*classcommon(isinteraction,classname,parentclassname,hlaclassname,datamembers,alldatamembers) ::= << */ -%>
 void <%=classname%>::init( RTI::RTIambassador *rti ) {
 	static bool isInitialized = false;
 	if ( isInitialized ) {
 		return;
 	}
 	isInitialized = true;
+<% if(parentclassname){ -%>
 
-	<% if(parentclassname){ %><%=parentclassname%>::init( rti );<%}%>
+	<%=parentclassname%>::init( rti );
+<% } -%>
 
 	bool isNotInitialized = true;
 	while( isNotInitialized ) {
@@ -16,10 +17,10 @@ void <%=classname%>::init( RTI::RTIambassador *rti ) {
 			isNotInitialized = false;
 		} catch ( RTI::FederateNotExecutionMember & ) {
 			std::cerr << getInitErrorMessage() << "Federate Not Execution Member" << std::endl;
-			return;				
+			return;
 		} catch ( RTI::NameNotFound & ) {
 			std::cerr << getInitErrorMessage() << "Name Not Found" << std::endl;
-			return;				
+			return;
 		} catch ( ... ) {
 			std::cerr << getInitErrorMessage() << "Exception caught ... retry" << std::endl;
 		}
@@ -27,37 +28,39 @@ void <%=classname%>::init( RTI::RTIambassador *rti ) {
 
 	getClassNameHandleMap().insert(  std::make_pair( "<%=classname%>", get_handle() )  );
 	getClassHandleNameMap().insert(  std::make_pair( get_handle(), "<%=classname%>" )  );
+<% if(alldatamembers && alldatamembers.length > 0){ -%>
 
-<% if(datamembers){ %>
 	isNotInitialized = true;
 	while( isNotInitialized ) {
-		try {		
-			<% /*datamembers:handle_init()*/ %>
-			<% datamembers.forEach(function(datamember){ %>
-			get_<%=datamember.name%>_handle_var() = rti->get<%=isinteraction?"Parameter":"Attribute"%>Handle( "<%=datamember.name%>", get_handle() );<%});%>
+		try {
+<% /*alldatamembers:handle_init()*/ -%>
+<% alldatamembers.forEach(function(datamember){ -%>
+			get_<%=datamember.name%>_handle_var() = rti->get<%=isinteraction?"Parameter":"Attribute"%>Handle( "<%=datamember.name%>", get_handle() );
+<% }); -%>
 			isNotInitialized = false;
 		} catch ( RTI::FederateNotExecutionMember & ) {
 			std::cerr << getInitErrorMessage() << "Federate Not Execution Member" << std::endl;
-			return;				
+			return;
 		} catch ( RTI::<%=isinteraction?"Interaction":"Object"%>ClassNotDefined & ) {
 			std::cerr << getInitErrorMessage() << "<%=isinteraction?"Interaction":"Object"%> Class Not Defined" << std::endl;
-			return;				
+			return;
 		} catch ( RTI::NameNotFound & ) {
 			std::cerr << getInitErrorMessage() << "Name Not Found" << std::endl;
-			return;				
+			return;
 		} catch ( ... ) {
 			std::cerr << getInitErrorMessage() << "Exception caught ... retry" << std::endl;
 		}
 	}
-	<% datamembers.forEach(function(datamember){ %>
-	<% /*datamembers: { d |<initDatamemberNameHandleMap(classname=classname,datamember=d)>}*/ %>
-	getDatamemberNameHandleMap().insert(  std::make_pair( "<%=classname%>,<%=datamember.name%>", get_<%=datamember.name%>_handle() )  );
-	<% /*datamembers:initDatamemberHandleNameMap()*/ %>
+<% alldatamembers.forEach(function(datamember){ -%>
+
+<% /*alldatamembers: { d |<initDatamemberNameHandleMap(classname=classname,datamember=d)>}*/ -%>
+	getDatamemberNameHandleMap().insert(  std::make_pair( "<%=classname%>.<%=datamember.name%>", get_<%=datamember.name%>_handle() )  );
+<% /*alldatamembers:initDatamemberHandleNameMap()*/ -%>
 	getDatamemberHandleNameMap().insert(  std::make_pair( get_<%=datamember.name%>_handle(), "<%=datamember.name%>" )  );
-	<% /*datamembers:initDatamemberTypeMap()*/ %>
+<% /*alldatamembers:initDatamemberTypeMap()*/ -%>
 	getDatamemberTypeMap().insert( std::make_pair("<%=datamember.name%>", "<%=datamember.parameterType%>") );
-	<%});%>
-<%}%>
+<% }); -%>
+<% } -%>
 }
 
 void <%=classname%>::publish( RTI::RTIambassador *rti ) {
@@ -66,17 +69,17 @@ void <%=classname%>::publish( RTI::RTIambassador *rti ) {
 	}
 
 	init( rti );
+<% if(!isinteraction){ -%>
 
-<% if(!isinteraction){ %>	
 	getPublishedAttributeHandleSet_var().empty();
 	for( StringVector::iterator stsItr = getPublishAttributeNameVector().begin() ; stsItr != getPublishAttributeNameVector().end() ; (void)++stsItr ) {
 		try {
-			getPublishedAttributeHandleSet_var().add(  getDatamemberNameHandleMap().find( "<%=classname%>," + *stsItr )->second  );
+			getPublishedAttributeHandleSet_var().add(  getDatamemberNameHandleMap().find( "<%=classname%>." + *stsItr )->second  );
 		} catch ( ... ) {
 			std::cerr << getPublishErrorMessage() << "Could not publish \"" << *stsItr + "\" attribute." << std::endl;
 		}
 	}
-<%}%>
+<% } -%>
 
 	bool isNotPublished = true;
 	while( isNotPublished ) {
@@ -132,17 +135,18 @@ void <%=classname%>::subscribe( RTI::RTIambassador *rti ) {
 	}
 
 	init( rti );
-<% if(!isinteraction){ %>	
+<% if(!isinteraction){ -%>
+
 	getSubscribedAttributeHandleSet_var().empty();
 	for(  StringVector::iterator sstItr = getSubscribeAttributeNameVector().begin() ; sstItr != getSubscribeAttributeNameVector().end() ; (void)++sstItr  ) {
 		try {
-			getSubscribedAttributeHandleSet_var().add(  getDatamemberNameHandleMap().find( "<%=classname%>," + *sstItr )->second  );
+			getSubscribedAttributeHandleSet_var().add(  getDatamemberNameHandleMap().find( "<%=classname%>." + *sstItr )->second  );
 		} catch ( ... ) {
 			std::cerr << getSubscribeErrorMessage() << "Could not subscribe to \"" << *sstItr << "\" attribute." << std::endl;
 		}
 	}
-<%}%>
-	
+<% } -%>
+
 	bool isNotSubscribed = true;
 	while( isNotSubscribed ) {
 		try {
@@ -161,14 +165,14 @@ void <%=classname%>::subscribe( RTI::RTIambassador *rti ) {
 
 	getIsSubscribed() = true;
 }
-	
+
 void <%=classname%>::unsubscribe( RTI::RTIambassador *rti ) {
 	if ( !getIsSubscribed() ) {
 		return;
 	}
 
 	init( rti );
-	
+
 	bool isNotUnsubscribed = true;
 	while( isNotUnsubscribed ) {
 		try {
@@ -197,9 +201,9 @@ bool <%=classname%>::static_init( void ) {
 		return true;
 	}
 	isInitialized = true;
-	
+
 	getClassNameSet().insert( "<%=classname%>" );
-	
+
 	getClassNameFactoryMap().insert(  std::make_pair( "<%=classname%>", &<%=classname%>::factory )  );
 	getClassNamePublishMap().insert(   std::make_pair(  "<%=classname%>", (PubsubFunctionPtr)( &<%=classname%>::publish )  )   );
 	getClassNameUnpublishMap().insert(   std::make_pair(  "<%=classname%>", (PubsubFunctionPtr)( &<%=classname%>::unpublish )  )   );
@@ -208,21 +212,30 @@ bool <%=classname%>::static_init( void ) {
 
 	getDatamemberClassNameVectorPtrMap().insert(  std::make_pair( "<%=classname%>", &getDatamemberNames() )  );
 	getAllDatamemberClassNameVectorPtrMap().insert(  std::make_pair( "<%=classname%>", &getAllDatamemberNames() )  );
-	
-	<% /*datamembers:initDatamemberNameSet()*/ %>
-	<% datamembers.forEach(function(datamember){ %>
-	<% if(!datamember.hidden && !datamember.inherited){%>getDatamemberNames().push_back( "<%=datamember.name%>" );<%}%><%});%>
-	<% /*alldatamembers:initAllDatamemberNameSet()*/ %>
-	<% datamembers.forEach(function(datamember){ %>
-	getAllDatamemberNames().push_back( "<%=datamember.name%>" );<%});%>
+<% if(datamembers && datamembers.length > 0){ -%>
 
-<% if(!isinteraction){ %>
+<% /*datamembers:initDatamemberNameSet()*/ -%>
+<% datamembers.forEach(function(datamember){ -%>
+<% if(!datamember.hidden && !datamember.inherited){ -%>
+	getDatamemberNames().push_back( "<%=datamember.name%>" );
+<% } -%>
+<% }); -%>
+<% } -%>
+<% if(alldatamembers && alldatamembers.length > 0){ -%>
+
+<% /*alldatamembers:initAllDatamemberNameSet()*/ -%>
+<% alldatamembers.forEach(function(datamember){ -%>
+	getAllDatamemberNames().push_back( "<%=datamember.name%>" );
+<% }); -%>
+<% } -%>
+<% if(!isinteraction){ -%>
+
 	getClassNamePublishAttributeNameVectorPtrMap().insert(  std::make_pair( "<%=classname%>", &getPublishAttributeNameVector() )  );
 	getClassNameSubscribeAttributeNameVectorPtrMap().insert(  std::make_pair( "<%=classname%>", &getSubscribeAttributeNameVector() )  );
-	
+
 	getClassNamePublishedAttributesPtrMap().insert(  std::make_pair( "<%=classname%>", &getPublishedAttributeHandleSet_var() )  );
 	getClassNameSubscribedAttributesPtrMap().insert( std::make_pair( "<%=classname%>", &getSubscribedAttributeHandleSet_var() )  );
-<%}%>
+<% } -%>
 
 	return true;
 }
@@ -231,5 +244,9 @@ std::ostream &operator<<( std::ostream &os, <%=classname%>::SP entitySP ) {
 	return os << *entitySP;
 }
 std::ostream &operator<<( std::ostream &os, const <%=classname%> &entity ) {
-	return os << "<%=classname%>(" <% alldatamembers.forEach(function(datamember,i){ %><% if( i > 0){%> << ", "<%}%> << "<%=datamember.name%>:" << entity.get_<%=datamember.name%>()<%});%>	<< ")";
+	return os << "<%=classname%>("
+<% alldatamembers.forEach(function(datamember,i){ -%>
+			<% if( i > 0){%><< ", "<%}%> << "<%=datamember.name%>:" << entity.get_<%=datamember.name%>()
+<% }); -%>
+			<< ")";
 }
