@@ -38,11 +38,16 @@ define(['js/util',
         this._ioContainer = this._dialog.find('#ioContainer').first();
         this._inputTable = this._ioContainer.find('#inputTable').first();
         this._outputTable = this._ioContainer.find('#outputTable').first();
+       
+        this._inputObjectTable = this._ioContainer.find('#inputObjectTable').first();
+        this._outputObjectTable = this._ioContainer.find('#outputObjectTable').first();
+
         this._multiplierInput = this._dialog.find('#multiplier').first();
 
         this.importStruct = null;
         this.objectsByKind = null;
         this.existingInteractionNodes = null;
+        this.existingObjectNodes = null;
         this.federateObj = null;
         this.nodeObj = null;
         this.client = null;
@@ -120,7 +125,8 @@ define(['js/util',
                 'activeNode': self.activeNode,
                 'rootNode': self.rootNode,
                 'META': self.META,
-                'multiplier': parseInt(self._multiplierInput.val())
+                'multiplier': parseInt(self._multiplierInput.val()),
+                'existingObjectNodes': self.existingObjectNodes
             };
 
             self.client.runBrowserPlugin(
@@ -267,15 +273,119 @@ define(['js/util',
         return newObject;
     };
     
+
+
+
+    ImportFederateDialog.prototype._checkObject = function(
+        object,
+        parametersById,
+        objects,
+        containerObject,
+        isBase
+    ) {
+        if (object == null){
+            return null;
+        }
+        if (containerObject.hasOwnProperty(object.attributes.name)){
+            return containerObject[object.attributes.name];
+        }
+        var self = this,
+            gmeNode,
+            newObject = {},
+            errors = [],
+            attributeValue,
+            attributeName,
+            parameters,
+            parametersByName = {},
+            paramName,
+            childrenPaths,
+            paramNode, newParamObj,
+            i,j;
+
+        for (var k in object) newObject[k] = object[k];
+        newObject['status'] = 'OK';
+        newObject['gmeNode'] = null;
+        newObject['selected'] = true;
+        newObject['isBase'] = isBase;
+
+        if (object.hasOwnProperty("__OBJECT_BASE__")){
+            newObject["base"] = self._checkObject(
+                objects[object["__OBJECT_BASE__"]["GUID"]] || null,
+                parametersById,
+                objects,
+                containerObject,
+                true
+            )
+        }
+
+        gmeNode = self.existingObjectNodes[object.attributes['name']];
+        if (gmeNode){
+            newObject['gmeNode'] = gmeNode;
+
+            // check interaction attributes first
+            for (i = 0; i < INT_ATTRIBUTES.length; i++){
+                attributeName = INT_ATTRIBUTES[i];
+                attributeValue = self.core.getAttribute(gmeNode, attributeName);
+                if (object.attributes[attributeName] != attributeValue){
+                    errors.push('Attribute ' + attributeName +
+                        '\'s the existing value is ' + attributeValue +
+                        ' instead of ' + object.attributes[attributeName]);
+                }
+            }
+
+            // now check parameters
+            parameters = object['parameters'];
+            parameters.map(function(param){
+                parametersByName[param['name']] = param;
+            });
+            childrenPaths = self.core.getChildrenPaths(gmeNode);
+            if (parameters.length != childrenPaths.length){
+                errors.push('The number of parameters does not match, ' +
+                    'existing number is ' + childrenPaths.length +
+                    ' instead of ' + parameters.length
+                )
+            } else {
+                for (i=0; i < childrenPaths.length; i++){
+                    paramNode = parametersById[childrenPaths[i]];
+                    paramName = self.core.getAttribute(paramNode, 'name');
+                    newParamObj = parametersByName[paramName] || {};
+                    for (j = 0; j < PARAM_ATTRIBUTES.length; j++){
+                        attributeName = PARAM_ATTRIBUTES[j];
+                        attributeValue = self.core.getAttribute(paramNode, attributeName);
+                        if (attributeValue != newParamObj[attributeName]){
+                            errors.push('Parameter ' + paramName +
+                                '\'s attribute ' + attributeName +
+                            ': existing value is ' + attributeValue +
+                            ' instead of ' + newParamObj[attributeName]);
+                        }
+                    }
+                }
+            }
+
+            if (errors.length > 0){
+                newObject['status'] = 'Error';
+                newObject['errors'] = errors;
+                newObject['selected'] = false;
+            }
+        }
+
+        containerObject[object.attributes.name] = newObject;
+        return newObject;
+    };
+
+
     ImportFederateDialog.prototype._processObjects = function () {
         var self = this,
             parametersById = {},
             objects,
             interactionName,
             interactionObj,
+            objectObj,
             paramPath;
 
         self.existingInteractionNodes = {};
+
+        self.existingObjectNodes ={};
         // Process existing interactions
         if (self.core && self.objectsByKind){
             if (self.objectsByKind['Interaction']){
@@ -290,6 +400,13 @@ define(['js/util',
                     parametersById[paramPath] = param;
                 });
             }
+
+            if (self.objectsByKind['Object']){
+                self.objectsByKind['Object'].map(function(object){
+                    objectName = self.core.getAttribute(object, "name");
+                    self.existingObjectNodes[objectName] = object;
+                });
+            }
         }
 
         // Process interactions from federate to be imported
@@ -298,6 +415,9 @@ define(['js/util',
             objects = self.importStruct['__OBJECTS__'] || {};
             self.federateObj.resolvedInputs = {};
             self.federateObj.resolvedOutputs = {};
+            self.federateObj.resolvedObjectInputs = {};
+            self.federateObj.resolvedObjectOutputs = {};
+            
 
             self.federateObj.inputs.map(function(obj){
                 interactionObj = objects[obj['GUID']] || null;
@@ -317,6 +437,30 @@ define(['js/util',
                     parametersById,
                     objects,
                     self.federateObj.resolvedOutputs,
+                    false
+                );
+            });
+
+
+            self.federateObj.objectinputs.map(function(obj){
+                objectObj = objects[obj['GUID']] || null;
+                self._checkObject(
+                    objectObj,
+                    parametersById,
+                    objects,
+                    self.federateObj.resolvedObjectInputs,
+                    false
+                );
+            });
+
+
+            self.federateObj.objectoutputs.map(function(obj){
+                objectObj = objects[obj['GUID']] || null;
+                self._checkObject(
+                    objectObj,
+                    parametersById,
+                    objects,
+                    self.federateObj.resolvedObjectOutputs,
                     false
                 );
             });
@@ -367,6 +511,10 @@ define(['js/util',
 
         this._renderIO(self.federateObj.resolvedInputs, self._inputTable);
         this._renderIO(self.federateObj.resolvedOutputs, self._outputTable);
+
+        this._renderIO(self.federateObj.resolvedObjectInputs, self._inputObjectTable);
+        this._renderIO(self.federateObj.resolvedObjectOutputs, self._outputObjectTable);
+
     };
 
     ImportFederateDialog.prototype._updateUI = function () {

@@ -23,6 +23,9 @@ define([
 
     var INT_ATTRIBUTES = ["name", "Order", "LogLevel", "EnableLogging", "Delivery"],
         PARAM_ATTRIBUTES = ["name", "Hidden", "ParameterType"];
+
+    var OBJ_ATTRIBUTES = ["name", "LogLevel", "EnableLogging"],
+    
     pluginMetadata = JSON.parse(pluginMetadata);
     var callback = null;
 
@@ -235,9 +238,144 @@ define([
             }
         }
 
+        if (interactionObj!=null)
         return interactionObj.gmeNode;
+        else 
+        return null
 
     };
+
+    ImportFromRegistry.prototype.upsertObject = function(
+        interactionObj, isInput, federateNode){
+        var self = this,
+            connectionNode,
+            attributeName,
+            i,
+            attributeValue;
+
+        if (interactionObj != null && interactionObj.status == 'OK'){
+            if (interactionObj.gmeNode == null) {
+                // This interaction does not exists yet, so let's create it
+
+                // Upsert base interaction and use that
+                var baseInteraction = self.upsertObject(
+                    interactionObj["base"],
+                    isInput,
+                    null
+                );
+                interactionObj.gmeNode = self.core.createNode({
+                    parent: self.container,
+                    base:baseInteraction
+                });
+
+                // Set attributes
+                for (i = 0; i < OBJ_ATTRIBUTES.length; i++) {
+                    attributeName = OBJ_ATTRIBUTES[i];
+                    if(attributeName != null)
+                    {
+                    self.core.setAttribute(
+                        interactionObj.gmeNode,
+                        attributeName,
+                        interactionObj.attributes[attributeName]);
+                    }
+                    
+                }
+
+                
+
+                // Create parameters and set their attributes when needed
+                self.postProcesses += 1;
+                self.core.loadChildren(interactionObj.gmeNode, function (err, children) {
+                    if (err) {
+                        // Something went wrong!
+                        // Handle the error and return.
+                    }
+                    var parameters = interactionObj['parameters'],
+                        paramObj,
+                        paramNode,
+                        existingParameters = {},
+                        paramName,
+                        i, j;
+
+                    for (i = 0; i < children.length; i += 1) {
+                        paramNode = children[i];
+                        paramName = self.core.getAttribute(paramNode, 'name');
+                        existingParameters[paramName] = paramNode;
+                    }
+
+                    parameters.map(function(param){
+                        if (!existingParameters.hasOwnProperty(param['name'])){
+                            paramObj = self.core.createNode({
+                                parent: interactionObj.gmeNode,
+                                base: self.META['Parameter']
+                            });
+                        } else {
+                            paramObj = existingParameters[param['name']];
+                        }
+
+
+
+
+
+
+                      var param_attr=  Object.keys(param)
+                      param_attr.map(function(p_attr){
+                            if(p_attr!= null){
+                                attributeValue = self.core.setAttribute(
+                                paramObj,
+                                attributeName,
+                                param[p_attr]
+                            );
+                            }
+                      })
+                    });
+
+                    self.postProcesses -= 1;
+                    self.finalize();
+                });
+
+            }
+            if (federateNode != null){
+                if (interactionObj.gmeNode) {
+                    // Connect federate node and interaction node
+                    // Only works if they are contained in the same parent???
+                    if (isInput){
+                        // Create connection node
+                        connectionNode = self.core.createNode(
+                            {parent: self.container,
+                                base:self.META['StaticObjectSubscribe']}
+                        );
+
+                        // Set source and destination
+                        self.core.setPointer(connectionNode, 'src', interactionObj.gmeNode);
+                        self.core.setPointer(connectionNode, 'dst', federateNode);
+                    } else {
+                        // Create connection node
+                        connectionNode = self.core.createNode({
+                            parent: self.container,
+                            base:self.META['StaticObjectPublish']
+                        });
+
+                        // Set source and destination
+                        self.core.setPointer(connectionNode, 'src', federateNode);
+                        self.core.setPointer(connectionNode, 'dst', interactionObj.gmeNode);
+                    }
+                    interactionObj.gmeConnection = connectionNode;
+                }
+            }
+        }
+
+        // return interactionObj.gmeNode;
+
+        if (interactionObj!=null)
+        return interactionObj.gmeNode;
+        else 
+        return null
+
+    };
+
+
+
 
     ImportFromRegistry.prototype.importFederate = function(){
         var self = this,
@@ -298,6 +436,31 @@ define([
                     }
                 });
 
+                var inputObjectNames = Object.keys(self.object.resolvedObjectInputs);
+                inputObjectNames.map(function (inputName) {
+                    // Improvement: Only import selected interactions
+                    if (self.object.resolvedObjectInputs[inputName].selected){
+                        self.upsertObject(
+                            self.object.resolvedObjectInputs[inputName],
+                            true,
+                            federateNode
+                        );
+                    }
+                });
+
+                var outputObjectNames = Object.keys(self.object.resolvedObjectOutputs);
+                outputObjectNames.map(function (outputName) {
+                    if (self.object.resolvedObjectOutputs[outputName].selected) {
+                        self.upsertObject(
+                            self.object.resolvedObjectOutputs[outputName],
+                            false,
+                            federateNode
+                        );
+                    }
+                });
+
+
+
                 loopCount++;
                 // Makes right no. of loops when multiplier is 0 or > 0
                 if (loopCount == 1 && self.multiplier > 0) {
@@ -339,6 +502,27 @@ define([
             outputNames.map(function (inputName) {
                 if (self.object.resolvedOutputs[inputName].selected){
                     var interaction = self.object.resolvedOutputs[inputName];
+                    self.core.addMember(self.container, ccId, interaction.gmeNode);
+                    if (self.multiplier > 0) {
+                        self.core.addMember(self.container, ccId, interaction.gmeConnection);
+                    }
+                }
+            });
+
+
+
+            inputObjectNames.map(function (inputName) {
+                if (self.object.resolvedObjectInputs[inputName].selected){
+                    var interaction = self.object.resolvedObjectInputs[inputName];
+                    self.core.addMember(self.container, ccId, interaction.gmeNode);
+                    if (self.multiplier > 0) {
+                        self.core.addMember(self.container, ccId, interaction.gmeConnection);
+                    }
+                }
+            });
+            outputObjectNames.map(function (inputName) {
+                if (self.object.resolvedObjectOutputs[inputName].selected){
+                    var interaction = self.object.resolvedObjectOutputs[inputName];
                     self.core.addMember(self.container, ccId, interaction.gmeNode);
                     if (self.multiplier > 0) {
                         self.core.addMember(self.container, ccId, interaction.gmeConnection);

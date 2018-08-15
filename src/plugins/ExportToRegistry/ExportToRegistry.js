@@ -363,7 +363,7 @@ define([
         var intPath = obj.dst.path;
         var intObj = self.model.objects[intPath];
         if (fedObj.GUID == fedRef.GUID){
-            fedObj.outputs.push(intRef);
+            fedObj.objectoutputs.push(intRef);
             self.transformObject(intObj);
         }
     };
@@ -375,7 +375,7 @@ define([
         var intPath = obj.dst.path;
         var intObj = self.model.objects[intPath];
         if (fedObj.GUID == fedRef.GUID){
-            fedObj.outputs.push(intRef);
+            fedObj.objectinputs.push(intRef);
             self.transformObject(intObj);
         }
     };
@@ -527,6 +527,8 @@ define([
         // initialize the inputs (interaction subscribe) and outputs (interaction publish)
         newObj.inputs = [];
         newObj.outputs = [];
+        newObj.objectinputs = [];
+        newObj.objectoutputs = [];
 
         // Scrub registry_info
         newObj.RegistryInfo = "";
