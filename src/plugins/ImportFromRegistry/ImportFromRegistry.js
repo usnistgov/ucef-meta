@@ -263,6 +263,10 @@ define([
                     isInput,
                     null
                 );
+                if( baseInteraction == null){
+                    baseInteraction = self.META['Object']
+                }
+
                 interactionObj.gmeNode = self.core.createNode({
                     parent: self.container,
                     base:baseInteraction

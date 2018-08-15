@@ -18,6 +18,8 @@ define(['js/util',
     var ImportFederateDialog,
         INT_ATTRIBUTES = ["Order", "LogLevel", "EnableLogging", "Delivery"],
         PARAM_ATTRIBUTES = ["Hidden", "ParameterType"];
+    var OBJ_ATTRIBUTES = ["name", "LogLevel", "EnableLogging"],
+    
 
     /**
      * ImportFederateDialog Constructor
@@ -323,8 +325,8 @@ define(['js/util',
             newObject['gmeNode'] = gmeNode;
 
             // check interaction attributes first
-            for (i = 0; i < INT_ATTRIBUTES.length; i++){
-                attributeName = INT_ATTRIBUTES[i];
+            for (i = 0; i < OBJ_ATTRIBUTES.length; i++){
+                attributeName = OBJ_ATTRIBUTES[i];
                 attributeValue = self.core.getAttribute(gmeNode, attributeName);
                 if (object.attributes[attributeName] != attributeValue){
                     errors.push('Attribute ' + attributeName +
@@ -349,6 +351,22 @@ define(['js/util',
                     paramNode = parametersById[childrenPaths[i]];
                     paramName = self.core.getAttribute(paramNode, 'name');
                     newParamObj = parametersByName[paramName] || {};
+
+                    // var param_attr=  Object.keys(param)
+                    //   param_attr.map(function(p_attr){
+                    //         if(p_attr!= null){
+                    //             attributeValue = self.core.setAttribute(
+                    //             paramObj,
+                    //             attributeName,
+                    //             param[p_attr]
+                    //         );
+                    //         }
+                    //   })
+
+
+
+
+
                     for (j = 0; j < PARAM_ATTRIBUTES.length; j++){
                         attributeName = PARAM_ATTRIBUTES[j];
                         attributeValue = self.core.getAttribute(paramNode, attributeName);
