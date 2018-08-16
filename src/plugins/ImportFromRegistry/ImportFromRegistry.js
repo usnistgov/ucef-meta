@@ -25,6 +25,8 @@ define([
         PARAM_ATTRIBUTES = ["name", "Hidden", "ParameterType"];
 
     var OBJ_ATTRIBUTES = ["name", "LogLevel", "EnableLogging"],
+            OBJ_ATTRIBUTE_ATTRIBUTES = ["name","Hidden","ParameterType"];
+
     
     pluginMetadata = JSON.parse(pluginMetadata);
     var callback = null;
@@ -311,20 +313,15 @@ define([
                         if (!existingParameters.hasOwnProperty(param['name'])){
                             paramObj = self.core.createNode({
                                 parent: interactionObj.gmeNode,
-                                base: self.META['Parameter']
+                                base: self.META['Attribute']
                             });
                         } else {
                             paramObj = existingParameters[param['name']];
                         }
-
-
-
-
-
-
                       var param_attr=  Object.keys(param)
                       param_attr.map(function(p_attr){
                             if(p_attr!= null){
+                                attributeName = p_attr
                                 attributeValue = self.core.setAttribute(
                                 paramObj,
                                 attributeName,

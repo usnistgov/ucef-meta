@@ -19,7 +19,7 @@ define(['js/util',
         INT_ATTRIBUTES = ["Order", "LogLevel", "EnableLogging", "Delivery"],
         PARAM_ATTRIBUTES = ["Hidden", "ParameterType"];
     var OBJ_ATTRIBUTES = ["name", "LogLevel", "EnableLogging"],
-    
+        OBJ_ATTRIBUTE_ATTRIBUTES = ["name","Hidden","ParameterType"];
 
     /**
      * ImportFederateDialog Constructor
@@ -157,7 +157,7 @@ define(['js/util',
         this._updateUI();
 
         pluginContext.pluginConfig = {
-            'objectKinds': ['Interaction', 'Federate', 'Parameter']
+            'objectKinds': ['Interaction', 'Federate', 'Parameter','Object','Attribute']
         };
         this.client.runBrowserPlugin(
             "FindObjects",
@@ -297,8 +297,8 @@ define(['js/util',
             errors = [],
             attributeValue,
             attributeName,
-            parameters,
-            parametersByName = {},
+            obj_attributes_attribute =[],
+            obj_attributes_attributesByName = {},
             paramName,
             childrenPaths,
             paramNode, newParamObj,
@@ -335,22 +335,27 @@ define(['js/util',
                 }
             }
 
-            // now check parameters
-            parameters = object['parameters'];
-            parameters.map(function(param){
-                parametersByName[param['name']] = param;
-            });
+            // now check object_attribute_attributes
+
+            obj_attributes_attribute = object['attributes'];
+            Object.keys(obj_attributes_attribute).map(function(param){
+                obj_attributes_attributesByName[param] = object['attributes'][param]
+            })
+
+            // obj_attributes_attribute.map(function(param){
+            //     obj_attributes_attributesByName[param['name']] = param;
+            // });
             childrenPaths = self.core.getChildrenPaths(gmeNode);
-            if (parameters.length != childrenPaths.length){
+            if (obj_attributes_attribute.length != childrenPaths.length){
                 errors.push('The number of parameters does not match, ' +
                     'existing number is ' + childrenPaths.length +
-                    ' instead of ' + parameters.length
+                    ' instead of ' + obj_attributes_attribute.length
                 )
             } else {
                 for (i=0; i < childrenPaths.length; i++){
                     paramNode = parametersById[childrenPaths[i]];
                     paramName = self.core.getAttribute(paramNode, 'name');
-                    newParamObj = parametersByName[paramName] || {};
+                    newParamObj = obj_attributes_attributesByName[paramName] || {};
 
                     // var param_attr=  Object.keys(param)
                     //   param_attr.map(function(p_attr){
@@ -367,8 +372,8 @@ define(['js/util',
 
 
 
-                    for (j = 0; j < PARAM_ATTRIBUTES.length; j++){
-                        attributeName = PARAM_ATTRIBUTES[j];
+                    for (j = 0; j < OBJ_ATTRIBUTE_ATTRIBUTES.length; j++){
+                        attributeName = OBJ_ATTRIBUTE_ATTRIBUTES[j];
                         attributeValue = self.core.getAttribute(paramNode, attributeName);
                         if (attributeValue != newParamObj[attributeName]){
                             errors.push('Parameter ' + paramName +
@@ -395,10 +400,12 @@ define(['js/util',
     ImportFederateDialog.prototype._processObjects = function () {
         var self = this,
             parametersById = {},
+            objattribute_attributesById = {},
             objects,
             interactionName,
             interactionObj,
             objectObj,
+            objectName,
             paramPath;
 
         self.existingInteractionNodes = {};
@@ -423,6 +430,14 @@ define(['js/util',
                 self.objectsByKind['Object'].map(function(object){
                     objectName = self.core.getAttribute(object, "name");
                     self.existingObjectNodes[objectName] = object;
+                });
+            }
+
+               if (self.objectsByKind['Attribute']){
+                self.objectsByKind['Attribute'].map(function(param){
+                    paramPath = self.core.getPath(param);
+                    objattribute_attributesById[paramPath] = param;
+                    
                 });
             }
         }
@@ -464,7 +479,7 @@ define(['js/util',
                 objectObj = objects[obj['GUID']] || null;
                 self._checkObject(
                     objectObj,
-                    parametersById,
+                    objattribute_attributesById,
                     objects,
                     self.federateObj.resolvedObjectInputs,
                     false
@@ -476,7 +491,7 @@ define(['js/util',
                 objectObj = objects[obj['GUID']] || null;
                 self._checkObject(
                     objectObj,
-                    parametersById,
+                    objattribute_attributesById,
                     objects,
                     self.federateObj.resolvedObjectOutputs,
                     false

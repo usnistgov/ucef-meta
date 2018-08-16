@@ -311,7 +311,7 @@ define([
             return null;
         var newObj = {
             name: obj.name,
-            AttributeType: obj.attributes.ParameterType,
+            ParameterType: obj.attributes.ParameterType,
             Hidden: obj.attributes.Hidden
         };
         return newObj;
