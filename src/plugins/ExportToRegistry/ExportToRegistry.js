@@ -372,7 +372,7 @@ define([
         var self = this;
         var fedRef = obj.pointers.dst;  // will have been converted to refObj
         var intRef = obj.pointers.src;
-        var intPath = obj.dst.path;
+        var intPath = obj.src.path;
         var intObj = self.model.objects[intPath];
         if (fedObj.GUID == fedRef.GUID){
             fedObj.objectinputs.push(intRef);
