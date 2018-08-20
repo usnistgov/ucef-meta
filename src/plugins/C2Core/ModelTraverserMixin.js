@@ -1,11 +1,7 @@
-/**
- * 
- */
-
 define([], function()
   {
     'use strict';
-
+    console.log("beginning of function in 'define'");
     /**
      * Initializes a new instance of JSONLDExport.
      * @class
@@ -13,43 +9,55 @@ define([], function()
      * @classdesc This class represents the plugin JSONLDExport.
      * @constructor
      */
+    console.log("defining withModelTraverser");
     var withModelTraverser = function()
       {
-        this.getVisitorFuncName = this.getVisitorFuncName ||
-	function(nodeType)
-	  {
+        console.log("executing withModelTraverser");
+	
+/***********************************************************************/
+
+	console.log("defining this.getVisitorFuncName");
+	this.getVisitorFuncName = this.getVisitorFuncName ||
+        function(nodeType)
+          {
             var self = this,
                 visitorName = 'generalVisitor';
+            console.log("executing getVisitorFuncName");
             if (nodeType)
-	      {
+              {
                 visitorName = 'visit_'+ nodeType;
-	      }
+              }
             self.logger.debug('Genarated visitor Name: ' + visitorName);
-            return visitorName;   
-	  }
+            return visitorName;
+          }
 
+/***********************************************************************/
 
+	console.log("defining this.getPostVisitorFuncName");
         this.getPostVisitorFuncName = this.getPostVisitorFuncName ||
-	function(nodeType)
-	  {
+        function(nodeType)
+          {
             var self = this,
                 visitorName = 'generalPostVisitor';
             if (nodeType)
-	      {
+              {
                 visitorName = 'post_visit_'+ nodeType;
-	      }
+              }
             self.logger.debug('Genarated post-visitor Name: ' + visitorName);
             return visitorName;
-	  }
-	
-	this.getChildSorterFunc = this.getChildSorterFunc ||
-	function(nodeType, self)
-	  {
+          }
+        
+/***********************************************************************/
+
+	console.log("defining this.getChildSorterFunc");
+        this.getChildSorterFunc = this.getChildSorterFunc ||
+        function(nodeType, self)
+          {
             var self = this,
-	        visitorName = 'generalChildSorter';
+                visitorName = 'generalChildSorter';
 
             var generalChildSorter = function(a, b)
-	      {
+              {
                 //a is less than b by some ordering criterion : return -1;
                 //a is greater than b by the ordering criterion: return 1;
                 // a equal to b, than return 0;
@@ -58,85 +66,102 @@ define([], function()
                 if (aName < bName) return -1;
                 if (aName > bName) return 1;
                 return 0;
-	      };
+              };
             return generalChildSorter;
-	  }
+          }
 
+/***********************************************************************/
+
+	console.log("defining this.excludeFromVisit");
         this.excludeFromVisit = this.excludeFromVisit ||
-	function(node)
-	  {
+        function(node)
+          {
             var self = this,
                 exclude = false;
             return exclude;
-	  }
+          }
 
+/***********************************************************************/
+
+	console.log("defining this.visitAllChildrenFromRootContainer");
         this.visitAllChildrenFromRootContainer = function(rootNode, callback)
-	  {
+          {
             var self = this,
                 error = '',
                 context = {},
                 counter,
                 counterCallback;
 
+	    console.log("executing visitAllChildrenFromRootContainer");
             counter = {visits: 1};
             counterCallback = function(err)
-	      {
+              {
                 error = err ? error + err : error;
                 counter.visits -= 1;
                 if (counter.visits === 0)
-		  {
+                  {
                     try
-		      {
+                      {
                         var ret = self['ROOT_post_visitor'](rootNode, context);
-		      }
-		    catch(err)
-		      {
+                      }
+                    catch(err)
+                      {
                         self.logger.debug('No post visitor function for ' +
-				    self.core.getAttribute(rootNode,'name'));
-		      }
+                                    self.core.getAttribute(rootNode,'name'));
+                      }
                     callback(error === '' ? undefined : error);
                     return;
-		  }
+                  }
                 if (err)
-		  {
+                  {
                     callback(error);
                     return;
-		  }
-	      };
+                  }
+              };
             try
-	      {
+              {
                 var ret = self['ROOT_visitor'](rootNode, context);
                 if (ret['error'])
-		  {
+                  {
                     callback(error === '' ? undefined : error);
                     return;
-		  }
-		else
-		  {
+                  }
+                else
+                  {
                     context = ret['context'];
-		  }
-	      }
-	    catch(err)
-	      {
+                  }
+              }
+            catch(err)
+              {
                 self.logger.debug('No visitor function for ' +
-				  self.core.getAttribute(rootNode,'name'));
-	      }
+                                  self.core.getAttribute(rootNode,'name'));
+              }
 
             self.visitAllChildrenRec(rootNode, context, counter,
-				     counterCallback);
-	  };
+                                     counterCallback);
+          };
+	
+/***********************************************************************/
 
+/*
+
+visitAllChildrenRec calls itself recursively.
+
+*/
+
+	console.log("defining this.visitAllChildrenRec");
         this.visitAllChildrenRec = function(node, context, counter, callback)
-	  {
-	    var self = this;
+          {
+            var self = this;
+	    console.log("executing visitAllChildrenRec");
             if (self.excludeFromVisit(node))
-	      {
+              {
                 callback(null, context);
                 return;
-	      }
+              }
 
             self.core.loadChildren(node, function(err, children)
-	      {
+              {
                 var i,
                     atModelNodeCallback,
                     doneModelNodeCallback,
@@ -145,188 +170,224 @@ define([], function()
                     sorterFunc,
                     childsToVisit = children.length;
                 if (err)
-		  {
+                  {
                     callback('loadChildren failed for ' +
-			     self.core.getAttribute(node, 'name'));
+                             self.core.getAttribute(node, 'name'));
                     return;
-		  }
+                  }
                 counter.visits -= 1;
                 doneModelNodeCallback = function(err, ctx)
-		  {
+                  {
                     if (err)
-		      {
+                      {
                         callback(err);
-		      }
-		    else
-		      {
+                      }
+                    else
+                      {
                         callback(null);
-		      }
+                      }
                     return
-		  };
+                  };
 
                 if (childsToVisit === 0)
-		  {
+                  {
                     if (node !== self.rootNode)
-		      {
+                      {
                         self.doneModelNode(node,context,doneModelNodeCallback);
-		      }
-		    else
-		      {
+                      }
+                    else
+                      {
                         doneModelNodeCallback(null);
-		      }
+                      }
                     return;
-		  }
+                  }
                 counter.visits += children.length;
                 if (node !== self.rootNode)
-		  {
+                  {
                     nodeType = self.core.getAttribute(self.getMetaType(node),
-						      'name');
-		  }
+                                                      'name');
+                  }
                 sorterFunc = self.getChildSorterFunc(nodeType, self);
                 if (sorterFunc)
-		  {
+                  {
                     children.sort(sorterFunc);
-		  }
+                  }
                 doneVisitChildCallback = function(err)
-		  {
+                  {
                     if (err)
-		      {
+                      {
                         callback(err);
                         return; 
-		      }
+                      }
 
                     childsToVisit -= 1;
                     if (childsToVisit === 0)
-		      {
+                      {
                         if (node !== self.rootNode)
-			  {
+                          {
                             self.doneModelNode(node, context,
-					       doneModelNodeCallback);
-			  }
-			else
-			  {
+                                               doneModelNodeCallback);
+                          }
+                        else
+                          {
                             doneModelNodeCallback(null);
-			  }
+                          }
                         return;
-		      } 
-		  }
+                      } 
+                  }
 
                 atModelNodeCallback = function(childNode)
-		  {
+                  {
                     return function(err, ctx)
-		      {
+                      {
                         if (err)
-			  {
+                          {
                             callback(err);
                             return;
-			  }
+                          }
                         self.visitAllChildrenRec(childNode, ctx, counter,
-						 doneVisitChildCallback);
-		      };
-		  };
+                                                 doneVisitChildCallback);
+                      };
+                  };
                 for (i = 0; i < children.length; i += 1)
-		  {
+                  {
                     self.atModelNode(children[i], node,
-				     self.cloneCtx(context),
-				     atModelNodeCallback(children[i]));
-		  }
-	      }); // closes function, args, and call to self.core.loadChildren 
-	  }; // closes function and this.visitAllChildrenRec =
+                                     self.cloneCtx(context),
+                                     atModelNodeCallback(children[i]));
+                  }
+              }); // closes function, args, and call to self.core.loadChildren 
+          }; // closes function and this.visitAllChildrenRec =
 
+/***********************************************************************/
+
+/*
+
+The following line of the atModeNode function is strange
+
+ret = self[self.getVisitorFuncName(nodeType)](node, parent, context);
+
+because one would expect it to be divided into two parts as follows
+
+  funcName = self.getVisitorFuncName(nodeType);
+  ret = self[funcName](node, parent, context);
+
+However, if that is done, the FederatesExporter gives error messages.
+
+It appears that the long line is used because self[funcName] is often
+undefined, causing an error. Thus, if the line is split into two
+parts, a try and catch would be required for both parts. It might be
+better to split it anyway.
+
+Also, it seems kludgy to execute a statement that is known to be in error
+much of the time and recover by catching the error. If possible, it would
+seem better to test for a known name and call the appropriate function.
+
+*/
+
+	console.log("defining this.atModelNode");
         this.atModelNode = function(node, parent, context, callback)
-	  {
+          {
             var self = this,
                 nodeType = self.core.getAttribute(self.getMetaType(node),
-						  'name'),
+                                                  'name'),
                 nodeName = self.core.getAttribute(node, 'name'),
                 ret = null;
             try
-	      {
+              {
                 self.logger.debug('atNode: ' + nodeName);
                 ret = self[self.getVisitorFuncName(nodeType)](node, parent,
-							      context);
+                                                              context);
                 if (ret['error'])
-		  {
+                  {
                     callback((ret['error'] === '') ? undefined : ret['error']);
                     return;
-		  }
-		else
-		  {
+                  }
+                else
+                  {
                     callback(null, ret['context']);
                     return;
-		  }
+                  }
 
-	      }
-	    catch(err)
-	      {
+              }
+            catch(err)
+              {
                 if (err.message ==
-		    'self[self.getVisitorFuncName(...)] is not a function')
-		  {
-                    //self.logger.debug('No visitor function for ' + nodeType);
-		  }
-		else
-		  {
+                    'self[self.getVisitorFuncName(...)] is not a function')
+                  {
+                    console.log('No visitor function for ' + nodeType);
+                  }
+                else
+                  {
                     callback(err);
                     return;
-		  }
-	      }
+                  }
+              }
             callback(null, context);
             return;
-	  };
+          };
 
+/***********************************************************************/
+
+	console.log("defining this.doneModelNode");
         this.doneModelNode = function(node, context, callback)
-	  {
+          {
             var self = this,
                 nodeType = self.core.getAttribute(self.getMetaType(node),
-						  'name'),
+                                                  'name'),
                 nodeName = self.core.getAttribute(node, 'name'),
                 ret = null;
 
             try
-	      {
+              {
                 self.logger.debug('doneNode: ' + nodeName);
                 ret = self[self.getPostVisitorFuncName(nodeType)](node,
-								  context);
+                                                                  context);
                 if (ret['error'])
-		  {
+                  {
                     callback(ret['error'] === '' ? undefined : ret['error']);
                     return;
-		  }
-		else
-		  {
+                  }
+                else
+                  {
                     callback(null, ret['context']);
                     return;
-		  }
-	      }
-	    catch(err)
-	      {
+                  }
+              }
+            catch(err)
+              {
                 if (err.message ==
-		    'self[self.getPostVisitorFuncName(...)] is not a function')
-		  {
-		    //self.logger.debug('No post visitor func for ' + nodeType);
-		  }
-		else
-		  {
+                    'self[self.getPostVisitorFuncName(...)] is not a function')
+                  {
+                    //self.logger.debug('No post visitor func for ' + nodeType);
+                  }
+                else
+                  {
                     callback(err);
-		  }
-	      }
+                  }
+              }
             callback(null, context);
             return;
-	  };
+          };
 
+/***********************************************************************/
+
+	console.log("defining this.cloneCtx");
         this.cloneCtx = function(obj)
-	  {
-	    var copy;
+          {
+            var copy;
             if (null == obj || "object" != typeof obj)
-	      return obj;
-	    copy = obj.constructor();
+              return obj;
+            copy = obj.constructor();
             for (var attr in obj)
-	      {
+              {
                 if (obj.hasOwnProperty(attr)) copy[attr] = obj[attr];
-	      }
+              }
             return copy;
-	  }
-      };
+          }
 
+/***********************************************************************/
+
+      };
+    console.log("end of function in 'define'");
     return withModelTraverser;
   }); // closes function and define

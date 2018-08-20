@@ -41,19 +41,20 @@ StaticInteractionPublish and sources (src) of StaticInteractionSubscribe.
 The interactions whose paths are on the list are found using 
 self.interactions[pubSubInteractions[i]]. Inversely, the path of an
 interaction is its id.
+
 */
 
 define
 ([
   'text!./metadata.json',
   'plugin/PluginBase',
-  'common/util/ejs',
+  'common/util/ejs',             // added
   'C2Core/ModelTraverserMixin',
   'C2Core/xmljsonconverter',
   'C2Core/MavenPOM',
   'FederatesExporter/PubSubVisitors',
   'FederatesExporter/RTIVisitors',
-  'FederatesExporter/Templates/Templates',
+  'FederatesExporter/Templates/Templates', // modified
   'C2Federates/GenericFederate',
   'C2Federates/JavaFederate',
   'C2Federates/MapperFederate',
@@ -77,42 +78,48 @@ define
            CPNFederate)
  {
    'use strict';
+    console.log("beginning of function in 'define'")
 
-   pluginMetadata = JSON.parse(pluginMetadata);
+    pluginMetadata = JSON.parse(pluginMetadata);
 
-   /**
+    /*
     * Initializes a new instance of FederatesExporter.
     * @class
     * @augments {PluginBase}typ
     * @classdesc This class represents the plugin FederatesExporter.
     * @constructor
     */
-   var FederatesExporter = function()
-     {
-       this.federateTypes = this.federateTypes || {};
-       this.pubSubInteractions = this.pubSubInteractions || []; //added
-       PluginBase.call(this);
-       ModelTraverserMixin.call(this);
-       PubSubVisitors.call(this);
-       RTIVisitors.call(this);    // builds interactionRoots tree
-       GenericFederate.call(this);
-       JavaFederate.call(this);
-       MapperFederate.call(this);
-       CppFederate.call(this);
-       OmnetFederate.call(this);
-       CPNFederate.call(this);
-       
-       this.mainPom = new MavenPOM();
-       this._jsonToXml = new JSON2XMLConverter.Json2xml();
-       this.pluginMetadata = pluginMetadata;
-     };
+    console.log("defining FederatesExporter function")
+    var FederatesExporter = function()
+    {
+      this.federateTypes = this.federateTypes || {};
+      this.pubSubInteractions = this.pubSubInteractions || {}; //added
+      this.pubSubObjects = this.pubSubObjects || {}; //added
+      PluginBase.call(this);
+      console.log("calling ModelTraverserMixin");
+      ModelTraverserMixin.call(this);
+      console.log("calling PubSubVisitors");
+      PubSubVisitors.call(this);
+      console.log("calling RTIVisitors");
+      RTIVisitors.call(this);    // builds interactionRoots tree
+      GenericFederate.call(this);
+      JavaFederate.call(this);
+      MapperFederate.call(this);
+      CppFederate.call(this);
+      OmnetFederate.call(this);
+      CPNFederate.call(this);
+      
+      this.mainPom = new MavenPOM();
+      this._jsonToXml = new JSON2XMLConverter.Json2xml();
+      this.pluginMetadata = pluginMetadata;
+    };
    
-   // Prototypal inheritance from PluginBase.
-   FederatesExporter.prototype = Object.create(PluginBase.prototype);
-   FederatesExporter.prototype.constructor = FederatesExporter;
-   FederatesExporter.metadata = pluginMetadata;
-   
-   /**
+    // Prototypal inheritance from PluginBase.
+    FederatesExporter.prototype = Object.create(PluginBase.prototype);
+    FederatesExporter.prototype.constructor = FederatesExporter;
+    FederatesExporter.metadata = pluginMetadata;
+    
+    /*
     * Main function for the plugin to execute. This will perform the execution.
     * Notes:
     * - Always log with the provided logger.[error,warning,info,debug].
@@ -122,62 +129,63 @@ define
     * @param {function(string, plugin.PluginResult)} callback -
     * the result callback
     */
-   FederatesExporter.prototype.main = function (callback)
-     {
-       // Use self to access core, project, result, logger etc from PluginBase.
-       // These are all instantiated at this point.
-       var self = this,
-       generateFiles,           // function
-       numberOfFilesToGenerate, // counter
-       finishExport,            // function
-       saveAndReturn;           // function
+    FederatesExporter.prototype.main = function (callback)
+    {
+      // Use self to access core, project, result, logger etc from PluginBase.
+      // These are all instantiated at this point.
+      var self = this,
+      generateFiles,           // function
+      numberOfFilesToGenerate, // counter used in generateFiles function
+      finishExport,            // function
+      saveAndReturn;           // function
        
-       self.fileGenerators = [];
-       self.corefileGenerators = [];
-       self.fom_sheets = {};
-       self.interactions = {};
-       self.interactionRoots = [];
-       self.objects      = {};
-       self.objectRoots = [];
-       self.attributes   = {};
-       self.federates = {};
-       self.javafederateName = {};
-       self.fedFilterMap = {};
-       self.fedFilterMap["MAPPER_FEDERATES"] = "MAPPER";
-       self.fedFilterMap["NON-MAPPER_FEDERATES"] = "NON_MAPPER";
-       self.fedFilterMap["BOTH"] = "ORIGIN_FILTER_DISABLED";
-       self.fedFilterMap["SELF"] = "SELF";
-       self.fedFilterMap["NON-SELF"] = "NON_SELF";
-       
-       self.projectName = self.core.getAttribute(self.rootNode, 'name');
-       self.project_version =
-         self.getCurrentConfig().exportVersion.trim() +
-         (self.getCurrentConfig().isRelease ? "" : "-SNAPSHOT");
-       self.cpswt_version = self.getCurrentConfig().cpswtVersion.trim();
-       self.directoryNameTemplate=
-         '<%=federation_name%><%=artifact_name?"-"+artifact_name:""%><%=language?"-"+language:""%>';
-       self.generateExportPackages =
-         self.getCurrentConfig().generateExportPackages;
-       self.mainPom.artifactId = self.projectName + "-root";
-       self.mainPom.version = self.project_version;
-       self.mainPom.packaging = "pom";
-       self.mainPom.groupId = self.getCurrentConfig().groupId.trim();
-       self.mainPom.addRepository(
-         {
+      console.log("executing FederatesExporter.prototype.main");
+      self.fileGenerators = [];
+      self.corefileGenerators = [];
+      self.fom_sheets = {};
+      self.interactions = {};
+      self.interactionRoots = [];
+      self.objects      = {};
+      self.objectRoots = [];
+      self.attributes   = {};
+      self.federates = {};
+      self.javafederateName = {};
+      self.fedFilterMap = {};
+      self.fedFilterMap["MAPPER_FEDERATES"] = "MAPPER";
+      self.fedFilterMap["NON-MAPPER_FEDERATES"] = "NON_MAPPER";
+      self.fedFilterMap["BOTH"] = "ORIGIN_FILTER_DISABLED";
+      self.fedFilterMap["SELF"] = "SELF";
+      self.fedFilterMap["NON-SELF"] = "NON_SELF";
+      
+      self.projectName = self.core.getAttribute(self.rootNode, 'name');
+      self.project_version =
+      self.getCurrentConfig().exportVersion.trim() +
+      (self.getCurrentConfig().isRelease ? "" : "-SNAPSHOT");
+      self.cpswt_version = self.getCurrentConfig().cpswtVersion.trim();
+      self.directoryNameTemplate=
+      '<%=federation_name%><%=artifact_name?"-"+artifact_name:""%><%=language?"-"+language:""%>';
+      self.generateExportPackages =
+        self.getCurrentConfig().generateExportPackages;
+      self.mainPom.artifactId = self.projectName + "-root";
+      self.mainPom.version = self.project_version;
+      self.mainPom.packaging = "pom";
+      self.mainPom.groupId = self.getCurrentConfig().groupId.trim();
+      self.mainPom.addRepository(
+        {
            'id': 'archiva.internal',
            'name': 'Internal Release Repository',
            'url': self.getCurrentConfig().repositoryUrlRelease.trim()
-         });
+        });
         
-       self.mainPom.addSnapshotRepository(
-         {
-            'id': 'archiva.snapshots',
-            'name': 'Internal Snapshot Repository',
-            'url': self.getCurrentConfig().repositoryUrlSnapshot.trim()
-         });
+      self.mainPom.addSnapshotRepository(
+        {
+           'id': 'archiva.snapshots',
+           'name': 'Internal Snapshot Repository',
+           'url': self.getCurrentConfig().repositoryUrlSnapshot.trim()
+        });
 
-        self.getCurrentConfig().includedFederateTypes.trim().split(" ").
-         forEach(function(e)
+      self.getCurrentConfig().includedFederateTypes.trim().split(" ").
+        forEach(function(e)
           {
             if (self.federateTypes.hasOwnProperty(e))
               {
@@ -188,431 +196,559 @@ define
                   }
               }
           });
+      
+      //Add POM generator to file generators
+      self.fileGenerators.push(function(artifact, callback)
+      { // add POM file to artifact
+        artifact.addFile('pom.xml',
+                         self._jsonToXml.convertToString(self.mainPom.
+                                                         toJSON()),
+                         function (err)
+                         {
+                           if (err)
+                             {
+                               callback(err);
+                               return;
+                             }
+                           else
+                             {
+                               callback();
+                             }
+                         });
+      });
 
-        // Using the logger.
-        //self.logger.debug('This is a debug message.');
-        //self.logger.info('This is an info message.');
-        //self.logger.warn('This is a warning message.');
-        //self.logger.error('This is an error message.');
-
-        //Add POM generator to file generators
-        self.fileGenerators.push(function(artifact, callback)
-          { // add POM file to artifact
-            artifact.addFile('pom.xml',
-                             self._jsonToXml.convertToString(self.mainPom.
-                                                             toJSON()),
-                             function (err)
-                               {
-                                   if (err)
-                                   {
-                                       callback(err);
-                                       return;
-                                   }
-                                   else
-                                   {
-                                       callback();
-                                   }
-                               });
-          });
-
-        // Code added fom.xml generator (copied from DeploymentExporter.js)
-        // This file generator uses a traverser as well as a file writer
+      // Code added fom.xml generator (copied from DeploymentExporter.js)
+      // This file generator uses a traverser as well as a file writer
          
-        self.fomModel = {federationname: self.projectName, //added
-                         version: self.getCurrentConfig().exportVersion.trim(),
-                         pocOrg: self.mainPom.groupId, //added
-                         objects: [],
-                         dateString: "", //added
-                         interactions: []};
+      self.fomModel = {federationname: self.projectName,
+                       version: self.getCurrentConfig().exportVersion.trim(),
+                       pocOrg: self.mainPom.groupId,
+                       dateString: "",
+                       objects: [],
+                       objects_xml: [],
+                       interactions: [],
+                       interactions_xml: []};
+      
+      // add fom generator to generators
+      self.fileGenerators.push(function(artifact, callback)
+      {
 
-        // add fom generator to generators
-        self.fileGenerators.push(function(artifact, callback)
+/***********************************************************************/
+
+/* interactionTraverser_check
+
+Returned Value: none
+
+Called By:
+  anonymous function enclosing the definition
+  interactionTraverser_check (recursively)
+
+This adds entries to pubSubInteractions for all ancestors of interactions
+that already have entries.
+
+By calling itself recursively, this goes through the interaction tree
+(from top down) but builds the pubSubInteractions from bottom up. If
+an interaction is on the pubSubInteractions but its parent is not, an
+entry for the parent of the interaction is added to the
+pubSubInteractions; the entry represents that the parent neither
+publishes or subscribes. If the parent publishes or subscribes, an
+entry for the parent will have been made previously in PubSubVisitors.
+
+The final effect is that any interaction that is an ancestor of any
+interaction originally put on the pubSubInteractions in PubSubVisitors
+is also on pubSubInteractions.
+
+*/
+	console.log("defining interactionTraverser_check");
+        var interactionTraverser_check = function(interaction)
           {
-            // The interactionTraverser_check function is modeled after
-            // the interactionTraverser_xml function. By calling itself
-            // recursively, it goes through the interaction tree from bottom
-            // up. If an interaction is on the pubSubInteractions, the id
-            // of the parent of the interaction is added to the
-            // pubSubInteractions, if it is not already there.
-            // The final effect is that any interaction that is an
-            // ancestor of any interaction originally put on the
-            // pubSubInteractions in PubSubVisitors is also on
-            // pubSubInteractions.
-
-            var interactionTraverser_check = function(interaction)
+	    console.log("executing interactionTraverser_check");
+            interaction.children.forEach(function (child)
+          {
+            interactionTraverser_check(child);
+          });
+            if (interaction.name != 'InteractionRoot')
               {
-                var parentId;
-                var i;
-                console.log("running interactionTraverser_check");
-                interaction.children.forEach(function (child)
+                if ((interaction.id in self.pubSubInteractions) &&
+                    !(interaction.basePath in self.pubSubInteractions))
                   {
-                    interactionTraverser_check(child);
-                  });
-                if (interaction.name != 'InteractionRoot')
-                  {
-                    parentId = 0;
-                    for (i = 0; i < self.pubSubInteractions.length; i++)
-                      {
-                        if (interaction.id == self.pubSubInteractions[i])
-                          { // If the child is on the pubSubInteractions
-                            // list, put its parent on the list if the
-                            // the parent is not there already.
-                            parentId = interaction.basePath;
-                            break;
-                          }
-                      }
-                    if (parentId != 0)
-                      {
-                        for (i = 0; i < self.pubSubInteractions.length; i++)
-                          {
-                            if (parentId == self.pubSubInteractions[i])
-                              {
-                                parentId = 0;
-                                break;
-                              }
-                          }
-                      }
-                    if (parentId != 0)
-                      {
-                        self.pubSubInteractions.push(parentId);
-                      }
+                    self.pubSubInteractions[interaction.basePath] =
+                      {publish: 0,
+                       subscribe: 0};
                   }
-              };
-            self.interactionRoots.forEach(function (interactionRoot)
-              {
-                interactionTraverser_check(interactionRoot);
-              });
+              }
+          };
 
-            // the interactionTraverser_xml was copied
-            // from DeploymentExporter.js and edited
-            var interactionTraverser_xml = function(interaction, space)
+/***********************************************************************/
+
+/* interactionTraverser_xml
+
+Returned Value: a string of XML representing the interaction and its
+                descendants
+
+Called By:
+  anonymous function enclosing the definition
+  interactionTraverser_xml (recursively)
+
+This builds the XML for interactions.
+
+*/
+	console.log("defining interactionTraverser_xml");
+        var interactionTraverser_xml = function(interaction, space)
+          {
+            var intModel = {interaction: interaction,
+                            indent: space,
+                            parameters: interaction.parameters,
+                            children: []};
+	    console.log("executing interactionTraverser_xml");
+            if (self.pubSubInteractions[interaction.id].publish)
               {
-                var intModel = {interaction: interaction,
-                                indent: space,
-                                parameters: interaction.parameters,
-                                children: []};
-                if (interaction.name === "InteractionRoot" ||
-                    interaction.name === "C2WInteractionRoot")
-                  {
-                    interaction.sharing = "Neither";
-                  }
-                else
+                if (self.pubSubInteractions[interaction.id].subscribe)
                   {
                     interaction.sharing = "PublishSubscribe";
                   }
-                if (interaction.delivery === "reliable")
-                  {
-                   interaction.delivery = "HLAreliable";
-                  }
                 else
                   {
-                    interaction.delivery = "HLAbestEffort";
+                    interaction.sharing = "Publish";
                   }
-                if (interaction.order === "timestamp")
-                  {
-                    interaction.order = "TimeStamp";
-                  }
-                else
-                  {
-                    interaction.order = "Receive";
-                  }
-                // here interactionTraverser_xml calls itself recursively to
-                // generate XML for the children before generating
-                // XML for the parent
-                interaction.children.forEach(function (child)
-                  {
-                    for (var i = 0; i < self.pubSubInteractions.length; i++)
-                      {
-                        if (child.id == self.pubSubInteractions[i])
-                          {
-                            intModel.children.
-                              push(interactionTraverser_xml(child,
-                                                            space + "    "));
-                            break;
-                          }
-                      }
-                  });
+              }
+            else if (self.pubSubInteractions[interaction.id].subscribe)
+              {
+                interaction.sharing = "Subscribe";
+              }
+            else
+              {
+                interaction.sharing = "Neither";
+              }
+            if (interaction.delivery === "reliable")
+              {
+                interaction.delivery = "HLAreliable";
+              }
+            else
+              {
+                interaction.delivery = "HLAbestEffort";
+              }
+            if (interaction.order === "timestamp")
+              {
+                interaction.order = "TimeStamp";
+              }
+            else
+              {
+                interaction.order = "Receive";
+              }
+            // here interactionTraverser_xml calls itself recursively to
+            // generate XML for the children before generating
+            // XML for the parent
+            interaction.children.forEach(function (child)
+            {
+              if (child.id in self.pubSubInteractions)
+                {
+                  intModel.children.push
+                    (interactionTraverser_xml(child, space + "    "));
+                }
+            });
                 
-                // now generate XML for the parent if on pubSubInteractions
-                for (var i = 0; i < self.pubSubInteractions.length; i++)
-                 {
-                   if (interaction.id == self.pubSubInteractions[i])
-                     {
-                       // On the next line, a newline after 'return' causes
-                       // an immediate return because of the automatic insertion
-                       // of semicolons -- so don't put a newline there.
+            // now generate XML for the parent if on pubSubInteractions
+            if (interaction.id in self.pubSubInteractions)
+              {
+                // On the next line, a newline after 'return' causes
+                // an immediate return because of the automatic insertion
+                // of semicolons -- so don't put a newline there.
                 return ejs.render(TEMPLATES["fedfile_siminteraction_xml.ejs"],
                            intModel);
-                     }
-                 }
-              }; // end of interactionTraverser_xml function and var set
+              }
+          };
             
-            var today = new Date();         //added
-            var year = today.getFullYear(); //added
-            var month = today.getMonth();   //added
-            var day = today.getDate();      //added
-            self.fomModel.interactions_xml = [];
-            self.fomModel.dateString = year + "-" +
-              ((month < 10) ? "0" : "") + month + "-" +
-              ((day < 10) ? "0" : "") + day;
-            // now call the interactionTraverser_xml for interactionRoots
-            self.interactionRoots.forEach(function (inta)
+/***********************************************************************/
+
+/* objectTraverser_check
+
+Returned Value: none
+
+Called By:
+  anonymous function enclosing the definition
+  objectTraverser_check (recursively)
+
+This adds entries to pubSubObjects for all ancestors of objects that
+already have entries.
+
+By calling itself recursively, this goes through the object tree (from
+top down) but builds the pubSubObjectss from bottom up. If an object
+is on the pubSubObjects but its parent is not, an entry for the parent
+of the object is added to the pubSubObjects; the entry represents that
+the parent neither publishes or subscribes. If the parent publishes or
+subscribes, an entry for the parent will have been made previously in
+PubSubVisitors.
+
+The final effect is that any object that is an ancestor of any object
+originally put on the pubSubObjects in PubSubVisitors is also on
+pubSubObjects.
+
+*/
+	console.log("defining objectTraverser_check");
+        var objectTraverser_check = function(object)
+          {
+	    console.log("executing objectTraverser_check");
+            object.children.forEach(function (child)
+            {
+              objectTraverser_check(child);
+            });
+            if (object.name != 'ObjectRoot')
               {
-                self.fomModel.interactions_xml.
-                  push(interactionTraverser_xml(inta, "    "));
-              });
-           
-            // The objectTraverser_xml is a recursive function that takes
-            // an object of some sort that may have children (which are
-            // objects of the same sort or a similar sort) and builds
-            // an objModel from it. The objModel is given the same name
-            // and attributes as the object and is given children that
-            // are XML code built by a recursive call to itself on the
-            // children of the object.
-            // Then XML for the objModel is generated (and saved) by
-            // calling ejs.render using the fedfile_simobject_xml XML
-            // Template.
-            // The original call to this function is a few lines below
-            // the function definition where fomModel.objects is built
-            // by calling it on each object in objectRoots (which seems
-            // to be expected to have only one member).
-            var objectTraverser_xml = function (object, space)
-              {
-                var objModel = {name: object.name,
-                                attributes: object.attributes,
-                                indent: space, // added
-                                children: [],
-                                sharing: ""};
-                if (object.name === "ObjectRoot")
+                if ((object.id in self.pubSubObjects) &&
+                    !(object.basePath in self.pubSubObjects))
                   {
-                    objModel.sharing = "Neither";
+                    self.pubSubObjects[object.basePath] =
+                      {publish: 0,
+                       subscribe: 0};
+                  }
+              }
+          };
+            
+/***********************************************************************/
+
+/* objectTraverser_xml
+
+Returned Value: a string of XML representing the object and its descendants
+
+Called By:
+  anonymous function enclosing the definition
+  objectTraverser_xml (recursively)
+
+This builds the XML for objects.
+
+The objectTraverser_xml is a recursive function that takes an object
+that may have children (also objects) and builds an objModel from
+it. The objModel is given the same name and attributes as the object
+and is given children that are XML code built by a recursive call to
+itself on the children of the object.
+
+Then XML for the objModel is generated (and saved) by calling
+ejs.render using the fedfile_simobject_xml XML Template.
+
+*/
+	console.log("defining objectTraverser_xml");
+        var objectTraverser_xml = function(object, space)
+          {
+            var objModel = {object: object,
+                            indent: space,
+                            attributes: object.attributes,
+                            children: []};
+	    console.log("executing objectTraverser_xml");
+            if (self.pubSubObjects[object.id].publish)
+              {
+                if (self.pubSubObjects[object.id].subscribe)
+                  {
+                    object.sharing = "PublishSubscribe";
                   }
                 else
                   {
-                    objModel.sharing = "PublishSubscribe";
+                    object.sharing = "Publish";
                   }
-                // Some properties of the attributes of the objModel (which
-                // are the attributes of the object) are modified in place
-                // as follows.
-                objModel.attributes.forEach(function (attr)
-                  {
-                    if (attr.delivery === "reliable")
-                      {
-                        attr.delivery = "HLAreliable";
-                      }
-                    else
-                     {
-                       attr.delivery = "HLAbestEffort";
-                     }
-                    if (attr.order === "timestamp")
-                      {
-                        attr.order = "TimeStamp";
-                      }
-                    else
-                      { 
-                        attr.order = "Receive";
-                      }
-                  })
-               
-                // here objectTraverser_xml calls itself recursively to
-                // generate XML for the children before generating
-                // XML for the parent
-                object.children.forEach(function (child)
-                  { // changed - we do not want to include the FederateObject
-                    if (child.name != "FederateObject")
-                      {
-                        objModel.children.
-                          push(objectTraverser_xml(child, space + "    "));
-                      }
-                  });
-                // now generate XML for the parent
+              }
+            else if (self.pubSubObjects[object.id].subscribe)
+              {
+                object.sharing = "Subscribe";
+              }
+            else
+              {
+                object.sharing = "Neither";
+              }
+            // Some properties of the attributes of the objModel (which
+            // are the attributes of the object) are modified in place
+            // as follows.
+            objModel.attributes.forEach(function(attr)
+            {
+              attr.sharing = object.sharing;
+              if (attr.delivery === "reliable")
+                {
+                  attr.delivery = "HLAreliable";
+                }
+              else
+                {
+                  attr.delivery = "HLAbestEffort";
+                }
+              if (attr.order === "timestamp")
+                {
+                  attr.order = "TimeStamp";
+                }
+              else
+                { 
+                  attr.order = "Receive";
+                }
+            });
+            
+            // Here, objectTraverser_xml calls itself recursively to
+            // generate XML for the children before generating
+            // XML for the parent.
+            // We do not want to include the FederateObject.
+            object.children.forEach(function(child)
+            {
+              if ((child.name != "FederateObject") &&
+                  (child.id in self.pubSubObjects))
+                {
+                  objModel.children.push
+                    (objectTraverser_xml(child, space + "    "));
+                }
+            });
+            // now generate XML for the parent if on pubSubObjects
+            if (object.id in self.pubSubObjects)
+              {
+                // On the next line, a newline after 'return' causes
+                // an immediate return because of the automatic insertion
+                // of semicolons -- so don't put a newline there.
                 return ejs.render(TEMPLATES["fedfile_simobject_xml.ejs"],
                                   objModel);
               }
+          };
            
-            self.fomModel.objects_xml = [];
-            self.objectRoots.forEach(function (obj) // normally is only one root
-              { // add all the XML for objects to fomModel
-                self.fomModel.objects_xml.push(objectTraverser_xml(obj,
-								   "    "));
-              });
- 
-            // add fom to artifact
-            artifact.addFile('fom/' + self.projectName + '.xml',
-                             ejs.render(TEMPLATES['fedfile.xml.ejs'],
-                                        self.fomModel),
-                             function (err)
-                             {
-                               if (err)
-                                 {
-                                   callback(err);
-                                   return;
-                                 }
-                               else
-                                 {
-                                   callback();
-                                 }
-                             });
-          });
-        //end added file generator code
+/***********************************************************************/
 
+        var today = new Date();         //added
+        var year = today.getFullYear(); //added
+        var month = today.getMonth();   //added
+        var day = today.getDate();      //added
+        self.fomModel.dateString = year + "-" +
+          ((month < 10) ? "0" : "") + month + "-" +
+          ((day < 10) ? "0" : "") + day;
+
+        // process interactionRoots, hence all interactions
+        // normally is only one interactionRoot
+        self.interactionRoots.forEach(function (interactionRoot)
+        {
+	  console.log("calling interactionTraverser_check on interactionRoot");
+          interactionTraverser_check(interactionRoot);
+	  console.log("calling interactionTraverser_xml on interactionRoot");
+          self.fomModel.interactions_xml.push
+            (interactionTraverser_xml(interactionRoot, "    "));
+        });
+            
+        // process objectRoots, hence all objects
+        // normally is only one objectRoot
+        self.objectRoots.forEach(function(objectRoot)
+        {
+	  console.log("calling objectTraverser_check on objectRoot");
+          objectTraverser_check(objectRoot);
+	  console.log("calling objectTraverser_xml on objectRoot");
+          self.fomModel.objects_xml.push
+            (objectTraverser_xml(objectRoot, "    "));
+        });
+ 
+        // add fom to artifact
+	console.log("adding fom model to output, using ejs.render");
+        artifact.addFile('fom/' + self.projectName + '.xml',
+                         ejs.render(TEMPLATES['fedfile.xml.ejs'],
+                                    self.fomModel),
+                         function (err)
+                         {
+                           if (err)
+                             {
+                               callback(err);
+                               return;
+                             }
+                           else
+                             {
+                               callback();
+                             }
+                         });
+      });
+
+      // end adding fom generator to generators
+
+/***********************************************************************/
+
+      console.log("defining generateFiles");
       generateFiles = function(artifact, fileGenerators, doneBack)
-        {
-          if (numberOfFilesToGenerate > 0)
-            { 
-              fileGenerators[fileGenerators.length -
-                             numberOfFilesToGenerate](artifact, function(err)
-                {
-                  if (err)
-                    {
-                      callback(err, self.result);
-                      return;
-                    }
-                  numberOfFilesToGenerate--;
-                  if (numberOfFilesToGenerate > 0)
-                    {
-                      generateFiles(artifact, fileGenerators, doneBack);
-                    }
-                  else
-                    {
-                      doneBack();
-                    }
-                });                
-            }
-          else
-            {
-              doneBack();
-            }
-        }
+      {
+        if (numberOfFilesToGenerate > 0)
+          { 
+            fileGenerators[fileGenerators.length -
+                           numberOfFilesToGenerate](artifact, function(err)
+              {
+                if (err)
+                  {
+                    callback(err, self.result);
+                    return;
+                  }
+                numberOfFilesToGenerate--;
+                if (numberOfFilesToGenerate > 0)
+                  {
+                    generateFiles(artifact, fileGenerators, doneBack);
+                  }
+                else
+                  {
+                    doneBack();
+                  }
+              });                
+          }
+        else
+          {
+            doneBack();
+          }
+      }
         
+/***********************************************************************/
+
+      console.log("defining saveAndReturn");
       saveAndReturn = function(err)
-        {
-          var errorRaised = false;
-          for(var i = 0; i < self.result.getMessages().length; i++)
+      {
+        var errorRaised = false;
+        for (var i = 0; i < self.result.getMessages().length; i++)
+          {
+            var msg = self.result.getMessages()[i];
+            if (msg.severity == 'error')
+              {
+                errorRaised = true;
+              }
+          }
+        if (!errorRaised)
+          {
+            self.blobClient.saveAllArtifacts(function (err, hashes)
             {
-              var msg = self.result.getMessages()[i];
-              if (msg.severity == 'error')
+              if (err)
                 {
-                  errorRaised = true;
+                  callback(err, self.result);
+                  return;
                 }
-            }
-          if (!errorRaised)
-            {
-              self.blobClient.saveAllArtifacts(function (err, hashes)
+              
+              // This will add a download hyperlink in the result-dialog.
+              for (var idx = 0; idx < hashes.length; idx++)
+                {
+                  self.result.addArtifact(hashes[idx]);
+                  
+                  var artifactMsg =
+                    'Code package ' +
+                    self.blobClient.artifacts[idx].name +
+                    ' was generated with id:[' + hashes[idx] + ']';
+                  var buildURL =
+                    "'http://c2w-cdi.isis.vanderbilt.edu:8080/job/c2w-pull/buildW ithParameters?GME_ARTIFACT_ID=" + hashes[idx] + "'";
+                  artifactMsg += '<br><a title="Build package..." '+
+                    'onclick="window.open(' + buildURL + ', \'Build System\'); return false;">Build artifact..</a>';
+                  self.createMessage(null, artifactMsg );
+                };
+                    
+              // This will save the changes. If you don't want to save;
+              // exclude self.save and call callback directly from this
+              // scope.
+              self.save('FederatesExporter updated model.', function (err)
                 {
                   if (err)
                     {
                       callback(err, self.result);
                       return;
                     }
-                  
-                  // This will add a download hyperlink in the result-dialog.
-                  for (var idx = 0; idx < hashes.length; idx++)
-                    {
-                      self.result.addArtifact(hashes[idx]);
-                      
-                      var artifactMsg =
-                        'Code package ' +
-                        self.blobClient.artifacts[idx].name +
-                        ' was generated with id:[' + hashes[idx] + ']';
-                      var buildURL =
-                        "'http://c2w-cdi.isis.vanderbilt.edu:8080/job/c2w-pull/buildW ithParameters?GME_ARTIFACT_ID=" + hashes[idx] + "'";
-                      artifactMsg += '<br><a title="Build package..." '+
-                        'onclick="window.open(' + buildURL + ', \'Build System\'); return false;">Build artifact..</a>';
-                      self.createMessage(null, artifactMsg );
-                    };
-                    
-                  // This will save the changes. If you don't want to save;
-                  // exclude self.save and call callback directly from this
-                  // scope.
-                  self.save('FederatesExporter updated model.', function (err)
+                  self.result.setSuccess(true);
+                  callback(null, self.result);
+                  return;
+                });
+            });
+          }
+        else
+          {
+            self.result.setSuccess(false);
+            callback(null, self.result);
+            return;
+          }
+      }
+       
+/***********************************************************************/
+
+/* finishExport
+
+Returned Value: non
+
+Called By: anonymous function used as an argument to 
+  visitAllChildrenFromRootContainer
+
+This function is not defined as a variable of self but uses the self
+variable.
+
+*/      
+
+      console.log("defining finishExport");
+      finishExport = function(err)
+      {
+        var artifact =
+          self.blobClient.createArtifact(self.projectName.trim().
+                                         replace(/\s+/g,'_') + '_generated');
+	console.log("executing finishExport");
+        if (self.generateExportPackages)
+          {
+            var coreArtifact =
+              self.blobClient.createArtifact('generated_Core_Files');
+          }
+        numberOfFilesToGenerate = self.fileGenerators.length;
+        if (numberOfFilesToGenerate > 0)
+          {
+            generateFiles(artifact, self.fileGenerators, function(err)
+            {
+              if (err)
+                {
+                  callback(err, self.result);
+                  return;
+                }
+              numberOfFilesToGenerate = self.corefileGenerators.length;
+              if (self.generateExportPackages &&
+                  numberOfFilesToGenerate > 0)
+                {
+                  generateFiles(coreArtifact,
+                                self.corefileGenerators, function(err)
                     {
                       if (err)
                         {
                           callback(err, self.result);
                           return;
                         }
-                      self.result.setSuccess(true);
-                      callback(null, self.result);
-                      return;
-                    });
-               });
-            }
-          else
-            {
-              self.result.setSuccess(false);
-              callback(null, self.result);
-              return;
-            }
-        }
-       
-      finishExport = function(err)
-        {
-          var artifact =
-            self.blobClient.createArtifact(self.projectName.trim().
-                                           replace(/\s+/g,'_') +
-                                           '_generated');
-          if (self.generateExportPackages)
-            {
-              var coreArtifact =
-                self.blobClient.createArtifact('generated_Core_Files');
-            }
-          numberOfFilesToGenerate = self.fileGenerators.length;
-          if (numberOfFilesToGenerate > 0)
-            {
-              generateFiles(artifact, self.fileGenerators, function(err)
-                {
-                  if (err)
-                    {
-                      callback(err, self.result);
-                      return;
-                    }
-                  numberOfFilesToGenerate = self.corefileGenerators.length;
-                  if (self.generateExportPackages &&
-                      numberOfFilesToGenerate > 0)
-                    {
-                      generateFiles(coreArtifact,
-                                    self.corefileGenerators, function(err)
-                        {
-                          if (err)
-                            {
-                              callback(err, self.result);
-                              return;
-                            }
-                          saveAndReturn();
-                          return;
-                        });
-                     }
-                  else
-                    {
                       saveAndReturn();
                       return;
-                    } 
-                });
-             }
+                    });
+                }
+              else
+                {
+                  saveAndReturn();
+                  return;
+                } 
+            });
+          }
+        else
+          {
+            self.result.setSuccess(true);
+            callback(null, self.result);
+          } 
+      }
+       
+/***********************************************************************/
+
+/*
+
+This is a call to the visitAllChildrenFromRootContainer function (!) which
+is defined in ModelTraverserMixin.js. The anonymous function is the second
+argument.
+
+*/
+      
+      console.log("calling visitAllChildrenFromRootContainer");
+      self.visitAllChildrenFromRootContainer(self.rootNode, function(err)
+        {
+          if (err)
+            {
+              self.logger.error(err);
+              self.createMessage(null, err, 'error');
+              self.result.setSuccess(false);
+              callback(null, self.result);
+            }
           else
             {
-              self.result.setSuccess(true);
-              callback(null, self.result);
-            } 
-        }
-       
-        self.visitAllChildrenFromRootContainer(self.rootNode, function(err)
-          {
-            if (err)
-              {
-                self.logger.error(err);
-                self.createMessage(null, err, 'error');
-                self.result.setSuccess(false);
-                callback(null, self.result);
-              }
-            else
-              {
-                finishExport(err);
-              }
-          });
-        self.postAllVisits(self);
-      }; // end of ...prototype.main
+              finishExport(err);
+            }
+        }); 
+      
+/***********************************************************************/
+
+      self.postAllVisits(self);
+    }; // end of ...prototype.main
+
+/***********************************************************************/
 
     FederatesExporter.prototype.getChildSorterFunc = function(nodeType, self)
       {
@@ -632,6 +768,8 @@ define
          return generalChildSorter;
       }
    
+/***********************************************************************/
+
     FederatesExporter.prototype.excludeFromVisit = function(node)
       {
         var self = this,
@@ -653,11 +791,23 @@ define
         return exclude;
       }
 
+/***********************************************************************/
+
+/*
+
+This is defining the getVisitorFuncName function as a property of the
+prototype of FederatesExporter. The getVisitorFuncName function is
+also defined as a property of "this" in ModelTraverserMixin.js, but
+the one that gets called when the FederatesExporter is executing is
+this one.
+
+*/
+    
+    console.log("defining FederatesExporter.prototype.getVisitorFuncName");
     FederatesExporter.prototype.getVisitorFuncName =
       function(nodeType)
       {
-        var self = this, // seems pointless, self is not used
-        visitorName = 'generalVisitor';
+        var visitorName = 'generalVisitor';
         if (nodeType)
           {
             visitorName = 'visit_'+ nodeType;
@@ -669,6 +819,9 @@ define
         return visitorName;   
       }
 
+/***********************************************************************/
+
+    console.log("defining FederatesExporter.prototype.getPostVisitorFuncName");
     FederatesExporter.prototype.getPostVisitorFuncName = function(nodeType)
       {
         var self = this,
@@ -684,14 +837,16 @@ define
           }
         //self.logger.debug('Generated post-visitor Name: ' + visitorName);
         return visitorName;
-    }
+      }
 
     /*
-    * Rest of TRAVERSAL CODE:
-    * - PubSubVisitors.js
-    * - RTIVisitors.js
-    * - C2Federates folder for Federate specific vistors
-    */
+     * Rest of TRAVERSAL CODE:
+     * - PubSubVisitors.js
+     * - RTIVisitors.js
+     * - C2Federates folder for Federate specific vistors
+     */
+    
+/***********************************************************************/
 
     FederatesExporter.prototype.ROOT_visitor =
       function(node)
@@ -707,6 +862,8 @@ define
       }
     
 
+/***********************************************************************/
+
     FederatesExporter.prototype.calculateParentPath =
       function(path)
       {
@@ -719,5 +876,7 @@ define
         return pathElements.join('/');
       }
     
+/***********************************************************************/
+    console.log("end of function in 'define'");
     return FederatesExporter;
  });
