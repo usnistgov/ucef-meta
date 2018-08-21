@@ -224,9 +224,7 @@ define
                        version: self.getCurrentConfig().exportVersion.trim(),
                        pocOrg: self.mainPom.groupId,
                        dateString: "",
-                       objects: [],
                        objects_xml: [],
-                       interactions: [],
                        interactions_xml: []};
       
       // add fom generator to generators
@@ -259,25 +257,25 @@ interaction originally put on the pubSubInteractions in PubSubVisitors
 is also on pubSubInteractions.
 
 */
-	console.log("defining interactionTraverser_check");
+        console.log("defining interactionTraverser_check");
         var interactionTraverser_check = function(interaction)
-          {
-	    console.log("executing interactionTraverser_check");
-            interaction.children.forEach(function (child)
+        {
+          console.log("executing interactionTraverser_check");
+          interaction.children.forEach(function (child)
           {
             interactionTraverser_check(child);
           });
-            if (interaction.name != 'InteractionRoot')
-              {
-                if ((interaction.id in self.pubSubInteractions) &&
-                    !(interaction.basePath in self.pubSubInteractions))
-                  {
-                    self.pubSubInteractions[interaction.basePath] =
-                      {publish: 0,
-                       subscribe: 0};
-                  }
-              }
-          };
+          if (interaction.name != 'InteractionRoot')
+            {
+              if ((interaction.id in self.pubSubInteractions) &&
+                  !(interaction.basePath in self.pubSubInteractions))
+                {
+                  self.pubSubInteractions[interaction.basePath] =
+                    {publish: 0,
+                     subscribe: 0};
+                }
+            }
+        };
 
 /***********************************************************************/
 
@@ -293,71 +291,71 @@ Called By:
 This builds the XML for interactions.
 
 */
-	console.log("defining interactionTraverser_xml");
+        console.log("defining interactionTraverser_xml");
         var interactionTraverser_xml = function(interaction, space)
-          {
-            var intModel = {interaction: interaction,
-                            indent: space,
-                            parameters: interaction.parameters,
-                            children: []};
-	    console.log("executing interactionTraverser_xml");
-            if (self.pubSubInteractions[interaction.id].publish)
-              {
-                if (self.pubSubInteractions[interaction.id].subscribe)
-                  {
-                    interaction.sharing = "PublishSubscribe";
-                  }
-                else
-                  {
-                    interaction.sharing = "Publish";
-                  }
-              }
-            else if (self.pubSubInteractions[interaction.id].subscribe)
-              {
-                interaction.sharing = "Subscribe";
-              }
-            else
-              {
-                interaction.sharing = "Neither";
-              }
-            if (interaction.delivery === "reliable")
-              {
-                interaction.delivery = "HLAreliable";
-              }
-            else
-              {
-                interaction.delivery = "HLAbestEffort";
-              }
-            if (interaction.order === "timestamp")
-              {
-                interaction.order = "TimeStamp";
-              }
-            else
-              {
-                interaction.order = "Receive";
-              }
-            // here interactionTraverser_xml calls itself recursively to
-            // generate XML for the children before generating
-            // XML for the parent
-            interaction.children.forEach(function (child)
+        {
+          var intModel = {interaction: interaction,
+                          indent: space,
+                          parameters: interaction.parameters,
+                          children: []};
+          console.log("executing interactionTraverser_xml");
+          if (self.pubSubInteractions[interaction.id].publish)
             {
-              if (child.id in self.pubSubInteractions)
+              if (self.pubSubInteractions[interaction.id].subscribe)
                 {
-                  intModel.children.push
-                    (interactionTraverser_xml(child, space + "    "));
+                  interaction.sharing = "PublishSubscribe";
                 }
-            });
-                
-            // now generate XML for the parent if on pubSubInteractions
-            if (interaction.id in self.pubSubInteractions)
+              else
+                {
+                  interaction.sharing = "Publish";
+                }
+            }
+          else if (self.pubSubInteractions[interaction.id].subscribe)
+            {
+              interaction.sharing = "Subscribe";
+            }
+          else
+            {
+              interaction.sharing = "Neither";
+            }
+          if (interaction.delivery === "reliable")
+            {
+              interaction.delivery = "HLAreliable";
+            }
+          else
+            {
+              interaction.delivery = "HLAbestEffort";
+            }
+          if (interaction.order === "timestamp")
+            {
+              interaction.order = "TimeStamp";
+            }
+          else
+            {
+              interaction.order = "Receive";
+            }
+          // here interactionTraverser_xml calls itself recursively to
+          // generate XML for the children before generating
+          // XML for the parent
+          interaction.children.forEach(function (child)
+          {
+            if (child.id in self.pubSubInteractions)
               {
-                // On the next line, a newline after 'return' causes
-                // an immediate return because of the automatic insertion
-                // of semicolons -- so don't put a newline there.
-                return ejs.render(TEMPLATES["fedfile_siminteraction_xml.ejs"],
-                           intModel);
+                intModel.children.push
+                  (interactionTraverser_xml(child, space + "    "));
               }
-          };
+          });
+              
+          // now generate XML for the parent if on pubSubInteractions
+          if (interaction.id in self.pubSubInteractions)
+            {
+              // On the next line, a newline after 'return' causes
+              // an immediate return because of the automatic insertion
+              // of semicolons -- so don't put a newline there.
+              return ejs.render(TEMPLATES["fedfile_siminteraction_xml.ejs"],
+                         intModel);
+            }
+        };
             
 /***********************************************************************/
 
@@ -385,25 +383,25 @@ originally put on the pubSubObjects in PubSubVisitors is also on
 pubSubObjects.
 
 */
-	console.log("defining objectTraverser_check");
+        console.log("defining objectTraverser_check");
         var objectTraverser_check = function(object)
+        {
+          console.log("executing objectTraverser_check");
+          object.children.forEach(function (child)
           {
-	    console.log("executing objectTraverser_check");
-            object.children.forEach(function (child)
+            objectTraverser_check(child);
+          });
+          if (object.name != 'ObjectRoot')
             {
-              objectTraverser_check(child);
-            });
-            if (object.name != 'ObjectRoot')
-              {
-                if ((object.id in self.pubSubObjects) &&
-                    !(object.basePath in self.pubSubObjects))
-                  {
-                    self.pubSubObjects[object.basePath] =
-                      {publish: 0,
-                       subscribe: 0};
-                  }
-              }
-          };
+              if ((object.id in self.pubSubObjects) &&
+                  !(object.basePath in self.pubSubObjects))
+                {
+                  self.pubSubObjects[object.basePath] =
+                    {publish: 0,
+                     subscribe: 0};
+                }
+            }
+        };
             
 /***********************************************************************/
 
@@ -427,80 +425,80 @@ Then XML for the objModel is generated (and saved) by calling
 ejs.render using the fedfile_simobject_xml XML Template.
 
 */
-	console.log("defining objectTraverser_xml");
+        console.log("defining objectTraverser_xml");
         var objectTraverser_xml = function(object, space)
+        {
+          var objModel = {object: object,
+                          indent: space,
+                          attributes: object.attributes,
+                          children: []};
+          console.log("executing objectTraverser_xml");
+          if (self.pubSubObjects[object.id].publish)
+            {
+              if (self.pubSubObjects[object.id].subscribe)
+                {
+                  object.sharing = "PublishSubscribe";
+                }
+              else
+                {
+                  object.sharing = "Publish";
+                }
+            }
+          else if (self.pubSubObjects[object.id].subscribe)
+            {
+              object.sharing = "Subscribe";
+            }
+          else
+            {
+              object.sharing = "Neither";
+            }
+          // Some properties of the attributes of the objModel (which
+          // are the attributes of the object) are modified in place
+          // as follows.
+          objModel.attributes.forEach(function(attr)
           {
-            var objModel = {object: object,
-                            indent: space,
-                            attributes: object.attributes,
-                            children: []};
-	    console.log("executing objectTraverser_xml");
-            if (self.pubSubObjects[object.id].publish)
+            attr.sharing = object.sharing;
+            if (attr.delivery === "reliable")
               {
-                if (self.pubSubObjects[object.id].subscribe)
-                  {
-                    object.sharing = "PublishSubscribe";
-                  }
-                else
-                  {
-                    object.sharing = "Publish";
-                  }
-              }
-            else if (self.pubSubObjects[object.id].subscribe)
-              {
-                object.sharing = "Subscribe";
+                attr.delivery = "HLAreliable";
               }
             else
               {
-                object.sharing = "Neither";
+                attr.delivery = "HLAbestEffort";
               }
-            // Some properties of the attributes of the objModel (which
-            // are the attributes of the object) are modified in place
-            // as follows.
-            objModel.attributes.forEach(function(attr)
-            {
-              attr.sharing = object.sharing;
-              if (attr.delivery === "reliable")
-                {
-                  attr.delivery = "HLAreliable";
-                }
-              else
-                {
-                  attr.delivery = "HLAbestEffort";
-                }
-              if (attr.order === "timestamp")
-                {
-                  attr.order = "TimeStamp";
-                }
-              else
-                { 
-                  attr.order = "Receive";
-                }
-            });
-            
-            // Here, objectTraverser_xml calls itself recursively to
-            // generate XML for the children before generating
-            // XML for the parent.
-            // We do not want to include the FederateObject.
-            object.children.forEach(function(child)
-            {
-              if ((child.name != "FederateObject") &&
-                  (child.id in self.pubSubObjects))
-                {
-                  objModel.children.push
-                    (objectTraverser_xml(child, space + "    "));
-                }
-            });
-            // now generate XML for the parent if on pubSubObjects
-            if (object.id in self.pubSubObjects)
+            if (attr.order === "timestamp")
               {
-                // On the next line, a newline after 'return' causes
-                // an immediate return because of the automatic insertion
-                // of semicolons -- so don't put a newline there.
-                return ejs.render(TEMPLATES["fedfile_simobject_xml.ejs"],
-                                  objModel);
+                attr.order = "TimeStamp";
               }
-          };
+            else
+              { 
+                attr.order = "Receive";
+              }
+          });
+          
+          // Here, objectTraverser_xml calls itself recursively to
+          // generate XML for the children before generating
+          // XML for the parent.
+          // We do not want to include the FederateObject.
+          object.children.forEach(function(child)
+          {
+            if ((child.name != "FederateObject") &&
+                (child.id in self.pubSubObjects))
+              {
+                objModel.children.push
+                  (objectTraverser_xml(child, space + "    "));
+              }
+          });
+          // now generate XML for the parent if on pubSubObjects
+          if (object.id in self.pubSubObjects)
+            {
+              // On the next line, a newline after 'return' causes
+              // an immediate return because of the automatic insertion
+              // of semicolons -- so don't put a newline there.
+              return ejs.render(TEMPLATES["fedfile_simobject_xml.ejs"],
+                                objModel);
+            }
+        };
            
 /***********************************************************************/
 
@@ -516,9 +514,9 @@ ejs.render using the fedfile_simobject_xml XML Template.
         // normally is only one interactionRoot
         self.interactionRoots.forEach(function (interactionRoot)
         {
-	  console.log("calling interactionTraverser_check on interactionRoot");
+          console.log("calling interactionTraverser_check on interactionRoot");
           interactionTraverser_check(interactionRoot);
-	  console.log("calling interactionTraverser_xml on interactionRoot");
+          console.log("calling interactionTraverser_xml on interactionRoot");
           self.fomModel.interactions_xml.push
             (interactionTraverser_xml(interactionRoot, "    "));
         });
@@ -527,15 +525,15 @@ ejs.render using the fedfile_simobject_xml XML Template.
         // normally is only one objectRoot
         self.objectRoots.forEach(function(objectRoot)
         {
-	  console.log("calling objectTraverser_check on objectRoot");
+          console.log("calling objectTraverser_check on objectRoot");
           objectTraverser_check(objectRoot);
-	  console.log("calling objectTraverser_xml on objectRoot");
+          console.log("calling objectTraverser_xml on objectRoot");
           self.fomModel.objects_xml.push
             (objectTraverser_xml(objectRoot, "    "));
         });
  
         // add fom to artifact
-	console.log("adding fom model to output, using ejs.render");
+        console.log("adding fom model to output, using ejs.render");
         artifact.addFile('fom/' + self.projectName + '.xml',
                          ejs.render(TEMPLATES['fedfile.xml.ejs'],
                                     self.fomModel),
@@ -585,7 +583,7 @@ ejs.render using the fedfile_simobject_xml XML Template.
           {
             doneBack();
           }
-      }
+      };
         
 /***********************************************************************/
 
@@ -649,7 +647,7 @@ ejs.render using the fedfile_simobject_xml XML Template.
             callback(null, self.result);
             return;
           }
-      }
+      };
        
 /***********************************************************************/
 
@@ -671,7 +669,7 @@ variable.
         var artifact =
           self.blobClient.createArtifact(self.projectName.trim().
                                          replace(/\s+/g,'_') + '_generated');
-	console.log("executing finishExport");
+        console.log("executing finishExport");
         if (self.generateExportPackages)
           {
             var coreArtifact =
@@ -715,7 +713,7 @@ variable.
             self.result.setSuccess(true);
             callback(null, self.result);
           } 
-      }
+      };
        
 /***********************************************************************/
 
@@ -751,45 +749,45 @@ argument.
 /***********************************************************************/
 
     FederatesExporter.prototype.getChildSorterFunc = function(nodeType, self)
-      {
-         var self = this,
-             visitorName = 'generalChildSorter';
-         var generalChildSorter = function(a, b)
-           {
-             //a is less than b by some ordering criterion : return -1;
-             //a is greater than b by the ordering criterion: return 1;
-             // a equal to b, than return 0;
-             var aName = self.core.getAttribute(a,'name');
-             var bName = self.core.getAttribute(b,'name');
-             if (aName < bName) return -1;
-             if (aName > bName) return 1;
-             return 0;
-           };
-         return generalChildSorter;
-      }
+    {
+       var self = this,
+           visitorName = 'generalChildSorter';
+       var generalChildSorter = function(a, b)
+         {
+           //a is less than b by some ordering criterion : return -1;
+           //a is greater than b by the ordering criterion: return 1;
+           // a equal to b, than return 0;
+           var aName = self.core.getAttribute(a,'name');
+           var bName = self.core.getAttribute(b,'name');
+           if (aName < bName) return -1;
+           if (aName > bName) return 1;
+           return 0;
+         };
+       return generalChildSorter;
+    };
    
 /***********************************************************************/
 
     FederatesExporter.prototype.excludeFromVisit = function(node)
-      {
-        var self = this,
-        exclude = false;
-        
-        if (self.rootNode != node)
-          {    
-            var nodeTypeName =
-              self.core.getAttribute(self.getMetaType(node),'name');
-            exclude = exclude 
-              || self.isMetaTypeOf(node, self.META['Language [C2WT]'])
-              || (self.federateTypes.hasOwnProperty(nodeTypeName) &&
-                  !self.federateTypes[nodeTypeName].includeInExport);
-          }
-        if (exclude)
-           {
-             
-           }
-        return exclude;
-      }
+    {
+      var self = this,
+      exclude = false;
+      
+      if (self.rootNode != node)
+        {    
+          var nodeTypeName =
+            self.core.getAttribute(self.getMetaType(node),'name');
+          exclude = exclude 
+            || self.isMetaTypeOf(node, self.META['Language [C2WT]'])
+            || (self.federateTypes.hasOwnProperty(nodeTypeName) &&
+                !self.federateTypes[nodeTypeName].includeInExport);
+        }
+      if (exclude)
+         {
+           
+         }
+      return exclude;
+    };
 
 /***********************************************************************/
 
@@ -804,40 +802,39 @@ this one.
 */
     
     console.log("defining FederatesExporter.prototype.getVisitorFuncName");
-    FederatesExporter.prototype.getVisitorFuncName =
-      function(nodeType)
-      {
-        var visitorName = 'generalVisitor';
-        if (nodeType)
-          {
-            visitorName = 'visit_'+ nodeType;
-            if (nodeType.endsWith('Federate'))
-              {
-                visitorName = 'visit_'+ 'Federate';
-              }
-          }
-        return visitorName;   
-      }
+    FederatesExporter.prototype.getVisitorFuncName = function(nodeType)
+    {
+      var visitorName = 'generalVisitor';
+      if (nodeType)
+        {
+          visitorName = 'visit_'+ nodeType;
+          if (nodeType.endsWith('Federate'))
+            {
+              visitorName = 'visit_'+ 'Federate';
+            }
+        }
+      return visitorName;   
+    };
 
 /***********************************************************************/
 
     console.log("defining FederatesExporter.prototype.getPostVisitorFuncName");
     FederatesExporter.prototype.getPostVisitorFuncName = function(nodeType)
-      {
-        var self = this,
-        visitorName = 'generalPostVisitor';
-        
-        if (nodeType)
-          {
-            visitorName = 'post_visit_'+ nodeType;
-            if (nodeType.endsWith('Federate'))
-              {
-                visitorName = 'post_visit_'+ 'Federate';
-              }
-          }
-        //self.logger.debug('Generated post-visitor Name: ' + visitorName);
-        return visitorName;
-      }
+    {
+      var self = this,
+      visitorName = 'generalPostVisitor';
+      
+      if (nodeType)
+        {
+          visitorName = 'post_visit_'+ nodeType;
+          if (nodeType.endsWith('Federate'))
+            {
+              visitorName = 'post_visit_'+ 'Federate';
+            }
+        }
+      //self.logger.debug('Generated post-visitor Name: ' + visitorName);
+      return visitorName;
+    };
 
     /*
      * Rest of TRAVERSAL CODE:
@@ -848,33 +845,30 @@ this one.
     
 /***********************************************************************/
 
-    FederatesExporter.prototype.ROOT_visitor =
-      function(node)
-      {
-        var self = this;
-        self.logger.info('Visiting the ROOT');
+    FederatesExporter.prototype.ROOT_visitor = function(node)
+    {
+      var self = this;
+      self.logger.info('Visiting the ROOT');
 
-        var root = {"@id": 'model:' + '/root',
-                    "@type": "gme:root",
-                    "model:name": self.projectName,
-                    "gme:children": []};
-        return {context:{parent: root}};
-      }
-    
+      var root = {"@id": 'model:' + '/root',
+                  "@type": "gme:root",
+                  "model:name": self.projectName,
+                  "gme:children": []};
+      return {context:{parent: root}};
+    };
 
 /***********************************************************************/
 
-    FederatesExporter.prototype.calculateParentPath =
-      function(path)
-      {
-        if (!path)
-          {
-            return null;
-          }
-        var pathElements = path.split('/');
-        pathElements.pop();
-        return pathElements.join('/');
-      }
+    FederatesExporter.prototype.calculateParentPath = function(path)
+    {
+      if (!path)
+        {
+          return null;
+        }
+      var pathElements = path.split('/');
+      pathElements.pop();
+      return pathElements.join('/');
+    };
     
 /***********************************************************************/
     console.log("end of function in 'define'");
