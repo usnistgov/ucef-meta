@@ -207,7 +207,7 @@ define(['js/util',
         for (var k in interaction) newObject[k] = interaction[k];
         newObject['status'] = 'OK';
         newObject['gmeNode'] = null;
-        newObject['selected'] = true;
+        newObject['selected'] = false;
         newObject['isBase'] = isBase;
 
         if (interaction.hasOwnProperty("__INTERACTION_BASE__")){
@@ -307,7 +307,7 @@ define(['js/util',
         for (var k in object) newObject[k] = object[k];
         newObject['status'] = 'OK';
         newObject['gmeNode'] = null;
-        newObject['selected'] = true;
+        newObject['selected'] = false;
         newObject['isBase'] = isBase;
 
         if (object.hasOwnProperty("__OBJECT_BASE__")){
@@ -524,7 +524,7 @@ define(['js/util',
                             type: "checkbox",
                             class: "importBox",
                             id: key,
-                            checked: true
+                            checked: false
                         }).appendTo(statusCell);
 
                     } else {
