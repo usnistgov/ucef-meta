@@ -337,19 +337,21 @@ define(['js/util',
 
             // now check object_attribute_attributes
 
-            obj_attributes_attribute = object['attributes'];
+            obj_attributes_attribute = object['parameters'];
             Object.keys(obj_attributes_attribute).map(function(param){
-                obj_attributes_attributesByName[param] = object['attributes'][param]
+
+                var attributes_name = obj_attributes_attribute[param]["name"]
+                obj_attributes_attributesByName[attributes_name] =obj_attributes_attribute[param]
             })
 
             // obj_attributes_attribute.map(function(param){
             //     obj_attributes_attributesByName[param['name']] = param;
             // });
             childrenPaths = self.core.getChildrenPaths(gmeNode);
-            if (obj_attributes_attribute.length != childrenPaths.length){
+            if (Object.keys(obj_attributes_attribute).length != childrenPaths.length){
                 errors.push('The number of parameters does not match, ' +
                     'existing number is ' + childrenPaths.length +
-                    ' instead of ' + obj_attributes_attribute.length
+                    ' instead of ' + Object.keys(obj_attributes_attribute).length
                 )
             } else {
                 for (i=0; i < childrenPaths.length; i++){
