@@ -4,18 +4,35 @@ Modified by T. Kramer
 
 Reformatted in C style, as far as possible.
 
-RTIVisitors is called by the FederatesExporter function (around the
-6th line of the function) in FederatesExporter.js. The value of "this"
-(and, hence, "self" in this function is FederatesExporter. So,
-RTIVisitors is populating the interactions property of the
-FederatesExporter (lines 43-50)
+This is executed automatically at the beginning of
+FederatesExporter.js in the first stages of running the "define" at
+the top level of that file. The result of the execution is that the
+RTIVisitors argument in the function of the "define" is defined as
+a function.
 
-Where the properties of an interaction are being set (lines 51-62),
-the 'name' property is the the type of interaction
-(e.g., StaticInteractionPublish).
+The RTIVisitors  function is then called at the
+"RTIVisitors.call(this);" line of FederatesExporter.js when the
+FederatesExporter function starts to execute.
 
-The nodeType (line 33) is always 'Interaction'. It's value is used only
-in a logger.debug statement.
+The result of calling the PubSubVisitors function is that four
+functions are defined as properties of the FederatesExporter function
+(which is also an object). The lines of this function that begin the
+definitions of the four functions are:
+
+this.visit_Interaction = function(node, parent, context)
+this.visit_Parameter = function(node, parent, context)
+this.visit_Parameter = function(node, parent, context)
+this.visit_Attribute = function(node, parent, context)
+
+The "this" above is the FederatesExporter function in FederatesExporter.js.
+
+These functions are called in the atModelNode function of
+ModelTraverserMixin.js (at ret = ...).  The "parent" argument is not
+used in any of the functions, but is needed to be a placeholder in the
+arguments. All of the visit_XXX functions (many of which are defined
+elsewhere but are called from atModelNode) take the arguments (node,
+parent, context). They are called by constructing the name by
+concatenating 'visit_' with the name of the type of node.
 
 */
 
@@ -24,7 +41,7 @@ define
  function()
  {
    'use strict';
-    console.log("beginning of function in 'define'");
+    console.log("beginning of function in 'define' in RTIVisitors.js");
     console.log("defining RTIVisitors");
 
     var RTIVisitors  = function()
@@ -33,6 +50,16 @@ define
 
 /***********************************************************************/
 
+/* this.visit_Interaction
+
+Returned Value: a context object whose context property is the context
+  argument, possibly with data added.
+
+Called By: See notes at top.
+
+This processes data for an Interaction.
+
+*/
       console.log("defining this.visit_Interaction");
       this.visit_Interaction = function(node, parent, context)
       {
@@ -46,8 +73,6 @@ define
         nameFragments = [nodeName];
 
         console.log("executing visit_Interaction");
-        self.logger.debug('Node ' + nodeName + " is based on " +
-                          nodeBaseName + " with meta " + nodeType);
         if (self.interactions[nodePath])
           {
             interaction = self.interactions[nodePath];
@@ -111,11 +136,21 @@ define
       
 /***********************************************************************/
 
+/* this.visit_Parameter
+
+Returned Value: a context object whose context property is the context
+  argument, possibly with data added.
+
+Called By: See notes at top.
+
+This processes data for a Parameter.
+
+*/
       console.log("defining this.visit_Parameter");
       this.visit_Parameter = function(node, parent, context)
       {
         var self = this;
-        self.logger.debug('Visiting Parameter');
+        console.log("executing visit_Parameter");
         if (context.hasOwnProperty('parentInteraction'))
           {
             context['parentInteraction']['parameters'].push(
@@ -133,7 +168,17 @@ define
 
 /***********************************************************************/
 
-      console.log("defining this.visit_Object");
+/* this.visit_Object
+
+Returned Value: a context object whose context property is the context
+  argument, possibly with data added.
+
+Called By: See notes at top.
+
+This processes data for an Object.
+
+*/
+       console.log("defining this.visit_Object");
       this.visit_Object = function(node, parent, context)
       {
         var self = this,
@@ -192,10 +237,22 @@ define
 
 /***********************************************************************/
       
+/* this.visit_Attribute
+
+Returned Value: a context object whose context property is the context
+  argument, possibly with data added.
+
+Called By: See notes at top.
+
+This processes data for an Attribute.
+
+*/
       console.log("defining this.visit_Attribute");
       this.visit_Attribute = function(node, parent, context)
       {
-        var self = this,      
+        var self = this;
+	var attribute;
+	console.log("executing this.visit_Attribute");
         attribute =
           {
             name: self.core.getAttribute(node,'name'),
@@ -220,6 +277,6 @@ define
       console.log("finished executing RTIVisitors");
     };
 
-    console.log("end of function in 'define'");
+    console.log("end of function in 'define' in RTIVisitors.js");
     return RTIVisitors;   
  });

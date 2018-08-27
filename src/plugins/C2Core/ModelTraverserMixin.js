@@ -1,7 +1,7 @@
 define([], function()
   {
     'use strict';
-    console.log("beginning of function in 'define'");
+    console.log("beginning of function in 'define' in ModelTraverserMixin.js");
     /**
      * Initializes a new instance of JSONLDExport.
      * @class
@@ -11,41 +11,39 @@ define([], function()
      */
     console.log("defining withModelTraverser");
     var withModelTraverser = function()
-      {
-        console.log("executing withModelTraverser");
+    {
+      console.log("executing withModelTraverser");
 	
 /***********************************************************************/
 
-	console.log("defining this.getVisitorFuncName");
-	this.getVisitorFuncName = this.getVisitorFuncName ||
-        function(nodeType)
-          {
-            var self = this,
-                visitorName = 'generalVisitor';
-            console.log("executing getVisitorFuncName");
-            if (nodeType)
-              {
-                visitorName = 'visit_'+ nodeType;
-              }
-            self.logger.debug('Genarated visitor Name: ' + visitorName);
-            return visitorName;
-          }
+      console.log("defining this.getVisitorFuncName");
+      this.getVisitorFuncName = this.getVisitorFuncName ||
+      function(nodeType)
+      {
+	var self = this,
+	visitorName = 'generalVisitor';
+	console.log("executing getVisitorFuncName");
+	if (nodeType)
+	  {
+	    visitorName = 'visit_'+ nodeType;
+	  }
+	return visitorName;
+      }
 
 /***********************************************************************/
 
-	console.log("defining this.getPostVisitorFuncName");
-        this.getPostVisitorFuncName = this.getPostVisitorFuncName ||
-        function(nodeType)
-          {
-            var self = this,
-                visitorName = 'generalPostVisitor';
-            if (nodeType)
-              {
-                visitorName = 'post_visit_'+ nodeType;
-              }
-            self.logger.debug('Genarated post-visitor Name: ' + visitorName);
-            return visitorName;
-          }
+      console.log("defining this.getPostVisitorFuncName");
+      this.getPostVisitorFuncName = this.getPostVisitorFuncName ||
+      function(nodeType)
+      {
+	var self = this,
+	visitorName = 'generalPostVisitor';
+	if (nodeType)
+	  {
+	    visitorName = 'post_visit_'+ nodeType;
+	  }
+	return visitorName;
+      }
         
 /***********************************************************************/
 
@@ -72,16 +70,38 @@ define([], function()
 
 /***********************************************************************/
 
+/* this.excludeFromVisit
+
+Returned Value: none
+
+Called By: visitAllChildrenRec
+  
+If this.excludeFromVisit is not already defined, it is defined to
+return false.
+
+It is not clear why this function is defined. It is defined also in 
+FederatesExporter.js.
+
+*/
+
 	console.log("defining this.excludeFromVisit");
         this.excludeFromVisit = this.excludeFromVisit ||
         function(node)
           {
-            var self = this,
-                exclude = false;
+            var exclude = false;
             return exclude;
           }
 
 /***********************************************************************/
+
+/* this.visitAllChildrenFromRootContainer
+
+Returned Value: none
+
+Called By:
+  FederatesExporter.prototype.main
+
+*/
 
 	console.log("defining this.visitAllChildrenFromRootContainer");
         this.visitAllChildrenFromRootContainer = function(rootNode, callback)
@@ -106,8 +126,7 @@ define([], function()
                       }
                     catch(err)
                       {
-                        self.logger.debug('No post visitor function for ' +
-                                    self.core.getAttribute(rootNode,'name'));
+
                       }
                     callback(error === '' ? undefined : error);
                     return;
@@ -133,8 +152,7 @@ define([], function()
               }
             catch(err)
               {
-                self.logger.debug('No visitor function for ' +
-                                  self.core.getAttribute(rootNode,'name'));
+
               }
 
             self.visitAllChildrenRec(rootNode, context, counter,
@@ -143,9 +161,13 @@ define([], function()
 	
 /***********************************************************************/
 
-/*
+/* this.visitAllChildrenRec
 
-visitAllChildrenRec calls itself recursively.
+Returned Value: none
+
+Called By:
+  visitAllChildrenFromRootContainer
+  visitAllChildrenRec (recursively)
 
 */
 
@@ -260,7 +282,11 @@ visitAllChildrenRec calls itself recursively.
 
 /***********************************************************************/
 
-/*
+/* this.atModelNode
+
+Returned Value: none
+
+Called By: ?
 
 The following line of the atModeNode function is strange
 
@@ -294,7 +320,6 @@ seem better to test for a known name and call the appropriate function.
                 ret = null;
             try
               {
-                self.logger.debug('atNode: ' + nodeName);
                 ret = self[self.getVisitorFuncName(nodeType)](node, parent,
                                                               context);
                 if (ret['error'])
@@ -328,6 +353,13 @@ seem better to test for a known name and call the appropriate function.
 
 /***********************************************************************/
 
+/* this.doneModelNode
+
+Returned Value: none
+
+Called By: ?
+
+*/
 	console.log("defining this.doneModelNode");
         this.doneModelNode = function(node, context, callback)
           {
@@ -339,7 +371,6 @@ seem better to test for a known name and call the appropriate function.
 
             try
               {
-                self.logger.debug('doneNode: ' + nodeName);
                 ret = self[self.getPostVisitorFuncName(nodeType)](node,
                                                                   context);
                 if (ret['error'])
@@ -358,7 +389,7 @@ seem better to test for a known name and call the appropriate function.
                 if (err.message ==
                     'self[self.getPostVisitorFuncName(...)] is not a function')
                   {
-                    //self.logger.debug('No post visitor func for ' + nodeType);
+
                   }
                 else
                   {
@@ -371,6 +402,13 @@ seem better to test for a known name and call the appropriate function.
 
 /***********************************************************************/
 
+/* this.cloneCtx
+
+Returned Value: a copy of an object
+
+Called By: ?
+
+*/
 	console.log("defining this.cloneCtx");
         this.cloneCtx = function(obj)
           {
@@ -380,7 +418,8 @@ seem better to test for a known name and call the appropriate function.
             copy = obj.constructor();
             for (var attr in obj)
               {
-                if (obj.hasOwnProperty(attr)) copy[attr] = obj[attr];
+                if (obj.hasOwnProperty(attr))
+		  copy[attr] = obj[attr];
               }
             return copy;
           }
@@ -388,6 +427,6 @@ seem better to test for a known name and call the appropriate function.
 /***********************************************************************/
 
       };
-    console.log("end of function in 'define'");
+    console.log("end of function in 'define' in ModelTraverserMixin.js");
     return withModelTraverser;
   }); // closes function and define

@@ -48,11 +48,12 @@ define
  function()
  {
    'use strict';
-    console.log("beginning of function in 'define'");
+    console.log("beginning of function in 'define' in PubSubVisitors.js");
     console.log("defining PubSubVisitors function");
 
     var PubSubVisitors = function()
     {
+      console.log("executing PubSubVisitors");
 
 /***********************************************************************/
 
@@ -70,7 +71,6 @@ check is made whether there is already an entry, because it may have
 been created in visit_StaticInteractionSubscribe.
 
 */
-      console.log("executing PubSubVisitors");
       console.log("defining this.visit_StaticInteractionPublish");
       this.visit_StaticInteractionPublish = function(node, parent, context)
       {
@@ -372,6 +372,7 @@ created in visit_StaticObjectPublish.
            federate: self.core.getPointerPath(node,'src')
           },
         nodeAttrNames = self.core.getAttributeNames(node);
+	console.log("executing visit_StaticObjectAttributeSubscribe");
 
         if (!publication.object )
           {
@@ -450,6 +451,7 @@ created in visit_StaticObjectPublish.
             },
             nodeAttrNames = self.core.getAttributeNames(node);
 
+	console.log("executing visit_StaticObjectAttributeSubscribe");
         if (!subscription.object )
           {
             self.createMessage(node,
@@ -518,7 +520,7 @@ created in visit_StaticObjectPublish.
       
       console.log("finished executing PubSubVisitors");
     };
-    console.log("end of function in 'define'");
+    console.log("end of function in 'define' in PubSubVisitors.js");
     return PubSubVisitors;
  });
 
