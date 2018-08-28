@@ -4,16 +4,14 @@
 <%= indent%>    <sharing><%=interaction.sharing %></sharing>
 <%= indent%>    <transportation><%= interaction.delivery %></transportation>
 <%= indent%>    <order><%= interaction.order%></order><% -%>
-<% if(!parameters && !children){ %>
-<%= indent%>    <interactionClass></interactionClass>
-<% } else{ -%>
-<% parameters.forEach(function(param){ %>
+<% parameters.forEach(function(param){ -%>
+<% if(!param.inherited) { -%>
 <%= indent%>    <parameter> 
 <%= indent%>      <name><%= param.name %></name>
 <%= indent%>      <dataType><%= param.parameterType %></dataType>
 <%= indent%>      <semantics></semantics>
 <%= indent%>    </parameter><% -%>
-<% }); %>
-<% if(children.length!=0) {children.forEach(function(child){ %><%- child %><% });} -%>
 <% } -%>
+<% }); %>
+<% children.forEach(function(child){ -%><%- child %><% }); -%>
 <%= indent%>  </interactionClass>

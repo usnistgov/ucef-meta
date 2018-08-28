@@ -2,12 +2,14 @@ define([
     'common/util/ejs',
     'C2Core/MavenPOM',
 	'C2Federates/Templates/Templates',
-    'C2Federates/CppRTI'
+    'C2Federates/CppRTI',
+    'C2Federates/CppImplFederate'
 ], function (
     ejs,
     MavenPOM,
 	TEMPLATES,
-    CppRTI
+    CppRTI,
+    CppImplFederate
 ) {
 
     'use strict';
@@ -17,6 +19,7 @@ define([
             baseDirSpec,
             baseOutFilePath;
         CppRTI.call(this);
+        CppImplFederate.call(this);
 
         this.federateTypes = this.federateTypes || {};
     	this.federateTypes['CppFederate'] = {
@@ -24,8 +27,9 @@ define([
     		longName: 'CppFederate',
             init: function(){
                 self.initCppRTI();
+                self.initCppImplFederate();
 
-                var baseDirBasePath = 'cpp-federates/';
+                var baseDirBasePath = self.projectName + '-cpp-federates/';
                 baseDirSpec = {federation_name: self.projectName, artifact_name: "base", language:"cpp"};
                 var baseDirPath =  baseDirBasePath + ejs.render(self.directoryNameTemplate, baseDirSpec);
                 baseOutFilePath = baseDirPath;
@@ -83,7 +87,7 @@ define([
                         simname: self.projectName,
                         version: self.project_version
                     },
-                    outFileName = baseOutFilePath + MavenPOM.mavenCppPath + "/" + "fedreate_version.cpp";
+                    outFileName = baseOutFilePath + MavenPOM.mavenCppPath + "/" + "federate_version.cpp";
                     self.logger.debug('Rendering template to file: ' + outFileName);
                     artifact.addFile(outFileName, ejs.render(TEMPLATES['cpp/federate_ver.cpp.ejs'], renderContext), function (err) {
                         if (err) {
@@ -110,7 +114,7 @@ define([
             if(!self.cppPOM){
                 self.cppPOM = new MavenPOM(self.mainPom);
                 self.cppPOM.artifactId = self.projectName + "-cpp";
-                self.cppPOM.directory = "cpp-federates";
+                self.cppPOM.directory = self.projectName + "-cpp-federates";
                 self.cppPOM.version = self.project_version;
                 self.cppPOM.packaging = "pom";
                 self.cppPOM.name = self.projectName + ' C++ root'
@@ -132,6 +136,7 @@ define([
             context['cppfedspec']['lookahead'] = self.core.getAttribute(node, 'Lookahead');
             context['cppfedspec']['asynchronousdelivery'] = self.core.getAttribute(node, 'EnableROAsynchronousDelivery');
 
+            self.visit_CppImplFederate(node, parent, context);
             self.federates[self.core.getPath(node)] = context['cppfedspec'];
 
             return {context:context};
@@ -157,8 +162,8 @@ define([
                     }
                 });
             });
-                    
-            return {context:context};
+
+            return self.post_visit_CppImplFederate(node, context);
         };
 
         this.createCppFederateCodeModel = function(){

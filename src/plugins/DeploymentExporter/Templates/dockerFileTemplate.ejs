@@ -1,0 +1,36 @@
+--- 
+services: 
+  fedManager:
+    build: .
+    tty: true
+    image: "<%- dockerInfoMap["FedManager"].name  %>"
+    command: "sh start.sh FedManager"
+    sysctls:
+      - net.ipv6.conf.all.disable_ipv6=1
+    extra_hosts:
+      - "cpswtng_archiva:<%- cpswtng_archiva_ip %>"
+    volumes:
+      - <%- inputPrefix %>/fedManager:/root/Projects/c2wt/input
+      - <%- outputPrefix %>/fedManager:/root/Projects/c2wt/logs
+<%
+fedInfos.map(function(fedInfo) {
+for(var i=0; i<fedInfo.count; i++){ 
+-%>
+  <%- fedInfo.type %>_<%- fedInfo.name %>_<%- i %>:
+    build: .
+    image: "<%- dockerInfoMap[fedInfo.type].name %>"
+    command: "sh start.sh <%- fedInfo.name %>,<%- dockerInfoMap[fedInfo.type].profile %>" 
+    sysctls:
+      - net.ipv6.conf.all.disable_ipv6=1
+    extra_hosts:
+      - "cpswtng_archiva:<%- cpswtng_archiva_ip %>"
+    links:
+      - fedManager  
+    volumes:
+      - <%- inputPrefix %>/<%- fedInfo.type %>_<%- fedInfo.name %>_<%- i %>:/root/Projects/c2wt/input
+      - <%- outputPrefix %>/<%- fedInfo.type %>_<%- fedInfo.name %>_<%- i %>:/root/Projects/c2wt/logs
+<%
+}
+})
+-%>
+version: "2.1"

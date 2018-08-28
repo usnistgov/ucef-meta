@@ -115,6 +115,8 @@ been created in visit_StaticInteractionSubscribe.
         publication['handler'] = function(federate, interaction)
         {
           var interactiondata = {name: interaction.name,
+                                 fullName: interaction.fullName,
+                                 parameters: interaction.parameters,
                                  publishedLoglevel: publication['LogLevel']};
           if (federate['publishedinteractiondata'])
             {
@@ -188,6 +190,8 @@ been created in visit_StaticInteractionPublish.
           // different FOMSheet. Resolve correct filter at render time.
           var interactiondata =
             {name: interaction.name,
+                   fullName: interaction.fullName,
+                   parameters: interaction.parameters,
                    subscribedLoglevel: subscription['LogLevel'],
                    originFedFilter: function()
                {
@@ -270,6 +274,8 @@ created in visit_StaticObjectSubscribe.
         publication['handler'] = function(federate, object)
         {
           var objectdata = {name: object.name,
+                            fullName: object.fullName,
+                            parameters: object.parameters,
                             publishedLoglevel: publication['LogLevel']};
           objectdata['publishedAttributeData']=[];
           objectdata['logPublishedAttributeData'] = [];
@@ -350,6 +356,8 @@ created in visit_StaticObjectPublish.
         subscription['handler'] = function(federate, object)
         {
           var objectdata = {name: object.name,
+                            fullName: object.fullName,
+                            parameters: object.parameters,
                             subscribedLoglevel: subscription['LogLevel']};
           objectdata['subscribedAttributeData'] = [];
           objectdata['logSubscribedAttributeData'] = [];
