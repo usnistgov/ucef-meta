@@ -6,19 +6,20 @@ Reformatted in C style, as far as possible.
 dst = destination, src = source
 
 This is executed automatically at the beginning of
-FederatesExporter.js in the first stages of running the "define" at
-the top level of that file. The result of the execution is that the
-PubSubVisitors argument in the function of the "define" is defined as
-a function.
+FederatesExporter.js and DeploymentExporter.js in the first stages of
+running the "define" at the top level of that file. The result of the
+execution is that the PubSubVisitors argument in the function of the
+"define" is defined as a function.
 
 The PubSubVisitors function is then called at the
-"PubSubVisitors.call(this);" line of FederatesExporter.js when the
-FederatesExporter function starts to execute.
+"PubSubVisitors.call(this);" line of FederatesExporter.js and
+DeploymentExporter.js when the FederatesExporter or DeploymentExporter
+function starts to execute.
 
 The result of calling the PubSubVisitors function is that six
-functions are defined as properties of the FederatesExporter function
-(which is also an object). The lines of this function that begin the
-definitions of the six functions are:
+functions are defined as properties of the FederatesExporter or
+DeploymentExporter function (which is also an object). The lines of
+this function that begin the definitions of the six functions are:
 
    this.visit_StaticInteractionPublish(node, parent, context)
    this.visit_StaticInteractionSubscribe(node, parent, context)
@@ -27,7 +28,9 @@ definitions of the six functions are:
    this.visit_StaticObjectAttributePublish(node, parent, context)
    this.visit_StaticObjectAttributeSubscribe(node, parent, context)
 
-The "this" above is the FederatesExporter function in FederatesExporter.js.
+The "this" above is either the FederatesExporter function in
+FederatesExporter.js or the DeploymentExporter function in
+DeploymentExporter.js.
 
 The first four of these functions are called in the atModelNode function
 of ModelTraverserMixin.js (at ret = ...).  The "parent"
@@ -90,17 +93,20 @@ been created in visit_StaticInteractionSubscribe.
             self.createMessage(node,
                  '[ERROR] Invalid src pointer in StaticInteractionPublish!',
                                'error');
-            }
-        if (publication.interaction in self.pubSubInteractions) //added
-          {
-            self.pubSubInteractions[publication.interaction].publish = 1;
-          }
-        else
-          {
-            self.pubSubInteractions[publication.interaction] =
-              {publish: 1,
-               subscribe: 0};
-          }
+	  }
+	if (self.pubSubInteractions)
+	  { //only FederatesExporter has pubSubInteractions
+	    if (publication.interaction in self.pubSubInteractions)
+	      {
+		self.pubSubInteractions[publication.interaction].publish = 1;
+	      }
+	    else
+	      {
+		self.pubSubInteractions[publication.interaction] =
+		{publish: 1,
+		 subscribe: 0};
+	      }
+	  }
         for ( var i = 0; i < nodeAttrNames.length; i += 1 )
           {
             publication[nodeAttrNames[i]] =
@@ -159,16 +165,19 @@ been created in visit_StaticInteractionPublish.
                  '[ERROR] Invalid dst pointer in StaticInteractionSubscribe!',
                                'error');
           }
-        if (subscription.interaction in self.pubSubInteractions)
-          {
-            self.pubSubInteractions[subscription.interaction].subscribe = 1;
-          }
-        else
-          {
-            self.pubSubInteractions[subscription.interaction] =
-              {publish: 0,
-               subscribe: 1};
-          }
+	if (self.pubSubInteractions)
+	  { //only FederatesExporter has pubSubInteractions
+	    if (subscription.interaction in self.pubSubInteractions)
+	      {
+		self.pubSubInteractions[subscription.interaction].subscribe = 1;
+	      }
+	    else
+	      {
+		self.pubSubInteractions[subscription.interaction] =
+		{publish: 0,
+		 subscribe: 1};
+	      }
+	  }
         for ( var i = 0; i < nodeAttrNames.length; i += 1 )
           {
             subscription[nodeAttrNames[i]] =
@@ -241,15 +250,18 @@ created in visit_StaticObjectSubscribe.
                  '[ERROR] Invalid src pointer in StaticObjectPublish!',
                                'error');
           }
-        if (publication.object in self.pubSubObjects) //added
-          {
-            self.pubSubObjects[publication.object].publish = 1;
-          }
-        else
-          {
-            self.pubSubObjects[publication.object] = {publish: 1,
-                                                      subscribe: 0};
-          }
+	if (self.pubSubObjects)
+	  {// only FederatesExporter has pubSubObjects
+	    if (publication.object in self.pubSubObjects) //added
+	      {
+		self.pubSubObjects[publication.object].publish = 1;
+	      }
+	    else
+	      {
+		self.pubSubObjects[publication.object] = {publish: 1,
+							  subscribe: 0};
+	      }
+	  }
         for ( var i = 0; i < nodeAttrNames.length; i += 1 )
           {
             publication[nodeAttrNames[i]] =
@@ -318,15 +330,18 @@ created in visit_StaticObjectPublish.
                  '[ERROR] Invalid dst pointer in StaticObjectSubscribe!',
                                'error');
           }
-        if (subscription.object in self.pubSubObjects)
-          {
-            self.pubSubObjects[subscription.object].subscribe = 1;
-          }
-        else
-          {
-            self.pubSubObjects[subscription.object] = {publish: 0,
-                                                       subscribe: 1};
-          }
+	if (self.pubSubObjects)
+	  {// only FederatesExporter has pubSubObjects
+	    if (subscription.object in self.pubSubObjects)
+	      {
+		self.pubSubObjects[subscription.object].subscribe = 1;
+	      }
+	    else
+	      {
+		self.pubSubObjects[subscription.object] = {publish: 0,
+							   subscribe: 1};
+	      }
+	  }
         for ( var i = 0; i < nodeAttrNames.length; i += 1 )
           {
             subscription[nodeAttrNames[i]] =

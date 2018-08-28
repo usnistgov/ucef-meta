@@ -5,26 +5,29 @@ Modified by T. Kramer
 Reformatted in C style, as far as possible.
 
 This is executed automatically at the beginning of
-FederatesExporter.js in the first stages of running the "define" at
-the top level of that file. The result of the execution is that the
-RTIVisitors argument in the function of the "define" is defined as
-a function.
+FederatesExporter.js and DeploymentExporter.js in the first stages of
+running the "define" at the top level of that file. The result of the
+execution is that the RTIVisitors argument in the function of the
+"define" is defined as a function.
 
-The RTIVisitors  function is then called at the
-"RTIVisitors.call(this);" line of FederatesExporter.js when the
-FederatesExporter function starts to execute.
+The RTIVisitors function is then called at the
+"RTIVisitors.call(this);" lines of FederatesExporter.js and
+DeploymentExporter.js when the FederatesExporter or DeploymentExporter
+function starts to execute.
 
-The result of calling the PubSubVisitors function is that four
-functions are defined as properties of the FederatesExporter function
-(which is also an object). The lines of this function that begin the
-definitions of the four functions are:
+The result of calling the RTISubVisitors function is that four
+functions are defined as properties of the FederatesExporter or
+DeploymentExporter function (which is also an object). The lines of
+this function that begin the definitions of the four functions are:
 
 this.visit_Interaction = function(node, parent, context)
 this.visit_Parameter = function(node, parent, context)
 this.visit_Parameter = function(node, parent, context)
 this.visit_Attribute = function(node, parent, context)
 
-The "this" above is the FederatesExporter function in FederatesExporter.js.
+The "this" above is either the FederatesExporter function in
+FederatesExporter.js or the DeploymentExporter function in
+DeploymentExporter.js.
 
 These functions are called in the atModelNode function of
 ModelTraverserMixin.js (at ret = ...).  The "parent" argument is not
