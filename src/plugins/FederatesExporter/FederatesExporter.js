@@ -194,8 +194,10 @@ ejs.render using the fedfile_simobject_xml XML Template.
 		      indent: space,
 		      attributes: object.attributes,
 		      children: []};
+      var pubSubData;
       console.log("executing objectTraverserXml");
-      if (fedEx.pubSubObjects[object.id].publish)
+      pubSubData = fedEx.pubSubObjects[object.id];
+      if (pubSubData && pubSubData.publish)
 	{
 	  if (fedEx.pubSubObjects[object.id].subscribe)
 	    {
@@ -206,7 +208,7 @@ ejs.render using the fedfile_simobject_xml XML Template.
 	      object.sharing = "Publish";
 	    }
 	}
-      else if (fedEx.pubSubObjects[object.id].subscribe)
+      else if (pubSubData && pubSubData.subscribe)
 	{
 	  object.sharing = "Subscribe";
 	}
@@ -329,8 +331,10 @@ This builds the XML for interactions.
 		      indent: space,
 		      parameters: interaction.parameters,
 		      children: []};
+      var pubSubData;
       console.log("executing interactionTraverserXml");
-      if (fedEx.pubSubInteractions[interaction.id].publish)
+      pubSubData = fedEx.pubSubInteractions[interaction.id];
+      if (pubSubData && pubSubData.publish)
 	{
 	  if (fedEx.pubSubInteractions[interaction.id].subscribe)
 	    {
@@ -341,7 +345,7 @@ This builds the XML for interactions.
 	      interaction.sharing = "Publish";
 	    }
 	}
-      else if (fedEx.pubSubInteractions[interaction.id].subscribe)
+      else if (pubSubData && pubSubData.subscribe)
 	{
 	  interaction.sharing = "Subscribe";
 	}
