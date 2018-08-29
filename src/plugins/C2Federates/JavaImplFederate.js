@@ -91,6 +91,7 @@ define([
             context['javaimplfedspec']['timeconstrained'] = self.core.getAttribute(node, 'TimeConstrained');
             context['javaimplfedspec']['timeregulating'] = self.core.getAttribute(node, 'TimeRegulating');
             context['javaimplfedspec']['lookahead'] = self.core.getAttribute(node, 'Lookahead');
+            context['javaimplfedspec']['step'] = self.core.getAttribute(node, 'Step');
             context['javaimplfedspec']['asynchronousdelivery'] = self.core.getAttribute(node, 'EnableROAsynchronousDelivery');
             context['javaimplfedspec']['bindAddress'] = self.getCurrentConfig().bindAddress.trim();
 
