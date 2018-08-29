@@ -54,7 +54,8 @@ define
   'C2Federates/MapperFederate',
   'C2Federates/CppFederate',
   'C2Federates/OmnetFederate',
-  'C2Federates/CPNFederate'],
+  'C2Federates/CPNFederate',
+  'C2Federates/GridLabDFederate'],
  function (pluginMetadata,
            PluginBase,
            ejs,                 // added
@@ -69,7 +70,8 @@ define
            MapperFederate,
            CppFederate,
            OmnetFederate,
-           CPNFederate)
+           CPNFederate,
+           GridLabDFederate)
  {
     'use strict';
     var objectTraverserCheck;       // function variable
@@ -108,6 +110,7 @@ define
       CppFederate.call(this);
       OmnetFederate.call(this);
       CPNFederate.call(this);
+      GridLabDFederate.call(this);
       
       this.mainPom = new MavenPOM();
       this._jsonToXml = new JSON2XMLConverter.Json2xml();
