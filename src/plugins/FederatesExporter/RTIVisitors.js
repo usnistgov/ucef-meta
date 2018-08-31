@@ -3,6 +3,18 @@ define([], function () {
 
     var RTIVisitors  = function () {
 
+        // This is needed to support pulling C2WInteractionRoot from the left-side in part-browser
+        this.visit_C2WInteractionRoot = (node, parent, context) => {
+
+            return this.visit_Interaction(node, parent, context);
+        };
+
+        // This is needed to support pulling C2WInteractionRoot from the left-side in part-browser
+        this.visit_ObjectRoot = (node, parent, context) => {
+
+            return this.visit_Object(node, parent, context);
+        };
+
         this.visit_Interaction = function(node, parent, context){
             var self = this,
             nodeType = self.core.getAttribute( self.getMetaType( node ), 'name' ),
