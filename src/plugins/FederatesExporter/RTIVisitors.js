@@ -96,7 +96,34 @@ This processes data for an Interaction.
         interaction['children'] = interaction['children'] || [];
         interaction['isroot'] = node.base == self.META['Interaction'];
         interaction['isMapperPublished'] = false;
-        
+	if (interaction.name == 'SimEnd')
+	  {
+	    if (self.pubSubInteractions[nodePath])
+	      {
+		self.pubSubInteractions[nodePath].subscribe = 1;
+	      }
+	    else
+	      {
+		self.pubSubInteractions[nodePath] =
+		  {publish: 0,
+		   subscribe: 1};
+	      }
+	  }
+	else if ((interaction.name == 'FederateResignInteraction') ||
+		 (interaction.name == 'FederateJoinInteraction'))
+	  {
+	    if (self.pubSubInteractions[nodePath])
+	      {
+		self.pubSubInteractions[nodePath].publish = 1;
+	      }
+	    else
+	      {
+		self.pubSubInteractions[nodePath] =
+		  {publish: 1,
+		   subscribe: 0};
+	      }
+	  }
+	
         var nextBase = node.base;
         while (nextBase != self.META['Interaction'])
           {
