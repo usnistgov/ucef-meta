@@ -152,6 +152,9 @@ define([
                     isInput,
                     null
                 );
+                if( baseInteraction == null){
+                    baseInteraction = self.META['C2WInteractionRoot']
+                }
                 interactionObj.gmeNode = self.core.createNode({
                     parent: self.container,
                     base:baseInteraction
@@ -266,7 +269,7 @@ define([
                     null
                 );
                 if( baseInteraction == null){
-                    baseInteraction = self.META['Object']
+                    baseInteraction = self.META['ObjectRoot']
                 }
 
                 interactionObj.gmeNode = self.core.createNode({
