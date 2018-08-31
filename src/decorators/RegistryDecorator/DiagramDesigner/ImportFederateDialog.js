@@ -18,6 +18,8 @@ define(['js/util',
     var ImportFederateDialog,
         INT_ATTRIBUTES = ["Order", "LogLevel", "EnableLogging", "Delivery"],
         PARAM_ATTRIBUTES = ["Hidden", "ParameterType"];
+    var OBJ_ATTRIBUTES = ["name", "LogLevel", "EnableLogging"],
+        OBJ_ATTRIBUTE_ATTRIBUTES = ["name","Hidden","ParameterType"];
 
     /**
      * ImportFederateDialog Constructor
@@ -38,11 +40,16 @@ define(['js/util',
         this._ioContainer = this._dialog.find('#ioContainer').first();
         this._inputTable = this._ioContainer.find('#inputTable').first();
         this._outputTable = this._ioContainer.find('#outputTable').first();
+       
+        this._inputObjectTable = this._ioContainer.find('#inputObjectTable').first();
+        this._outputObjectTable = this._ioContainer.find('#outputObjectTable').first();
+
         this._multiplierInput = this._dialog.find('#multiplier').first();
 
         this.importStruct = null;
         this.objectsByKind = null;
         this.existingInteractionNodes = null;
+        this.existingObjectNodes = null;
         this.federateObj = null;
         this.nodeObj = null;
         this.client = null;
@@ -120,7 +127,8 @@ define(['js/util',
                 'activeNode': self.activeNode,
                 'rootNode': self.rootNode,
                 'META': self.META,
-                'multiplier': parseInt(self._multiplierInput.val())
+                'multiplier': parseInt(self._multiplierInput.val()),
+                'existingObjectNodes': self.existingObjectNodes
             };
 
             self.client.runBrowserPlugin(
@@ -149,7 +157,7 @@ define(['js/util',
         this._updateUI();
 
         pluginContext.pluginConfig = {
-            'objectKinds': ['Interaction', 'Federate', 'Parameter']
+            'objectKinds': ['Interaction', 'Federate', 'Parameter','Object','Attribute']
         };
         this.client.runBrowserPlugin(
             "FindObjects",
@@ -199,7 +207,7 @@ define(['js/util',
         for (var k in interaction) newObject[k] = interaction[k];
         newObject['status'] = 'OK';
         newObject['gmeNode'] = null;
-        newObject['selected'] = true;
+        newObject['selected'] = false;
         newObject['isBase'] = isBase;
 
         if (interaction.hasOwnProperty("__INTERACTION_BASE__")){
@@ -267,15 +275,144 @@ define(['js/util',
         return newObject;
     };
     
+
+
+
+    ImportFederateDialog.prototype._checkObject = function(
+        object,
+        parametersById,
+        objects,
+        containerObject,
+        isBase
+    ) {
+        if (object == null){
+            return null;
+        }
+        if (containerObject.hasOwnProperty(object.attributes.name)){
+            return containerObject[object.attributes.name];
+        }
+        var self = this,
+            gmeNode,
+            newObject = {},
+            errors = [],
+            attributeValue,
+            attributeName,
+            obj_attributes_attribute =[],
+            obj_attributes_attributesByName = {},
+            paramName,
+            childrenPaths,
+            paramNode, newParamObj,
+            i,j;
+
+        for (var k in object) newObject[k] = object[k];
+        newObject['status'] = 'OK';
+        newObject['gmeNode'] = null;
+        newObject['selected'] = false;
+        newObject['isBase'] = isBase;
+
+        if (object.hasOwnProperty("__OBJECT_BASE__")){
+            newObject["base"] = self._checkObject(
+                objects[object["__OBJECT_BASE__"]["GUID"]] || null,
+                parametersById,
+                objects,
+                containerObject,
+                true
+            )
+        }
+
+        gmeNode = self.existingObjectNodes[object.attributes['name']];
+        if (gmeNode){
+            newObject['gmeNode'] = gmeNode;
+
+            // check interaction attributes first
+            for (i = 0; i < OBJ_ATTRIBUTES.length; i++){
+                attributeName = OBJ_ATTRIBUTES[i];
+                attributeValue = self.core.getAttribute(gmeNode, attributeName);
+                if (object.attributes[attributeName] != attributeValue){
+                    errors.push('Attribute ' + attributeName +
+                        '\'s the existing value is ' + attributeValue +
+                        ' instead of ' + object.attributes[attributeName]);
+                }
+            }
+
+            // now check object_attribute_attributes
+
+            obj_attributes_attribute = object['parameters'];
+            Object.keys(obj_attributes_attribute).map(function(param){
+
+                var attributes_name = obj_attributes_attribute[param]["name"]
+                obj_attributes_attributesByName[attributes_name] =obj_attributes_attribute[param]
+            })
+
+            // obj_attributes_attribute.map(function(param){
+            //     obj_attributes_attributesByName[param['name']] = param;
+            // });
+            childrenPaths = self.core.getChildrenPaths(gmeNode);
+            if (Object.keys(obj_attributes_attribute).length != childrenPaths.length){
+                errors.push('The number of parameters does not match, ' +
+                    'existing number is ' + childrenPaths.length +
+                    ' instead of ' + Object.keys(obj_attributes_attribute).length
+                )
+            } else {
+                for (i=0; i < childrenPaths.length; i++){
+                    paramNode = parametersById[childrenPaths[i]];
+                    paramName = self.core.getAttribute(paramNode, 'name');
+                    newParamObj = obj_attributes_attributesByName[paramName] || {};
+
+                    // var param_attr=  Object.keys(param)
+                    //   param_attr.map(function(p_attr){
+                    //         if(p_attr!= null){
+                    //             attributeValue = self.core.setAttribute(
+                    //             paramObj,
+                    //             attributeName,
+                    //             param[p_attr]
+                    //         );
+                    //         }
+                    //   })
+
+
+
+
+
+                    for (j = 0; j < OBJ_ATTRIBUTE_ATTRIBUTES.length; j++){
+                        attributeName = OBJ_ATTRIBUTE_ATTRIBUTES[j];
+                        attributeValue = self.core.getAttribute(paramNode, attributeName);
+                        if (attributeValue != newParamObj[attributeName]){
+                            errors.push('Parameter ' + paramName +
+                                '\'s attribute ' + attributeName +
+                            ': existing value is ' + attributeValue +
+                            ' instead of ' + newParamObj[attributeName]);
+                        }
+                    }
+                }
+            }
+
+            if (errors.length > 0){
+                newObject['status'] = 'Error';
+                newObject['errors'] = errors;
+                newObject['selected'] = false;
+            }
+        }
+
+        containerObject[object.attributes.name] = newObject;
+        return newObject;
+    };
+
+
     ImportFederateDialog.prototype._processObjects = function () {
         var self = this,
             parametersById = {},
+            objattribute_attributesById = {},
             objects,
             interactionName,
             interactionObj,
+            objectObj,
+            objectName,
             paramPath;
 
         self.existingInteractionNodes = {};
+
+        self.existingObjectNodes ={};
         // Process existing interactions
         if (self.core && self.objectsByKind){
             if (self.objectsByKind['Interaction']){
@@ -290,6 +427,21 @@ define(['js/util',
                     parametersById[paramPath] = param;
                 });
             }
+
+            if (self.objectsByKind['Object']){
+                self.objectsByKind['Object'].map(function(object){
+                    objectName = self.core.getAttribute(object, "name");
+                    self.existingObjectNodes[objectName] = object;
+                });
+            }
+
+               if (self.objectsByKind['Attribute']){
+                self.objectsByKind['Attribute'].map(function(param){
+                    paramPath = self.core.getPath(param);
+                    objattribute_attributesById[paramPath] = param;
+                    
+                });
+            }
         }
 
         // Process interactions from federate to be imported
@@ -298,6 +450,9 @@ define(['js/util',
             objects = self.importStruct['__OBJECTS__'] || {};
             self.federateObj.resolvedInputs = {};
             self.federateObj.resolvedOutputs = {};
+            self.federateObj.resolvedObjectInputs = {};
+            self.federateObj.resolvedObjectOutputs = {};
+            
 
             self.federateObj.inputs.map(function(obj){
                 interactionObj = objects[obj['GUID']] || null;
@@ -317,6 +472,30 @@ define(['js/util',
                     parametersById,
                     objects,
                     self.federateObj.resolvedOutputs,
+                    false
+                );
+            });
+
+
+            self.federateObj.objectinputs.map(function(obj){
+                objectObj = objects[obj['GUID']] || null;
+                self._checkObject(
+                    objectObj,
+                    objattribute_attributesById,
+                    objects,
+                    self.federateObj.resolvedObjectInputs,
+                    false
+                );
+            });
+
+
+            self.federateObj.objectoutputs.map(function(obj){
+                objectObj = objects[obj['GUID']] || null;
+                self._checkObject(
+                    objectObj,
+                    objattribute_attributesById,
+                    objects,
+                    self.federateObj.resolvedObjectOutputs,
                     false
                 );
             });
@@ -347,7 +526,7 @@ define(['js/util',
                             type: "checkbox",
                             class: "importBox",
                             id: key,
-                            checked: true
+                            checked: false
                         }).appendTo(statusCell);
 
                     } else {
@@ -367,6 +546,10 @@ define(['js/util',
 
         this._renderIO(self.federateObj.resolvedInputs, self._inputTable);
         this._renderIO(self.federateObj.resolvedOutputs, self._outputTable);
+
+        this._renderIO(self.federateObj.resolvedObjectInputs, self._inputObjectTable);
+        this._renderIO(self.federateObj.resolvedObjectOutputs, self._outputObjectTable);
+
     };
 
     ImportFederateDialog.prototype._updateUI = function () {
