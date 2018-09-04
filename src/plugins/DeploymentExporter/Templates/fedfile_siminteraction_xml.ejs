@@ -1,18 +1,17 @@
-<% /* siminteraction(interaction,parameters,children) */ -%>
-        <interactionClass>
-            <name><%= interaction.name %></name>
-            <sharing><%=interaction.sharing %></sharing>
-            <transportation><%= interaction.delivery %></transportation>
-            <order><%= interaction.order%></order>
-            <semantics></semantics>
+<% /*siminteraction(interaction,parameters,children) */ -%>
+<%= indent%>  <interactionClass>
+<%= indent%>    <name><%= interaction.name %></name>
+<%= indent%>    <sharing><%=interaction.sharing %></sharing>
+<%= indent%>    <transportation><%= interaction.delivery %></transportation>
+<%= indent%>    <order><%= interaction.order%></order><% -%>
 <% parameters.forEach(function(param){ -%>
 <% if(!param.inherited) { -%>
-            <parameter> 
-                <name><%= param.name %></name>
-                <dataType><%= param.parameterType %></dataType>
-                <semantics></semantics>
-            </parameter>
+<%= indent%>    <parameter> 
+<%= indent%>      <name><%= param.name %></name>
+<%= indent%>      <dataType><%= param.parameterType %></dataType>
+<%= indent%>      <semantics></semantics>
+<%= indent%>    </parameter><% -%>
 <% } -%>
-<% }); -%>
+<% }); %>
 <% children.forEach(function(child){ -%><%- child %><% }); -%>
-        </interactionClass>
+<%= indent%>  </interactionClass>

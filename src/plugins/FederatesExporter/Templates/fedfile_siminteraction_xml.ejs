@@ -1,0 +1,14 @@
+<% /* siminteraction(interaction, indent, parameters, children) */ -%>
+<%= indent%>    <interactionClass>
+<%= indent%>        <name><%= interaction.name %></name>
+<%= indent%>        <sharing><%=interaction.sharing %></sharing>
+<%= indent%>        <transportation><%= interaction.delivery %></transportation>
+<%= indent%>        <order><%= interaction.order%></order><% -%>
+<% parameters.forEach(function(param){ -%>
+<%   if (!param.inherited) { %>
+<%= indent%>        <parameter> 
+<%= indent%>            <name><%= param.name %></name>
+<%= indent%>            <dataType><%= param.parameterType %></dataType>
+<%= indent%>        </parameter><% }}); %>
+<% children.forEach(function(child){ %><%- child %><% }); -%>
+<%= indent%>    </interactionClass>
