@@ -307,6 +307,16 @@ This processes data for an Attribute.
       
 /***********************************************************************/
 
+      // This is needed to support pulling C2WInteractionRoot from the left-side in part-browser
+      this.visit_C2WInteractionRoot = (node, parent, context) => {
+        return this.visit_Interaction(node, parent, context);
+      };
+
+      // This is needed to support pulling C2WInteractionRoot from the left-side in part-browser
+      this.visit_ObjectRoot = (node, parent, context) => {
+        return this.visit_Object(node, parent, context);
+      };
+
       console.log("finished executing RTIVisitors");
     };
 

@@ -193,6 +193,8 @@ define([
             "COAs": {},
             "Experiments": {},
             "Interactions": {},
+            "Objects": {},
+            "ObjectAttribute": {}
         };
         self.model._PathToRef = {};
     };
@@ -229,6 +231,28 @@ define([
             else if (self.core.isTypeOf(obj.node, self.META.StaticInteractionSubscribe) &&
             obj.node != self.META.StaticInteractionSubscribe) {
                 self.resolveSubscribers(obj, fedObj);
+            }
+            else if (self.core.isTypeOf(obj.node, self.META.StaticObjectAttributePublish) &&
+            obj.node != self.META.StaticObjectAttributePublish) {
+//                 self.resolveSubscribers(obj, fedObj);
+                //self.resolveObjectAttributePublisher(obj,fedObj);
+              
+            }
+            else if (self.core.isTypeOf(obj.node, self.META.StaticObjectAttributeSubscribe) &&
+            obj.node != self.META.StaticObjectAttributeSubscribe) {
+               // self.resolveObjectAttributeSubscriber(obj, fedObj);
+            }
+            // else if (self.core.isTypeOf(obj.node, self.META.Object) &&
+            // obj.node != self.META.Object) {
+            //     self.resolveSubscribers(obj, fedObj);
+            // }
+            else if (self.core.isTypeOf(obj.node, self.META.StaticObjectSubscribe) &&
+            obj.node != self.META.StaticObjectSubscribe) {
+                self.resolveObjectSubscribers(obj, fedObj);
+            }
+            else if (self.core.isTypeOf(obj.node, self.META.StaticObjectPublish) &&
+            obj.node != self.META.StaticObjectPublish) {
+                self.resolveObjectPublishers(obj, fedObj);
             }
         });
     }
@@ -277,6 +301,147 @@ define([
             }
         });
         return parameters;
+    };
+
+    ExportToRegistry.prototype.transformAttribute = function (obj) {
+        var self = this;
+        // converts from the generic representation we have here
+        // to the specific representation given in example.js
+        if (obj == null)
+            return null;
+        var newObj = {
+            name: obj.name,
+            ParameterType: obj.attributes.ParameterType,
+            Hidden: obj.attributes.Hidden
+        };
+        return newObj;
+    };
+
+    ExportToRegistry.prototype.transformAttributes = function (obj) {
+        var self = this;
+        var parameters = [];
+        obj.childPaths.map(function (childPath) {
+            var childObj = self.model.objects[childPath];
+            var childNode = childObj.node;
+            if (self.core.isTypeOf(childNode, self.META.Attribute)) {
+                parameters.push(self.transformAttribute(childObj));
+            }
+        });
+        return parameters;
+    };
+
+
+
+    ExportToRegistry.prototype.resolveObjectAttributeSubscriber = function (obj, fedObj) {
+        var self = this;
+        var fedRef = obj.pointers.dst;  // will have been converted to refObj
+        var intRef = obj.pointers.src;
+        var intPath = obj.dst.path;
+        var intObj = self.model.objects[intPath];
+        if (fedObj.GUID == fedRef.GUID){
+            fedObj.outputs.push(intRef);
+            self.transformObjectAttribute(intObj);
+        }
+    };
+
+        ExportToRegistry.prototype.resolveObjectAttributePublishers = function (obj, fedObj) {
+        var self = this;
+        var fedRef = obj.pointers.src;  // will have been converted to refObj
+        var intRef = obj.pointers.dst;
+        var intPath = obj.dst.path;
+        var intObj = self.model.objects[intPath];
+        if (fedObj.GUID == fedRef.GUID){
+            fedObj.outputs.push(intRef);
+            self.transformObjectAttribute(intObj);
+        }
+    };
+
+    ExportToRegistry.prototype.resolveObjectPublishers = function (obj, fedObj) {
+        var self = this;
+        var fedRef = obj.pointers.src;  // will have been converted to refObj
+        var intRef = obj.pointers.dst;
+        var intPath = obj.dst.path;
+        var intObj = self.model.objects[intPath];
+        if (fedObj.GUID == fedRef.GUID){
+            fedObj.objectoutputs.push(intRef);
+            self.transformObject(intObj);
+        }
+    };
+
+    ExportToRegistry.prototype.resolveObjectSubscribers = function (obj, fedObj) {
+        var self = this;
+        var fedRef = obj.pointers.dst;  // will have been converted to refObj
+        var intRef = obj.pointers.src;
+        var intPath = obj.src.path;
+        var intObj = self.model.objects[intPath];
+        if (fedObj.GUID == fedRef.GUID){
+            fedObj.objectinputs.push(intRef);
+            self.transformObject(intObj);
+        }
+    };
+
+ ExportToRegistry.prototype.transformObjectAttribute = function (obj) {
+        var self = this,
+            basePath,
+            baseObj;
+        if (obj == null)
+            return null;
+
+        // Add base Interaction classes if necessary
+        if (obj.base && (obj.base.name != obj.base.type)){
+            basePath = obj.base.path;
+            baseObj = self.model.objects[basePath];
+            if (!self.hasDBObject(baseObj, 'ObjectAttribute')){
+                self.transformObject(baseObj);
+            }
+        }
+
+        var newObj = {};
+        newObj.attributes = {};
+        if (obj.pointers.base)
+            newObj.__OBJECT_BASE__ = obj.pointers.base;
+        else
+            newObj.__OBJECT_BASE__ = obj.type;
+
+        var attrNames = Object.keys(obj.attributes);
+        attrNames.map(function (attrName) {
+            newObj.attributes[attrName] = obj.attributes[attrName];
+        });
+        // get parameters here:
+        //newObj.parameters = self.transformAttributes(obj);
+        return self.makeDBObject(obj, newObj, 'ObjectAttribute');
+    };
+
+ ExportToRegistry.prototype.transformObject = function (obj) {
+        var self = this,
+            basePath,
+            baseObj;
+        if (obj == null)
+            return null;
+
+        // Add base Interaction classes if necessary
+        if (obj.base && (obj.base.name != obj.base.type)){
+            basePath = obj.base.path;
+            baseObj = self.model.objects[basePath];
+            if (!self.hasDBObject(baseObj, 'Objects')){
+                self.transformObject(baseObj);
+            }
+        }
+
+        var newObj = {};
+        newObj.attributes = {};
+        if (obj.pointers.base)
+            newObj.__OBJECT_BASE__ = obj.pointers.base;
+        else
+            newObj.__OBJECT_BASE__ = obj.type;
+
+        var attrNames = Object.keys(obj.attributes);
+        attrNames.map(function (attrName) {
+            newObj.attributes[attrName] = obj.attributes[attrName];
+        });
+        // get parameters here:
+        newObj.parameters = self.transformAttributes(obj);
+        return self.makeDBObject(obj, newObj, 'Objects');
     };
 
     ExportToRegistry.prototype.resolvePublishers = function (obj, fedObj) {
@@ -362,6 +527,8 @@ define([
         // initialize the inputs (interaction subscribe) and outputs (interaction publish)
         newObj.inputs = [];
         newObj.outputs = [];
+        newObj.objectinputs = [];
+        newObj.objectoutputs = [];
 
         // Scrub registry_info
         newObj.RegistryInfo = "";
