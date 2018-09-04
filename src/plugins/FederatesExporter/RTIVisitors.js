@@ -96,34 +96,37 @@ This processes data for an Interaction.
         interaction['children'] = interaction['children'] || [];
         interaction['isroot'] = node.base == self.META['Interaction'];
         interaction['isMapperPublished'] = false;
-	if (interaction.name == 'SimEnd')
-	  {
-	    if (self.pubSubInteractions[nodePath])
-	      {
-		self.pubSubInteractions[nodePath].subscribe = 1;
-	      }
-	    else
-	      {
-		self.pubSubInteractions[nodePath] =
-		  {publish: 0,
-		   subscribe: 1};
-	      }
-	  }
-	else if ((interaction.name == 'FederateResignInteraction') ||
-		 (interaction.name == 'FederateJoinInteraction'))
-	  {
-	    if (self.pubSubInteractions[nodePath])
-	      {
-		self.pubSubInteractions[nodePath].publish = 1;
-	      }
-	    else
-	      {
-		self.pubSubInteractions[nodePath] =
-		  {publish: 1,
-		   subscribe: 0};
-	      }
-	  }
-	
+        if (self.pubSubInteractions)
+          { // only FederatesExporter has pubSubInteractions
+            if (interaction.name == 'SimEnd')
+              {
+                if (self.pubSubInteractions[nodePath])
+                  {
+                    self.pubSubInteractions[nodePath].subscribe = 1;
+                  }
+                else
+                  {
+                    self.pubSubInteractions[nodePath] =
+                      {publish: 0,
+                       subscribe: 1};
+                  }
+              }
+            else if ((interaction.name == 'FederateResignInteraction') ||
+                     (interaction.name == 'FederateJoinInteraction'))
+              {
+                if (self.pubSubInteractions[nodePath])
+                  {
+                    self.pubSubInteractions[nodePath].publish = 1;
+                  }
+                else
+                  {
+                    self.pubSubInteractions[nodePath] =
+                      {publish: 1,
+                       subscribe: 0};
+                  }
+              }
+          }
+        
         var nextBase = node.base;
         while (nextBase != self.META['Interaction'])
           {
@@ -218,7 +221,7 @@ This processes data for an Object.
         nodeName = self.core.getAttribute(node, 'name'),
         nameFragments = [nodeName];
 
-	console.log("executing visit_Object");
+        console.log("executing visit_Object");
         if (self.objects[self.core.getPath(node)])
           {
             object = self.objects[self.core.getPath(node)];
@@ -281,8 +284,8 @@ This processes data for an Attribute.
       this.visit_Attribute = function(node, parent, context)
       {
         var self = this;
-	var attribute;
-	console.log("executing this.visit_Attribute");
+        var attribute;
+        console.log("executing this.visit_Attribute");
         attribute =
           {
             name: self.core.getAttribute(node,'name'),
