@@ -92,6 +92,14 @@
             "readOnly": true
         },
         {
+            "name": "codebaseDirectory",
+            "displayName": "UCEF Codebase Home Directory",
+            "description": "Path to the directory that contains the UCEF/CPSWT repositories",
+            "value": "/home/vagrant/ucefcodebase",
+            "valueType": "string",
+            "readOnly": false
+        },
+        {
             "name": "bindAddress",
             "displayName": "RTI BindAddress",
             "description": "Bind Address to associate for the Federation",
