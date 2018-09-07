@@ -45,6 +45,9 @@ define([
                 moduleName = renderContext['classname'],
                 configDirectory = moduleName + "/conf";
 
+            // TODO rework MavenPOM.js for a more robust solution to link the module
+            self.mainPom.projects.push({'directory': moduleName});
+
             // generate the pom.xml that fetches the LabVIEW federate code and resources
             self.fileGenerators.push(function (artifact, callback) {
                 artifact.addFile(moduleName + "/pom.xml", ejs.render(TEMPLATES['java/labview-pom.xml.ejs'], renderContext), function(err) {
