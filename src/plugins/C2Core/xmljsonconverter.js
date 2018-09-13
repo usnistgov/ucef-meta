@@ -204,7 +204,7 @@ define(['C2Core/sax'], function (sax) {
             attrTag = opts.attrTag,
             textTag = opts.textTag || '#text',
             xmlDeclaration = opts.xmlDeclaration || '<?xml version="1.0"?>\n',
-            indent = opts.indent || '  ';
+            indent = opts.indent || '    ';
         if (attrTag === undefined) {
             attrTag = '@';
         }

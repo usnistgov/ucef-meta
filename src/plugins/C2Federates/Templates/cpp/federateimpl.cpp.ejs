@@ -1,0 +1,131 @@
+<% /* federateimpl(classname) */ -%>
+#include "<%=classname%>.hpp"
+
+void <%=classname%>::initialize( void ) {
+    m_currentTime = 0;
+    
+    if (this->get_IsLateJoiner()) {
+        m_currentTime = getLBTS() - getLookAhead();
+        disableTimeRegulation();
+    }
+
+    <%=classname%>ATRCallback advanceTimeRequest(*this);
+    putAdvanceTimeRequest(m_currentTime, advanceTimeRequest);
+
+    if(!this->get_IsLateJoiner()){
+        readyToPopulate();
+<% if (publishedobjectdata.length > 0) { -%>
+        initObjectInstances();
+<% } -%>
+        readyToRun();
+    }
+<% if (publishedobjectdata.length > 0) { -%>
+    else {
+        initObjectInstances();
+    }
+<% } -%>
+}
+<% if (publishedobjectdata.length > 0) { -%>
+
+void <%=classname%>::initObjectInstances() {
+    // TODO register object instances and send initial values
+<% publishedobjectdata.forEach(function(object_data) { -%>
+    // v<%=object_data.name%>.registerObject(getRTI());
+<% }) -%>
+}
+<% } -%>
+<% if (subscribedobjectdata.length + subscribedinteractiondata.length > 0) { -%>
+
+void <%=classname%>::checkReceivedSubscriptions() {
+<% if (subscribedobjectdata.length > 0) { -%>
+
+    SynchronizedFederate::ObjectReflector objectReflector;
+    while(!(objectReflector = getNextObjectReflector()).isNull()) {
+        objectReflector.reflect();
+
+<% (subscribedobjectdata.sort(function(a, b){return b.fullName.length-a.fullName.length})).forEach(function(object_data){ -%>
+        boost::shared_ptr<<%=object_data.name%>> <%=object_data.name.toLowerCase()%>_ptr =
+                boost::dynamic_pointer_cast<<%=object_data.name%>>(objectReflector.getObjectRootSP());
+        if (<%=object_data.name.toLowerCase()%>_ptr != NULL) {
+            handleObjectClass(<%=object_data.name.toLowerCase()%>_ptr);
+            continue;
+        }
+<% }) -%>
+        std::cerr << "unhandled object reflection " << objectReflector.getObjectRootSP()->getClassName() << std::endl;
+    }
+<% } -%>
+<% if (subscribedinteractiondata.length > 0) { -%>
+
+    InteractionRoot::SP interactionRootSP;
+    while((interactionRootSP = getNextInteraction()) != 0) {
+<% (subscribedinteractiondata.sort(function(a, b){return b.fullName.length-a.fullName.length})).forEach(function(interaction_data){ -%>
+        boost::shared_ptr<<%=interaction_data.name%>> <%=interaction_data.name.toLowerCase()%>_ptr =
+                boost::dynamic_pointer_cast<<%=interaction_data.name%>>(interactionRootSP);
+        if (<%=interaction_data.name.toLowerCase()%>_ptr != NULL) {
+            handleInteractionClass(<%=interaction_data.name.toLowerCase()%>_ptr);
+            continue;
+        }
+<% }) -%>
+        std::cerr << "unhandled interaction " << interactionRootSP->getClassName() << std::endl;
+    }
+<% } -%>
+}
+<% } -%>
+
+void <%=classname%>::execute( void ) {
+<% if (subscribedobjectdata.length + subscribedinteractiondata.length > 0) { -%>
+    checkReceivedSubscriptions();
+<% } -%>
+<% if (publishedobjectdata.length > 0) { -%>
+
+    // TODO update registered object instances
+<% publishedobjectdata.forEach(function(object_data) { -%>
+
+<% object_data.parameters.forEach(function(parameter) { -%>
+    // v<%=object_data.name%>.set_<%=parameter.name%>(YOUR_VALUE_HERE);
+<% }) -%>
+    // v<%=object_data.name%>.updateAttributeValues(getRTI(), m_currentTime + getLookAhead());
+<% }) -%>
+<% } -%>
+<% if (publishedinteractiondata.length > 0) { -%>
+
+    // TODO send interactions
+<% publishedinteractiondata.forEach(function(interaction_data) { -%>
+
+    // <%=interaction_data.name%>SP v<%=interaction_data.name%> = create_<%=interaction_data.name%>();
+<% interaction_data.parameters.forEach(function(parameter) { -%>
+    // v<%=interaction_data.name%>->set_<%=parameter.name%>(YOUR_VALUE_HERE);
+<% }) -%>
+    // v<%=interaction_data.name%>->sendInteraction(getRTI(), m_currentTime + getLookAhead());
+<% }) -%>
+<% } -%>
+    
+    m_currentTime += 1;
+    <%=classname%>ATRCallback advanceTimeRequest(*this);
+    putAdvanceTimeRequest(m_currentTime, advanceTimeRequest);
+}
+<% subscribedobjectdata.forEach(function(object_data) { -%>
+
+void <%=classname%>::handleObjectClass(boost::shared_ptr<<%=object_data.name%>> object) {
+    // TODO implement how to handle received object update
+}
+<% }); -%>
+<% subscribedinteractiondata.forEach(function(interaction_data) { -%>
+
+void <%=classname%>::handleInteractionClass(boost::shared_ptr<<%=interaction_data.name%>> interaction) {
+    // TODO implement how to handle received interaction
+}
+<% }); -%>
+
+int main(int argc, char *argv[]) {
+    FederateConfigParser *configParser = new FederateConfigParser();
+    FederateConfig *config = configParser->parseArgs(argc, argv);
+
+    std::cout << "Creating <%=classname%> instance" << std::endl;
+    <%=classname%> federateInstance(config);
+    federateInstance.initialize();
+    std::cout << "Running <%=classname%> instance" << std::endl;
+    federateInstance.run();
+
+    return 0;
+}

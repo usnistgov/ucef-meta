@@ -53,8 +53,10 @@ define([], function () {
             'groupId': {'#text': 'com.github.maven-nar'},
             'artifactId': {'#text': 'nar-maven-plugin'},
             'version': {'#text': '${nar-plugin.version}'},
-            'libraries':{
-                'library':{'type':{'#text': type}}
+            'configuration': {
+                'libraries':{
+                    'library':{'type':{'#text': type}}
+                }
             }
         });
     }
@@ -171,11 +173,9 @@ define([], function () {
                 };
                 model['distributionManagement'][repoId]=[];
                 model['distributionManagement'][repoId].push(repoModel);
-                 model['repositories']['repository'].push(repoModel);
+                model['repositories']['repository'].push(repoModel);
             }
         }
-
-
 
         if(this.plugins && this.plugins.length > 0){
             model['build'] = {'plugins': {'plugin': this.plugins}};

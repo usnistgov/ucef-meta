@@ -39,7 +39,7 @@
             "name": "cpswtVersion",
             "displayName": "C2W version",
             "description": "The version of the C2W foundation to be used",
-            "value": "0.5.0-SNAPSHOT",
+            "value": "0.6.0-SNAPSHOT",
             "valueType": "string",
             "readOnly": false
         },
@@ -79,7 +79,7 @@
             "name": "includedFederateTypes",
             "displayName": "include",
             "description": "The Types of federates included in this export",
-            "value": "Federate JavaFederate MapperFederate CppFederate OmnetFederate CPNFederate ",
+            "value": "Federate JavaFederate MapperFederate CppFederate OmnetFederate CPNFederate GridLabDFederate LabVIEWFederate",
             "valueType": "string",
             "readOnly": true
         },
@@ -90,6 +90,28 @@
             "value": "2.1.0",
             "valueType": "string",
             "readOnly": true
+        },
+        {
+            "name": "codebaseDirectory",
+            "displayName": "UCEF Codebase Home Directory",
+            "description": "Path to the directory that contains the UCEF/CPSWT repositories",
+            "value": "/home/vagrant/ucefcodebase",
+            "valueType": "string",
+            "readOnly": false
+        },
+        {
+            "name": "bindAddress",
+            "displayName": "RTI BindAddress",
+            "description": "Bind Address to associate for the Federation",
+            "value": "SITE_LOCAL",
+            "valueType": "string",
+            "valueItems":[
+             "GLOBAL",
+             "SITE_LOCAL",
+             "LINK_LOCAL",
+             "NON_LOOPBACK",
+             "LOOPBACK"],
+            "readOnly": false
         }
     ]
 }

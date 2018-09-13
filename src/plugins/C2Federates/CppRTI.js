@@ -37,7 +37,9 @@ define([
                 'MediumPrio': coreNamespace,
                 'LowPrio': coreNamespace,
                 'VeryLowPrio': coreNamespace,
-                'FederateObject': coreNamespace
+                'FederateObject': coreNamespace,
+                'FederateResignInteraction':coreNamespace,
+                'FederateJoinInteraction':coreNamespace
             };
 
             var renderToFile = function(outFilePath, isinteraction, model, artifact, callback){
@@ -182,6 +184,12 @@ define([
                             }
                         }
                     };
+
+                    for(var oid in self.objects){
+                        if(self.objects[oid].name != "ObjectRoot" && self.cppCorePackageOISpecs.hasOwnProperty(self.objects[oid].name)){
+                            objToRender.push(self.objects[oid]);
+                        }
+                    }
                     renderNextObject();
                 });
 
@@ -217,7 +225,7 @@ define([
             // SIM RTI - Begin
             // 
 
-            var simDirBasePath = 'cpp-federates/',
+            var simDirBasePath = self.projectName + '-cpp-federates/',
                 simDirSpec = {federation_name: self.projectName, artifact_name: "rti", language:"cpp"},
                 simDirPath =  simDirBasePath + ejs.render(self.directoryNameTemplate, simDirSpec);  
 
