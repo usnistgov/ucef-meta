@@ -95,7 +95,7 @@ been created in visit_StaticInteractionSubscribe.
                                'error');
 	  }
 	if (self.pubSubInteractions)
-	  { //only FederatesExporter has pubSubInteractions
+	  { //FederatesExporter and DeploymentExporter have pubSubInteractions
 	    if (publication.interaction in self.pubSubInteractions)
 	      {
 		self.pubSubInteractions[publication.interaction].publish = 1;
@@ -168,7 +168,7 @@ been created in visit_StaticInteractionPublish.
                                'error');
           }
 	if (self.pubSubInteractions)
-	  { //only FederatesExporter has pubSubInteractions
+	  { //FederatesExporter and DeploymentExporter have pubSubInteractions
 	    if (subscription.interaction in self.pubSubInteractions)
 	      {
 		self.pubSubInteractions[subscription.interaction].subscribe = 1;
@@ -255,7 +255,7 @@ created in visit_StaticObjectSubscribe.
                                'error');
           }
 	if (self.pubSubObjects)
-	  {// only FederatesExporter has pubSubObjects
+	  {// FederatesExporter and DeploymentExporter have pubSubObjects
 	    if (publication.object in self.pubSubObjects) //added
 	      {
 		self.pubSubObjects[publication.object].publish = 1;
@@ -337,7 +337,7 @@ created in visit_StaticObjectPublish.
                                'error');
           }
 	if (self.pubSubObjects)
-	  {// only FederatesExporter has pubSubObjects
+	  {// FederatesExporter and DeploymentExporter have pubSubObjects
 	    if (subscription.object in self.pubSubObjects)
 	      {
 		self.pubSubObjects[subscription.object].subscribe = 1;
