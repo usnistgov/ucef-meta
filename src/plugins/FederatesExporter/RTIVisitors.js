@@ -97,7 +97,7 @@ This processes data for an Interaction.
         interaction['isroot'] = node.base == self.META['Interaction'];
         interaction['isMapperPublished'] = false;
         if (self.pubSubInteractions)
-          { // only FederatesExporter has pubSubInteractions
+          { // FederatesExporter and DeploymentExporter have pubSubInteractions
             if (interaction.name == 'SimEnd')
               {
                 if (self.pubSubInteractions[nodePath])
