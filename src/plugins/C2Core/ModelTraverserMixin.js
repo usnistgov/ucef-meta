@@ -29,7 +29,7 @@ define([], function()
 	  }
 	return visitorName;
       }
-
+      
 /***********************************************************************/
 
       console.log("defining this.getPostVisitorFuncName");
@@ -112,7 +112,7 @@ Called By:
                 counter,
                 counterCallback;
 
-	    console.log("executing visitAllChildrenFromRootContainer");
+	    console.log("start executing visitAllChildrenFromRootContainer");
             counter = {visits: 1};
             counterCallback = function(err)
               {
@@ -157,6 +157,7 @@ Called By:
 
             self.visitAllChildrenRec(rootNode, context, counter,
                                      counterCallback);
+	    console.log("end executing visitAllChildrenFromRootContainer");
           };
 	
 /***********************************************************************/
@@ -317,7 +318,17 @@ seem better to test for a known name and call the appropriate function.
                 nodeType = self.core.getAttribute(self.getMetaType(node),
                                                   'name'),
                 nodeName = self.core.getAttribute(node, 'name'),
+	        id,
                 ret = null;
+	    if (self.federateInfos && (nodeType in self.federateTypes))
+	      {
+		console.log("building federateInfos in this.atModelNode");
+		id = self.core.getPath(node);
+		self.federateInfos[id] = self.federateInfos[id] ||
+		  {name: nodeName,
+		   pubSubObjects: {},
+		   pubSubInteractions: {}};
+	      }
             try
               {
                 ret = self[self.getVisitorFuncName(nodeType)](node, parent,
