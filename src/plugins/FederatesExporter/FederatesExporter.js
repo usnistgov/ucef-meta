@@ -56,7 +56,9 @@ define
   'C2Federates/MapperFederate',
   'C2Federates/CppFederate',
   'C2Federates/OmnetFederate',
-  'C2Federates/CPNFederate'],
+  'C2Federates/CPNFederate',
+  'C2Federates/GridLabDFederate',
+  'C2Federates/LabVIEWFederate'],
  function (pluginMetadata,
            PluginBase,
            ejs,                 // added
@@ -71,7 +73,9 @@ define
            MapperFederate,
            CppFederate,
            OmnetFederate,
-           CPNFederate)
+           CPNFederate,
+           GridLabDFederate,
+           LabVIEWFederate)
  {
     'use strict';
     var addEndJoinResign;           // function variable
@@ -105,7 +109,9 @@ define
       CppFederate.call(this);
       OmnetFederate.call(this);
       CPNFederate.call(this);
-      
+      GridLabDFederate.call(this);
+      LabVIEWFederate.call(this);      
+
       this.mainPom = new MavenPOM();
       this._jsonToXml = new JSON2XMLConverter.Json2xml();
       this.pluginMetadata = pluginMetadata;
