@@ -15,6 +15,10 @@ define([
             gridlabdGroupId = "gov.nist.hla.gridlabd",
             gridlabdVersion = "1.0.0-SNAPSHOT";
 
+        this.federateTypes['GridLabDFederate'] = {
+            includeInExport: false
+        };
+
     	this.visit_GridLabDFederate = function(node, parent, context) {
             var self = this,
                 nodeType = self.core.getAttribute( self.getMetaType(node), 'name' );
@@ -38,6 +42,12 @@ define([
                 renderContext = context['gldfedspec'],
                 moduleName = renderContext['classname'],
                 configDirectory = moduleName + "/conf";
+
+            // set the SOM.xml outpit directory
+            var feder = self.federateInfos[self.core.getPath(node)];
+            if (feder) {
+                feder.directory = moduleName + "/conf/";
+            }
 
             // reference to the GridLAB-D wrapper
             var gridlabdPOM = new MavenPOM();
@@ -68,29 +78,6 @@ define([
                                 'overWriteReleases': {'#text': 'true'},
                                 'overWriteSnapshots': {'#text': 'true'},
                                 'overWriteIfNewer': {'#text': 'true'}
-                            }
-                        }
-                    }
-                });
-            gldHelperPOM.plugins.push({
-                    'groupId': {'#text': 'org.apache.maven.plugins'},
-                    'artifactId': {'#text': 'maven-resources-plugin'},
-                    'version': {'#text': '3.1.0'},
-                    'executions': {
-                        'execution': {
-                            'id': {'#text': 'copy-resources'},
-                            'phase': {'#text': 'package'},
-                            'goals': {
-                                'goal': {'#text': 'copy-resources'}
-                            },
-                            'configuration': {
-                                'outputDirectory': {'#text': '${basedir}/conf'},
-                                'resources': {
-                                    'resource': {
-                                        'directory': {'#text': '${basedir}/../fom'},
-                                    }
-                                },
-                                'overwrite': {'#text': 'false'}
                             }
                         }
                     }
