@@ -326,6 +326,7 @@ seem better to test for a known name and call the appropriate function.
 		id = self.core.getPath(node);
 		self.federateInfos[id] = self.federateInfos[id] ||
 		  {name: nodeName,
+		   directory: null,
 		   pubSubObjects: {},
 		   pubSubInteractions: {}};
 	      }

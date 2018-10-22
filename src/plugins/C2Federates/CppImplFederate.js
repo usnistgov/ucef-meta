@@ -77,6 +77,12 @@ define([
 
             var fedDirectoryPath = implDirectoryPath + "/" + context['cppfedspec']['classname'];
 
+            // set the SOM.xml outpit directory
+            var feder = self.federateInfos[self.core.getPath(node)];
+            if (feder) {
+                feder.directory = fedDirectoryPath + "/conf/";
+            }
+
             self.fileGenerators.push(function(artifact, callback) {
                 var xmlPOM = self._jsonToXml.convertToString(implPOM.toJSON());
                 artifact.addFile(fedDirectoryPath + "/pom.xml", xmlPOM, function(err) {
