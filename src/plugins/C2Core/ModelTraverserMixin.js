@@ -13,21 +13,21 @@ define([], function()
     var withModelTraverser = function()
     {
       console.log("executing withModelTraverser");
-	
+        
 /***********************************************************************/
 
       console.log("defining this.getVisitorFuncName");
       this.getVisitorFuncName = this.getVisitorFuncName ||
       function(nodeType)
       {
-	var self = this,
-	visitorName = 'generalVisitor';
-	console.log("executing getVisitorFuncName");
-	if (nodeType)
-	  {
-	    visitorName = 'visit_'+ nodeType;
-	  }
-	return visitorName;
+        var self = this,
+        visitorName = 'generalVisitor';
+        console.log("executing getVisitorFuncName");
+        if (nodeType)
+          {
+            visitorName = 'visit_'+ nodeType;
+          }
+        return visitorName;
       }
       
 /***********************************************************************/
@@ -36,18 +36,18 @@ define([], function()
       this.getPostVisitorFuncName = this.getPostVisitorFuncName ||
       function(nodeType)
       {
-	var self = this,
-	visitorName = 'generalPostVisitor';
-	if (nodeType)
-	  {
-	    visitorName = 'post_visit_'+ nodeType;
-	  }
-	return visitorName;
+        var self = this,
+        visitorName = 'generalPostVisitor';
+        if (nodeType)
+          {
+            visitorName = 'post_visit_'+ nodeType;
+          }
+        return visitorName;
       }
         
 /***********************************************************************/
 
-	console.log("defining this.getChildSorterFunc");
+        console.log("defining this.getChildSorterFunc");
         this.getChildSorterFunc = this.getChildSorterFunc ||
         function(nodeType, self)
           {
@@ -84,7 +84,7 @@ FederatesExporter.js.
 
 */
 
-	console.log("defining this.excludeFromVisit");
+        console.log("defining this.excludeFromVisit");
         this.excludeFromVisit = this.excludeFromVisit ||
         function(node)
           {
@@ -103,7 +103,7 @@ Called By:
 
 */
 
-	console.log("defining this.visitAllChildrenFromRootContainer");
+        console.log("defining this.visitAllChildrenFromRootContainer");
         this.visitAllChildrenFromRootContainer = function(rootNode, callback)
           {
             var self = this,
@@ -112,7 +112,7 @@ Called By:
                 counter,
                 counterCallback;
 
-	    console.log("start executing visitAllChildrenFromRootContainer");
+            console.log("start executing visitAllChildrenFromRootContainer");
             counter = {visits: 1};
             counterCallback = function(err)
               {
@@ -157,9 +157,9 @@ Called By:
 
             self.visitAllChildrenRec(rootNode, context, counter,
                                      counterCallback);
-	    console.log("end executing visitAllChildrenFromRootContainer");
+            console.log("end executing visitAllChildrenFromRootContainer");
           };
-	
+        
 /***********************************************************************/
 
 /* this.visitAllChildrenRec
@@ -172,11 +172,11 @@ Called By:
 
 */
 
-	console.log("defining this.visitAllChildrenRec");
+        console.log("defining this.visitAllChildrenRec");
         this.visitAllChildrenRec = function(node, context, counter, callback)
           {
             var self = this;
-	    console.log("executing visitAllChildrenRec");
+            console.log("executing visitAllChildrenRec");
             if (self.excludeFromVisit(node))
               {
                 callback(null, context);
@@ -311,25 +311,25 @@ seem better to test for a known name and call the appropriate function.
 
 */
 
-	console.log("defining this.atModelNode");
+        console.log("defining this.atModelNode");
         this.atModelNode = function(node, parent, context, callback)
           {
             var self = this,
                 nodeType = self.core.getAttribute(self.getMetaType(node),
                                                   'name'),
                 nodeName = self.core.getAttribute(node, 'name'),
-	        id,
+                id,
                 ret = null;
-	    if (self.federateInfos && (nodeType in self.federateTypes))
-	      {
-		console.log("building federateInfos in this.atModelNode");
-		id = self.core.getPath(node);
-		self.federateInfos[id] = self.federateInfos[id] ||
-		  {name: nodeName,
-		   directory: null,
-		   pubSubObjects: {},
-		   pubSubInteractions: {}};
-	      }
+            if (self.federateInfos && (nodeType in self.federateTypes))
+              {
+                console.log("building federateInfos in this.atModelNode");
+                id = self.core.getPath(node);
+                self.federateInfos[id] = self.federateInfos[id] ||
+                  {name: nodeName,
+                   directory: null,
+                   pubSubObjects: {},
+                   pubSubInteractions: {}};
+              }
             try
               {
                 ret = self[self.getVisitorFuncName(nodeType)](node, parent,
@@ -372,7 +372,7 @@ Returned Value: none
 Called By: ?
 
 */
-	console.log("defining this.doneModelNode");
+        console.log("defining this.doneModelNode");
         this.doneModelNode = function(node, context, callback)
           {
             var self = this,
@@ -421,7 +421,7 @@ Returned Value: a copy of an object
 Called By: ?
 
 */
-	console.log("defining this.cloneCtx");
+        console.log("defining this.cloneCtx");
         this.cloneCtx = function(obj)
           {
             var copy;
@@ -431,7 +431,7 @@ Called By: ?
             for (var attr in obj)
               {
                 if (obj.hasOwnProperty(attr))
-		  copy[attr] = obj[attr];
+                  copy[attr] = obj[attr];
               }
             return copy;
           }

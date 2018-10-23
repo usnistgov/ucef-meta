@@ -77,7 +77,7 @@ This processes data for an Interaction.
         nodeName = self.core.getAttribute(node, 'name'),
         nodePath = self.core.getPath(node),
         interaction = {},
-	fed,
+        fed,
         nameFragments = [nodeName];
 
         console.log("executing visit_Interaction");
@@ -131,15 +131,15 @@ This processes data for an Interaction.
                   }
               }
           }
-	else if (self.endJoinResigns)
-	  { // only Federates Exporter has endJoinResigns
+        else if (self.endJoinResigns)
+          { // only Federates Exporter has endJoinResigns
             if ((interaction.name == 'SimEnd') ||
-		(interaction.name == 'FederateResignInteraction') ||
-		(interaction.name == 'FederateJoinInteraction'))
-	      { // need to collect these to add to each federate's XML
-		self.endJoinResigns[nodePath] = interaction;
-	      }
-	  }
+                (interaction.name == 'FederateResignInteraction') ||
+                (interaction.name == 'FederateJoinInteraction'))
+              { // need to collect these to add to each federate's XML
+                self.endJoinResigns[nodePath] = interaction;
+              }
+          }
         
         var nextBase = node.base;
         while (nextBase != self.META['Interaction'])
