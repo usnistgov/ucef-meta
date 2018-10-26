@@ -326,11 +326,14 @@ created in visit_StaticObjectSubscribe.
             if (publication.object in pubSubObjs)
               {
                 pubSubObjs[publication.object].publish = 1;
+                pubSubObjs[publication.object].mayPublish = 1;
               }
             else
               {
                 pubSubObjs[publication.object] = {publish: 1,
-                                                  subscribe: 0};
+						  mayPublish: 1,
+						  subscribe: 0,
+						  maySubscribe: 0};
               }
           }
         for ( var i = 0; i < nodeAttrNames.length; i += 1 )
@@ -429,11 +432,14 @@ created in visit_StaticObjectPublish.
             if (subscription.object in pubSubObjs)
               {
                 pubSubObjs[subscription.object].subscribe = 1;
-              }
+                pubSubObjs[subscription.object].maySubscribe = 1;
+	      }
             else
               {
                 pubSubObjs[subscription.object] = {publish: 0,
-                                                   subscribe: 1};
+						   mayPublish: 0,
+                                                   subscribe: 1,
+						   maySubscribe: 1};
               }
           }
         for ( var i = 0; i < nodeAttrNames.length; i += 1 )

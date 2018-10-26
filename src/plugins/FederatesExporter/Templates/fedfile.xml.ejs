@@ -21,11 +21,11 @@
             <pocOrg><%- pocOrg %></pocOrg>
         </poc>
     </modelIdentification>
-<% if (objectsXml[0]) { -%>
-    <objects><% } %>
+<% if (objectsXml[0]) { %>    <objects>
+<% } -%>
 <% objectsXml.forEach(function(object){ %><%- object %><%}); -%>
-<% if (objectsXml[0]) { -%>
-    </objects><% } %>
+<% if (objectsXml[0]) { %>    </objects>
+<% } -%>
     <interactions>
 <% interactionsXml.forEach(function(interaction){ %><%- interaction %><% }); -%>
     </interactions>
