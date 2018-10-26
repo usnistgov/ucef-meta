@@ -11,17 +11,19 @@
         <modificationDate><%- dateString %></modificationDate>
         <securityClassification>Unclassified</securityClassification>
         <description>
-            This file was generated from WebGME based on the <%- federationname %>
-            project.
+          This file was generated from WebGME based on the
+          <%- federationname %> project.
         </description>
         <poc>
             <pocType>Primary author</pocType>
             <pocOrg><%- pocOrg %></pocOrg>
         </poc>
     </modelIdentification>
-    <objects>
+<% if (objectsXml[0]) { %>    <objects>
+<% } -%>
 <% objectsXml.forEach(function(object){ %><%- object %><%}); -%>
-    </objects>
+<% if (objectsXml[0]) { %>    </objects>
+<% } -%>
     <interactions>
 <% interactionsXml.forEach(function(interaction){ %><%- interaction %><% }); -%>
     </interactions>

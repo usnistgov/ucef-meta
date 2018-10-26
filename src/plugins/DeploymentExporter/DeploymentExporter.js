@@ -105,8 +105,8 @@ This adds entries to pubSubObjects for all ancestors of objects that
 already have entries.
 
 By calling itself recursively, this goes through the object tree (from
-top down) but builds the pubSubObjectss from bottom up. If an object
-is on the pubSubObjects but its parent is not, an entry for the parent
+top down) but builds the pubSubObjectss from bottom up. If an object is
+on the pubSubObjects but its parent is not, an entry for the parent
 of the object is added to the pubSubObjects; the entry represents that
 the parent neither publishes or subscribes. If the parent publishes or
 subscribes, an entry for the parent will have been made previously in
@@ -119,18 +119,36 @@ pubSubObjects.
 */
     objectTraverserCheck = function(depEx, object)
     {
+      var objectPubSub;
+      var parentPubSub;
+
       object.children.forEach(function (child)
       {
         objectTraverserCheck(depEx, child);
       });
-      if (object.name != 'ObjectRoot')
+      if ((object.name != 'ObjectRoot') &&
+	  (object.id in depEx.pubSubObjects))
         {
-          if ((object.id in depEx.pubSubObjects) &&
-              !(object.basePath in depEx.pubSubObjects))
+	  objectPubSub = depEx.pubSubObjects[object.id];
+          if ((object.basePath in depEx.pubSubObjects))
             {
+	      parentPubSub = depEx.pubSubObjects[object.basePath];
+	      if (objectPubSub.mayPublish)
+		{
+		  parentPubSub.mayPublish = 1;
+		}
+	      if (objectPubSub.maySubscribe)
+		{
+		  parentPubSub.maySubscribe = 1;
+		}
+	    }
+	  else
+	    {
               depEx.pubSubObjects[object.basePath] =
                 {publish: 0,
-                 subscribe: 0};
+                 subscribe: 0,
+		 mayPublish: objectPubSub.mayPublish,
+		 maySubscribe: objectPubSub.maySubscribe};
             }
         }
     };
@@ -160,54 +178,56 @@ ejs.render using the fedfile_simobject_xml XML Template.
 
     objectTraverserXml = function(depEx, object, space)
     {
-      var objModel = {object: object,
-                      indent: space,
-                      attributes: object.attributes,
-                      children: []};
-      var pubSubData;
-      pubSubData = depEx.pubSubObjects[object.id];
-      if (pubSubData && pubSubData.publish)
+      var objModel;
+      var objPuBSub;
+      var hasOwn;
+
+      objModel = {name: object.name,
+                  sharingXml: 0,
+                  indent: space,
+		  attributes: object.attributes,
+		  children: []};
+
+      hasOwn = 0;
+      // The attributes in the objModel are the attributes of the object.
+      // Properites of attributes not related to XML generation are not
+      // modified, but properties of attributes related to XML generation
+      // are assigned as follows.
+      objModel.attributes.forEach(function(attr)
+      {
+        attr.deliveryXml = ((attr.delivery === "reliable") ? "HLAreliable" :
+                            "HLAbestEffort");
+        attr.orderXml = ((attr.order === "timestamp") ? "TimeStamp" :
+                         "Receive");
+	if (!attr.inherited)
+	  {
+	    hasOwn = 1;
+	  }
+      });
+
+      objPuBSub = depEx.pubSubObjects[object.id];
+      if (objPuBSub && (objPuBSub.publish ||
+			(objPuBSub.mayPublish && hasOwn)))
         {
-          if (depEx.pubSubObjects[object.id].subscribe)
+          if (objPuBSub.subscribe || objPuBSub.maySubscribe)
             {
-              object.sharing = "PublishSubscribe";
+              objModel.sharingXml = "PublishSubscribe";
             }
           else
             {
-              object.sharing = "Publish";
+              objModel.sharingXml = "Publish";
             }
         }
-      else if (pubSubData && pubSubData.subscribe)
+      else if (objPuBSub && (objPuBSub.subscribe ||
+			     (objPuBSub.maySubscribe && hasOwn)))
         {
-          object.sharing = "Subscribe";
+          objModel.sharingXml = "Subscribe";
         }
       else
         {
-          object.sharing = "Neither";
+          objModel.sharingXml = "Neither";
         }
-      // Some properties of the attributes of the objModel (which
-      // are the attributes of the object) are modified in place
-      // as follows.
-      objModel.attributes.forEach(function(attr)
-      {
-        attr.sharing = object.sharing;
-        if (attr.delivery === "reliable")
-          {
-            attr.delivery = "HLAreliable";
-          }
-        else
-          {
-            attr.delivery = "HLAbestEffort";
-          }
-        if (attr.order === "timestamp")
-          {
-            attr.order = "TimeStamp";
-          }
-        else
-          {
-            attr.order = "Receive";
-          }
-      });
+
       // Here, objectTraverserXml calls itself recursively to
       // generate XML for the children before generating
       // XML for the parent.
@@ -312,46 +332,49 @@ This builds the XML for interactions.
 */
     interactionTraverserXml = function(depEx, interaction, space)
     {
-      var intModel = {interaction: interaction,
+      var intModel = {name: interaction.name,
+                      sharingXml: 0,
+                      deliveryXml: 0,
+                      orderXml: 0,
                       indent: space,
                       parameters: interaction.parameters,
                       children: []};
-      var pubSubData;
-      pubSubData = depEx.pubSubInteractions[interaction.id];
-      if (pubSubData && pubSubData.publish)
+      var intPubSub;
+      intPubSub = depEx.pubSubInteractions[interaction.id];
+      if (intPubSub && intPubSub.publish)
         {
-          if (depEx.pubSubInteractions[interaction.id].subscribe)
+          if (intPubSub.subscribe)
             {
-              interaction.sharing = "PublishSubscribe";
+              intModel.sharingXml = "PublishSubscribe";
             }
           else
             {
-              interaction.sharing = "Publish";
+              intModel.sharingXml = "Publish";
             }
         }
-      else if (pubSubData && pubSubData.subscribe)
+      else if (intPubSub && intPubSub.subscribe)
         {
-          interaction.sharing = "Subscribe";
+          intModel.sharingXml = "Subscribe";
         }
       else
         {
-          interaction.sharing = "Neither";
+          intModel.sharingXml = "Neither";
         }
       if (interaction.delivery === "reliable")
         {
-          interaction.delivery = "HLAreliable"
+          intModel.deliveryXml = "HLAreliable";
         }
       else
         {
-          interaction.delivery = "HLAbestEffort";
+          interaction.deliveryXml = "HLAbestEffort";
         }
       if (interaction.order === "timestamp")
         {
-          interaction.order = "TimeStamp";
+          intModel.orderXml = "TimeStamp";
         }
       else
         {
-          interaction.order = "Receive";
+          intModel.orderXml = "Receive";
         }
       // here interactionTraverserXml calls itself recursively to
       // generate XML for the children before generating
