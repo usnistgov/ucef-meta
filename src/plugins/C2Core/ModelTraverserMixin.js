@@ -1,3 +1,11 @@
+/*
+
+This "define" appears to be intended to be used by any other "define"
+that needs to go through all the nodes in a webgme model. It is used
+by at least FederatesExporter.js and DeploymentExporter.js.
+
+*/
+
 define([], function()
   {
     'use strict';
@@ -47,6 +55,10 @@ define([], function()
         
 /***********************************************************************/
 
+/* this.getChildSorterFunc
+
+*/
+
         console.log("defining this.getChildSorterFunc");
         this.getChildSorterFunc = this.getChildSorterFunc ||
         function(nodeType, self)
@@ -79,8 +91,8 @@ Called By: visitAllChildrenRec
 If this.excludeFromVisit is not already defined, it is defined to
 return false.
 
-It is not clear why this function is defined. It is defined also in 
-FederatesExporter.js.
+This function is defined also in FederatesExporter.js and
+DeploymentExporter.js (and possibly elsewhere)
 
 */
 
@@ -99,7 +111,9 @@ FederatesExporter.js.
 Returned Value: none
 
 Called By:
-  FederatesExporter.prototype.main
+  FederatesExporter.prototype.main in FederatesExporter.js
+  DeploymentExporter.Prototype.main in DeploymentExporter.js
+  and maybe other functions
 
 */
 
@@ -287,7 +301,7 @@ Called By:
 
 Returned Value: none
 
-Called By: ?
+Called By: visitAllChildrenRec
 
 The following line of the atModeNode function is strange
 
