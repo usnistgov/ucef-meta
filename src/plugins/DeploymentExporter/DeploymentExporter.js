@@ -490,7 +490,7 @@ Notes:
           var errMsg =
             'This plugin is only supported to run on the server side!';
           self.logger.error(errMsg);
-          //return callback(errMsg );
+          return callback(errMsg );
         }
 
 /***********************************************************************/
