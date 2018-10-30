@@ -15,6 +15,10 @@ define([
             labviewGroupId = "gov.nist.hla",
             labviewVersion = "1.0.0-SNAPSHOT";
 
+        this.federateTypes['LabVIEWFederate'] = {
+            includeInExport: false
+        };
+
     	this.visit_LabVIEWFederate = function(node, parent, context) {
             var self = this,
                 nodeType = self.core.getAttribute( self.getMetaType(node), 'name' );
@@ -44,6 +48,12 @@ define([
                 renderContext = context['labviewfedspec'],
                 moduleName = renderContext['classname'],
                 configDirectory = moduleName + "/conf";
+
+            // set the SOM.xml outpit directory
+            var feder = self.federateInfos[self.core.getPath(node)];
+            if (feder) {
+                feder.directory = moduleName + "/conf/";
+            }
 
             // TODO rework MavenPOM.js for a more robust solution to link the module
             self.mainPom.projects.push({'directory': moduleName});

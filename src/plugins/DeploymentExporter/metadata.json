@@ -8,7 +8,7 @@
     "class": "fa fa-cogs"
   },
   "disableServerSideExecution": false,
-  "disableBrowserSideExecution": true,
+  "disableBrowserSideExecution": false,
   "writeAccessRequired": false,
   "configStructure": [
     {

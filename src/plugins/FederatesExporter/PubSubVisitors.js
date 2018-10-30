@@ -44,17 +44,20 @@ It is not clear whether the last two functions are used anywhere. They
 are not called in running the FederatesExporter in the SOMGeneration
 project or the SOMGenerationWithObjects project.
 
+It is not clear what effect the createMessage calls have. 
+
 */
 
 define
 ([],
  function()
  {
-   'use strict';
+    'use strict';
+    var PubSubVisitors;
+    
     console.log("beginning of function in 'define' in PubSubVisitors.js");
     console.log("defining PubSubVisitors function");
-
-    var PubSubVisitors = function()
+    PubSubVisitors = function()
     {
       console.log("executing PubSubVisitors");
 
@@ -69,18 +72,22 @@ Called By: See notes at top.
 
 This processes data for a StaticInteractionPublish.
 
-Where the entry for the interaction is made in pubSubInteractions, a
-check is made whether there is already an entry, because it may have
-been created in visit_StaticInteractionSubscribe.
+Where the entry for the interaction is made in pubSubInts, a check is
+made whether there is already an entry, because it may have been
+created in visit_StaticInteractionSubscribe.
 
 */
       console.log("defining this.visit_StaticInteractionPublish");
       this.visit_StaticInteractionPublish = function(node, parent, context)
       {
-        var self = this,
-            publication = {interaction: self.core.getPointerPath(node,'dst'),
-                           federate: self.core.getPointerPath(node,'src')},
-            nodeAttrNames = self.core.getAttributeNames(node);
+        var self = this;
+        var publication = {interaction: self.core.getPointerPath(node,'dst'),
+                           federate: self.core.getPointerPath(node,'src')};
+        var nodeAttrNames = self.core.getAttributeNames(node);
+        var pubSubInts = 0;
+        var federateInfo;
+        var federateNode;
+
         console.log("executing visit_StaticInteractionPublish");
         if (!publication.interaction )
           {
@@ -93,20 +100,39 @@ been created in visit_StaticInteractionSubscribe.
             self.createMessage(node,
                  '[ERROR] Invalid src pointer in StaticInteractionPublish!',
                                'error');
-	  }
-	if (self.pubSubInteractions)
-	  { //only FederatesExporter has pubSubInteractions
-	    if (publication.interaction in self.pubSubInteractions)
-	      {
-		self.pubSubInteractions[publication.interaction].publish = 1;
-	      }
-	    else
-	      {
-		self.pubSubInteractions[publication.interaction] =
-		{publish: 1,
-		 subscribe: 0};
-	      }
-	  }
+          }
+        if (self.pubSubInteractions)
+          { // only DeploymentExporter has pubSubInteractions
+            pubSubInts = self.pubSubInteractions;
+          }
+        
+        else if (self.federateInfos)
+          { // only FederatesExporter has federateInfos
+            federateInfo = self.federateInfos[publication.federate];
+            if (!federateInfo)
+              { // this should never happen
+                federateNode = getNode(publication.federate);
+                self.federateInfos[publication.federate] =
+                  {name: "fed1", //fix - get actual name
+                   pubSubObjects: {},
+                   pubSubInteractions: {}};
+                federateInfo = self.federateInfos[publication.federate];
+              }
+            pubSubInts = federateInfo.pubSubInteractions;
+          }
+      
+        if (pubSubInts)
+          {
+            if (publication.interaction in pubSubInts)
+              {
+                pubSubInts[publication.interaction].publish = 1;
+              }
+            else
+              {
+                pubSubInts[publication.interaction] = {publish: 1,
+                                                       subscribe: 0};
+              }
+          }
         for ( var i = 0; i < nodeAttrNames.length; i += 1 )
           {
             publication[nodeAttrNames[i]] =
@@ -149,10 +175,13 @@ been created in visit_StaticInteractionPublish.
       console.log("defining this.visit_StaticInteractionSubscribe");
       this.visit_StaticInteractionSubscribe = function(node, parent, context)
       {
-        var self = this,
-        subscription = {interaction: self.core.getPointerPath(node,'src'),
-                        federate: self.core.getPointerPath(node,'dst')},
-        nodeAttrNames = self.core.getAttributeNames(node);
+        var self = this;
+        var subscription = {interaction: self.core.getPointerPath(node,'src'),
+                            federate: self.core.getPointerPath(node,'dst')};
+        var nodeAttrNames = self.core.getAttributeNames(node);
+        var pubSubInts = 0;
+        var federateInfo;
+        var federateNode;
 
       console.log("executing visit_StaticInteractionSubscribe");
         if (!subscription.interaction )
@@ -167,19 +196,36 @@ been created in visit_StaticInteractionPublish.
                  '[ERROR] Invalid dst pointer in StaticInteractionSubscribe!',
                                'error');
           }
-	if (self.pubSubInteractions)
-	  { //only FederatesExporter has pubSubInteractions
-	    if (subscription.interaction in self.pubSubInteractions)
-	      {
-		self.pubSubInteractions[subscription.interaction].subscribe = 1;
-	      }
-	    else
-	      {
-		self.pubSubInteractions[subscription.interaction] =
-		{publish: 0,
-		 subscribe: 1};
-	      }
-	  }
+        if (self.pubSubInteractions)
+          { // only DeploymentExporter has pubSubInteractions
+            pubSubInts = self.pubSubInteractions;
+          }
+        else if (self.federateInfos)
+          { // only FederatesExporter has federateInfos
+            federateInfo = self.federateInfos[subscription.federate];
+            if (!federateInfo)
+              { // this should never happen
+                federateNode = getNode(subscription.federate);
+                self.federateInfos[subscription.federate] =
+                  {name: "fed1", //fix - get actual name
+                   pubSubObjects: {},
+                   pubSubInteractions: {}};
+                federateInfo = self.federateInfos[subscription.federate];
+              }
+            pubSubInts = federateInfo.pubSubInteractions;
+          }
+        if (pubSubInts)
+          {
+            if (subscription.interaction in pubSubInts)
+              {
+                pubSubInts[subscription.interaction].subscribe = 1;
+              }
+            else
+              {
+                pubSubInts[subscription.interaction] = {publish: 0,
+                                                        subscribe: 1};
+              }
+          }
         for ( var i = 0; i < nodeAttrNames.length; i += 1 )
           {
             subscription[nodeAttrNames[i]] =
@@ -236,12 +282,15 @@ created in visit_StaticObjectSubscribe.
       console.log("defining this.visit_StaticObjectPublish");
       this.visit_StaticObjectPublish = function(node, parent, context)
       {
-        var self = this,
-        publication = {object: self.core.getPointerPath(node,'dst'),
-                       federate: self.core.getPointerPath(node,'src')},
-        nodeAttrNames = self.core.getAttributeNames(node);
+        var self = this;
+        var publication = {object: self.core.getPointerPath(node,'dst'),
+                           federate: self.core.getPointerPath(node,'src')};
+        var nodeAttrNames = self.core.getAttributeNames(node);
+        var pubSubObjs = 0;
+        var federateInfo;
+        var federateNode;
 
-	console.log("executing visit_StaticObjectPublish");
+        console.log("executing visit_StaticObjectPublish");
         if (!publication.object )
           {
             self.createMessage(node,
@@ -254,18 +303,39 @@ created in visit_StaticObjectSubscribe.
                  '[ERROR] Invalid src pointer in StaticObjectPublish!',
                                'error');
           }
-	if (self.pubSubObjects)
-	  {// only FederatesExporter has pubSubObjects
-	    if (publication.object in self.pubSubObjects) //added
-	      {
-		self.pubSubObjects[publication.object].publish = 1;
-	      }
-	    else
-	      {
-		self.pubSubObjects[publication.object] = {publish: 1,
-							  subscribe: 0};
-	      }
-	  }
+        if (self.pubSubObjects)
+          { // only DeploymentExporter has pubSubObjects
+            pubSubObjs = self.pubSubObjects;
+          }
+        else if (self.federateInfos)
+          { // only FederatesExporter has federateInfos
+            federateInfo = self.federateInfos[publication.federate];
+            if (!federateInfo)
+              { // this should never happen
+                federateNode = getNode(publication.federate);
+                self.federateInfos[publication.federate] = 
+                  {name: "fed1", //fix - get actual name
+                   pubSubObjects: {},
+                   pubSubInteractions: {}};
+                federateInfo = self.federateInfos[publication.federate];
+              }
+            pubSubObjs = federateInfo.pubSubObjects;
+          }
+        if (pubSubObjs)
+          {
+            if (publication.object in pubSubObjs)
+              {
+                pubSubObjs[publication.object].publish = 1;
+                pubSubObjs[publication.object].mayPublish = 1;
+              }
+            else
+              {
+                pubSubObjs[publication.object] = {publish: 1,
+						  mayPublish: 1,
+						  subscribe: 0,
+						  maySubscribe: 0};
+              }
+          }
         for ( var i = 0; i < nodeAttrNames.length; i += 1 )
           {
             publication[nodeAttrNames[i]] =
@@ -318,12 +388,15 @@ created in visit_StaticObjectPublish.
       console.log("defining this.visit_StaticObjectSubscribe");
       this.visit_StaticObjectSubscribe = function(node, parent, context)
       {
-        var self = this,
-            subscription = {object: self.core.getPointerPath(node,'src'),
-                            federate: self.core.getPointerPath(node,'dst')},
-            nodeAttrNames = self.core.getAttributeNames(node);
+        var self = this;
+        var subscription = {object: self.core.getPointerPath(node,'src'),
+                            federate: self.core.getPointerPath(node,'dst')};
+        var nodeAttrNames = self.core.getAttributeNames(node);
+        var pubSubObjs = 0;
+        var federateInfo;
+        var federateNode;
 
-	console.log("executing visit_StaticObjectSubscribe");
+        console.log("executing visit_StaticObjectSubscribe");
         if (!subscription.object )
           {
             self.createMessage(node,
@@ -336,18 +409,39 @@ created in visit_StaticObjectPublish.
                  '[ERROR] Invalid dst pointer in StaticObjectSubscribe!',
                                'error');
           }
-	if (self.pubSubObjects)
-	  {// only FederatesExporter has pubSubObjects
-	    if (subscription.object in self.pubSubObjects)
-	      {
-		self.pubSubObjects[subscription.object].subscribe = 1;
+        if (self.pubSubObjects)
+          { // only DeploymentExporter has pubSubObjects
+            pubSubObjs = self.pubSubObjects;
+          }
+        else if (self.federateInfos)
+          { // only FederatesExporter has federateInfos
+            federateInfo = self.federateInfos[subscription.federate];
+            if (!federateInfo)
+              { // this should never happen
+                federateNode = getNode(subscription.federate);
+                self.federateInfos[subscription.federate] = 
+                  {name: "fed1", //fix - get actual name
+                   pubSubObjects: {},
+                   pubSubInteractions: {}};
+                federateInfo = self.federateInfos[subscription.federate];
+              }
+            pubSubObjs = federateInfo.pubSubObjects;
+          }
+        if (pubSubObjs)
+          {
+            if (subscription.object in pubSubObjs)
+              {
+                pubSubObjs[subscription.object].subscribe = 1;
+                pubSubObjs[subscription.object].maySubscribe = 1;
 	      }
-	    else
-	      {
-		self.pubSubObjects[subscription.object] = {publish: 0,
-							   subscribe: 1};
-	      }
-	  }
+            else
+              {
+                pubSubObjs[subscription.object] = {publish: 0,
+						   mayPublish: 0,
+                                                   subscribe: 1,
+						   maySubscribe: 1};
+              }
+          }
         for ( var i = 0; i < nodeAttrNames.length; i += 1 )
           {
             subscription[nodeAttrNames[i]] =
@@ -395,7 +489,7 @@ created in visit_StaticObjectPublish.
            federate: self.core.getPointerPath(node,'src')
           },
         nodeAttrNames = self.core.getAttributeNames(node);
-	console.log("executing visit_StaticObjectAttributeSubscribe");
+        console.log("executing visit_StaticObjectAttributeSubscribe");
 
         if (!publication.object )
           {
@@ -474,7 +568,7 @@ created in visit_StaticObjectPublish.
             },
             nodeAttrNames = self.core.getAttributeNames(node);
 
-	console.log("executing visit_StaticObjectAttributeSubscribe");
+        console.log("executing visit_StaticObjectAttributeSubscribe");
         if (!subscription.object )
           {
             self.createMessage(node,
