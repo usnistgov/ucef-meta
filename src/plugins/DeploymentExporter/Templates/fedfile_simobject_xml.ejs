@@ -1,22 +1,22 @@
 <% /*simobject(name,sharing,delivery,order,attributes,children) */ -%>
-        <objectClass>
-            <name><%= name %></name>
-            <sharing><%= sharing %></sharing>
-            <semantics></semantics>
+<%= indent%>  <objectClass>
+<%= indent%>    <name><%= name %></name>
+<%= indent%>    <sharing><%= sharing %></sharing>
+<%= indent%>    <semantics></semantics><% -%>
 <% for(var i=0; i<attributes.length; i++){ -%>
 <% if(!attributes[i].inherited) { -%>
-            <attribute>
-                <name><%= attributes[i].name %></name>
-                <dataType><%= attributes[i].parameterType %></dataType>
-                <updateType>NA</updateType>
-                <ownership>NoTransfer</ownership>
-                <sharing><%= sharing %></sharing>
-                <dimensions></dimensions>
-                <transportation><%= attributes[i].delivery %></transportation>
-                <order><%= attributes[i].order %></order>
-                <semantics></semantics>
-            </attribute>
+<%= indent%>    <attribute>
+<%= indent%>      <name><%= attributes[i].name %></name>
+<%= indent%>      <dataType><%= attributes[i].parameterType %></dataType>
+<%= indent%>      <updateType>NA</updateType>
+<%= indent%>      <ownership>NoTransfer</ownership>
+<%= indent%>      <sharing><%= sharing %></sharing>
+<%= indent%>      <dimensions></dimensions>
+<%= indent%>      <transportation><%= attributes[i].delivery %></transportation>
+<%= indent%>      <order><%= attributes[i].order %></order>
+<%= indent%>      <semantics></semantics>
+<%= indent%>    </attribute><% -%>
 <% } -%>
 <% } -%>
-<% children.forEach(function(child){ -%><%- child %><% }); -%>
-        </objectClass>
+<% children.forEach(function(child){ %><%- child %><% }); -%>
+<%= indent%>  </objectClass>

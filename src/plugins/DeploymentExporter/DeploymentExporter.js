@@ -216,9 +216,10 @@ define([
         //Add fom.xml generator
         self.fileGenerators.push(function (artifact, callback) {
 
-            var interactionTraverser = function (interaction) {
+            var interactionTraverser_xml = function (interaction, space) {
                 var intModel = {
                     interaction: interaction,
+                    indent: space,
                     parameters: interaction.parameters,
                     children: []
                 };
@@ -241,21 +242,22 @@ define([
 
 
                 interaction.children.forEach(function (child) {
-                    intModel.children.push(interactionTraverser(child));
+                    intModel.children.push(interactionTraverser_xml(child, space + "  "));
                 });
                 return ejs.render(TEMPLATES["fedfile_siminteraction_xml.ejs"], intModel);
             }
 
             self.fomModel.interactions_xml = [];
             self.interactionRoots.forEach(function (inta) {
-                self.fomModel.interactions_xml.push(interactionTraverser(inta));
+                self.fomModel.interactions_xml.push(interactionTraverser_xml(inta, "  "));
             });
 
 
-            var objectTraverser_xml = function (object) {
+            var objectTraverser_xml = function (object, space) {
                 var objModel = {
                     name: object.name,
                     attributes: object.attributes,
+                    indent: space,
                     children: [],
                     sharing: "",
                     semantics: ""
@@ -282,7 +284,7 @@ define([
 
 
                 object.children.forEach(function (child) {
-                    objModel.children.push(objectTraverser_xml(child));
+                    objModel.children.push(objectTraverser_xml(child, space + "  "));
                 });
                 return ejs.render(TEMPLATES["fedfile_simobject_xml.ejs"], objModel);
             }
@@ -290,7 +292,7 @@ define([
             self.fomModel.objects_xml = [];
 
             self.objectRoots.forEach(function (obj) {
-                self.fomModel.objects_xml.push(objectTraverser_xml(obj));
+                self.fomModel.objects_xml.push(objectTraverser_xml(obj, "  "));
             })
 
 
