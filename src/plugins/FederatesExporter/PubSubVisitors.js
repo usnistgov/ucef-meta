@@ -517,6 +517,8 @@ created in visit_StaticObjectPublish.
         publication['handler'] = function(federate, object)
         {
           var objectdata = {name: object.name,
+                            fullName: object.fullName,
+                            parameters: object.parameters,
                             publishedLoglevel: publication['LogLevel'],
                             publishedAttributeData: [],
                             logPublishedAttributeData: []};
@@ -595,6 +597,8 @@ created in visit_StaticObjectPublish.
         subscription['handler'] = function(federate, object)
         {
           var objectdata = {name: object.name,
+                            fullName: object.fullName,
+                            parameters: object.parameters,
                             subscribedLoglevel: subscription['LogLevel'],
                             subscribedAttributeData: [],
                             logSubscribedAttributeData: []};
