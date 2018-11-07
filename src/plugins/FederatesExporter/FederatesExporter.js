@@ -69,15 +69,25 @@ For subscribing, the situation is exactly analogous to publishing.
 
 Notice that pubSubInteractions and pubSubObjects of a federate have
 the same name and same structure as the pubSubInteractions and
-pubSubObjects of the deployment exporter. This enables using four
+pubSubObjects of the deployment exporter. This enables using the six
 visit_XXX functions in PubSubVisitors.js for both exporters. 
 
-The value in federateInfos for a federateId is initialized in the 
-atModelNode function in C2Core/ModelTraverserMixin.js (where the
-required information is available). At that point the pubSubObjects
-and pubSubInteractions are both empty objects. Data is put into
-the pubSubObjects and pubSubInteractions in the visit_StaticXXX
-functions in PubSubVisitors.js.
+The value in federateInfos for a federateId is initialized where
+the federate is first encountered. That may be in either:
+
+(1) the atModelNode function defined in C2Core/ModelTraverserMixin.js.
+If initialized here, the pubSubObjects and pubSubInteractions are both
+empty objects. If a federateInfo for a federate has already been created
+when the federate is encountered in this function, the name of the
+federate is added to the data (since it will be missing).
+
+(2) one of the visit_StaticXXX functions defined in PubSubVisitors.js.
+If initialized here, (i) some data will be put into either the
+pubSubObjects or the pubSubInteractions and (ii) the federate name
+will be set to null since it is not available. If a federateInfo for a
+federate has already been created when the federate is encountered in
+a visit_StaticXXX function, some data will be put into either the
+pubSubObjects or the pubSubInteractions.
 
 See the documentation of objectTraverserCheck and
 interactionTraverserCheck regarding how additional items are added to
@@ -142,7 +152,7 @@ define
            LabVIEWFederate)
  {
     'use strict';
-    var FederatesExporter;          // function variable - top level
+    var FederatesExporter;          // function variable
     var addEndJoinResign;           // function variable
     var objectTraverserCheck;       // function variable
     var objectTraverserXml;         // function variable
@@ -151,6 +161,12 @@ define
     var fomGenerator;               // function variable
     
     pluginMetadata = JSON.parse(pluginMetadata);
+     
+/***********************************************************************/
+
+/* FederatesExporter (function-valued variable of top-level function object)
+
+*/
 
     FederatesExporter = function()
     {
@@ -175,6 +191,8 @@ define
       this.pluginMetadata = pluginMetadata;
     };
    
+/***********************************************************************/
+
     // Prototypal inheritance from PluginBase.
     FederatesExporter.prototype = Object.create(PluginBase.prototype);
     FederatesExporter.prototype.constructor = FederatesExporter;
@@ -182,7 +200,7 @@ define
     
 /***********************************************************************/
 
-/*  addEndJoinResign
+/*  addEndJoinResign (function-valued variable of top-level function object)
 
 Returned Value: none
 
@@ -226,7 +244,7 @@ SimEnd, FederateResignInteraction, or FederateJoinInteraction.
 
 /***********************************************************************/
 
-/* objectTraverserCheck
+/* objectTraverserCheck (function-valued variable of top-level function object)
 
 Returned Value: none
 
@@ -261,7 +279,9 @@ maySubscribe values set appropriately.
 
 */
 
-    objectTraverserCheck = function(federate, object)
+    objectTraverserCheck = function( /* ARGUMENTS                     */
+     federate,                       /* (object) federate of interest */
+     object)                         /* (object) object to process    */
     {
       var objectPubSub;
       var parentPubSub;
@@ -271,35 +291,35 @@ maySubscribe values set appropriately.
         objectTraverserCheck(federate, child);
       });
       if (object.name != 'ObjectRoot' &&
-	  (object.id in federate.pubSubObjects))
+          (object.id in federate.pubSubObjects))
         {
-	  objectPubSub = federate.pubSubObjects[object.id];
-	  if (object.basePath in federate.pubSubObjects)
-	    {
-	      parentPubSub = federate.pubSubObjects[object.basePath];
-	      if (objectPubSub.mayPublish)
-		{
-		  parentPubSub.mayPublish = 1;
-		}
-	      if (objectPubSub.maySubscribe)
-		{
-		  parentPubSub.maySubscribe = 1;
-		}
-	    }
-	  else
-	    {
+          objectPubSub = federate.pubSubObjects[object.id];
+          if (object.basePath in federate.pubSubObjects)
+            {
+              parentPubSub = federate.pubSubObjects[object.basePath];
+              if (objectPubSub.mayPublish)
+                {
+                  parentPubSub.mayPublish = 1;
+                }
+              if (objectPubSub.maySubscribe)
+                {
+                  parentPubSub.maySubscribe = 1;
+                }
+            }
+          else
+            {
               federate.pubSubObjects[object.basePath] =
                 {publish: 0,
                  subscribe: 0,
-		 mayPublish: objectPubSub.mayPublish,
-		 maySubscribe: objectPubSub.maySubscribe};
+                 mayPublish: objectPubSub.mayPublish,
+                 maySubscribe: objectPubSub.maySubscribe};
             }
         }
     };
 
 /***********************************************************************/
 
-/* objectTraverserXml
+/* objectTraverserXml (function-valued variable of top-level function object)
 
 Returned Value: a string of XML representing the object and its descendants
 
@@ -325,7 +345,10 @@ by calling ejs.render using the fedfile_simobject_xml XML Template.
 
 */
       
-    objectTraverserXml = function(federate, object, space)
+    objectTraverserXml = function( /* ARGUMENTS                     */
+     federate,                     /* (object) federate of interest */
+     object,                       /* (object) object to process    */
+     space)                        /* (string) indentation space    */
     {
       var objModel;
       var objPuBSub;
@@ -347,10 +370,10 @@ by calling ejs.render using the fedfile_simobject_xml XML Template.
                             "HLAbestEffort");
         attr.orderXml = ((attr.order === "timestamp") ? "TimeStamp" :
                          "Receive");
-	if (!attr.inherited)
-	  {
-	    hasOwn = 1;
-	  }
+        if (!attr.inherited)
+          {
+            hasOwn = 1;
+          }
       });
       // An object should publish if either (1) the data for it in the
       // federate information says publish or (2) the data says maybe
@@ -358,7 +381,7 @@ by calling ejs.render using the fedfile_simobject_xml XML Template.
       // attribute. Similarly for subscribing.
       objPuBSub = federate.pubSubObjects[object.id];
       if (objPuBSub && (objPuBSub.publish ||
-			(objPuBSub.mayPublish && hasOwn)))
+                        (objPuBSub.mayPublish && hasOwn)))
         {
           if (objPuBSub.subscribe || objPuBSub.maySubscribe)
             {
@@ -370,7 +393,7 @@ by calling ejs.render using the fedfile_simobject_xml XML Template.
             }
         }
       else if (objPuBSub && (objPuBSub.subscribe ||
-			     (objPuBSub.maySubscribe && hasOwn)))
+                             (objPuBSub.maySubscribe && hasOwn)))
         {
           objModel.sharingXml = "Subscribe";
         }
@@ -402,7 +425,7 @@ by calling ejs.render using the fedfile_simobject_xml XML Template.
 
 /***********************************************************************/
 
-/* interactionTraverserCheck
+/* interactionTraverserCheck (function-valued var of top-level function object)
 
 Returned Value: none
 
@@ -410,14 +433,15 @@ Called By:
   anonyomous fom generator in FederatesExporter.prototype.main
   interactionTraverserCheck (recursively)
 
-This adds entries to pubSubInteractions for all ancestors of interactions
-that already have entries.
+This adds entries to the pubSubInteractions of a federate for all ancestors
+of interactions that already have entries.
 
 By calling itself recursively, this goes through the interaction tree
-(from top down) but builds the pubSubInteractions from bottom up. If
-an interaction is on the pubSubInteractions but its parent is not, an
-entry for the parent of the interaction is added to the
-pubSubInteractions; the entry represents that the parent neither
+(from top down) but builds the pubSubInteractions from bottom up.
+
+If an interaction is on the pubSubInteractions of the federate but its
+parent is not, an entry for the parent of the interaction is added to
+the pubSubInteractions; the entry represents that the parent neither
 publishes or subscribes. If the parent publishes or subscribes, an
 entry for the parent will have been made previously in PubSubVisitors.
 
@@ -426,7 +450,9 @@ interaction originally put on the pubSubInteractions in PubSubVisitors
 is also on pubSubInteractions.
 
 */
-    interactionTraverserCheck = function(federate, interaction)
+    interactionTraverserCheck = function( /* ARGUMENTS                       */
+     federate,                            /* (object) federate of interest   */
+     interaction)                         /* (object) interaction to process */
     {
       interaction.children.forEach(function (child)
       {
@@ -446,7 +472,7 @@ is also on pubSubInteractions.
 
 /***********************************************************************/
 
-/* interactionTraverserXml
+/* interactionTraverserXml (function-valued var of top-level function object)
 
 Returned Value: a string of XML representing the interaction and its
                 descendants
@@ -455,21 +481,37 @@ Called By:
   anonyomous fom generator in FederatesExporter.prototype.main
   interactionTraverserXml (recursively)
 
-This builds the XML for interactions.
+interactionTraverserXml is a recursive function that builds the XML
+for interactions in a federate.
+
+The function takes information about a federate and takes an interaction
+that may have children (also interactions).
+
+The function begins by creating an intModel. The intModel is given the
+same name and parameters as the interaction and is given children that are
+XML code built by a recursive call to the function on the children of
+the interaction.  The intModel is also given other properties needed for
+generating XML.
+
+Then XML for the intModel is generated from the intModel (and saved)
+by calling ejs.render using the fedfile_siminteraction_xml XML Template.
 
 */
-    interactionTraverserXml = function(federate, interaction, space)
+    interactionTraverserXml = function( /* ARGUMENTS                       */
+     federate,                          /* (object) federate of interest   */
+     interaction,                       /* (object) interaction to process */
+     space)                             /* (string) indentation space      */
     {
       var intModel;
       var intPubSub;
 
       intModel = {name: interaction.name,
                   sharingXml: 0,
-		  deliveryXml: 0,
-		  orderXml: 0,
-		  indent: space,
-		  parameters: interaction.parameters,
-		  children: []};
+                  deliveryXml: 0,
+                  orderXml: 0,
+                  indent: space,
+                  parameters: interaction.parameters,
+                  children: []};
       intPubSub = federate.pubSubInteractions[interaction.id];
       if (intPubSub && intPubSub.publish)
         {
@@ -528,7 +570,7 @@ This builds the XML for interactions.
             
 /***********************************************************************/
 
-/* fomGenerator
+/* fomGenerator (function-valued variable of top-level function object)
 
 Returned Value: none
 
@@ -549,7 +591,8 @@ that call can be made only once. In addition, webGME complains if
 callback is called more than once.
 
 */
-    fomGenerator = function(fedEx)
+    fomGenerator = function( /* ARGUMENTS                             */
+     fedEx)                  /* the FederatesExporter function object */
     {
       var today = new Date();
       var year = today.getFullYear();
@@ -647,11 +690,12 @@ Returned Value: none
 
 Called By: ?
 
-This is the main function for the plugin to execute. This will perform
-the execution.
+Notes autogenerated or from previous coder:
+-------------------------------------------
 
-Notes from previous coder:
----------------------------------------
+    This is the main function for the plugin to execute. This will perform
+    the execution.
+
     Use self to access core, project, result, etc from PluginBase;
     these are all instantiated at this point.
 
@@ -664,7 +708,7 @@ Notes from previous coder:
 
 */
     console.log("defining FederatesExporter.prototype.main");
-    FederatesExporter.prototype.main = function (
+    FederatesExporter.prototype.main = function(
      callback)
     {
       var self = this;            // federates exporter function
@@ -758,7 +802,7 @@ Notes from previous coder:
 
 /***********************************************************************/
 
-/* generateFiles
+/* generateFiles (function-valued variable of FederatesExporter.prototype.main)
 
 Returned Value: none
 
@@ -766,8 +810,8 @@ Called By:
   finishExport
   generateFiles (recursively)
 
-This function is defined as a variable of FederatesExporter.prototype.main.
-It uses the self variable.
+This generates the text of files to be included in the output. It executes
+one file generating function on each recursive call.
 
 */      
 
@@ -805,7 +849,7 @@ It uses the self variable.
 
 /***********************************************************************/
 
-/* saveAndReturn
+/* saveAndReturn (function-valued variable of FederatesExporter.prototype.main)
 
 Returned Value: none
 
@@ -816,17 +860,17 @@ It uses the self variable.
 
 */      
 
-      saveAndReturn = function( /* ARGUMENTS */
-       err)                     /* (string)  */
+      saveAndReturn = function( /* ARGUMENTS                             */
+       err)                     /* (string)  an error string or null (?) */
       {
         var errorRaised;
-	var i;
-	var msg;
-	var idx;
+        var i;
+        var msg;
+        var idx;
         var artifactMsg;
-	var buildURL;
-	
-	errorRaised = false;
+        var buildURL;
+        
+        errorRaised = false;
         for (i = 0; i < self.result.getMessages().length; i++)
           {
             msg = self.result.getMessages()[i];
@@ -887,7 +931,7 @@ It uses the self variable.
        
 /***********************************************************************/
 
-/* finishExport
+/* finishExport (function-valued variable of FederatesExporter.prototype.main)
 
 Returned Value: none
 
@@ -903,9 +947,9 @@ It uses the self variable.
       finishExport = function( /* ARGUMENTS                            */
        err)                    /* (string) an error string or null (?) */
       {
-	var artifact;
-	var coreArtifact;
-	
+        var artifact;
+        var coreArtifact;
+        
         artifact =
           self.blobClient.createArtifact(self.projectName.trim().
                                          replace(/\s+/g,'_') + '_generated');
@@ -986,7 +1030,7 @@ argument.
 /***********************************************************************/
 
       self.postAllVisits(self);
-    }; // end of ...prototype.main
+    }; // end of FederatesExporter.prototype.main
 
 /***********************************************************************/
 
@@ -1027,11 +1071,14 @@ arguments. It is not clear whether this function is used anywhere.
    
 /***********************************************************************/
 
-/* excludeFromVisit
+/* excludeFromVisit (function property of FederatesExporter.prototype)
 
-Returned Value: 
+Returned Value: true or false
 
-Called By:
+Called By: ? does not appear to be called anywhere
+
+A function named excludeFromVisit is also defined (and called) in
+ModelTraverserMixin.js.
 
 */
 
@@ -1058,7 +1105,7 @@ Called By:
 
 /***********************************************************************/
 
-/* getVisitorFuncName
+/* getVisitorFuncName (function property of FederatesExporter.prototype)
 
 Returned Value: a visitor function name
 
@@ -1089,6 +1136,10 @@ this one.
 
 /***********************************************************************/
 
+/* getPostVisitorFuncName (function property of FederatesExporter.prototype)
+
+*/
+    
     FederatesExporter.prototype.getPostVisitorFuncName = function(nodeType)
     {
       var self = this,

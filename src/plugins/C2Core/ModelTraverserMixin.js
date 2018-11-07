@@ -338,11 +338,17 @@ seem better to test for a known name and call the appropriate function.
               {
                 console.log("building federateInfos in this.atModelNode");
                 id = self.core.getPath(node);
-                self.federateInfos[id] = self.federateInfos[id] ||
-                  {name: nodeName,
-                   directory: null,
-                   pubSubObjects: {},
-                   pubSubInteractions: {}};
+                if (self.federateInfos[id])
+                  {
+                    self.federateInfos[id].name = nodeName;
+                  }
+                else
+                  {
+                    self.federateInfos[id] = {name: nodeName,
+                                              directory: null,
+                                              pubSubObjects: {},
+                                              pubSubInteractions: {}};
+                  }
               }
             try
               {

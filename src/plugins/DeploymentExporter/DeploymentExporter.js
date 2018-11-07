@@ -23,16 +23,16 @@ define
   'q',
   'superagent'],
  function(pluginMetadata,
-	  PluginBase,
-	  ejs,
-	  JSON2XMLConverter,
-	  ModelTraverserMixin,
-	  TEMPLATES,
-	  RTIVisitors,
-	  PubSubVisitors,
-	  combinations,
-	  Q,
-	  superagent)
+          PluginBase,
+          ejs,
+          JSON2XMLConverter,
+          ModelTraverserMixin,
+          TEMPLATES,
+          RTIVisitors,
+          PubSubVisitors,
+          combinations,
+          Q,
+          superagent)
 {
     'use strict';
     var objectTraverser;            // function variable
@@ -127,28 +127,28 @@ pubSubObjects.
         objectTraverserCheck(depEx, child);
       });
       if ((object.name != 'ObjectRoot') &&
-	  (object.id in depEx.pubSubObjects))
+          (object.id in depEx.pubSubObjects))
         {
-	  objectPubSub = depEx.pubSubObjects[object.id];
+          objectPubSub = depEx.pubSubObjects[object.id];
           if ((object.basePath in depEx.pubSubObjects))
             {
-	      parentPubSub = depEx.pubSubObjects[object.basePath];
-	      if (objectPubSub.mayPublish)
-		{
-		  parentPubSub.mayPublish = 1;
-		}
-	      if (objectPubSub.maySubscribe)
-		{
-		  parentPubSub.maySubscribe = 1;
-		}
-	    }
-	  else
-	    {
+              parentPubSub = depEx.pubSubObjects[object.basePath];
+              if (objectPubSub.mayPublish)
+                {
+                  parentPubSub.mayPublish = 1;
+                }
+              if (objectPubSub.maySubscribe)
+                {
+                  parentPubSub.maySubscribe = 1;
+                }
+            }
+          else
+            {
               depEx.pubSubObjects[object.basePath] =
                 {publish: 0,
                  subscribe: 0,
-		 mayPublish: objectPubSub.mayPublish,
-		 maySubscribe: objectPubSub.maySubscribe};
+                 mayPublish: objectPubSub.mayPublish,
+                 maySubscribe: objectPubSub.maySubscribe};
             }
         }
     };
@@ -185,8 +185,8 @@ ejs.render using the fedfile_simobject_xml XML Template.
       objModel = {name: object.name,
                   sharingXml: 0,
                   indent: space,
-		  attributes: object.attributes,
-		  children: []};
+                  attributes: object.attributes,
+                  children: []};
 
       hasOwn = 0;
       // The attributes in the objModel are the attributes of the object.
@@ -199,15 +199,15 @@ ejs.render using the fedfile_simobject_xml XML Template.
                             "HLAbestEffort");
         attr.orderXml = ((attr.order === "timestamp") ? "TimeStamp" :
                          "Receive");
-	if (!attr.inherited)
-	  {
-	    hasOwn = 1;
-	  }
+        if (!attr.inherited)
+          {
+            hasOwn = 1;
+          }
       });
 
       objPuBSub = depEx.pubSubObjects[object.id];
       if (objPuBSub && (objPuBSub.publish ||
-			(objPuBSub.mayPublish && hasOwn)))
+                        (objPuBSub.mayPublish && hasOwn)))
         {
           if (objPuBSub.subscribe || objPuBSub.maySubscribe)
             {
@@ -219,7 +219,7 @@ ejs.render using the fedfile_simobject_xml XML Template.
             }
         }
       else if (objPuBSub && (objPuBSub.subscribe ||
-			     (objPuBSub.maySubscribe && hasOwn)))
+                             (objPuBSub.maySubscribe && hasOwn)))
         {
           objModel.sharingXml = "Subscribe";
         }
@@ -977,43 +977,43 @@ The function does not return anything.
                                      }
                                  });
                 
-		artifact.addFile('conf/' +
-				 experimentmodel.name.toLowerCase() +
-				 "/"+ "federatelist.txt",
-				 ejs.render(TEMPLATES['federatelist.ejs'],
-					    {
-					    cpswtng_archiva_ip:
-					      DockerDetails.cpswtng_archiva,
-					    inputPrefix: self.inputPrefix,
-					    outputPrefix: self.outputPrefix,
-					    fedInfos:
-					      experimentmodel.exptConfig.
-						federateTypesAllowed,
-					    dockerInfoMap: self.dockerInfoMap}
-					    ),
-				 function(err)
-				 {
-				   response.push(err)
-				     if (response.length ==
-					 self.experimentPaths.length)
-				       {
-					 if (response.indexOf(err) == -1)
-					   {
-					     callback(err);
-					   }
-					 else
-					   {
-					     callback();
-					   }
-				       }
-				 });
-	      }); // closes self.experimentPaths.forEach(function (objPath)
+                artifact.addFile('conf/' +
+                                 experimentmodel.name.toLowerCase() +
+                                 "/"+ "federatelist.txt",
+                                 ejs.render(TEMPLATES['federatelist.ejs'],
+                                            {
+                                            cpswtng_archiva_ip:
+                                              DockerDetails.cpswtng_archiva,
+                                            inputPrefix: self.inputPrefix,
+                                            outputPrefix: self.outputPrefix,
+                                            fedInfos:
+                                              experimentmodel.exptConfig.
+                                                federateTypesAllowed,
+                                            dockerInfoMap: self.dockerInfoMap}
+                                            ),
+                                 function(err)
+                                 {
+                                   response.push(err)
+                                     if (response.length ==
+                                         self.experimentPaths.length)
+                                       {
+                                         if (response.indexOf(err) == -1)
+                                           {
+                                             callback(err);
+                                           }
+                                         else
+                                           {
+                                             callback();
+                                           }
+                                       }
+                                 });
+              }); // closes self.experimentPaths.forEach(function (objPath)
             }
-	  else
-	    {
-	      callback();
+          else
+            {
+              callback();
             }
-	}); // closes self.getDockerDetails(function(err, DockerDetails)
+        }); // closes self.getDockerDetails(function(err, DockerDetails)
       }); // closes self.fileGenerators.push(function(artifact, callback)
 
 /***********************************************************************/
@@ -1021,37 +1021,37 @@ The function does not return anything.
     // list of experiments.json
       self.fileGenerators.push(function(artifact, callback)
       {
-	var experimentlist = [];
+        var experimentlist = [];
         if (self.experimentPaths.length != 0)
-	  {
-	    self.experimentPaths.forEach(function(objPath)
-	    {
-	      self.experimentModelConfig[objPath].forEach(function(expSet)
-	      {
-		if (experimentlist.indexOf(self.core.
-		      getAttribute(self.core.getParent(expSet), "name") )== -1)
-		  {
-		    experimentlist.push(self.
-		      core.getAttribute(self.core.getParent(expSet), "name"));
-		  }
-	      });
-	    });
-	  }
+          {
+            self.experimentPaths.forEach(function(objPath)
+            {
+              self.experimentModelConfig[objPath].forEach(function(expSet)
+              {
+                if (experimentlist.indexOf(self.core.
+                      getAttribute(self.core.getParent(expSet), "name") )== -1)
+                  {
+                    experimentlist.push(self.
+                      core.getAttribute(self.core.getParent(expSet), "name"));
+                  }
+              });
+            });
+          }
 
-	artifact.addFile('conf/' + 'experimentlist.json',
-			 JSON.stringify(experimentlist, null, 2),
-			 function(err)
-			 {
-			   if (err)
-			     {
-			       callback(err);
-			       return;
-			     }
-			   else
-			     {
-			       callback();
-			     }
-			 });
+        artifact.addFile('conf/' + 'experimentlist.json',
+                         JSON.stringify(experimentlist, null, 2),
+                         function(err)
+                         {
+                           if (err)
+                             {
+                               callback(err);
+                               return;
+                             }
+                           else
+                             {
+                               callback();
+                             }
+                         });
       });
 
 /***********************************************************************/
@@ -1059,20 +1059,20 @@ The function does not return anything.
       //Add default RID file
       self.fileGenerators.push(function(artifact, callback)
       {
-	artifact.addFile('RTI.rid',
-			 ejs.render(TEMPLATES['rti.rid.ejs'], self),
-			 function(err)
-			 {
-			   if (err)
-			     {
-			       callback(err);
-			       return;
-			     }
-			   else
-			     {
-			       callback();
-			     }
-			 });
+        artifact.addFile('RTI.rid',
+                         ejs.render(TEMPLATES['rti.rid.ejs'], self),
+                         function(err)
+                         {
+                           if (err)
+                             {
+                               callback(err);
+                               return;
+                             }
+                           else
+                             {
+                               callback();
+                             }
+                         });
       });
 
 /***********************************************************************/
@@ -1080,57 +1080,57 @@ The function does not return anything.
       //Add impl log config from template
       self.fileGenerators.push(function(artifact, callback)
       {
-	var java_implLog = {};
-	java_implLog.projectName = self.projectName;
-	artifact.addFile('conf/' + 'log4j2.xml',
-			 ejs.render(TEMPLATES['log4j2.xml.ejs'],
-				    self),
-			 function(err)
-			 {
-			   if (err)
-			     {
-			       callback(err);
-			       return;
-			     }
-			   else
-			     {
-			       callback();
-			     }
-			 });
+        var java_implLog = {};
+        java_implLog.projectName = self.projectName;
+        artifact.addFile('conf/' + 'log4j2.xml',
+                         ejs.render(TEMPLATES['log4j2.xml.ejs'],
+                                    self),
+                         function(err)
+                         {
+                           if (err)
+                             {
+                               callback(err);
+                               return;
+                             }
+                           else
+                             {
+                               callback();
+                             }
+                         });
       });
 
 /***********************************************************************/
 
       self.experimentModel = {'script': {'federateTypesAllowed': [],
-					 'expectedFederates': [],
-				 	 'lateJoinerFederates': []}};
+                                         'expectedFederates': [],
+                                         'lateJoinerFederates': []}};
       // Experiment Config    
       self.fileGenerators.push(function(artifact, callback)
       {
-	self.federates.forEach(function(fed)
-	{
-	  self.experimentModel.script.federateTypesAllowed.push(fed.name);
-	  self.experimentModel.script.expectedFederates.push(
-						 {"federateType": fed.name,
-						  "count": 1});
-	  self.experimentModel.script.lateJoinerFederates.push(
-						 {"federateType": fed.name,
-						  "count": 0});
-	});
-	artifact.addFile('conf/default/' + 'experimentConfig.json',
-			 JSON.stringify(self.experimentModel.script, null, 2),
-			 function(err)
-			 {
-			   if (err)
-			     {
-			       callback(err);
-			       return;
-			     }
-			   else
-			     {
-			       callback();
-			     }
-			 });
+        self.federates.forEach(function(fed)
+        {
+          self.experimentModel.script.federateTypesAllowed.push(fed.name);
+          self.experimentModel.script.expectedFederates.push(
+                                                 {"federateType": fed.name,
+                                                  "count": 1});
+          self.experimentModel.script.lateJoinerFederates.push(
+                                                 {"federateType": fed.name,
+                                                  "count": 0});
+        });
+        artifact.addFile('conf/default/' + 'experimentConfig.json',
+                         JSON.stringify(self.experimentModel.script, null, 2),
+                         function(err)
+                         {
+                           if (err)
+                             {
+                               callback(err);
+                               return;
+                             }
+                           else
+                             {
+                               callback();
+                             }
+                         });
       });
 
 /***********************************************************************/
@@ -1138,84 +1138,84 @@ The function does not return anything.
       self.fileGenerators.push(function(artifact, callback)
       {
         if (self.experimentPaths.length != 0)
-	  {
+          {
             var federateConfigurations = [];
-	    // each element is one configuration file to generate
+            // each element is one configuration file to generate
 
             var federateLookup = {};
-	    // to speed up access to federate attributes
-	    
+            // to speed up access to federate attributes
+            
             self.federates.forEach(function(federate)
-	    {
-	      federateLookup[federate.name] = federate;
+            {
+              federateLookup[federate.name] = federate;
             });
 
             self.experimentPaths.forEach(function(experimentPath)
-	    {
+            {
                 self.experimentModelConfig[experimentPath].
-		  forEach(function(federateReference)
-		  {
+                  forEach(function(federateReference)
+                  {
                     var experimentName =
-		      self.core.getAttribute(self.core.
-					     getParent(federateReference),
-					     "name");
-		    // this is wrong (and also how it's been done everywhere)
-		    // because a user can change the name field
+                      self.core.getAttribute(self.core.
+                                             getParent(federateReference),
+                                             "name");
+                    // this is wrong (and also how it's been done everywhere)
+                    // because a user can change the name field
                     // this should use self.core.getPointerPath on 'ref' to
-		    // get the pointer to the federate node
+                    // get the pointer to the federate node
                     // however, I have no idea how to get the WebGME node
-		    // from its string path
+                    // from its string path
                     var federateType =
-		      self.core.getAttribute(federateReference, "name").
-		      split("-")[0];
+                      self.core.getAttribute(federateReference, "name").
+                      split("-")[0];
 
                     var federateJsonObject =
-		      {"federateRTIInitWaitTimeMs": 200,
+                      {"federateRTIInitWaitTimeMs": 200,
                        "federateType": federateType,
-		       "federationId": self.projectName,
-		       "isLateJoiner": self.core.getAttribute(
-					 federateReference, "isLateJoiner"),
-		       "lookAhead": federateLookup[federateType].Lookahead,
-		       "stepSize": federateLookup[federateType].Step};
+                       "federationId": self.projectName,
+                       "isLateJoiner": self.core.getAttribute(
+                                         federateReference, "isLateJoiner"),
+                       "lookAhead": federateLookup[federateType].Lookahead,
+                       "stepSize": federateLookup[federateType].Step};
 
                     // filePath needs work because if an experiment is
-		    // called 'default' I assume it breaks terribly
+                    // called 'default' I assume it breaks terribly
                     var federateConfiguration =
-		      {"jsonObject": federateJsonObject,
+                      {"jsonObject": federateJsonObject,
                        "filePath": "conf/" + experimentName.toLowerCase() +
-		       "/" + federateType.toLowerCase() + ".json"};
+                       "/" + federateType.toLowerCase() + ".json"};
                     federateConfigurations.push(federateConfiguration);
-		  });
+                  });
             }); //closes self.experimentPaths.forEach(function(experimentPath)
 
             var response = [];
             federateConfigurations.forEach(function(configuration)
-	    {
-	      artifact.addFile(configuration.filePath,
-			       JSON.stringify(configuration.jsonObject,
-					      null, 2),
-			       function(err)
-			       {
-				 response.push(err);
-				 if (response.length ==
-				     federateConfigurations.length)
-				   {
-				     if (response.indexOf(err) == -1)
-				       {
-					 callback(err);
-				       }
-				     else
-				       {
-					 callback();
-				       }
-				   }
-			       });
+            {
+              artifact.addFile(configuration.filePath,
+                               JSON.stringify(configuration.jsonObject,
+                                              null, 2),
+                               function(err)
+                               {
+                                 response.push(err);
+                                 if (response.length ==
+                                     federateConfigurations.length)
+                                   {
+                                     if (response.indexOf(err) == -1)
+                                       {
+                                         callback(err);
+                                       }
+                                     else
+                                       {
+                                         callback();
+                                       }
+                                   }
+                               });
             });
-	  } // closes if (self.experimentPaths.length != 0)
-	else
-	  {
+          } // closes if (self.experimentPaths.length != 0)
+        else
+          {
             callback();
-	  }
+          }
       });
 
 /***********************************************************************/
@@ -1224,34 +1224,34 @@ The function does not return anything.
       self.fileGenerators.push(function(artifact, callback)
       {
         var FederateJsonModel = {"federateRTIInitWaitTimeMs": 200,
-				 "federateType": "",
-				 "federationId": self.projectName,
-				 "isLateJoiner": false,
-				 "lookAhead": 0.1,
-				 "stepSize": 1.0};
+                                 "federateType": "",
+                                 "federationId": self.projectName,
+                                 "isLateJoiner": false,
+                                 "lookAhead": 0.1,
+                                 "stepSize": 1.0};
         var response = [];
         self.federates.forEach(function(fed)
-	{
-	  FederateJsonModel.lookAhead = fed.Lookahead;
-	  FederateJsonModel.stepSize = fed.Step;
-	  FederateJsonModel.federateType = fed.name;
-	  artifact.addFile('conf/default/' + fed.name.toLowerCase() + '.json',
-			   JSON.stringify(FederateJsonModel, null, 2),
-			   function(err)
-			   {
-			     response.push(err);
-			     if (response.length == self.federates.length)
-			       {
-				 if (response.indexOf(err) == -1)
-				   {
-				     callback(err);
-				   }
-				 else
-				   {
-				     callback();
-				   }
-			       }
-			   });
+        {
+          FederateJsonModel.lookAhead = fed.Lookahead;
+          FederateJsonModel.stepSize = fed.Step;
+          FederateJsonModel.federateType = fed.name;
+          artifact.addFile('conf/default/' + fed.name.toLowerCase() + '.json',
+                           JSON.stringify(FederateJsonModel, null, 2),
+                           function(err)
+                           {
+                             response.push(err);
+                             if (response.length == self.federates.length)
+                               {
+                                 if (response.indexOf(err) == -1)
+                                   {
+                                     callback(err);
+                                   }
+                                 else
+                                   {
+                                     callback();
+                                   }
+                               }
+                           });
         });
       });
 
@@ -1261,36 +1261,36 @@ The function does not return anything.
       self.fileGenerators.push(function(artifact, callback)
       {
         var fedmgrConfig =
-	  {'script': {"federateRTIInitWaitTimeMs": 200,
-		      "federateType": "FederationManager",
-		      "federationId": self.projectName,
-		      "isLateJoiner": true,
-		      "lookAhead": 0.1,
-		      "stepSize": 1.0,
-		      "bindHost": "0.0.0.0",
-		      "port": 8083,
-		      "controlEndpoint": "/fedmgr",
-		      "federatesEndpoint": "/federates",
-		      "federationEndTime": 0.0,
-		      "realTimeMode": true,
-		      "fedFile": "fom/" + self.projectName + '.fed',
-		      "experimentConfig":
-		        "conf/default/experimentConfig.json"}};
+          {'script': {"federateRTIInitWaitTimeMs": 200,
+                      "federateType": "FederationManager",
+                      "federationId": self.projectName,
+                      "isLateJoiner": true,
+                      "lookAhead": 0.1,
+                      "stepSize": 1.0,
+                      "bindHost": "0.0.0.0",
+                      "port": 8083,
+                      "controlEndpoint": "/fedmgr",
+                      "federatesEndpoint": "/federates",
+                      "federationEndTime": 0.0,
+                      "realTimeMode": true,
+                      "fedFile": "fom/" + self.projectName + '.fed',
+                      "experimentConfig":
+                        "conf/default/experimentConfig.json"}};
 
         artifact.addFile('conf/fedmgrconfig.json',
-			 JSON.stringify(fedmgrConfig.script, null, 2),
-			 function(err)
-			 {
-			   if (err)
-			     {
-			       callback(err);
-			       return;
-			     }
-			   else
-			     {
-			       callback();
-			     }
-			 });
+                         JSON.stringify(fedmgrConfig.script, null, 2),
+                         function(err)
+                         {
+                           if (err)
+                             {
+                               callback(err);
+                               return;
+                             }
+                           else
+                             {
+                               callback();
+                             }
+                         });
       });
 
 /***********************************************************************/
@@ -1306,11 +1306,11 @@ Called By:
 */
       generateFiles = function(artifact, doneBack)
       {
-	if (numberOfFilesToGenerate > 0)
-	  {
-	    self.fileGenerators[self.fileGenerators.length -
-				numberOfFilesToGenerate](artifact,
-							 function(err)
+        if (numberOfFilesToGenerate > 0)
+          {
+            self.fileGenerators[self.fileGenerators.length -
+                                numberOfFilesToGenerate](artifact,
+                                                         function(err)
                                 {
                                   if (err)
                                     {
@@ -1327,11 +1327,11 @@ Called By:
                                       doneBack();
                                     }
                                 });
-	  }
-	else
-	  {
-	    doneBack();
-	  }
+          }
+        else
+          {
+            doneBack();
+          }
       };
 
 /***********************************************************************/
@@ -1358,208 +1358,208 @@ http://127.0.0.1:8088 is not reachable in a browser.
       finishExport = function(err)
       {
         if (err)
-	  {
+          {
             self.logger.error(err);
             return callback(err, self.result);
-	  }
+          }
 
         var path;
         var filendir;
         var fs;
-	
+        
         if (self.runningOnClient)
-	  {
-	    require(['path'], function(path) {});
+          {
+            require(['path'], function(path) {});
             require(['filendir'], function(filendir) {});
             require(['fs'], function(fs) {}); // error here
-	  }
+          }
         else
-	  {
+          {
             path = require('path');
             filendir = require('filendir');
             fs  = require('fs');
-	  }
+          }
 
         var artifact = self.blobClient.
-	               createArtifact(self.projectName.trim().
-				      replace(/\s+/g, '_') + '_deployment');
+                       createArtifact(self.projectName.trim().
+                                      replace(/\s+/g, '_') + '_deployment');
 
         numberOfFilesToGenerate = self.fileGenerators.length;
         if (numberOfFilesToGenerate > 0)
-	  {
+          {
             generateFiles(artifact, function(err)
-	    {
-	      if (err)
-		{
-		  callback(err, self.result);
-		  return;
+            {
+              if (err)
+                {
+                  callback(err, self.result);
+                  return;
                 }
                     
-	      self.blobClient.saveAllArtifacts(function(err, hashes)
-	      {
-		if (err)
-		  {
-		    callback(err, self.result);
-		    return;
-		  }
-		if (!self.runningOnClient)
-		  {
-		    for (var idx = 0; idx < hashes.length; idx++)
-		      {
+              self.blobClient.saveAllArtifacts(function(err, hashes)
+              {
+                if (err)
+                  {
+                    callback(err, self.result);
+                    return;
+                  }
+                if (!self.runningOnClient)
+                  {
+                    for (var idx = 0; idx < hashes.length; idx++)
+                      {
                         self.blobClient.getObject(hashes[idx],
-						  function(err, content)
-			  {
+                                                  function(err, content)
+                          {
                             if (err )
-			      {
+                              {
                                 self.logger.error(
-			      'Failed obtaining desert configuration, err: ' +
-			       err.toString());
+                              'Failed obtaining desert configuration, err: ' +
+                               err.toString());
                                 return callback(
-			      'Failed obtaining desert configuration, err: ' +
-			       err.toString());
-			      }
+                              'Failed obtaining desert configuration, err: ' +
+                               err.toString());
+                              }
                             // Set up directories and file-paths.
                             
                             self.getUserDir(function(err, filestoreDir)
-			    {
-			      if (err)
-				{
-				  callback(err, self.result);
-				  return;
+                            {
+                              if (err)
+                                {
+                                  callback(err, self.result);
+                                  return;
                                 }
-			      self.workingDir = filestoreDir;
-			      self.getUserIdAsync(function(err, userInfo)
-			      {
-				if (err)
-				  {
+                              self.workingDir = filestoreDir;
+                              self.getUserIdAsync(function(err, userInfo)
+                              {
+                                if (err)
+                                  {
                                     callback(err, self.result);
                                     return;
-				  }
+                                  }
 
                                 var userDir =
-				  path.normalize(path.join(self.workingDir,
-							   userInfo));
+                                  path.normalize(path.join(self.workingDir,
+                                                           userInfo));
                                 var projectDir = self.project.projectName;
                                 var projectPath = path.join(userDir,
-							    projectDir); 
+                                                            projectDir); 
                                 var runDir = path.normalize(projectPath);
                                 if (!fs.existsSync(userDir))
-				  {
+                                  {
                                     self.logger.info('Directory"' +
-						     userDir +
-						     '"does not exist');
+                                                     userDir +
+                                                     '"does not exist');
                                     fs.mkdirSync(userDir);
                                     self.logger.
-				      info('Created directory for "' +
-					   userDir + '".' );
-				  }
+                                      info('Created directory for "' +
+                                           userDir + '".' );
+                                  }
                                 if (!fs.existsSync(runDir))
-				  {
-				    self.logger.info('Directory"' +
-						     runDir +
-						     '"does not exist' );
+                                  {
+                                    self.logger.info('Directory"' +
+                                                     runDir +
+                                                     '"does not exist' );
                                     fs.mkdirSync(runDir);
                                     self.logger.
-				      info('Created directory for "' +
-					   runDir + '".' );
-				  }
+                                      info('Created directory for "' +
+                                           runDir + '".' );
+                                  }
                                 var inputZip =
-				  path.normalize(path.join(runDir,
-							   "deployer.zip"));
+                                  path.normalize(path.join(runDir,
+                                                           "deployer.zip"));
                                 fs.writeFile(inputZip, content, function(err)
-				{
-				  var cmd;
-				  if (err)
-				    {
-				      self.logger.
-					error('Failed writing out ZIP, err: ' +
-					      err.toString());
-				      return callback(
-					      'Failed writing out ZIP, err: ' +
-					      err.toString());
+                                {
+                                  var cmd;
+                                  if (err)
+                                    {
+                                      self.logger.
+                                        error('Failed writing out ZIP, err: ' +
+                                              err.toString());
+                                      return callback(
+                                              'Failed writing out ZIP, err: ' +
+                                              err.toString());
                                     }
-				  self.logger.info('Created input XML at ' +
-						   inputZip);
-				  const unzip = require('unzip');
-				  fs.createReadStream(inputZip).
-				    pipe(unzip.Extract({path: runDir}));
-				});
+                                  self.logger.info('Created input XML at ' +
+                                                   inputZip);
+                                  const unzip = require('unzip');
+                                  fs.createReadStream(inputZip).
+                                    pipe(unzip.Extract({path: runDir}));
+                                });
                                 var userProjectJSON =
                                   path.join(userDir,'UserProjects.json');
                                 if (!fs.existsSync(userProjectJSON))
-				  { // the file does not exist locally
+                                  { // the file does not exist locally
                                     var obj = {};
                                     obj[self.project.projectName] =
                                        self.project.projectName
                                     let data = JSON.stringify(obj, null, 2);
                                     fs.writeFile(userProjectJSON, data,
-					    (err) => {if (err) throw err;});
-				  }
+                                            (err) => {if (err) throw err;});
+                                  }
                                 else
-				  { // The file does exist locally
+                                  { // The file does exist locally
                                     fs.readFile(userProjectJSON, 'utf8',
-						function(err, data)
+                                                function(err, data)
                                       {
                                         if (err) throw err;
                                         var obj = JSON.parse(data);
                                         
                                         if (!(obj.hasOwnProperty(self.project.
-							       projectName)))
-					  {
+                                                               projectName)))
+                                          {
                                             obj[self.project.projectName] =
-					      self.project.projectName;
+                                              self.project.projectName;
                                             let data =
-					      JSON.stringify(obj, null, 2);
+                                              JSON.stringify(obj, null, 2);
                                             fs.writeFile(userProjectJSON, data,
-					       (err) => {if (err) throw err;});
-					  }
+                                               (err) => {if (err) throw err;});
+                                          }
                                         else
-					  {
+                                          {
 
-					  }
-				      });
-				  }    
-			      }); // closes self.getUserIdAsync(function(...)
+                                          }
+                                      });
+                                  }    
+                              }); // closes self.getUserIdAsync(function(...)
                             }); // closes self.getUserDir(function(...)
-			  }); // closes self.blobClient.getObject(...)
-		      }; // closes for (var idx = 0; ...)
-		  } // closes if (!self.runningOnClient)   
+                          }); // closes self.blobClient.getObject(...)
+                      }; // closes for (var idx = 0; ...)
+                  } // closes if (!self.runningOnClient)   
                     // Next save all the artifacts to a directory location:
                        
                     // This will add a download hyperlink in the result-dialog.
-		for (var idx = 0; idx < hashes.length; idx++)
-		  {
-		    self.result.addArtifact(hashes[idx]);
+                for (var idx = 0; idx < hashes.length; idx++)
+                  {
+                    self.result.addArtifact(hashes[idx]);
 
-		    var artifactMsg = 'Deployment package ' +
-		      self.blobClient.artifacts[idx].name +
-		      ' was generated with id:[' + hashes[idx] + ']';
-		    var buildURL = "'http://c2w-cdi.isis.vanderbilt.edu:8080/job/c2w-pull/buildWithParameters?GME_ARTIFACT_ID=" + hashes[idx] + "'";
-		    artifactMsg += '<br><a title="Build package..." ' +
-		      'onclick="window.open(' + buildURL +
-		      ', \'Build System\'); return false;">Build artifact..</a>';
+                    var artifactMsg = 'Deployment package ' +
+                      self.blobClient.artifacts[idx].name +
+                      ' was generated with id:[' + hashes[idx] + ']';
+                    var buildURL = "'http://c2w-cdi.isis.vanderbilt.edu:8080/job/c2w-pull/buildWithParameters?GME_ARTIFACT_ID=" + hashes[idx] + "'";
+                    artifactMsg += '<br><a title="Build package..." ' +
+                      'onclick="window.open(' + buildURL +
+                      ', \'Build System\'); return false;">Build artifact..</a>';
                         self.createMessage(null, artifactMsg);
-		  };
-		// This will save the changes. If you don't want to save;
-		// exclude self.save and call callback directly from this scope.
-		self.save('DeploymentExporter updated model.', function(err)
-			  {
-			    if (err)
-			      {
-				callback(err, self.result);
-				return;
-			      } 
-			    self.result.setSuccess(true);
-			    callback(null, self.result);
-			  });
-	      }); //closes self.blobClient.saveAllArtifacts(...)
+                  };
+                // This will save the changes. If you don't want to save;
+                // exclude self.save and call callback directly from this scope.
+                self.save('DeploymentExporter updated model.', function(err)
+                          {
+                            if (err)
+                              {
+                                callback(err, self.result);
+                                return;
+                              } 
+                            self.result.setSuccess(true);
+                            callback(null, self.result);
+                          });
+              }); //closes self.blobClient.saveAllArtifacts(...)
             }); // closes generateFiles(...)
-	  }//closes if (numberOfFilesToGenerate > 0)
-	else
-	  {
+          }//closes if (numberOfFilesToGenerate > 0)
+        else
+          {
             self.result.setSuccess(true);
             callback(null, self.result);
-	  }
+          }
       }; // closes finishExport = function(...)
 
 /***********************************************************************/
@@ -1577,10 +1577,10 @@ but does not return it.
       self.visitAllChildrenFromRootContainer(self.rootNode, function(err)
       {
         if (err)
-	  {
+          {
             self.logger.error(err);
             return callback(err, self.result);
-	  }
+          }
         finishExport(err);
       });
 
@@ -1631,26 +1631,26 @@ but does not return it.
       
       deferred = Q.defer();
       req = superagent.get(this.blobClient.origin +
-			   '/api/componentSettings/UserDir');
+                           '/api/componentSettings/UserDir');
       if (typeof this.blobClient.webgmeToken === 'string')
-	{
-	  // running on the server; set the token.
-	  req.set('Authorization', 'Bearer ' + this.blobClient.webgmeToken);
+        {
+          // running on the server; set the token.
+          req.set('Authorization', 'Bearer ' + this.blobClient.webgmeToken);
         }
       else
-	{
-	  // running inside the browser; cookie will be used at the request..
+        {
+          // running inside the browser; cookie will be used at the request..
         }
       req.end(function(err, res)
       {
-	if (err)
-	  {
-	    deferred.reject(err);
-	  }
-	else
-	  {
-	    deferred.resolve(res.body.folder);
-	  }
+        if (err)
+          {
+            deferred.reject(err);
+          }
+        else
+          {
+            deferred.resolve(res.body.folder);
+          }
       });
       return deferred.promise.nodeify(callback);
     };
@@ -1663,34 +1663,34 @@ but does not return it.
           req;
 
       if (typeof this.project.userName === 'string')
-	{ // Running from bin script	  
-	  return Q(this.project.userName).nodeify(callback);
+        { // Running from bin script          
+          return Q(this.project.userName).nodeify(callback);
         }
       if (this.gmeConfig.authentication.enable === false)
-	{
-	  return Q(this.gmeConfig.authentication.guestAccount).
-	           nodeify(callback);
+        {
+          return Q(this.gmeConfig.authentication.guestAccount).
+                   nodeify(callback);
         }
       deferred = Q.defer();
       req = superagent.get(this.blobClient.origin + '/api/user');
       if (typeof this.blobClient.webgmeToken === 'string')
-	{ // running on the server; set the token.
-	  req.set('Authorization', 'Bearer ' + this.blobClient.webgmeToken);
+        { // running on the server; set the token.
+          req.set('Authorization', 'Bearer ' + this.blobClient.webgmeToken);
         }
       else
-	{
+        {
             // running inside the browser; cookie will be used at the request..
         }
       req.end(function(err, res)
       {
-	if (err)
-	  {
-	    deferred.reject(err);
-	  }
-	else
-	  {
-	    deferred.resolve(res.body._id);
-	  }
+        if (err)
+          {
+            deferred.reject(err);
+          }
+        else
+          {
+            deferred.resolve(res.body._id);
+          }
       });
       
       return deferred.promise.nodeify(callback);
@@ -1704,9 +1704,9 @@ but does not return it.
       var self = this;
 
       if (self.experimentPaths.indexOf(self.core.getGuid(parent)) === -1)
-	{
-	  self.experimentPaths.push(self.core.getGuid(parent));
-	}
+        {
+          self.experimentPaths.push(self.core.getGuid(parent));
+        }
       self.experimentModelConfig[self.core.getGuid(parent)] =
         self.experimentModelConfig[self.core.getGuid(parent)] || [];
       self.experimentModelConfig[self.core.getGuid(parent)].push(node);
@@ -1726,16 +1726,16 @@ but does not return it.
       self.core.loadPointer(node, "ref", function(err, result)
       {
         if (err)
-	  {
-	  }
-	else
-	  {
+          {
+          }
+        else
+          {
             obj.guid = self.core.getGuid(result);
             obj.name = self.core.getAttribute(result, "name");
             self.coaGroupNodes[self.core.getGuid(parent)] =
-	      self.coaGroupNodes[self.core.getGuid(parent)] || [];
+              self.coaGroupNodes[self.core.getGuid(parent)] || [];
             self.coaGroupNodes[self.core.getGuid(parent)].push(obj);
-	  }
+          }
       });
       return {context: context};
     };
@@ -1815,11 +1815,11 @@ It is not clear whether this is an error.
 
       paramValues.split(" ").forEach(function(param)
       {
-	try {obj[param.split('=')[0]] = param.split('=')[1].split('"')[1];}
-	catch (err)
+        try {obj[param.split('=')[0]] = param.split('=')[1].split('"')[1];}
+        catch (err)
           {
-	    self.logger.debug('Erroneous param ' + param);
-	  }
+            self.logger.debug('Erroneous param ' + param);
+          }
       });
 
       self.addCoaNode(node, obj);
@@ -1832,7 +1832,7 @@ It is not clear whether this is an error.
     {
       var self = this,
           obj = {isDecisionPoint:
-	           self.core.getAttribute(node, 'isDecisionPoint')};
+                   self.core.getAttribute(node, 'isDecisionPoint')};
 
       self.addCoaNode(node, obj);
       return {context: context};
@@ -1845,7 +1845,7 @@ It is not clear whether this is an error.
     {
       var self = this,
           obj = {isDecisionPoint:
-		   self.core.getAttribute(node, 'isDecisionPoint')};
+                   self.core.getAttribute(node, 'isDecisionPoint')};
 
       self.addCoaNode(node, obj);
       return {context: context};
@@ -1858,8 +1858,8 @@ It is not clear whether this is an error.
     {
       var self = this,
           obj = {time: self.core.getAttribute(node, 'time'),
-		 minBranchesToSync:
-		   self.core.getAttribute(node, 'minBranchesToSync')};
+                 minBranchesToSync:
+                   self.core.getAttribute(node, 'minBranchesToSync')};
 
       self.addCoaNode(node, obj);
       return {context: context};
@@ -1884,7 +1884,7 @@ It is not clear whether this is an error.
     {
       var self = this,
           obj = {lowerBound: self.core.getAttribute(node, 'lowerBound'),
-		 upperBound: self.core.getAttribute(node, 'upperBound')};
+                 upperBound: self.core.getAttribute(node, 'upperBound')};
 
       self.addCoaNode(node, obj);
       return {context: context};
@@ -1897,7 +1897,7 @@ It is not clear whether this is an error.
     {
       var self = this,
           obj = {minBranchesToAwait:
-		 self.core.getAttribute(node, 'minBranchesToAwait')};
+                 self.core.getAttribute(node, 'minBranchesToAwait')};
 
       self.addCoaNode(node, obj);
       return {context: context};
@@ -2036,9 +2036,9 @@ It is not clear whether this is an error.
     if (nodeType != 'Federate')
       {
         try {ret = self['visit_' + nodeType](node, parent, context);}
-	catch (err)
-	{
-	  self.logger.debug('No visitor function for ' + nodeType);
+        catch (err)
+        {
+          self.logger.debug('No visitor function for ' + nodeType);
         }
     }
 
@@ -2052,13 +2052,13 @@ It is not clear whether this is an error.
       var self = this,
           visitorName = 'generalVisitor';
       if (nodeType)
-	{
-	  visitorName = 'visit_' + nodeType;
-	  if (nodeType.endsWith('Federate'))
-	    {
-	      visitorName = 'visit_' + 'Federate';
-	    }
-	}
+        {
+          visitorName = 'visit_' + nodeType;
+          if (nodeType.endsWith('Federate'))
+            {
+              visitorName = 'visit_' + 'Federate';
+            }
+        }
       self.logger.debug('Generated visitor Name: ' + visitorName);
       return visitorName;
     }
