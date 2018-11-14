@@ -3,13 +3,14 @@
 <%= indent%>        <name><%= name %></name>
 <%= indent%>        <sharing><%= sharingXml %></sharing><% -%>
 <% attributes.forEach(function(attr){ -%>
-<%   if (!attr.inherited) { %>
+<%   if (!attr.inherited || (attr.printFor == name)) { %>
+<%   if (attr.printFor == name) attr.printFor = 0; -%>
 <%= indent%>        <attribute>
 <%= indent%>            <name><%= attr.name %></name>
 <%= indent%>            <dataType><%= attr.parameterType %></dataType>
 <%= indent%>            <updateType>NA</updateType>
 <%= indent%>            <ownership>NoTransfer</ownership>
-<%= indent%>            <sharing><%= sharingXml %></sharing>
+<%= indent%>            <sharing><%= attr.sharingXml %></sharing>
 <%= indent%>            <transportation><%= attr.deliveryXml %></transportation>
 <%= indent%>            <order><%= attr.orderXml %></order>
 <%= indent%>        </attribute><% }}); %>
