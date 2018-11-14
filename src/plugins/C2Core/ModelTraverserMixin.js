@@ -9,7 +9,6 @@ by at least FederatesExporter.js and DeploymentExporter.js.
 define([], function()
   {
     'use strict';
-    console.log("beginning of function in 'define' in ModelTraverserMixin.js");
     /**
      * Initializes a new instance of JSONLDExport.
      * @class
@@ -17,20 +16,16 @@ define([], function()
      * @classdesc This class represents the plugin JSONLDExport.
      * @constructor
      */
-    console.log("defining withModelTraverser");
     var withModelTraverser = function()
     {
-      console.log("executing withModelTraverser");
         
 /***********************************************************************/
 
-      console.log("defining this.getVisitorFuncName");
       this.getVisitorFuncName = this.getVisitorFuncName ||
       function(nodeType)
       {
         var self = this,
         visitorName = 'generalVisitor';
-        console.log("executing getVisitorFuncName");
         if (nodeType)
           {
             visitorName = 'visit_'+ nodeType;
@@ -40,7 +35,6 @@ define([], function()
       
 /***********************************************************************/
 
-      console.log("defining this.getPostVisitorFuncName");
       this.getPostVisitorFuncName = this.getPostVisitorFuncName ||
       function(nodeType)
       {
@@ -59,7 +53,6 @@ define([], function()
 
 */
 
-        console.log("defining this.getChildSorterFunc");
         this.getChildSorterFunc = this.getChildSorterFunc ||
         function(nodeType, self)
           {
@@ -96,7 +89,6 @@ DeploymentExporter.js (and possibly elsewhere)
 
 */
 
-        console.log("defining this.excludeFromVisit");
         this.excludeFromVisit = this.excludeFromVisit ||
         function(node)
           {
@@ -117,7 +109,6 @@ Called By:
 
 */
 
-        console.log("defining this.visitAllChildrenFromRootContainer");
         this.visitAllChildrenFromRootContainer = function(rootNode, callback)
           {
             var self = this,
@@ -126,7 +117,6 @@ Called By:
                 counter,
                 counterCallback;
 
-            console.log("start executing visitAllChildrenFromRootContainer");
             counter = {visits: 1};
             counterCallback = function(err)
               {
@@ -171,7 +161,6 @@ Called By:
 
             self.visitAllChildrenRec(rootNode, context, counter,
                                      counterCallback);
-            console.log("end executing visitAllChildrenFromRootContainer");
           };
         
 /***********************************************************************/
@@ -186,11 +175,9 @@ Called By:
 
 */
 
-        console.log("defining this.visitAllChildrenRec");
         this.visitAllChildrenRec = function(node, context, counter, callback)
           {
             var self = this;
-            console.log("executing visitAllChildrenRec");
             if (self.excludeFromVisit(node))
               {
                 callback(null, context);
@@ -325,7 +312,6 @@ seem better to test for a known name and call the appropriate function.
 
 */
 
-        console.log("defining this.atModelNode");
         this.atModelNode = function(node, parent, context, callback)
           {
             var self = this,
@@ -336,7 +322,6 @@ seem better to test for a known name and call the appropriate function.
                 ret = null;
             if (self.federateInfos && (nodeType in self.federateTypes))
               {
-                console.log("building federateInfos in this.atModelNode");
                 id = self.core.getPath(node);
                 if (self.federateInfos[id])
                   {
@@ -371,7 +356,6 @@ seem better to test for a known name and call the appropriate function.
                 if (err.message ==
                     'self[self.getVisitorFuncName(...)] is not a function')
                   {
-                    console.log('No visitor function for ' + nodeType);
                   }
                 else
                   {
@@ -392,7 +376,6 @@ Returned Value: none
 Called By: ?
 
 */
-        console.log("defining this.doneModelNode");
         this.doneModelNode = function(node, context, callback)
           {
             var self = this,
@@ -441,7 +424,6 @@ Returned Value: a copy of an object
 Called By: ?
 
 */
-        console.log("defining this.cloneCtx");
         this.cloneCtx = function(obj)
           {
             var copy;
@@ -459,6 +441,5 @@ Called By: ?
 /***********************************************************************/
 
       };
-    console.log("end of function in 'define' in ModelTraverserMixin.js");
     return withModelTraverser;
   }); // closes function and define
