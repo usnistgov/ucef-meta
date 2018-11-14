@@ -47,23 +47,44 @@ one of Publish, Subscribe, PublishSubscribe, or Neither.
 
 The objectData values have the form:
 
-{publish: n, mayPublish: p, subscribe: m, maySubscribe: q}
+{publish: n, mayPublish: p, subscribe: m, maySubscribe: q, attribs: attribData} 
 where n, m, p and q are each either 1 or 0, meaning yes and no.
 publish means definitely publish. mayPublish means maybe publish.
-Similarly for subscribe.
+
+attribData is entered only in the case of crosscuts and has the form
+{attId1: attData1, attId2: attData2 ...}
+
+The attData have the form {publish: s, subscribe: t} where s and t are
+each either 1 or 0, meaning yes and no. The attribData is entered only
+for attributes found in visit_StaticObjectAttributePublish.
 
 The objectData values are used in objectTraverserXml to set the
 sharingXml of the object to one of Publish, Subscribe,
-PublishSubscribe, or Neither.
+PublishSubscribe, or Neither. 
 
-For publishing, an object should Publish if either (1) it has a
-publish relation with the federate (call that a type P object) or (2)
-it is an ancestor of such an object (call that a type Q object) and
-has an own attribute. If an object is both, it is treated like a
-P. For a type P object, publish and mayPublish are both set to 1 when
-the publish relation is examined. For a type Q object, publish is
-always 0, but mayPublish will be set to 1 in objectTraverserCheck if
-any descendant has mayPublish set to 1.
+For publishing, an object should Publish if any of the following apply:
+ (1) it has a publish relation with the federate
+     (call it a type P object) or
+ (2) it is an ancestor of a type P object and has an own attribute
+     (call it a type Q object)
+ (3) it has an own attribute that publishes to the federate in a
+     crosscut (call it a type R object)
+All ancestors of any of the three types must be included in the XML
+whether or not they publish.
+
+For a type P object, publish and mayPublish are both set to 1 when the
+publish relation is examined.
+
+For a type Q object that is not also type P, publish is always
+0, but mayPublish will be set to 1 in objectTraverserCheck if any
+descendant has mayPublish set to 1.
+
+For a type R object that is not also P, publish and mayPublish are
+both set to 0 when the crosscut publish relation for an attribute of
+the object is examined (so that the object and its ancestors will be
+included in the output). Also when that relation is examined,
+information that the attribute should be published for the federate
+is stored in the attribute.
 
 For subscribing, the situation is exactly analogous to publishing.
 
@@ -73,7 +94,7 @@ pubSubObjects of the deployment exporter. This enables using the six
 visit_XXX functions in PubSubVisitors.js for both exporters. 
 
 The value in federateInfos for a federateId is initialized where
-the federate is first encountered. That may be in either:
+the federate is first encountered. That may be in any of three places:
 
 (1) the atModelNode function defined in C2Core/ModelTraverserMixin.js.
 If initialized here, the pubSubObjects and pubSubInteractions are both
@@ -81,13 +102,16 @@ empty objects. If a federateInfo for a federate has already been created
 when the federate is encountered in this function, the name of the
 federate is added to the data (since it will be missing).
 
-(2) one of the visit_StaticXXX functions defined in PubSubVisitors.js.
-If initialized here, (i) some data will be put into either the
-pubSubObjects or the pubSubInteractions and (ii) the federate name
-will be set to null since it is not available. If a federateInfo for a
-federate has already been created when the federate is encountered in
-a visit_StaticXXX function, some data will be put into either the
-pubSubObjects or the pubSubInteractions.
+(2) one of the four visit_StaticXXX functions defined in
+PubSubVisitors.js.  If initialized here, (i) some data will be put
+into either the pubSubObjects or the pubSubInteractions and (ii) the
+federate name will be set to null since it is not available. If a
+federateInfo for a federate has already been created when the federate
+is encountered in a visit_StaticXXX function, some data will be put
+into either the pubSubObjects or the pubSubInteractions.
+
+(3) one of the two visit_StaticObjectAttributeXXX functions defined in
+PubSubVisitors.js.
 
 See the documentation of objectTraverserCheck and
 interactionTraverserCheck regarding how additional items are added to
@@ -96,7 +120,9 @@ pubSubInteractions and pubSubObjects.
 The pubSubInteractions and pubSubObjects of a federate are used in the
 objectTraverserXml and interactionTraverserXml functions to set the
 values for sharing that are put into the output XML file for the
-federate.
+federate. For objects, the data for the federate in each attribute of
+the object (if there is any) is also used, and the three rules given
+above are followed.
 
 endJoinResigns
 --------------
@@ -159,9 +185,9 @@ define
     var interactionTraverserCheck;  // function variable
     var interactionTraverserXml;    // function variable
     var fomGenerator;               // function variable
-    
+
     pluginMetadata = JSON.parse(pluginMetadata);
-     
+
 /***********************************************************************/
 
 /* FederatesExporter (function-valued variable of top-level function object)
@@ -190,14 +216,14 @@ define
       this._jsonToXml = new JSON2XMLConverter.Json2xml();
       this.pluginMetadata = pluginMetadata;
     };
-   
+
 /***********************************************************************/
 
     // Prototypal inheritance from PluginBase.
     FederatesExporter.prototype = Object.create(PluginBase.prototype);
     FederatesExporter.prototype.constructor = FederatesExporter;
     FederatesExporter.metadata = pluginMetadata;
-    
+
 /***********************************************************************/
 
 /*  addEndJoinResign (function-valued variable of top-level function object)
@@ -279,13 +305,13 @@ maySubscribe values set appropriately.
 
 */
 
-    objectTraverserCheck = function( /* ARGUMENTS                     */
-     federate,                       /* (object) federate of interest */
-     object)                         /* (object) object to process    */
+    objectTraverserCheck = function( /* ARGUMENTS                           */
+     federate,               /* (object) data in FederateInfos for federate */
+     object)                 /* (object) object to process                  */
     {
       var objectPubSub;
       var parentPubSub;
-      
+
       object.children.forEach(function(child)
       {
         objectTraverserCheck(federate, child);
@@ -330,25 +356,47 @@ Called By:
 objectTraverserXml is a recursive function that builds the XML for
 objects in a federate.
 
-The function takes information about a federate and takes an object
-that may have children (also objects).
+The function takes (1) information about a federate, (2) an object
+that may have children (which are also objects), and (3) a string of
+blank space to use for indenting.
 
 The function begins by creating an objModel. The objModel is given the
 same name and attributes as the object and is given children that are
 XML code built by a recursive call to the function on the children of
 the object.  Information for printing XML is added to the data for
-each attribute of the object. Sharing data for the XML is derived from
-the federate information and the attribute data.
+each attribute of the object. Data regarding "sharing" for the XML is
+derived from the federate information and the attribute data.
 
 Then XML for the objModel is generated from the objModel (and saved)
 by calling ejs.render using the fedfile_simobject_xml XML Template.
 
+Crosscuts are Publish or Subscribe links from a federate directly to
+an attribute of an object. Crosscuts are handled by putting entries
+for crosscuts (only) into the attribs property of the object data for
+a federate. The code for crosscuts is mostly in the great big "else"
+near the end of the function, but there is also code dealing with
+crosscuts in two places before that. Setting the printFor property of
+an attribute allows it to be printed (by fedfile_simobject_xml.ejs)
+even when the attribute is an inherited property. The printFor
+property is set back to 0 there so the attribute won't necessarily be
+printed for the same object in the XML file for some other federate.
+
+NOTE: An alternative to using the printFor attribute would be to
+create a deferredPubSubs property of the federate. When a crosscut hit
+an inherited attribute A of an object D, an entry would be made in the
+deferredPubSubs recording the id of A and the type of sharing. When an
+object C is deciding how to set sharing for an own attribute B, a
+check of the deferredPubSubs would be made to see if an attribute with
+the id of B is recorded. If so, B is A, and the sharing of B would be
+set taking into account the sharing given in the deferredPubSubs
+entry.
+
 */
-      
-    objectTraverserXml = function( /* ARGUMENTS                     */
-     federate,                     /* (object) federate of interest */
-     object,                       /* (object) object to process    */
-     space)                        /* (string) indentation space    */
+
+    objectTraverserXml = function( /* ARGUMENTS                             */
+     federate,               /* (object) data in federateInfos for federate */
+     object,                 /* (object) object to process                  */
+     space)                  /* (string) indentation space                  */
     {
       var objModel;
       var objPuBSub;
@@ -359,6 +407,8 @@ by calling ejs.render using the fedfile_simobject_xml XML Template.
                   indent: space,
                   attributes: object.attributes,
                   children: []};
+
+      objPuBSub = federate.pubSubObjects[object.id];
       hasOwn = 0;
       // The attributes in the objModel are the attributes of the object.
       // Properites of attributes not related to XML generation are not
@@ -366,41 +416,120 @@ by calling ejs.render using the fedfile_simobject_xml XML Template.
       // are assigned as follows.
       objModel.attributes.forEach(function(attr)
       {
-        attr.deliveryXml = ((attr.delivery === "reliable") ? "HLAreliable" :
-                            "HLAbestEffort");
-        attr.orderXml = ((attr.order === "timestamp") ? "TimeStamp" :
-                         "Receive");
         if (!attr.inherited)
           {
+            attr.deliveryXml = ((attr.delivery === "reliable") ?
+                                "HLAreliable" : "HLAbestEffort");
+            attr.orderXml = ((attr.order === "timestamp") ?
+                             "TimeStamp" : "Receive");
             hasOwn = 1;
           }
       });
-      // An object should publish if either (1) the data for it in the
+      // An object should publish if: (1) the data for it in the
       // federate information says publish or (2) the data says maybe
       // publish and one or more of the object's attributes is an own
-      // attribute. Similarly for subscribing.
-      objPuBSub = federate.pubSubObjects[object.id];
+      // attribute or (3) the data says there is publish crosscut.
+      // Similarly for subscribing.
       if (objPuBSub && (objPuBSub.publish ||
                         (objPuBSub.mayPublish && hasOwn)))
-        {
-          if (objPuBSub.subscribe || objPuBSub.maySubscribe)
-            {
+        { // object publishes
+          if (objPuBSub.subscribe || (objPuBSub.maySubscribe && hasOwn))
+            { // object also subscribes
               objModel.sharingXml = "PublishSubscribe";
+              objModel.attributes.forEach(function(attr)
+              { // also set sharing for own attributes
+                if (!attr.inherited)
+                  {
+                    attr.sharingXml = "PublishSubscribe";
+                  }
+              });
             }
           else
-            {
+            { // object publishes but does not subscribe
               objModel.sharingXml = "Publish";
+              objModel.attributes.forEach(function(attr)
+              { // also set sharing for own attributes
+                if (objPuBSub.attribs && (attr.id in objPuBSub.attribs))
+                  { // if crosscut subscribes, upgrade to PublishSubscribe
+                    if (objPuBSub.attribs[attr.id].subscribe)
+                      {
+                        attr.sharingXml = "PublishSubscribe";
+                        objModel.sharingXml = "PublishSubscribe";
+                      }
+                  }
+                else if (!attr.inherited)
+                  { // otherwise mark the attribute as Publish if not inherited
+                    attr.sharingXml = "Publish";
+                  }
+              });
             }
         }
       else if (objPuBSub && (objPuBSub.subscribe ||
                              (objPuBSub.maySubscribe && hasOwn)))
-        {
+        { // object subscribes but does not publish
           objModel.sharingXml = "Subscribe";
+          objModel.attributes.forEach(function(attr)
+          { // also set sharing for own attributes
+            if (objPuBSub.attribs && (attr.id in objPuBSub.attribs))
+              { // if crosscut publishes, upgrade to PublishSubscribe
+                if (objPuBSub.attribs[attr.id].publish)
+                  {
+                    attr.sharingXml = "PublishSubscribe";
+                    objModel.sharingXml = "PublishSubscribe";
+                  }
+              }
+            else if (!attr.inherited)
+              { // otherwise mark the attribute as Subscribe if not inherited
+                attr.sharingXml = "Subscribe";
+              }
+          });
         }
       else
-        {
+        { // object neither publishes nor subscribes; deal with crosscuts
           objModel.sharingXml = "Neither";
-        }
+          objModel.attributes.forEach(function(attr)
+          {
+            if (objPuBSub.attribs && (attr.id in objPuBSub.attribs))
+              { // attribute is involved in a crosscut
+                if (attr.inherited)
+                  { // if not own attribute, set values and set flag to print
+                    attr.deliveryXml = ((attr.delivery === "reliable") ?
+                                        "HLAreliable" : "HLAbestEffort");
+                    attr.orderXml = ((attr.order === "timestamp") ?
+                                     "TimeStamp" : "Receive");
+                    attr.printFor = objModel.name; 
+                  }
+                if (objPuBSub.attribs[attr.id].publish)
+                  { // some crosscut says publish
+                    if (objPuBSub.attribs[attr.id].subscribe)
+                      { // some other crosscut says subscribe
+                        attr.sharingXml = "PublishSubscribe";
+                        objModel.sharingXml = "PublishSubscribe";
+                      }
+                    else
+                      { // there is no subscribe crosscut, so Publish
+                        attr.sharingXml = "Publish";
+                        if (objModel.sharingXml != "PublishSubscribe")
+                          { // but do not change if already PublishSubscribe
+                            objModel.sharingXml = "Publish";
+                          }
+                      }
+                  }
+                else if (objPuBSub.attribs[attr.id].subscribe)
+                  { // is subscribe but not publish crosscut, so Subscribe
+                    attr.sharingXml = "Subscribe";
+                    if (objModel.sharingXml != "PublishSubscribe")
+                      { // but do not change if already PublishSubscribe
+                        objModel.sharingXml = "Subscribe";
+                      }
+                  }
+              }
+            else
+              { // no publish, subscribe, or relevant crosscut
+                attr.sharingXml = "Neither";
+              }
+          }); // end of function body and forEach
+        } // end of else
       
       // Here, objectTraverserXml calls itself recursively to
       // generate XML for the children before generating
@@ -421,7 +550,6 @@ by calling ejs.render using the fedfile_simobject_xml XML Template.
           return ejs.render(TEMPLATES["fedfile_simobject_xml.ejs"], objModel);
         }
     };
-   
 
 /***********************************************************************/
 
@@ -451,8 +579,8 @@ is also on pubSubInteractions.
 
 */
     interactionTraverserCheck = function( /* ARGUMENTS                       */
-     federate,                            /* (object) federate of interest   */
-     interaction)                         /* (object) interaction to process */
+     federate,                /* (object) data in federateInfos for federate */
+     interaction)             /* (object) interaction to process             */
     {
       interaction.children.forEach(function (child)
       {
@@ -485,7 +613,7 @@ interactionTraverserXml is a recursive function that builds the XML
 for interactions in a federate.
 
 The function takes information about a federate and takes an interaction
-that may have children (also interactions).
+that may have children (which are also interactions).
 
 The function begins by creating an intModel. The intModel is given the
 same name and parameters as the interaction and is given children that are
@@ -497,10 +625,10 @@ Then XML for the intModel is generated from the intModel (and saved)
 by calling ejs.render using the fedfile_siminteraction_xml XML Template.
 
 */
-    interactionTraverserXml = function( /* ARGUMENTS                       */
-     federate,                          /* (object) federate of interest   */
-     interaction,                       /* (object) interaction to process */
-     space)                             /* (string) indentation space      */
+    interactionTraverserXml = function( /* ARGUMENTS                        */
+     federate,               /* (object) data in federateInfos for federate */
+     interaction,            /* (object) interaction to process             */
+     space)                  /* (string) indentation space                  */
     {
       var intModel;
       var intPubSub;
@@ -609,7 +737,6 @@ callback is called more than once.
       var remaining;
 
       remaining = Object.keys(fedEx.federateInfos).length;
-      console.log("adding fom generator to file generators");
       fedEx.fileGenerators.push(function(artifact, callback)
       {
         for (federId in fedEx.federateInfos)
@@ -617,7 +744,6 @@ callback is called more than once.
             remaining--;
             feder = fedEx.federateInfos[federId];
             directory = feder.directory || 'som/';
-            console.log("generating fom file for " + feder.name);
 
             fomModelXml =
               {federateName: feder.name,
@@ -707,7 +833,6 @@ Notes autogenerated or from previous coder:
 ---------------------------------------
 
 */
-    console.log("defining FederatesExporter.prototype.main");
     FederatesExporter.prototype.main = function(
      callback)
     {
@@ -718,7 +843,6 @@ Notes autogenerated or from previous coder:
       var finishExport;           // function
       var saveAndReturn;          // function
 
-      console.log("executing FederatesExporter.prototype.main");
       self.fileGenerators = [];
       self.corefileGenerators = [];
       self.fom_sheets = {};
@@ -778,11 +902,17 @@ Notes autogenerated or from previous coder:
       
 /***********************************************************************/
       
-      console.log("adding pom generator to file generators");
-      //Add POM generator to file generators
+/* anonymous function
+
+This anonymous function adds the POM generator to the file
+generators. 
+
+The function does not return anything.
+
+*/
+
       self.fileGenerators.push(function(artifact, callback)
-      { // add POM file to artifact
-        console.log("executing pom generator function in fileGenerators");
+      {
         artifact.addFile('pom.xml',
                          self._jsonToXml.convertToString(self.mainPom.
                                                          toJSON()),
@@ -869,7 +999,7 @@ It uses the self variable.
         var idx;
         var artifactMsg;
         var buildURL;
-        
+
         errorRaised = false;
         for (i = 0; i < self.result.getMessages().length; i++)
           {
@@ -928,7 +1058,7 @@ It uses the self variable.
             return;
           }
       };
-       
+
 /***********************************************************************/
 
 /* finishExport (function-valued variable of FederatesExporter.prototype.main)
@@ -941,7 +1071,6 @@ Called By: anonymous function used as an argument to
 This function is defined as a variable of FederatesExporter.prototype.main.
 It uses the self variable.
 
-
 */      
 
       finishExport = function( /* ARGUMENTS                            */
@@ -949,11 +1078,10 @@ It uses the self variable.
       {
         var artifact;
         var coreArtifact;
-        
+
         artifact =
           self.blobClient.createArtifact(self.projectName.trim().
                                          replace(/\s+/g,'_') + '_generated');
-        console.log("start executing finishExport");
         fomGenerator(self);
         if (self.generateExportPackages)
           {
@@ -995,11 +1123,9 @@ It uses the self variable.
           }
         else
           {
-            console.log("done generating files in finishExport");
             self.result.setSuccess(true);
             callback(null, self.result);
           } 
-        console.log("end executing finishExport");
       };
        
 /***********************************************************************/
@@ -1011,7 +1137,7 @@ is defined in ModelTraverserMixin.js. The anonymous function is the second
 argument.
 
 */
-      
+
       self.visitAllChildrenFromRootContainer(self.rootNode, function(err)
         {
           if (err)
@@ -1045,7 +1171,7 @@ and implements the rules:
   Otherwise, return 0.
 
 This is a very strange function because it does not use either of its
-arguments. It is not clear whether this function is used anywhere.
+arguments. This function is not called in this file.
 
 */    
     FederatesExporter.prototype.getChildSorterFunc = function(
@@ -1054,12 +1180,13 @@ arguments. It is not clear whether this function is used anywhere.
     {
       var self;
       var generalChildSorter;
-      var aName;
-      var bName;
-      
+
       self = this; // overrides self argument
       generalChildSorter = function(a, b)
       {
+        var aName;
+        var bName;
+
         aName = self.core.getAttribute(a,'name');
         bName = self.core.getAttribute(b,'name');
         if (aName < bName) return -1;
