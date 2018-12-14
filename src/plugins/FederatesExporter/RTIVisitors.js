@@ -47,7 +47,11 @@ define
     console.log("beginning of function in 'define' in RTIVisitors.js");
     console.log("defining RTIVisitors");
 
-    var RTIVisitors  = function()
+    var RTIVisitors;
+
+/***********************************************************************/
+
+    RTIVisitors = function()
     {
       console.log("executing RTIVisitors");
 
@@ -60,7 +64,7 @@ Returned Value: a context object whose context property is the context
 
 Called By: See notes at top.
 
-This processes data for an Interaction.
+This processes data for an Interaction. 
 
 */
       console.log("defining this.visit_Interaction");
@@ -73,6 +77,7 @@ This processes data for an Interaction.
         nodeName = self.core.getAttribute(node, 'name'),
         nodePath = self.core.getPath(node),
         interaction = {},
+        fed,
         nameFragments = [nodeName];
 
         console.log("executing visit_Interaction");
@@ -97,7 +102,7 @@ This processes data for an Interaction.
         interaction['isroot'] = node.base == self.META['Interaction'];
         interaction['isMapperPublished'] = false;
         if (self.pubSubInteractions)
-          { // only FederatesExporter has pubSubInteractions
+          { // only DeploymentExporter has pubSubInteractions
             if (interaction.name == 'SimEnd')
               {
                 if (self.pubSubInteractions[nodePath])
@@ -124,6 +129,15 @@ This processes data for an Interaction.
                       {publish: 1,
                        subscribe: 0};
                   }
+              }
+          }
+        else if (self.endJoinResigns)
+          { // only Federates Exporter has endJoinResigns
+            if ((interaction.name == 'SimEnd') ||
+                (interaction.name == 'FederateResignInteraction') ||
+                (interaction.name == 'FederateJoinInteraction'))
+              { // need to collect these to add to each federate's XML
+                self.endJoinResigns[nodePath] = interaction;
               }
           }
         
@@ -211,7 +225,7 @@ Called By: See notes at top.
 This processes data for an Object.
 
 */
-       console.log("defining this.visit_Object");
+      console.log("defining this.visit_Object");
       this.visit_Object = function(node, parent, context)
       {
         var self = this,
@@ -323,3 +337,5 @@ This processes data for an Attribute.
     console.log("end of function in 'define' in RTIVisitors.js");
     return RTIVisitors;   
  });
+
+/***********************************************************************/

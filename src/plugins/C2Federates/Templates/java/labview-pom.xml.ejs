@@ -48,22 +48,6 @@
                             <goal>copy-resources</goal>
                         </goals>
                         <configuration>
-                            <outputDirectory>${basedir}/conf</outputDirectory>
-                            <resources>
-                                <resource>
-                                    <directory>${basedir}/../fom</directory>
-                                </resource>
-                            </resources>
-                            <overwrite>false</overwrite>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>copy-resources-labview</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>copy-resources</goal>
-                        </goals>
-                        <configuration>
                             <outputDirectory>${basedir}/project</outputDirectory>
                             <resources>
                                 <resource>

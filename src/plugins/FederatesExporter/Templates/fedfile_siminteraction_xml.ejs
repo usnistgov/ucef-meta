@@ -1,9 +1,9 @@
-<% /* siminteraction(interaction, indent, parameters, children) */ -%>
+<% /* name,sharingXml,deliveryXml,orderXml,indent,parameters,children */ -%>
 <%= indent%>    <interactionClass>
-<%= indent%>        <name><%= interaction.name %></name>
-<%= indent%>        <sharing><%=interaction.sharing %></sharing>
-<%= indent%>        <transportation><%= interaction.delivery %></transportation>
-<%= indent%>        <order><%= interaction.order%></order><% -%>
+<%= indent%>        <name><%= name %></name>
+<%= indent%>        <sharing><%= sharingXml %></sharing>
+<%= indent%>        <transportation><%= deliveryXml %></transportation>
+<%= indent%>        <order><%= orderXml %></order><% -%>
 <% parameters.forEach(function(param){ -%>
 <%   if (!param.inherited) { %>
 <%= indent%>        <parameter> 

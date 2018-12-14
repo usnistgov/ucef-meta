@@ -112,6 +112,12 @@ define([
             var fedPathDir = implDirPath + "/" + self.core.getAttribute(node, 'name')        
             var outFileName = fedPathDir + MavenPOM.mavenJavaPath + "/"+renderContext['simname'] + "/" + self.core.getAttribute(node, 'name') + ".java"
 
+            // set the SOM.xml outpit directory
+            var feder = self.federateInfos[self.core.getPath(node)];
+            if (feder) {
+                feder.directory = fedPathDir + "/conf/";
+            }
+
             renderContext['allobjectdata'] = renderContext['publishedobjectdata'].concat(renderContext['subscribedobjectdata']);
             renderContext['allinteractiondata'] = renderContext['publishedinteractiondata'].concat(renderContext['subscribedinteractiondata']);
 
