@@ -1,22 +1,24 @@
 <%/* group federate;
 
 federate(
-	simname,
-	melderpackagename,
-	classname,
-	isnonmapperfed,
-	timeconstrained,
-	timeregulating,
-	asynchronousdelivery,
-	publishedinteractiondata,
-	subscribedinteractiondata,
-	allinteractiondata,
-	publishedobjectdata,
-	subscribedobjectdata,
-	allobjectdata
+        simname,
+        melderpackagename,
+        classname,
+        isnonmapperfed,
+        timeconstrained,
+        timeregulating,
+        asynchronousdelivery,
+        publishedinteractiondata,
+        subscribedinteractiondata,
+        allinteractiondata,
+        publishedobjectdata,
+        subscribedobjectdata,
+        allobjectdata
 ) ::= <<
 */ -%>
-package <%= simname %>;
+package <%= groupId %>.<%= classname.toLowerCase() %>;
+
+import <%= groupId %>.<%= classname.toLowerCase() %>.rti.*;
 
 import hla.rti.EventRetractionHandle;
 import hla.rti.LogicalTime;
@@ -38,112 +40,122 @@ import <%= melderpackagename %>.<%= classname %>RTIFactory;
 <% } -%>
 
 public class <%= classname %>Base extends <% if(melderpackagename) { %><%= classname %><% }else{ %>SynchronizedFederate<% } %> {
-
 <% if(melderpackagename){ -%>
-	static {
-		<%= classname %>RTIFactory rtiFactory = new <%= classname %>RTIFactory();
+        static {
+                <%= classname %>RTIFactory rtiFactory = new <%= classname %>RTIFactory();
 <% /*allinteractiondata:setfactoryvar()*/ -%>
-		<% allinteractiondata.forEach(function(rticlass){ %>
-		rtiFactory.set_<%= rticlass.name %>Interface( new <%= rticlass.name %>Melder() );<%});%>
+                <% allinteractiondata.forEach(function(rticlass){ %>
+                rtiFactory.set_<%= rticlass.name %>Interface( new <%= rticlass.name %>Melder() );<%});%>
 <% /*allobjectdata:setfactoryvar()*/ -%>
-		<% allobjectdata.forEach(function(rticlass){ %>
-		rtiFactory.set_<%= rticlass.name %>Interface( new <%= rticlass.name %>Melder() );<%});%>	
+                <% allobjectdata.forEach(function(rticlass){ %>
+                rtiFactory.set_<%= rticlass.name %>Interface( new <%= rticlass.name %>Melder() );<%});%>
 
-		<%= classname %>.set<%= classname %>RTIFactory( rtiFactory );
-	}
+                <%= classname %>.set<%= classname %>RTIFactory( rtiFactory );
+        }
 <% } -%>
-	private SubscribedInteractionFilter _subscribedInteractionFilter = new SubscribedInteractionFilter();
-	
-	// constructor
-	public <%= classname %>Base(FederateConfig config) throws Exception {
-		super(config);
+    private SubscribedInteractionFilter _subscribedInteractionFilter =
+        new SubscribedInteractionFilter();
 
-		super.createLRC();
-		super.joinFederation();
-
+    // constructor
+    public <%= classname %>Base(FederateConfig config) throws Exception {
+        super(config);
+        super.createLRC();
+        super.joinFederation();
 <% if(timeconstrained){ -%>
-		enableTimeConstrained();
-<% } %>
+        enableTimeConstrained();
+<% } -%>
 <% if(timeregulating){ -%>
-		enableTimeRegulation(getLookAhead());
+        enableTimeRegulation(getLookAhead());
 <% } -%>
 <% if(asynchronousdelivery){ -%>
-		enableAsynchronousDelivery();
+        enableAsynchronousDelivery();
 <% } -%>
+
         // interaction pubsub
 <% /* publishedinteractiondata:pubinter() */ -%>
-        <% publishedinteractiondata.forEach(function(interactiondata){ %>
-        <%= interactiondata.name %>.publish(getLRC());<%});%>
+<% publishedinteractiondata.forEach(function(interactiondata){ -%>
+        <%= interactiondata.name %>.publish(getLRC());
+<% }); -%>
 <% /* subscribedinteractiondata:subinter() */ -%>
-        <% subscribedinteractiondata.forEach(function(interactiondata){ %>
+<% subscribedinteractiondata.forEach(function(interactiondata){ -%>
         <%= interactiondata.name %>.subscribe(getLRC());
         _subscribedInteractionFilter.setFedFilters( 
-			<%= interactiondata.name %>.get_handle(), 
-			SubscribedInteractionFilter.OriginFedFilter.<%= interactiondata.originFedFilter() %>, 
-			SubscribedInteractionFilter.SourceFedFilter.<%= interactiondata.srcFedFilter() %> 
-		);<%}); -%>
-		
-		// object pubsub
+           <%= interactiondata.name %>.get_handle(),
+           SubscribedInteractionFilter.OriginFedFilter.<%= interactiondata.originFedFilter() %>,
+           SubscribedInteractionFilter.SourceFedFilter.<%= interactiondata.srcFedFilter() %>);
+<% }); -%>
+
+        // object pubsub
 <%/* publishedobjectdata:pubobjectdata() */ -%>
-        <% publishedobjectdata.forEach(function(objectdata){ %>
-        	<% objectdata.publishedAttributeData.forEach(function(a){ %>
-        <%= objectdata.name %>.publish_<%= a.name %>();<%});%>
+<% publishedobjectdata.forEach(function(objectdata){ -%>
+<% objectdata.publishedAttributeData.forEach(function(a){ -%>
+        <%= objectdata.name %>.publish_<%= a.name %>();
+<% }); -%>
         <%= objectdata.name %>.publish(getLRC());
-        <%}); -%>
+<% }); -%>
 <%/* subscribedobjectdata:subobjectdata() */ -%>
-        <% subscribedobjectdata.forEach(function(objectdata){ %>
-        	<% objectdata.subscribedAttributeData.forEach(function(a){ %>
-        <%= objectdata.name %>.subscribe_<%= a.name %>();<%});%>
+<% subscribedobjectdata.forEach(function(objectdata){ -%>
+<% objectdata.subscribedAttributeData.forEach(function(a){ -%>
+        <%= objectdata.name %>.subscribe_<%= a.name %>();
+<% }); -%>
         <%= objectdata.name %>.subscribe(getLRC());
-        <%}); -%>
-	}
-        
+<% }); -%>
+    }
+
 <%/* publishedinteractiondata:create_interaction() */ -%>
-	<%publishedinteractiondata.forEach(function(interaction_data){%>
-	public <%= interaction_data.name %> create_<%= interaction_data.name %>() {
-	   <%= interaction_data.name%> interaction = new <%= interaction_data.name %>();
-	   interaction.set_sourceFed( getFederateId() );
-	   interaction.set_originFed( getFederateId() );
-	   return interaction;
-	}<%}); %>
+<%publishedinteractiondata.forEach(function(interaction_data){ -%>
+    public <%= interaction_data.name %> create_<%= interaction_data.name %>() {
+        <%= interaction_data.name%> interaction = new <%= interaction_data.name %>();
+        interaction.set_sourceFed(getFederateId());
+        interaction.set_originFed(getFederateId());
+        return interaction;
+    }
+<% }); -%>
+
 <%/* filter_interaction() */ -%>
-	@Override
-	public void receiveInteraction(
-	 int interactionClass, ReceivedInteraction theInteraction, byte[] userSuppliedTag
-	) {
-		InteractionRoot interactionRoot = InteractionRoot.create_interaction( interactionClass, theInteraction );
-		if ( interactionRoot instanceof C2WInteractionRoot ) {
-			
-			C2WInteractionRoot c2wInteractionRoot = (C2WInteractionRoot)interactionRoot;
+    @Override
+    public void receiveInteraction(int interactionClass,
+                                   ReceivedInteraction theInteraction,
+                                   byte[] userSuppliedTag) {
+        InteractionRoot interactionRoot =
+            InteractionRoot.create_interaction(interactionClass,
+                                               theInteraction);
+        if (interactionRoot instanceof C2WInteractionRoot) {
+            C2WInteractionRoot c2wInteractionRoot =
+                (C2WInteractionRoot)interactionRoot;
 
-	        // Filter interaction if src/origin fed requirements (if any) are not met
-	        if (  _subscribedInteractionFilter.filterC2WInteraction( getFederateId(), c2wInteractionRoot )  ) {
-	        	return;
-	        } 
-		}
-		
-		super.receiveInteraction( interactionClass, theInteraction, userSuppliedTag );			
-	}
+            // Filter interaction if src/origin fed requirements (if any)
+            // are not met
+            if (_subscribedInteractionFilter.filterC2WInteraction
+                (getFederateId(), c2wInteractionRoot)) {
+                return;
+            }
+        }
+        super.receiveInteraction(interactionClass, theInteraction,
+                                 userSuppliedTag);
+    }
 
-	@Override
-	public void receiveInteraction(
-	 int interactionClass,
-	 ReceivedInteraction theInteraction,
-	 byte[] userSuppliedTag,
-	 LogicalTime theTime,
-	 EventRetractionHandle retractionHandle
-	) {
-		InteractionRoot interactionRoot = InteractionRoot.create_interaction( interactionClass, theInteraction, theTime );
-		if ( interactionRoot instanceof C2WInteractionRoot ) {
+    @Override
+    public void receiveInteraction(int interactionClass,
+                                   ReceivedInteraction theInteraction,
+                                   byte[] userSuppliedTag,
+                                   LogicalTime theTime,
+                                   EventRetractionHandle retractionHandle) {
+        InteractionRoot interactionRoot =
+            InteractionRoot.create_interaction(interactionClass,
+                                               theInteraction, theTime);
+        if (interactionRoot instanceof C2WInteractionRoot) {
+            C2WInteractionRoot c2wInteractionRoot =
+                (C2WInteractionRoot)interactionRoot;
 
-			C2WInteractionRoot c2wInteractionRoot = (C2WInteractionRoot)interactionRoot;
-
-	        // Filter interaction if src/origin fed requirements (if any) are not met
-	        if (  _subscribedInteractionFilter.filterC2WInteraction( getFederateId(), c2wInteractionRoot )  ) {
-	        	return;
-	        } 
-		}
-
-		super.receiveInteraction( interactionClass, theInteraction, userSuppliedTag, theTime, retractionHandle );			
-	}
+            // Filter interaction if src/origin fed requirements (if any)
+            // are not met
+            if (_subscribedInteractionFilter.filterC2WInteraction
+                (getFederateId(), c2wInteractionRoot)) {
+                return;
+            }
+        }
+        super.receiveInteraction(interactionClass, theInteraction,
+                                 userSuppliedTag, theTime, retractionHandle);
+    }
 }
