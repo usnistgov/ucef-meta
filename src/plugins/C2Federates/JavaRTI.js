@@ -18,8 +18,63 @@ define
     'use strict';
     var JavaRTIFederateExporter;   // function variable
     var objectTraverserCheck;      // function variable
+    var interactionTraverserCheck; // function variable
 
 /***********************************************************************/
+
+/* objectTraverserCheck
+
+Returned Value: none
+
+Called By:
+  renderToFile (object is objectRoot)
+  renderNotCoreObjectToFile (object is objectRoot)
+  objectTraverserCheck (recursively)
+
+In this documentation, "object" means object in the WebGME sense, not
+object in the JavaScript sense.
+
+This adds entries to the pubSubObjects of a federate for all ancestors
+of objects that already have entries.
+
+For each object, object.basePath is the id of the parent of the object.
+
+First, this calls itself recursively on the children of the
+object. Since this is transmitting information from children to
+parents, the children have to be processed first. By calling itself
+recursively, this goes through the object tree (from top down) but
+builds the pubSubObjects of the federate from bottom up.
+
+Then, if the object is not objectRoot and the object.id is in the
+pubSubObjects of the given federate, the object is selected for
+further processing.
+
+For each selected object:
+
+A. If the parent publishes or subscribes to the federate, an entry in
+federate.pubSubObjects for the parent will have been made previously
+in PubSubVisitors, and in that case:
+
+A1. If the object's mayPublish of its entry is not zero, the parent's
+mayPublish of its entry is set to 1, and
+A2. If the object's maySubscribe of its entry is not zero, the parent's
+maySubscribe of its entry is set to 1.
+
+B. Otherwise, a new entry in the federate.pubSubObjects is created for the
+parent in which the parent's publish and subscribe are set to 0 and the
+parent's mayPublish and maySubscribe are set to the object's values.
+
+The final effect is that any object that is an ancestor of any object
+originally put on the federate.pubSubObjects in PubSubVisitors is also
+on federate.pubSubObjects, with its publish, subscribe, mayPublish, and
+maySubscribe values set appropriately.
+
+This function is identical to objectTraverserCheck in
+FederatesExporter.js. It would be nice to have only one, but that requires
+figuring out where to put it and how to refererence it. Using
+self.objectTraverserCheck in this file does not work.
+
+*/
 
     objectTraverserCheck = function( /* ARGUMENTS                           */
      federate,               /* (object) data in FederateInfos for federate */
@@ -61,6 +116,57 @@ define
 
 /***********************************************************************/
 
+/* interactionTraverserCheck (function-valued var of top-level function object)
+
+Returned Value: none
+
+Called By:
+  renderNotCoreInteractionToFile
+  interactionTraverserCheck (recursively)
+
+This adds entries to the pubSubInteractions of a federate for all ancestors
+of interactions that already have entries.
+
+By calling itself recursively, this goes through the interaction tree
+(from top down) but builds the pubSubInteractions from bottom up.
+
+If an interaction is on the pubSubInteractions of the federate but its
+parent is not, an entry for the parent of the interaction is added to
+the pubSubInteractions; the entry represents that the parent neither
+publishes or subscribes. If the parent publishes or subscribes, an
+entry for the parent will have been made previously in PubSubVisitors.
+
+The final effect is that any interaction that is an ancestor of any
+interaction originally put on the pubSubInteractions in PubSubVisitors
+is also on pubSubInteractions.
+
+This function is identical to interactionTraverserCheck in
+FederatesExporter.js. It would be nice to have only one, but that
+requires figuring out where to put it and how to refererence it.
+
+*/
+    interactionTraverserCheck = function( /* ARGUMENTS                       */
+     federate,                /* (object) data in federateInfos for federate */
+     interaction)             /* (object) interaction to process             */
+    {
+      interaction.children.forEach(function (child)
+      {
+        interactionTraverserCheck(federate, child);
+      });
+      if (interaction.name != 'InteractionRoot')
+        {
+          if ((interaction.id in federate.pubSubInteractions) &&
+              !(interaction.basePath in federate.pubSubInteractions))
+            {
+              federate.pubSubInteractions[interaction.basePath] =
+                {publish: 0,
+                 subscribe: 0};
+            }
+        }
+    };
+
+/***********************************************************************/
+    
 /* JavaRTIFederateExporter
 
 Returned Value: none
@@ -82,24 +188,25 @@ Called By: MapperFederateExporter (in MapperFederate.js)
 */
       this.initJavaRTI = function()
       {
-        var self;
-        var corePackagePath;
-        var corePackagePathStr;
-        var renderContext;
-        var coreDirSpec;
-        var coreDirPath;
-        var coreOutFilePath;
-        var renderNotCoreObjectToFile;
-        var renderToFile;
-        var foundationDirBasePath;
-        var eventsDirSpec;
-        var eventsDirPath;
-        var eventsOutFilePath;
-        var foundationPOM;
-        var simDirBasePath;
-        var simDirSpec;
-        var simDirPath;
-        var simOutFilePath;
+        var coreDirPath;                    // string
+        var coreDirSpec;                    // object
+        var coreOutFilePath;                // string
+        var corePackagePath;                // array
+        var corePackagePathStr;             // string
+        var foundationDirBasePath;          // string
+        var eventsDirPath;                  // string
+        var eventsDirSpec;                  // object
+        var eventsOutFilePath;              // string
+        var foundationPOM;                  // object
+        var renderContext;                  // object
+        var renderNotCoreInteractionToFile; // function
+        var renderNotCoreObjectToFile;      // function
+        var renderToFile;                   // function
+        var self;                           // the caller of JavaRTI
+        var simDirBasePath;                 // string
+        var simDirPath;                     // string
+        var simDirSpec;                     // object
+        var simOutFilePath;                 // string
 
 	self = this;
         corePackagePath = ["org", "cpswt", "hla"];
@@ -130,7 +237,7 @@ Called By: MapperFederateExporter (in MapperFederate.js)
                 FederateResignInteraction: {simname: corePackagePathStr},
                 OutcomeBase: {simname: corePackagePathStr},
                 ActionBase: {simname: corePackagePathStr}
-            };
+               };
 
 /***********************************************************************/
 
@@ -141,8 +248,6 @@ Returned Value: none
 Called By:
   renderNextObjectInCore (which is also the callback argument)
   renderNextInteractionInCore (which is also the callback argument)
-  renderNextObjectNotCore (which is also the callback argument)
-  renderNextInteractionNotCore (which is also the callback argument)
 
 This function calls its caller when the function that is the last
 argument to addFile executes. Thus, this function and the caller call
@@ -221,8 +326,6 @@ will be called; otherwise, the callback will not occur.
 	      var federJavaCode;
 	      var groupId;
 
-	      // Set remaining by counting how many will be written.
-	      remaining = 0;
 	      groupId = self.getCurrentConfig().groupId.trim();
 
 	      if (self.callObjectTraverser)
@@ -237,6 +340,8 @@ will be called; otherwise, the callback will not occur.
 		      });
 		    }
 		}
+	      // Set remaining by counting how many will be written.
+	      remaining = 0;
 	      for (federId in self.federateInfos)
 		{
 		  feder = self.federateInfos[federId];
@@ -291,7 +396,7 @@ will be called; otherwise, the callback will not occur.
 Returned Value: none
 
 Called By:
-  anonymous function pushed in
+  anonymous function pushed onto the fileGenerators in initJavaRTI
 
 This renders a not-core object to a file for each federate that has a
 publish or subscribe connection to the object.
@@ -400,6 +505,123 @@ publish or subscribe connection to the object.
         }; // end renderNotCoreObjectToFile
         
 /***********************************************************************/
+
+/* renderNotCoreInteractionToFile
+
+Returned Value: none
+
+Called By:
+  anonymous function pushed onto the fileGenerators in initJavaRTI
+
+This renders a not-core interaction to a file for each federate that has a
+publish or subscribe connection to the interaction.
+  
+*/
+        renderNotCoreInteractionToFile = function(
+         outFilePath,   // full file name of file to write
+         model,         // data model from which to generate code
+         artifact,      // array of file generating functions
+	 callback)      // function to call in case of error
+        {
+          var context;
+          var packagePath;
+          var fullPath;
+          var oattr;
+          var template;
+          var javaCode;
+          
+          context = self.createJavaRTICodeModel();
+          packagePath = outFilePath + "/" +
+            (self.javaCorePackageOISpecs.hasOwnProperty(model.name) ?
+             self.javaCorePackageOISpecs[model.name]['simname'] :
+             self.projectName);
+          fullPath = packagePath + '/' + model.name +'.java';
+          context.isinteraction = true;
+          context.simname = self.projectName;
+          context.classname = model.name;
+          context.hlaclassname = model.fullName;
+          context.parentclassname = model.isroot ? "" : model.basename;
+          context.isc2winteractionroot = model.isroot;
+
+          //Override with core specs
+          if (self.javaCorePackageOISpecs.hasOwnProperty(model.name))
+            {
+              for (oattr in self.javaCorePackageOISpecs[model.name])
+                {
+                  if (self.javaCorePackageOISpecs[model.name].
+                      hasOwnProperty(oattr))
+                    {
+                      context[oattr] =
+                        self.javaCorePackageOISpecs[model.name][oattr];
+                    }
+                }
+            }
+          model.parameters.forEach(function(param)
+          {
+            context.alldatamembers.push(param);
+            if (!param.inherited)
+              {
+                context.datamembers.push(param);
+              }
+          });
+          
+          template = TEMPLATES['java/class.java.ejs'];
+          javaCode = ejs.render(template, context);
+	  if (self.federateInfos)
+	    { // only the FederatesExporter has federateInfos
+	      var remaining;
+	      var federId;
+	      var feder;
+	      var federJavaCode;
+	      var groupId;
+
+	      if (self.callInteractionTraverser)
+		{
+		  self.callInteractionTraverser = false;
+		  for (federId in self.federateInfos)
+		    {
+		      feder = self.federateInfos[federId];
+		      self.interactionRoots.forEach(function(intRoot)
+	              {
+	                interactionTraverserCheck(feder, intRoot);
+		      });
+		    }
+		}
+	      groupId = self.getCurrentConfig().groupId.trim();
+	      for (federId in self.federateInfos)
+		{
+		  feder = self.federateInfos[federId];
+		  if (model.id in feder.pubSubInteractions)
+		    {
+		      federJavaCode = "package " + groupId + "." +
+			feder.name.toLowerCase() + ".rti;\n" + javaCode;
+		      fullPath = self.projectName + "-java-federates/" +
+			feder.name + "/src/main/java/" +
+			groupId.replace(/[.]/g, "/") + "/" +
+			feder.name.toLowerCase() + "/rti/" + model.name +
+			".java";
+		      console.log('calling addFile for: ' + fullPath);
+		      artifact.addFile(fullPath, federJavaCode,
+				       function (err)
+				       {
+					 if (err)
+					   {
+					     callback(err);
+					     return;
+					   }
+				       });
+		    }
+		}
+	    }
+	  else
+	    {
+	      console.log('calling addFile for: ' + fullPath);
+	      artifact.addFile(fullPath, javaCode, callback);
+	    }
+        }; // end renderNotCoreInteractionToFile
+        
+/***********************************************************************/
+	
 /*
    
 Begin FOUNDATION RTI
@@ -673,6 +895,7 @@ other until all the selected objects are processed.
                 }
               objToRender = [];
 
+	      /* start define renderNextObjectInCore function */
               renderNextObjectInCore = function(err)
               {
                 if (err)
@@ -695,6 +918,7 @@ other until all the selected objects are processed.
                       }
                   }
               };
+	      /* end define renderNextObjectInCore function */
 
               for (oid in self.objects)
                 {
@@ -733,7 +957,9 @@ other until all the selected interactions are processed.
                   callback();
                   return;
                 }
-              intToRender = [];
+	      intToRender = [];
+	      
+	      /* start define renderNextInteractionInCore function */
               renderNextInteractionInCore = function(err)
               {
                 var nextInteraction;
@@ -758,6 +984,7 @@ other until all the selected interactions are processed.
                       }
                   }
               };
+	      /* end define renderNextInteractionInCore function */
 
               for (iid in self.interactions)
                 {
@@ -794,60 +1021,27 @@ other until all the selected interactions are processed.
         self.java_rtiPOM.dependencies.push(self.java_core_rtiPOM);
 
 /***********************************************************************/
-/* COMMENTED OUT
-        //Add sim POM generator
-        self.fileGenerators.push(function(artifact, callback)
-        {
-          var fullPath;
-          var xmlCode;
-          
-          if (!self.javaPOM)
-            {
-              callback();
-              return;
-            }
-          //Set the parent now that it exists
-          self.java_rtiPOM.setParentPom(self.javaPOM);
-          fullPath = simDirPath + '/pom.xml';
-          xmlCode = self._jsonToXml.convertToString(self.java_rtiPOM.toJSON());
-          console.log('calling addFile for: ' + fullPath);
-          artifact.addFile(fullPath, xmlCode,
-                           function (err)
-                           {
-                             if (err)
-                               {
-                                 callback(err);
-                                 return;
-                               }
-                             else
-                               {
-                                 callback();
-                               }
-                           });
-        });
-*/
-/***********************************************************************/
 
 /*
 
-For each object in self.objects whose name is not a property in
-self.javaCorePackageOISpecs, this adds to the file generators a
-function that may print one or more java files.
+this adds to the file generators a function that prints a java file
+for each object in self.objects whose name is not a property in
+self.javaCorePackageOISpecs.
 
 */
         self.fileGenerators.push(function(artifact, callback)
         {
           var objToRender;
-          var oid;
+          var objId;
           
           if (!self.javaPOM)
             {
               callback();
               return;
             }
-          for (oid in self.objects)
+          for (objId in self.objects)
             {
-	      objToRender = self.objects[oid];
+	      objToRender = self.objects[objId];
               if (objToRender.name != "ObjectRoot" &&
                   !self.javaCorePackageOISpecs.
                      hasOwnProperty(objToRender.name))
@@ -861,60 +1055,6 @@ function that may print one or more java files.
 	  return;
         });
 	
-/*
-
-This is the old code in which renderNextObjectNotCore and renderToFile
-call each other back and forth until all the objToRender are rendered.
-
-        self.fileGenerators.push(function(artifact, callback)
-        {
-          var objToRender;
-          var renderNextObjectNotCore;
-          var nextObj;
-          var oid;
-          
-          if (!self.javaPOM)
-            {
-              callback();
-              return;
-            }
-          objToRender = [];
-          
-          renderNextObjectNotCore = function(err)
-          {
-            if (err)
-              {
-                callback(err);
-              }
-            else
-              {
-                nextObj = objToRender.pop();
-                if (nextObj)
-                  {
-                    console.log("calling renderToFile for non-core object");
-                    renderToFile(simOutFilePath, false, nextObj, artifact,
-                                 renderNextObjectNotCore);
-                  }
-                else
-                  {
-                    callback();
-                    return;
-                  }
-              }
-          };
-          
-          for (oid in self.objects)
-            {
-              if (self.objects[oid].name != "ObjectRoot" &&
-                  !self.javaCorePackageOISpecs.
-                     hasOwnProperty(self.objects[oid].name))
-                {
-                  objToRender.push(self.objects[oid]);
-                }
-            }
-          renderNextObjectNotCore();
-        });
-	*/
 /***********************************************************************/
 
 /*
@@ -923,58 +1063,32 @@ This adds to the file generators a function that prints a java file for
 each interaction in self.interactions whose name is not a property in
 self.javaCorePackageOISpecs.
 
-The renderToFile function and the renderNextInteractionNotCore
-function defined here call each other until all the objects are
-processed.
-
 */
 
         self.fileGenerators.push(function(artifact, callback)
         {
           var intToRender;
-          var renderNextInteractionNotCore;
-          var nextInteraction;
-          var iid;
-          
+          var intId;
+	  
           if (!self.javaPOM)
             {
               callback();
               return;
             }
-          intToRender = [];
-          renderNextInteractionNotCore = function(err)
+          for (intId in self.interactions)
             {
-              if (err)
-                {
-                  callback(err);
-                }
-              else
-                {
-                  nextInteraction = intToRender.pop();
-                  if (nextInteraction)
-                    {
-                      console.log("calling renderToFile for non-core interaction");
-                      renderToFile(simOutFilePath, true, nextInteraction,
-                                   artifact, renderNextInteractionNotCore);
-                    }
-                  else
-                    {
-                      callback();
-                      return;
-                    }
-                }
-            };
-
-          for (iid in self.interactions)
-            {
-              if (self.interactions[iid].name != "InteractionRoot" &&
+	      intToRender = self.interactions[intId];
+              if (intToRender.name != "InteractionRoot" &&
                   !self.javaCorePackageOISpecs.
-                    hasOwnProperty(self.interactions[iid].name))
-                {
-                  intToRender.push(self.interactions[iid]);
-                }
-            }
-          renderNextInteractionNotCore();
+                     hasOwnProperty(intToRender.name))
+		{
+		  console.log("calling renderNotCoreInteractionToFile");
+		  renderNotCoreInteractionToFile(simOutFilePath, intToRender,
+						 artifact, callback);
+		}
+	    }
+	  callback();
+	  return;
         });
         
 // end SIM RTI
@@ -1088,7 +1202,7 @@ code elsewhere may be looking for "default", so it has been left in.
             };
       } // end createJavaRTICodeModel function
 
-      /***********************************************************************/
+/***********************************************************************/
 
     } // end JavaRTIFederateExporter function
 
