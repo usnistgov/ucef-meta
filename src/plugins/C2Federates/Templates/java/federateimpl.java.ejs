@@ -1,6 +1,8 @@
 package <%= groupId %>.<%= classname.toLowerCase() %>;
 
+<% if(publishedinteractiondata.length || subscribedinteractiondata.length || publishedobjectdata.length || subscribedobjectdata.length) { -%>
 import <%= groupId %>.<%= classname.toLowerCase() %>.rti.*;
+<% } -%>
 
 import org.cpswt.config.FederateConfig;
 import org.cpswt.config.FederateConfigParser;

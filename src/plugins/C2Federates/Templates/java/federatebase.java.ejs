@@ -18,7 +18,9 @@ federate(
 */ -%>
 package <%= groupId %>.<%= classname.toLowerCase() %>;
 
+<% if(publishedinteractiondata.length || subscribedinteractiondata.length || publishedobjectdata.length || subscribedobjectdata.length) { -%>
 import <%= groupId %>.<%= classname.toLowerCase() %>.rti.*;
+<% } -%>
 
 import hla.rti.EventRetractionHandle;
 import hla.rti.LogicalTime;
