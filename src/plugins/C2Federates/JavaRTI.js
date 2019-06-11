@@ -208,7 +208,7 @@ Called By: MapperFederateExporter (in MapperFederate.js)
         var simDirSpec;                     // object
         var simOutFilePath;                 // string
 
-	self = this;
+        self = this;
         corePackagePath = ["org", "cpswt", "hla"];
         corePackagePathStr = corePackagePath.join('.');
         renderContext = {ejs: ejs, 
@@ -318,75 +318,75 @@ will be called; otherwise, the callback will not occur.
           
           template = TEMPLATES['java/class.java.ejs'];
           javaCode = ejs.render(template, context);
-	  if (self.federateInfos)
-	    { // only the FederatesExporter has federateInfos
-	      var remaining;
-	      var federId;
-	      var feder;
-	      var federJavaCode;
-	      var groupId;
+          if (self.federateInfos)
+            { // only the FederatesExporter has federateInfos
+              var remaining;
+              var federId;
+              var feder;
+              var federJavaCode;
+              var groupId;
 
-	      groupId = self.getCurrentConfig().groupId.trim();
+              groupId = self.getCurrentConfig().groupId.trim();
 
-	      if (self.callObjectTraverser)
-		{
-		  self.callObjectTraverser = false;
-		  for (federId in self.federateInfos)
-		    {
-		      feder = self.federateInfos[federId];
-		      self.objectRoots.forEach(function(objectRoot)
-	              {
-	                objectTraverserCheck(feder, objectRoot);
-		      });
-		    }
-		}
-	      // Set remaining by counting how many will be written.
-	      remaining = 0;
-	      for (federId in self.federateInfos)
-		{
-		  feder = self.federateInfos[federId];
-		  if ((isInteraction &&
-		       (model.id in feder.pubSubInteractions)) ||
-		      (!isInteraction &&
-		       (model.id in feder.pubSubObjects)))
-		    {
-		      remaining++;
-		    }
-		}
-	      for (federId in self.federateInfos)
-		{
-		  feder = self.federateInfos[federId];
-		  if ((isInteraction &&
-		       (model.id in feder.pubSubInteractions)) ||
-		      (!isInteraction &&
-		       (model.id in feder.pubSubObjects)))
-		    {
-		      remaining--;
-		      federJavaCode = "package " + groupId + "." +
-			feder.name.toLowerCase() + ".rti;\n" + javaCode;
-		      fullPath = self.projectName + "-java-federates/" +
-			feder.name + "/src/main/java/" +
-			groupId.replace(/[.]/g, "/") + "/" +
-			feder.name.toLowerCase() + "/rti/" + model.name +
-			".java";
-		      console.log('calling addFile for: ' + fullPath);
-		      artifact.addFile(fullPath, federJavaCode,
-				       (remaining ?
-					function (err) // there are more
-				        {if (err) {callback(err); return;}} :
-					function (err) // last one
-				        {if (err) {callback(err); return;}
-					  else {callback();}}
-					)
-				       );
-		    }
-		}
-	    }
-	  else
-	    {
-	      console.log('calling addFile for: ' + fullPath);
-	      artifact.addFile(fullPath, javaCode, callback);
-	    }
+              if (self.callObjectTraverser)
+                {
+                  self.callObjectTraverser = false;
+                  for (federId in self.federateInfos)
+                    {
+                      feder = self.federateInfos[federId];
+                      self.objectRoots.forEach(function(objectRoot)
+                      {
+                        objectTraverserCheck(feder, objectRoot);
+                      });
+                    }
+                }
+              // Set remaining by counting how many will be written.
+              remaining = 0;
+              for (federId in self.federateInfos)
+                {
+                  feder = self.federateInfos[federId];
+                  if ((isInteraction &&
+                       (model.id in feder.pubSubInteractions)) ||
+                      (!isInteraction &&
+                       (model.id in feder.pubSubObjects)))
+                    {
+                      remaining++;
+                    }
+                }
+              for (federId in self.federateInfos)
+                {
+                  feder = self.federateInfos[federId];
+                  if ((isInteraction &&
+                       (model.id in feder.pubSubInteractions)) ||
+                      (!isInteraction &&
+                       (model.id in feder.pubSubObjects)))
+                    {
+                      remaining--;
+                      federJavaCode = "package " + groupId + "." +
+                        feder.name.toLowerCase() + ".rti;\n" + javaCode;
+                      fullPath = self.projectName + "-java-federates/" +
+                        feder.name + "/src/main/java/" +
+                        groupId.replace(/[.]/g, "/") + "/" +
+                        feder.name.toLowerCase() + "/rti/" + model.name +
+                        ".java";
+                      console.log('calling addFile for: ' + fullPath);
+                      artifact.addFile(fullPath, federJavaCode,
+                                       (remaining ?
+                                        function (err) // there are more
+                                        {if (err) {callback(err); return;}} :
+                                        function (err) // last one
+                                        {if (err) {callback(err); return;}
+                                          else {callback();}}
+                                        )
+                                       );
+                    }
+                }
+            }
+          else
+            {
+              console.log('calling addFile for: ' + fullPath);
+              artifact.addFile(fullPath, javaCode, callback);
+            }
         }; // end renderToFile
         
 /***********************************************************************/
@@ -406,7 +406,7 @@ publish or subscribe connection to the object.
          outFilePath,   // full file name of file to write
          model,         // data model from which to generate code
          artifact,      // array of file generating functions
-	 callback)      // function to call in case of error
+         callback)      // function to call in case of error
         {
           var context;
           var packagePath;
@@ -452,56 +452,56 @@ publish or subscribe connection to the object.
           
           template = TEMPLATES['java/class.java.ejs'];
           javaCode = ejs.render(template, context);
-	  if (self.federateInfos)
-	    { // only the FederatesExporter has federateInfos
-	      var federId;
-	      var feder;
-	      var federJavaCode;
-	      var groupId;
+          if (self.federateInfos)
+            { // only the FederatesExporter has federateInfos
+              var federId;
+              var feder;
+              var federJavaCode;
+              var groupId;
 
-	      if (self.callObjectTraverser)
-		{
-		  self.callObjectTraverser = false;
-		  for (federId in self.federateInfos)
-		    {
-		      feder = self.federateInfos[federId];
-		      self.objectRoots.forEach(function(objectRoot)
-	              {
-	                objectTraverserCheck(feder, objectRoot);
-		      });
-		    }
-		}
-	      groupId = self.getCurrentConfig().groupId.trim();
-	      for (federId in self.federateInfos)
-		{
-		  feder = self.federateInfos[federId];
-		  if (model.id in feder.pubSubObjects)
-		    {
-		      federJavaCode = "package " + groupId + "." +
-			feder.name.toLowerCase() + ".rti;\n" + javaCode;
-		      fullPath = self.projectName + "-java-federates/" +
-			feder.name + "/src/main/java/" +
-			groupId.replace(/[.]/g, "/") + "/" +
-			feder.name.toLowerCase() + "/rti/" + model.name +
-			".java";
-		      console.log('calling addFile for: ' + fullPath);
-		      artifact.addFile(fullPath, federJavaCode,
-				       function (err)
-				       {
-					 if (err)
-					   {
-					     callback(err);
-					     return;
-					   }
-				       });
-		    }
-		}
-	    }
-	  else
-	    {
-	      console.log('calling addFile for: ' + fullPath);
-	      artifact.addFile(fullPath, javaCode, callback);
-	    }
+              if (self.callObjectTraverser)
+                {
+                  self.callObjectTraverser = false;
+                  for (federId in self.federateInfos)
+                    {
+                      feder = self.federateInfos[federId];
+                      self.objectRoots.forEach(function(objectRoot)
+                      {
+                        objectTraverserCheck(feder, objectRoot);
+                      });
+                    }
+                }
+              groupId = self.getCurrentConfig().groupId.trim();
+              for (federId in self.federateInfos)
+                {
+                  feder = self.federateInfos[federId];
+                  if (model.id in feder.pubSubObjects)
+                    {
+                      federJavaCode = "package " + groupId + "." +
+                        feder.name.toLowerCase() + ".rti;\n" + javaCode;
+                      fullPath = self.projectName + "-java-federates/" +
+                        feder.name + "/src/main/java/" +
+                        groupId.replace(/[.]/g, "/") + "/" +
+                        feder.name.toLowerCase() + "/rti/" + model.name +
+                        ".java";
+                      console.log('calling addFile for: ' + fullPath);
+                      artifact.addFile(fullPath, federJavaCode,
+                                       function (err)
+                                       {
+                                         if (err)
+                                           {
+                                             callback(err);
+                                             return;
+                                           }
+                                       });
+                    }
+                }
+            }
+          else
+            {
+              console.log('calling addFile for: ' + fullPath);
+              artifact.addFile(fullPath, javaCode, callback);
+            }
         }; // end renderNotCoreObjectToFile
         
 /***********************************************************************/
@@ -521,7 +521,7 @@ publish or subscribe connection to the interaction.
          outFilePath,   // full file name of file to write
          model,         // data model from which to generate code
          artifact,      // array of file generating functions
-	 callback)      // function to call in case of error
+         callback)      // function to call in case of error
         {
           var context;
           var packagePath;
@@ -567,61 +567,61 @@ publish or subscribe connection to the interaction.
           
           template = TEMPLATES['java/class.java.ejs'];
           javaCode = ejs.render(template, context);
-	  if (self.federateInfos)
-	    { // only the FederatesExporter has federateInfos
-	      var remaining;
-	      var federId;
-	      var feder;
-	      var federJavaCode;
-	      var groupId;
+          if (self.federateInfos)
+            { // only the FederatesExporter has federateInfos
+              var remaining;
+              var federId;
+              var feder;
+              var federJavaCode;
+              var groupId;
 
-	      if (self.callInteractionTraverser)
-		{
-		  self.callInteractionTraverser = false;
-		  for (federId in self.federateInfos)
-		    {
-		      feder = self.federateInfos[federId];
-		      self.interactionRoots.forEach(function(intRoot)
-	              {
-	                interactionTraverserCheck(feder, intRoot);
-		      });
-		    }
-		}
-	      groupId = self.getCurrentConfig().groupId.trim();
-	      for (federId in self.federateInfos)
-		{
-		  feder = self.federateInfos[federId];
-		  if (model.id in feder.pubSubInteractions)
-		    {
-		      federJavaCode = "package " + groupId + "." +
-			feder.name.toLowerCase() + ".rti;\n" + javaCode;
-		      fullPath = self.projectName + "-java-federates/" +
-			feder.name + "/src/main/java/" +
-			groupId.replace(/[.]/g, "/") + "/" +
-			feder.name.toLowerCase() + "/rti/" + model.name +
-			".java";
-		      console.log('calling addFile for: ' + fullPath);
-		      artifact.addFile(fullPath, federJavaCode,
-				       function (err)
-				       {
-					 if (err)
-					   {
-					     callback(err);
-					     return;
-					   }
-				       });
-		    }
-		}
-	    }
-	  else
-	    {
-	      console.log('calling addFile for: ' + fullPath);
-	      artifact.addFile(fullPath, javaCode, callback);
-	    }
+              if (self.callInteractionTraverser)
+                {
+                  self.callInteractionTraverser = false;
+                  for (federId in self.federateInfos)
+                    {
+                      feder = self.federateInfos[federId];
+                      self.interactionRoots.forEach(function(intRoot)
+                      {
+                        interactionTraverserCheck(feder, intRoot);
+                      });
+                    }
+                }
+              groupId = self.getCurrentConfig().groupId.trim();
+              for (federId in self.federateInfos)
+                {
+                  feder = self.federateInfos[federId];
+                  if (model.id in feder.pubSubInteractions)
+                    {
+                      federJavaCode = "package " + groupId + "." +
+                        feder.name.toLowerCase() + ".rti;\n" + javaCode;
+                      fullPath = self.projectName + "-java-federates/" +
+                        feder.name + "/src/main/java/" +
+                        groupId.replace(/[.]/g, "/") + "/" +
+                        feder.name.toLowerCase() + "/rti/" + model.name +
+                        ".java";
+                      console.log('calling addFile for: ' + fullPath);
+                      artifact.addFile(fullPath, federJavaCode,
+                                       function (err)
+                                       {
+                                         if (err)
+                                           {
+                                             callback(err);
+                                             return;
+                                           }
+                                       });
+                    }
+                }
+            }
+          else
+            {
+              console.log('calling addFile for: ' + fullPath);
+              artifact.addFile(fullPath, javaCode, callback);
+            }
         }; // end renderNotCoreInteractionToFile
         
 /***********************************************************************/
-	
+        
 /*
    
 Begin FOUNDATION RTI
@@ -895,7 +895,7 @@ other until all the selected objects are processed.
                 }
               objToRender = [];
 
-	      /* start define renderNextObjectInCore function */
+              /* start define renderNextObjectInCore function */
               renderNextObjectInCore = function(err)
               {
                 if (err)
@@ -918,7 +918,7 @@ other until all the selected objects are processed.
                       }
                   }
               };
-	      /* end define renderNextObjectInCore function */
+              /* end define renderNextObjectInCore function */
 
               for (oid in self.objects)
                 {
@@ -957,9 +957,9 @@ other until all the selected interactions are processed.
                   callback();
                   return;
                 }
-	      intToRender = [];
-	      
-	      /* start define renderNextInteractionInCore function */
+              intToRender = [];
+              
+              /* start define renderNextInteractionInCore function */
               renderNextInteractionInCore = function(err)
               {
                 var nextInteraction;
@@ -984,7 +984,7 @@ other until all the selected interactions are processed.
                       }
                   }
               };
-	      /* end define renderNextInteractionInCore function */
+              /* end define renderNextInteractionInCore function */
 
               for (iid in self.interactions)
                 {
@@ -1041,20 +1041,20 @@ self.javaCorePackageOISpecs.
             }
           for (objId in self.objects)
             {
-	      objToRender = self.objects[objId];
+              objToRender = self.objects[objId];
               if (objToRender.name != "ObjectRoot" &&
                   !self.javaCorePackageOISpecs.
                      hasOwnProperty(objToRender.name))
-		{
-		  console.log("calling renderNotCoreObjectToFile");
-		  renderNotCoreObjectToFile(simOutFilePath, objToRender,
-					    artifact, callback);
-		}
-	    }
-	  callback();
-	  return;
+                {
+                  console.log("calling renderNotCoreObjectToFile");
+                  renderNotCoreObjectToFile(simOutFilePath, objToRender,
+                                            artifact, callback);
+                }
+            }
+          callback();
+          return;
         });
-	
+        
 /***********************************************************************/
 
 /*
@@ -1069,7 +1069,7 @@ self.javaCorePackageOISpecs.
         {
           var intToRender;
           var intId;
-	  
+          
           if (!self.javaPOM)
             {
               callback();
@@ -1077,18 +1077,18 @@ self.javaCorePackageOISpecs.
             }
           for (intId in self.interactions)
             {
-	      intToRender = self.interactions[intId];
+              intToRender = self.interactions[intId];
               if (intToRender.name != "InteractionRoot" &&
                   !self.javaCorePackageOISpecs.
                      hasOwnProperty(intToRender.name))
-		{
-		  console.log("calling renderNotCoreInteractionToFile");
-		  renderNotCoreInteractionToFile(simOutFilePath, intToRender,
-						 artifact, callback);
-		}
-	    }
-	  callback();
-	  return;
+                {
+                  console.log("calling renderNotCoreInteractionToFile");
+                  renderNotCoreInteractionToFile(simOutFilePath, intToRender,
+                                                 artifact, callback);
+                }
+            }
+          callback();
+          return;
         });
         
 // end SIM RTI
