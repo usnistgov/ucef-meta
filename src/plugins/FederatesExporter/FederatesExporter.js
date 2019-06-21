@@ -21,22 +21,26 @@ A separate XML file is generated for each Federate in a project.
 federateInfos
 -------------
 
-The federateInfos object collects information for each
-federate. federateInfos uses federate ids as property names and has
-the form
+The federateInfos object collects information for each federate.
+federateInfos uses federate ids as property names and has the form
 
 {federateId1: value1, federateId2: value2, ...}. 
 
 The value corresponding to a federateId is an object of the form
 {name: federateName,
+ metaType: federateMetaType
  directory: directoryPath,
  pubSubObjects:
   {objectId1: objectData1, objectId2: objectData2, ...},
  pubSubInteractions:
   {interactId1: interactData1, interactId2: interactData2, ...}}
 
-The directory property is not used in the FederatesExporter but is used
-elsewhere.
+The directory property is set in JavaImplFederate.js and in
+CppImplFederate.js. It is used in this file in the fomGenerator
+function. It is also is used elsewhere.
+
+The name and metaType properties are set in ModelTraverserMixin.js. The
+metaType property is not used in this file. It is used in JavaRTI.js.
 
 The interactData values have the form:
 
@@ -98,9 +102,10 @@ the federate is first encountered. That may be in any of three places:
 
 (1) the atModelNode function defined in C2Core/ModelTraverserMixin.js.
 If initialized here, the pubSubObjects and pubSubInteractions are both
-empty objects. If a federateInfo for a federate has already been created
-when the federate is encountered in this function, the name of the
-federate is added to the data (since it will be missing).
+empty objects. If a federateInfo for a federate has already been
+created when the federate is encountered in this function, the name
+and metaType of the federate are added to the data (since they will be
+missing).
 
 (2) one of the four visit_StaticXXX functions defined in
 PubSubVisitors.js.  If initialized here, (i) some data will be put
