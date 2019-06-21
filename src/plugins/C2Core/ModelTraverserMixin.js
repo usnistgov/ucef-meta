@@ -1,5 +1,11 @@
 /*
 
+File completed by unknown programmer (probably H. Neema)
+
+File modified extensively by T. Kramer 
+
+File reformatted in C style, as far as possible.
+
 This "define" appears to be intended to be used by any other "define"
 that needs to go through all the nodes in a webgme model. It is used
 by at least FederatesExporter.js and DeploymentExporter.js.
@@ -310,6 +316,12 @@ Also, it seems kludgy to execute a statement that is known to be in error
 much of the time and recover by catching the error. If possible, it would
 seem better to test for a known name and call the appropriate function.
 
+If this is called by FederatesExporter, so that federateInfos exists, and
+the node type is in the federateTypes of the FederatesExporter, then
+ - If a there is already an entry in federateInfos for the node,
+   the name and metaType are added.
+ - If not, a new entry in federateInfos is built for the node.
+
 */
 
         this.atModelNode = function(node, parent, context, callback)
@@ -326,10 +338,12 @@ seem better to test for a known name and call the appropriate function.
                 if (self.federateInfos[id])
                   {
                     self.federateInfos[id].name = nodeName;
+                    self.federateInfos[id].metaType = nodeType;
                   }
                 else
                   {
                     self.federateInfos[id] = {name: nodeName,
+                                              metaType: nodeType,
                                               directory: null,
                                               pubSubObjects: {},
                                               pubSubInteractions: {}};
