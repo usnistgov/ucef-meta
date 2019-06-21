@@ -1,4 +1,4 @@
-/* 
+/*
 
 JavaRTI.js is used in the define of:
  C2Federates/MapperFederate.js and
@@ -398,8 +398,8 @@ Returned Value: none
 Called By:
   anonymous function pushed onto the fileGenerators in initJavaRTI
 
-This renders a not-core object to a file for each federate that has a
-publish or subscribe connection to the object.
+This renders a not-core object to a java file for each federate that
+has a publish or subscribe connection to the object.
   
 */
         renderNotCoreObjectToFile = function(
@@ -475,7 +475,8 @@ publish or subscribe connection to the object.
               for (federId in self.federateInfos)
                 {
                   feder = self.federateInfos[federId];
-                  if (model.id in feder.pubSubObjects)
+                  if ((model.id in feder.pubSubObjects) &&
+                      (feder.metaType == 'JavaFederate'))
                     {
                       federJavaCode = "package " + groupId + "." +
                         feder.name.toLowerCase() + ".rti;\n" + javaCode;
@@ -513,8 +514,8 @@ Returned Value: none
 Called By:
   anonymous function pushed onto the fileGenerators in initJavaRTI
 
-This renders a not-core interaction to a file for each federate that has a
-publish or subscribe connection to the interaction.
+This renders a not-core interaction to a java file for each federate
+that has a publish or subscribe connection to the interaction.
   
 */
         renderNotCoreInteractionToFile = function(
@@ -591,7 +592,8 @@ publish or subscribe connection to the interaction.
               for (federId in self.federateInfos)
                 {
                   feder = self.federateInfos[federId];
-                  if (model.id in feder.pubSubInteractions)
+                  if ((model.id in feder.pubSubInteractions) &&
+                      (feder.metaType == 'JavaFederate'))
                     {
                       federJavaCode = "package " + groupId + "." +
                         feder.name.toLowerCase() + ".rti;\n" + javaCode;
@@ -1024,9 +1026,9 @@ other until all the selected interactions are processed.
 
 /*
 
-this adds to the file generators a function that prints a java file
-for each object in self.objects whose name is not a property in
-self.javaCorePackageOISpecs.
+this adds to the file generators a function that prints zero to many
+java files for each object in self.objects whose name is not a
+property in self.javaCorePackageOISpecs.
 
 */
         self.fileGenerators.push(function(artifact, callback)
@@ -1059,9 +1061,9 @@ self.javaCorePackageOISpecs.
 
 /*
 
-This adds to the file generators a function that prints a java file for
-each interaction in self.interactions whose name is not a property in
-self.javaCorePackageOISpecs.
+This adds to the file generators a function that prints zero to many
+java files for each interaction in self.interactions whose name is not
+a property in self.javaCorePackageOISpecs.
 
 */
 
