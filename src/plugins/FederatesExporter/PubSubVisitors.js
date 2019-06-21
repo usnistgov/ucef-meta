@@ -116,6 +116,7 @@ created in visit_StaticInteractionSubscribe.
               {
                 self.federateInfos[publication.federate] =
                   {name: null,
+		   metaType: null,
                    directory: null,
                    pubSubObjects: {},
                    pubSubInteractions: {}};
@@ -211,6 +212,7 @@ been created in another visit_XXX function
               {
                 self.federateInfos[subscription.federate] =
                   {name: null,
+		   metaType: null,
                    directory: null,
                    pubSubObjects: {},
                    pubSubInteractions: {}};
@@ -322,6 +324,7 @@ created in another visit_XXX function.
               {
                 self.federateInfos[fedId] =
                   {name: null,
+		   metaType: null,
                    directory: null,
                    pubSubObjects: {},
                    pubSubInteractions: {}};
@@ -433,6 +436,7 @@ created in another visit_XXX function.
               {
                 self.federateInfos[fedId] =
                   {name: null,
+		   metaType: null,
                    directory: null,
                    pubSubObjects: {},
                    pubSubInteractions: {}};
@@ -553,8 +557,9 @@ created in another visit_XXX function.
             federateInfo = self.federateInfos[fedId];
             if (!federateInfo)
               {
-                self.federateInfos[fedID] =
-                  {name: null,
+                self.federateInfos[fedId] =
+		  {name: null,
+		   metaType: null,
                    directory: null,
                    pubSubObjects: {},
                    pubSubInteractions: {}};
@@ -700,6 +705,7 @@ created in another visit_XXX function.
               {
                 self.federateInfos[fedId] =
                   {name: null,
+		   metaType: null,
                    directory: null,
                    pubSubObjects: {},
                    pubSubInteractions: {}};
