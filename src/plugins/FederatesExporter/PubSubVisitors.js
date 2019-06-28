@@ -116,7 +116,8 @@ created in visit_StaticInteractionSubscribe.
               {
                 self.federateInfos[publication.federate] =
                   {name: null,
-		   metaType: null,
+                   metaType: null,
+                   generateCode: null,
                    directory: null,
                    pubSubObjects: {},
                    pubSubInteractions: {}};
@@ -212,7 +213,8 @@ been created in another visit_XXX function
               {
                 self.federateInfos[subscription.federate] =
                   {name: null,
-		   metaType: null,
+                   metaType: null,
+                   generateCode: null,
                    directory: null,
                    pubSubObjects: {},
                    pubSubInteractions: {}};
@@ -324,7 +326,8 @@ created in another visit_XXX function.
               {
                 self.federateInfos[fedId] =
                   {name: null,
-		   metaType: null,
+                   metaType: null,
+                   generateCode: null,
                    directory: null,
                    pubSubObjects: {},
                    pubSubInteractions: {}};
@@ -436,7 +439,8 @@ created in another visit_XXX function.
               {
                 self.federateInfos[fedId] =
                   {name: null,
-		   metaType: null,
+                   metaType: null,
+                   generateCode: null,
                    directory: null,
                    pubSubObjects: {},
                    pubSubInteractions: {}};
@@ -558,8 +562,9 @@ created in another visit_XXX function.
             if (!federateInfo)
               {
                 self.federateInfos[fedId] =
-		  {name: null,
-		   metaType: null,
+                  {name: null,
+                   metaType: null,
+                   generateCode: null,
                    directory: null,
                    pubSubObjects: {},
                    pubSubInteractions: {}};
@@ -705,7 +710,8 @@ created in another visit_XXX function.
               {
                 self.federateInfos[fedId] =
                   {name: null,
-		   metaType: null,
+                   metaType: null,
+                   generateCode: null,
                    directory: null,
                    pubSubObjects: {},
                    pubSubInteractions: {}};
