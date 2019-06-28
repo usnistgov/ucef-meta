@@ -13,7 +13,7 @@ define
  {
 
     'use strict';
-    var JavaFederateExporter;
+    var JavaFederateExporter; // function variable
     
 /***********************************************************************/
 
@@ -38,8 +38,8 @@ The top-level function returns this function.
 
 /* visit_JavaFederate
 
-Returned Value: a "context" object returned by visit_JavaImplFederate,
-which appears to be intended to pass to an ejs thingy for rendering.
+Returned Value: a "{context: context}" object returned by
+                visit_JavaImplFederate
 
 Called By: visit_MapperFederate in MapperFederate.js 
            This may also be called by functions that call a function whose
@@ -98,7 +98,7 @@ if JavaFederateExporter is called, which happens in FederatesExporter.js.
 
 /***********************************************************************/
 
-    } // end of JavaFederateExporter function object
+    }; // end of setting JavaFederateExporter function variable
     
 /***********************************************************************/
 
