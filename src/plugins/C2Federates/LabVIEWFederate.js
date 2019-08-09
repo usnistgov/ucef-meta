@@ -70,6 +70,18 @@ define([
                 });
             });
 
+            // generate the script that installs the LabVIEW federate
+            self.fileGenerators.push(function (artifact, callback) {
+                artifact.addFile(moduleName + "/build.sh", ejs.render(TEMPLATES['java/mvn-install.sh.ejs'], renderContext), function(err) {
+                    if (err) {
+                        callback(err);
+                        return;
+                    } else {
+                        callback();
+                    }
+                });
+            });
+
             // generate the script that runs the LabVIEW federate
             self.fileGenerators.push(function (artifact, callback) {
                 artifact.addFile(moduleName + "/run.sh", ejs.render(TEMPLATES['java/labview-run.sh.ejs'], renderContext), function(err) {

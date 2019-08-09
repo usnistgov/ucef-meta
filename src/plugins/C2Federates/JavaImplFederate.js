@@ -84,6 +84,8 @@ Called By:
         context.javaimplfedspec.porticoPOM.scope = self.porticoPOM.scope;
         context.javaimplfedspec.classname =
            self.core.getAttribute(node, 'name');
+        context.javaimplfedspec.jarfile =
+           context.javaimplfedspec.classname + "-" + context.javaimplfedspec.projectVersion + ".jar";
         context.javaimplfedspec.simname = self.projectName;
         context.javaimplfedspec.configFile =
            self.core.getAttribute(node, 'name') + 'Config.json';
@@ -198,6 +200,40 @@ in the post_visit_JavaFederate function in JavaFederate.js.
           javaCode = ejs.render(template, renderContext);
           console.log('calling addFile for: ' + outFileName);
           artifact.addFile(outFileName, javaCode,
+                           function(err) {checkBack(err, callback);});
+        });
+
+/***********************************************************************/
+
+        //Add federate build script
+        self.fileGenerators.push(function(artifact, callback)
+        {
+          var bashScript;
+          var fullPath;
+          var template;
+
+          fullPath = fedPathDir + '/build.sh';
+          template = TEMPLATES['java/mvn-install.sh.ejs'];
+          bashScript = ejs.render(template, renderContext);
+          console.log('calling addFile for: ' + fullPath);
+          artifact.addFile(fullPath, bashScript,
+                           function(err) {checkBack(err, callback);});
+        });
+
+/***********************************************************************/
+
+        //Add federate run script
+        self.fileGenerators.push(function(artifact, callback)
+        {
+          var bashScript;
+          var fullPath;
+          var template;
+
+          fullPath = fedPathDir + '/run.sh';
+          template = TEMPLATES['java/java-run.sh.ejs'];
+          bashScript = ejs.render(template, renderContext);
+          console.log('calling addFile for: ' + fullPath);
+          artifact.addFile(fullPath, bashScript,
                            function(err) {checkBack(err, callback);});
         });
 
