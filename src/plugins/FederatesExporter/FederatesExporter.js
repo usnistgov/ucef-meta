@@ -21,22 +21,28 @@ A separate XML file is generated for each Federate in a project.
 federateInfos
 -------------
 
-The federateInfos object collects information for each
-federate. federateInfos uses federate ids as property names and has
-the form
+The federateInfos object collects information for each federate.
+federateInfos uses federate ids as property names and has the form
 
 {federateId1: value1, federateId2: value2, ...}. 
 
 The value corresponding to a federateId is an object of the form
 {name: federateName,
+ metaType: federateMetaType
+ generateCode: boolean
  directory: directoryPath,
  pubSubObjects:
   {objectId1: objectData1, objectId2: objectData2, ...},
  pubSubInteractions:
   {interactId1: interactData1, interactId2: interactData2, ...}}
 
-The directory property is not used in the FederatesExporter but is used
-elsewhere.
+The directory property is set in JavaImplFederate.js and in
+CppImplFederate.js. It is used in this file in the fomGenerator
+function. It is also is used elsewhere.
+
+The name, metaType, and generateCode properties are set in
+ModelTraverserMixin.js. The metaType and generateCode properties are
+not used in this file. They is used in JavaRTI.js.
 
 The interactData values have the form:
 
@@ -98,9 +104,10 @@ the federate is first encountered. That may be in any of three places:
 
 (1) the atModelNode function defined in C2Core/ModelTraverserMixin.js.
 If initialized here, the pubSubObjects and pubSubInteractions are both
-empty objects. If a federateInfo for a federate has already been created
-when the federate is encountered in this function, the name of the
-federate is added to the data (since it will be missing).
+empty objects. If a federateInfo for a federate has already been
+created when the federate is encountered in this function, the name
+and metaType of the federate are added to the data (since they will be
+missing).
 
 (2) one of the four visit_StaticXXX functions defined in
 PubSubVisitors.js.  If initialized here, (i) some data will be put
@@ -1108,7 +1115,7 @@ It uses the self variable.
 
 /*
 
-This is a call to the visitAllChildrenFromRootContainer function (!) which
+This is a call to the visitAllChildrenFromRootContainer function, which
 is defined in ModelTraverserMixin.js. The anonymous function is the second
 argument.
 
@@ -1133,48 +1140,6 @@ argument.
 
       // self.postAllVisits(self); COMMENTED OUT
     }; // end of FederatesExporter.prototype.main
-
-/***********************************************************************/
-
-/* FederatesExporter.prototype.getChildSorterFunc
-
-Returned Value: 
-
-Called By: ?
-
-This defines the FederatesExporter.prototype.getChildSorterFunc function
-that defines a function to be passed to a sorting routine. The function
-to be passed to a sorting routine takes pointers to two attributes (a and b)
-and implements the rules:
-  If the name of a is less than the name of b, return -1.
-  Otherwise, if the name of a is greater than the name of b, return 1.
-  Otherwise, return 0.
-
-This is a very strange function because it does not use either of its
-arguments. This function is not called in this file.
-
-*/    
-    FederatesExporter.prototype.getChildSorterFunc = function(
-     nodeType, // argument not used
-     self)     // argument not used (overridden by var also named self)
-    {
-      var self;
-      var generalChildSorter;
-
-      self = this; // overrides self argument
-      generalChildSorter = function(a, b)
-      {
-        var aName;
-        var bName;
-
-        aName = self.core.getAttribute(a,'name');
-        bName = self.core.getAttribute(b,'name');
-        if (aName < bName) return -1;
-        if (aName > bName) return 1;
-        return 0;
-      };
-      return generalChildSorter;
-    };
 
 /***********************************************************************/
 
@@ -1216,29 +1181,22 @@ ModelTraverserMixin.js.
 
 Returned Value: a visitor function name
 
-Called By: atModelNode in ModelTraverserMixin.js
+Called By: atModelNode in C2Core/ModelTraverserMixin.js
 
 This is defining the getVisitorFuncName function as a property of the
-prototype of FederatesExporter. The getVisitorFuncName function is
-also defined as a property of "this" in ModelTraverserMixin.js, but
-the one that gets called when the FederatesExporter is executing is
-this one.
+prototype of FederatesExporter. A similar getVisitorFuncName function
+is also defined as a property of "this" in ModelTraverserMixin.js, if
+getVisitorFuncName is not already defined. The one that gets called
+when the FederatesExporter is executing is this one.
 
 */
 
     FederatesExporter.prototype.getVisitorFuncName = function(
      nodeType) // (string) the name of a type of node or null
     {
-      var visitorName = 'generalVisitor';
-      if (nodeType)
-        {
-          visitorName = 'visit_'+ nodeType;
-          if (nodeType.endsWith('Federate'))
-            {
-              visitorName = 'visit_'+ 'Federate';
-            }
-        }
-      return visitorName;   
+      return (nodeType ? (nodeType.endsWith('Federate') ?
+                          'visit_Federate' : 'visit_'+ nodeType) :
+              'generalVisitor');
     };
 
 /***********************************************************************/
@@ -1247,24 +1205,21 @@ this one.
 
 Returned Value: a post visitor function name
 
-Called By:
+Called By: atModelNode in C2Core/ModelTraverserMixin.js
+
+This is defining the getPostVisitorFuncName function as a property of the
+prototype of FederatesExporter. A similar getPostVisitorFuncName function
+is also defined as a property of "this" in ModelTraverserMixin.js, if
+getPostVisitorFuncName is not already defined. The one that gets called
+when the FederatesExporter is executing is this one.
 
 */
 
     FederatesExporter.prototype.getPostVisitorFuncName = function(nodeType)
     {
-      var self = this,
-      visitorName = 'generalPostVisitor';
-      
-      if (nodeType)
-        {
-          visitorName = 'post_visit_'+ nodeType;
-          if (nodeType.endsWith('Federate'))
-            {
-              visitorName = 'post_visit_'+ 'Federate';
-            }
-        }
-      return visitorName;
+      return (nodeType ? (nodeType.endsWith('Federate') ?
+                          'post_visit_Federate' : 'post_visit_'+ nodeType) :
+              'generalPostVisitor');
     };
 
 /***********************************************************************/

@@ -61,6 +61,14 @@ define
 
 /***********************************************************************/
 
+/* visit_JavaImplFederate
+
+Returned Value: a "{context: context}" object
+
+Called By: 
+
+*/
+
       this.visit_JavaImplFederate = function(node, parent, context)
       {
         var self;
@@ -270,7 +278,7 @@ in the post_visit_JavaBaseFederate function in JavaBaseFederate.js.
 
 /***********************************************************************/
 
-        return {context: context};
+        return {context: context}; // context object does not appear used
       }; // end of post_visit_JavaImplFederate function
 
 /***********************************************************************/

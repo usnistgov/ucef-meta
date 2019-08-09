@@ -2228,44 +2228,6 @@ but does not return it.
 
 /***********************************************************************/
 
-/* DeploymentExporter.prototype.getChildSorterFunc
-
-This defines the DeploymentExporter.prototype.getChildSorterFunc function
-that defines a function to be passed to a sorting routine. The function
-to be passed to a sorting routine takes pointers to two attributes (a and b)
-and implements the rules:
-  If the name of a is less than the name of b, return -1.
-  Otherwise, if the name of a is greater than the name of b, return 1.
-  Otherwise, return 0.
-
-This is a very strange function because it does not use either of its
-arguments. This function is not called in this file.
-
-*/    
-    DeploymentExporter.prototype.getChildSorterFunc = function(
-     nodeType, // argument not used
-     self)     // argument not used (overridden by var also named self)
-    {
-      var self;
-      var generalChildSorter;
-
-      self = this;
-      generalChildSorter = function(a, b)
-      {
-        var aName;
-        var bName;
-
-        aName = self.core.getAttribute(a, 'name');
-        bName = self.core.getAttribute(b, 'name');
-        if (aName < bName) return -1;
-        if (aName > bName) return 1;
-        return 0;
-      };
-      return generalChildSorter;
-    }
-
-/***********************************************************************/
-
     DeploymentExporter.prototype.excludeFromVisit = function(node)
     {
       var self = this,
