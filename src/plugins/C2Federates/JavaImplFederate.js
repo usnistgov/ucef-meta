@@ -15,10 +15,6 @@ define
     JavaImplFederateExporter = function()
     {
       var self;
-      var implOutFilePath;
-      var implOutResPath;
-      var implDirSpec;
-      var implDirPath;
       var checkBack;
 
       self = this;
@@ -42,18 +38,10 @@ define
        longName: 'JavaImplFederate',
        init: function()
              {
-               var dirPath;
                if (self.javaImplFedInitDone)
                  {
                    return;
                  }
-               dirPath = self.projectName + '-java-federates/';
-               implDirSpec = {federation_name: self.projectName,
-                              artifact_name: "impl",
-                              language: "java"};
-               implDirPath = dirPath;
-               implOutFilePath = implDirPath + MavenPOM.mavenJavaPath;
-               implOutResPath = implDirPath + MavenPOM.mavenResourcePath;
                self.projectName = self.core.getAttribute(self.rootNode, 'name');
                self.javaImplFedInitDone = true;
              }
@@ -77,19 +65,9 @@ Called By:
         self = this;
         nodeType = self.core.getAttribute(self.getMetaType(node), 'name');
         self.logger.info('Visiting a JavaImplFederate');
-        if (!self.java_implPOM)
-          {
-            self.java_implPOM = new MavenPOM(self.javaPOM);
-            self.java_implPOM.artifactId =
-               ejs.render(self.directoryNameTemplate, implDirSpec);
-            self.java_implPOM.version = self.project_version;
-            self.java_implPOM.packaging = "jar";
-          }
         context.javaimplfedspec = self.createJavaImplFederateCodeModel();
         context.javaimplfedspec.groupId =
           self.getCurrentConfig().groupId.trim();
-        context.javaimplfedspec.artifactId =
-           ejs.render(self.directoryNameTemplate, implDirSpec);
         context.javaimplfedspec.projectName = self.projectName;
         context.javaimplfedspec.projectVersion = self.project_version;
         context.javaimplfedspec.cpswtVersion =
@@ -135,8 +113,6 @@ context argument (which does not appear to be modified in this function).
 
 Called By: post_visit_JavaFederate (in JavaFederate.js)
 
-Note: implDirPath has / at the end
-
 */
       this.post_visit_JavaImplFederate = function(node, context)
       {
@@ -150,7 +126,7 @@ Note: implDirPath has / at the end
         self = this;
         groupPath = self.getCurrentConfig().groupId.trim().replace(/[.]/g, "/");
         renderContext = context.javaimplfedspec;
-        fedPathDir = implDirPath + self.core.getAttribute(node, 'name');
+        fedPathDir = self.core.getAttribute(node, 'name');
         outFileName = fedPathDir + "/src/main/java/" + groupPath + "/" +
                       self.core.getAttribute(node, 'name').toLowerCase() +
                       "/" + self.core.getAttribute(node, 'name') + ".java";
@@ -227,7 +203,7 @@ in the post_visit_JavaBaseFederate function in JavaBaseFederate.js.
 
 /***********************************************************************/
 
-        //Add federate RTi.rid file
+        //Add federate RTI.rid file
         self.fileGenerators.push(function(artifact, callback)
         {
           var rtiCode;
