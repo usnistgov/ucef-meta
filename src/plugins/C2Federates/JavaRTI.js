@@ -2,7 +2,7 @@
 
 JavaRTI.js is used in the define of:
  C2Federates/MapperFederate.js and
- C2Federates/JavaBaseFederate.js
+ C2Federates/JavaFederate.js
 
 */
 

@@ -166,7 +166,7 @@ Called By: post_visit_JavaFederate (in JavaFederate.js)
 This prints files with names of the form <federateName>Base.java
 
 The file name (in context.javafedspec.outFileName) is constructed
-in the post_visit_JavaBaseFederate function in JavaBaseFederate.js.
+in the post_visit_JavaFederate function in JavaFederate.js.
 
 */
         self.fileGenerators.push(function(artifact, callback)
