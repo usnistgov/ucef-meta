@@ -247,7 +247,8 @@
             <id><%= fed.name %></id>
             <properties>
                 <federate.name><%= fed.name %></federate.name>
-                <federate.configFile><%= fed.configFilename %></federate.configFile>
+                <federate.config><%= fed.configFilename %></federate.config>
+                <federate.package><%= groupId + "." + fed.name.toLowerCase() %></federate.package>
             </properties>
         </profile><% }); %>
 		<profile>
@@ -321,10 +322,10 @@
                             </systemProperties>
 
                             <classpathScope>runtime</classpathScope>
-                            <mainClass><%= projectName %>.${federate.name}</mainClass>
+                            <mainClass>${federate.package}.${federate.name}</mainClass>
 							<arguments>
                                 <argument>-configFile</argument>
-                                <argument>conf/${experiment.name}/${federate.configFile}</argument>
+                                <argument>conf/${experiment.name}/${federate.config}</argument>
 					    	</arguments>
 						</configuration>
 					</plugin>
@@ -391,7 +392,7 @@
               				<executable>./<%= projectName %>-${federate.name}-cpp</executable>
 							<arguments>
 								 <argument>--configFile</argument>
-                                <argument>${project.basedir}/conf/${experiment.name}/${federate.configFile}</argument>
+                                <argument>${project.basedir}/conf/${experiment.name}/${federate.config}</argument>
 					    	</arguments>
 					    	<environmentVariables>
 			                    <EXEDIR>${project.basedir}/target/${federate.name}</EXEDIR>
