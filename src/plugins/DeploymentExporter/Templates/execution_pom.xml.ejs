@@ -15,15 +15,9 @@
 	</properties>
 
 	<dependencies>
-		<% if(federatesByType['JavaFederate'] || federatesByType['MapperFederate'] || federatesByType['CPNFederate'] ){%>
-		<dependency><!-- The depenency for the generated code-->
-			<groupId><%= groupId %></groupId>
-			<artifactId><%= projectName %>-base-java</artifactId>
-			<version><%= projectVersion %></version>
-		</dependency>
 		<% if(federatesByType['JavaFederate']){ federatesByType['JavaFederate'].forEach(function(fed) { %>
 		<dependency><!-- The depenency for the user written code-->
-			<groupId><%= groupId %></groupId>
+			<groupId><%= groupId + "." + fed.name.toLowerCase()  %></groupId>
 			<artifactId><%= fed.name %></artifactId>
 			<version><%= projectVersion %></version>
 		</dependency>
@@ -33,7 +27,7 @@
 			<groupId><%= groupId %></groupId>
 			<artifactId><%= projectName %>-mapper-java</artifactId>
 			<version><%= projectVersion %></version>
-		</dependency><%}%><%}%>
+		</dependency><%}%>
 		
 		<% if(federatesByType['CppFederate'] || federatesByType['OmnetFederate']){%>
 		<dependency><!-- The depenency for the generated code-->
