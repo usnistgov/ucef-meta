@@ -1,11 +1,11 @@
 #!/bin/bash
 
-if [[ $# -ne 1 ]]; then
+if [ $# -ne 1 ]; then
     echo "illegal number of parameters: expected 1"
     exit 1
 fi
 
-if [[ ! -d $1 ]]; then
+if [ ! -d $1 ]; then
     echo "illegal argument: expected _generated directory"
     exit 1;
 fi
@@ -13,7 +13,6 @@ fi
 root_directory=`pwd`
 logs_directory=$root_directory/logs
 code_directory=`realpath ${1%/}`
-config_directory=$root_directory/conf/default
 
 fedmgr_host=127.0.0.1
 fedmgr_port=8083
@@ -72,7 +71,7 @@ fi
 
 # run the federation manager
 cd $root_directory
-xterm -fg white -bg black -l -lf $logs_directory/federation-manager-${timestamp}.log -T "Federation Manager" -geometry 140x40+0+20 -e "export CPSWT_ROOT=`pwd` && mvn exec:java -P FederationManager" &
+xterm -fg white -bg black -l -lf $logs_directory/federation-manager-${timestamp}.log -T "Federation Manager" -geometry 140x40+0+30 -e "export CPSWT_ROOT=`pwd` && mvn exec:java -P FederationManager" &
 
 printf "Waiting for the federation manager to come online.."
 until $(curl -o /dev/null -s -f -X GET http://$fedmgr_host:$fedmgr_port/fedmgr); do
@@ -86,7 +85,7 @@ curl -o /dev/null -s -X POST http://$fedmgr_host:$fedmgr_port/fedmgr --data '{"a
 # run the other federates
 <% var i=1; federates.forEach(function(federate) { -%>
 cd $code_directory/<%= federate.name %>
-xterm -fg white -bg black -l -lf $logs_directory/<%= federate.name %>-${timestamp}.log -T "<%= federate.name %>" -geometry 140x40+<%= i*30 %>+<%= i++*20+20 %> -e "sh run.sh" &
+xterm -fg white -bg black -l -lf $logs_directory/<%= federate.name %>-${timestamp}.log -T "<%= federate.name %>" -geometry 140x40+<%= i*30 %>+<%= i++*30+30 %> -e "sh run.sh" &
 waitUntilJoined <%= federate.name %> 1
 
 <% }); -%>
