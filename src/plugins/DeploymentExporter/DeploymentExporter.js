@@ -1282,6 +1282,30 @@ The function does not return anything.
 
 /***********************************************************************/
 
+      // Script to run the default experiment
+      self.fileGenerators.push(function(artifact, callback)
+      {
+        var renderContext = {federates: self.federates};
+
+        artifact.addFile('run-default.sh',
+                         ejs.render(TEMPLATES['run-default.sh.ejs'],
+                                    renderContext),
+                         function(err)
+                         {
+                           if (err)
+                             {
+                               callback(err);
+                               return;
+                             }
+                           else
+                             {
+                               callback();
+                             }
+                         });
+      });
+
+/***********************************************************************/
+
       self.fileGenerators.push(function(artifact, callback)
       {
         if (self.experimentPaths.length != 0)
