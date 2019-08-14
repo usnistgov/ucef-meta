@@ -1306,6 +1306,28 @@ The function does not return anything.
 
 /***********************************************************************/
 
+      // Script to run just the federation manager
+      self.fileGenerators.push(function(artifact, callback)
+      {
+        artifact.addFile('run-manager.sh',
+                         ejs.render(TEMPLATES['run-manager.sh.ejs'],
+                                    {}),
+                         function(err)
+                         {
+                           if (err)
+                             {
+                               callback(err);
+                               return;
+                             }
+                           else
+                             {
+                               callback();
+                             }
+                         });
+      });
+
+/***********************************************************************/
+
       self.fileGenerators.push(function(artifact, callback)
       {
         if (self.experimentPaths.length != 0)
