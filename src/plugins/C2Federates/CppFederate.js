@@ -29,7 +29,7 @@ define([
                 self.initCppRTI();
                 self.initCppImplFederate();
 
-                var baseDirBasePath = self.projectName + '-cpp-federates/';
+                var baseDirBasePath = 'cpp-federates/';
                 baseDirSpec = {federation_name: self.projectName, artifact_name: "base", language:"cpp"};
                 var baseDirPath =  baseDirBasePath + ejs.render(self.directoryNameTemplate, baseDirSpec);
                 baseOutFilePath = baseDirPath;
@@ -114,7 +114,7 @@ define([
             if(!self.cppPOM){
                 self.cppPOM = new MavenPOM(self.mainPom);
                 self.cppPOM.artifactId = self.projectName + "-cpp";
-                self.cppPOM.directory = self.projectName + "-cpp-federates";
+                self.cppPOM.directory = "cpp-federates";
                 self.cppPOM.version = self.project_version;
                 self.cppPOM.packaging = "pom";
                 self.cppPOM.name = self.projectName + ' C++ root'
