@@ -44,6 +44,11 @@ define([
 
                 //Add build script
                 self.fileGenerators.push(function(artifact, callback){
+                    if(!self.cppPOM){
+                        callback();
+                        return;
+                    }
+
                     artifact.addFile( baseDirBasePath + '/build.sh', ejs.render(TEMPLATES['cpp/mvn-package-install.sh.ejs'], {}), function (err) {
                         if (err) {
                             callback(err);
