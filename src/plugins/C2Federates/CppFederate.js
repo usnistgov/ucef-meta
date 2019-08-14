@@ -42,6 +42,19 @@ define([
                     self.cpp_federateBasePOM.packaging = "nar";
                 }
 
+                //Add build script
+                self.fileGenerators.push(function(artifact, callback){
+                    artifact.addFile( baseDirBasePath + '/build.sh', ejs.render(TEMPLATES['cpp/mvn-package-install.sh.ejs'], {}), function (err) {
+                        if (err) {
+                            callback(err);
+                            return;
+                        }else{
+                            callback();
+                            return;
+                        }
+                    });
+                });
+
                 
                 //Add sim POM generator
                 self.fileGenerators.push(function(artifact, callback){
