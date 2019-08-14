@@ -1328,6 +1328,28 @@ The function does not return anything.
 
 /***********************************************************************/
 
+      // Script to prepare C++ federates for execution
+      self.fileGenerators.push(function(artifact, callback)
+      {
+        artifact.addFile('build-cpp.sh',
+                         ejs.render(TEMPLATES['build-cpp.sh.ejs'],
+                                    {}),
+                         function(err)
+                         {
+                           if (err)
+                             {
+                               callback(err);
+                               return;
+                             }
+                           else
+                             {
+                               callback();
+                             }
+                         });
+      });
+
+/***********************************************************************/
+
       self.fileGenerators.push(function(artifact, callback)
       {
         if (self.experimentPaths.length != 0)
