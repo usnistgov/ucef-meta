@@ -88,7 +88,7 @@ Called By:
            context.javaimplfedspec.classname + "-" + context.javaimplfedspec.projectVersion + ".jar";
         context.javaimplfedspec.simname = self.projectName;
         context.javaimplfedspec.configFile =
-           self.core.getAttribute(node, 'name') + 'Config.json';
+           self.core.getAttribute(node, 'name') + '.json';
         context.javaimplfedspec.timeconstrained =
            self.core.getAttribute(node, 'TimeConstrained');
         context.javaimplfedspec.timeregulating =
