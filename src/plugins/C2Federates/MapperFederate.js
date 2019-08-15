@@ -6,7 +6,7 @@ MapperFederate.js is used only in FederatesExporter.js
 
 define
 ([
-    'common/util/ejs',
+    'ejs',
     'C2Core/MavenPOM',
     'C2Federates/Templates/Templates',
     'C2Federates/JavaRTI',

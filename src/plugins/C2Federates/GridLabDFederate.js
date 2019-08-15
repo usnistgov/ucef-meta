@@ -1,6 +1,6 @@
 define
 ([
-  'common/util/ejs',
+  'ejs',
   'C2Core/MavenPOM',
   'C2Federates/Templates/Templates'],
  function (ejs,

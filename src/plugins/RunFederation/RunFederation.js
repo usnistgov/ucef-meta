@@ -8,7 +8,7 @@
 define([
     'text!./metadata.json',
     'plugin/PluginBase',
-    'common/util/ejs',
+    'ejs',
     'RunFederation/Templates/Templates',
     'c2wtng/modelLoader',
     'c2wtng/remote_utils',
