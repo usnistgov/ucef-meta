@@ -112,14 +112,18 @@ define
 
 /* post_visit_Federate
 
-Returned Value:  a "{context: context}" object
+Returned Value: a "{context: context}" object, where the second
+'context' is the modified 'context' argument to the function.  It
+appears that this is done so that if the calling function has named
+the returned value 'ret', the modified context argument can be
+referenced as ret.context.
+
 
 Called By: doneModelNode (in ModelTraverserMixin.js)
-  This is called only by functions that form the name by concatenating
-'post_visit_' with either 'Federate' or nodeType (which obviously must
-evaluate to 'Federate'). That includes:
+
+This is called only by functions that select the name by concatenating
+'post_visit_' with 'Federate'. That includes:
   C2Core/ModelTraverserMixin.js:
-  C2Federates/GenericFederate.js
   DeploymentExporter/DeploymentExporter.js
 
 The getPostVisitorFuncName function defined in both 
@@ -133,7 +137,8 @@ FederatesExporter/FederatesExporter.js and ModelTraverserMixin.js
        var nodeType = self.core.getAttribute(self.getMetaType(node), 'name');
 
        self.logger.info('Post Visiting a Federate');
-       if (nodeType != 'Federate')
+       if ((nodeType != 'Federate') && (nodeType in self.federateTypes) &&
+           self.core.getAttribute(node, 'EnableCodeGeneration'))
          {
            try
              {
