@@ -40,9 +40,11 @@ The directory property is set in JavaImplFederate.js and in
 CppImplFederate.js. It is used in this file in the fomGenerator
 function. It is also is used elsewhere.
 
-The name, metaType, and generateCode properties are set in
-ModelTraverserMixin.js. The metaType and generateCode properties are
-not used in this file. They is used in JavaRTI.js.
+Empty federateInfos are built in PubSubVisitors.js. The name,
+metaType, and generateCode properties are set in
+ModelTraverserMixin.js. The metaType property is not used in this file
+but is used in JavaRTI.js. The generateCode property is used in this
+file and in JavaRTI.js.
 
 The interactData values have the form:
 
@@ -151,7 +153,7 @@ define
 ([
   'text!./metadata.json',
   'plugin/PluginBase',
-  'common/util/ejs',
+  'ejs',
   'C2Core/ModelTraverserMixin',
   'C2Core/xmljsonconverter',
   'C2Core/MavenPOM',
@@ -762,23 +764,31 @@ callback is called more than once.
       var federId;          // id of federate  
       var feder;            // data for federate in federateInfos
       var endJoinResignId;  // id of a 
-      var directory;        // SOM.xml output directory    
+      var directory;        // directory for a federate
       var endJoinResign;
       var remaining;
       var xmlCode;
       var fullPath;
       var template;
 
-      remaining = Object.keys(fedEx.federateInfos).length;
       template = TEMPLATES['fedfile.xml.ejs'];
+      remaining = 0;
+      for (federId in fedEx.federateInfos)
+        {
+          feder = fedEx.federateInfos[federId];
+          if (feder.generateCode)
+            remaining++;
+        }
       fedEx.fileGenerators.push(function(artifact, callback)
       {
         for (federId in fedEx.federateInfos)
           {
-            remaining--;
             feder = fedEx.federateInfos[federId];
+            if (feder.generateCode)
+              remaining--;
+            else
+              continue;
             directory = feder.directory || 'som/';
-
             fomModelXml =
               {federateName: feder.name,
                projectName: fedEx.projectName,
@@ -808,7 +818,6 @@ callback is called more than once.
             // add fom XML files to artifact
             fullPath = directory + feder.name + '.xml';
             xmlCode = ejs.render(template, fomModelXml);
-            console.log('calling addFile for: ' + fullPath);
             artifact.addFile(fullPath, xmlCode,
                              (remaining ?
                               function (err) // there are more
@@ -1147,7 +1156,7 @@ argument.
 
 Returned Value: true or false
 
-Called By: ? does not appear to be called anywhere
+Called By: visitAllChildrenRec (in ModelTraverserMixin.js)
 
 A function named excludeFromVisit is also defined (and called) in
 ModelTraverserMixin.js.
@@ -1170,7 +1179,9 @@ ModelTraverserMixin.js.
           exclude = exclude 
             || self.isMetaTypeOf(node, self.META['Language [C2WT]'])
             || (self.federateTypes.hasOwnProperty(nodeTypeName) &&
-                !self.federateTypes[nodeTypeName].includeInExport);
+                !self.federateTypes[nodeTypeName].includeInExport)
+            || ((nodeTypeName in self.federateTypes) &&
+                !self.core.getAttribute(node, 'EnableCodeGeneration'));
         }
       return exclude;
     };
@@ -1180,14 +1191,16 @@ ModelTraverserMixin.js.
 /* getVisitorFuncName (function property of FederatesExporter.prototype)
 
 Returned Value: a visitor function name
+For any nodeType (a string) that ends with 'Federate', such as
+'JavaFederate' or 'GridLabDFederate', this returns
+'visit_Federate'. For all other node types XXX, this returns
+'visit_XXX'. If the nodeType argument is null, this returns
+'generalVisitor'
 
 Called By: atModelNode in C2Core/ModelTraverserMixin.js
 
 This is defining the getVisitorFuncName function as a property of the
-prototype of FederatesExporter. A similar getVisitorFuncName function
-is also defined as a property of "this" in ModelTraverserMixin.js, if
-getVisitorFuncName is not already defined. The one that gets called
-when the FederatesExporter is executing is this one.
+prototype of FederatesExporter. 
 
 */
 
@@ -1204,14 +1217,16 @@ when the FederatesExporter is executing is this one.
 /* getPostVisitorFuncName (function property of FederatesExporter.prototype)
 
 Returned Value: a post visitor function name
+For any nodeType (a string) that ends with 'Federate', such as
+'JavaFederate' or 'GridLabDFederate', this returns
+'post_visit_Federate'. For all other node types XXX, this returns
+'post_visit_XXX'. If the nodeType argument is null, this returns
+'generalPostVisitor'
 
 Called By: atModelNode in C2Core/ModelTraverserMixin.js
 
 This is defining the getPostVisitorFuncName function as a property of the
-prototype of FederatesExporter. A similar getPostVisitorFuncName function
-is also defined as a property of "this" in ModelTraverserMixin.js, if
-getPostVisitorFuncName is not already defined. The one that gets called
-when the FederatesExporter is executing is this one.
+prototype of FederatesExporter.
 
 */
 
