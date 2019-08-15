@@ -1,6 +1,6 @@
 define
 ([
-  'common/util/ejs',
+  'ejs',
   'C2Core/MavenPOM',
   'C2Federates/Templates/Templates'],
  function(ejs,
@@ -131,9 +131,13 @@ Called By:
 /* post_visit_JavaImplFederate
 
 Returned Value: an object with a context property whose value is the
-context argument (which does not appear to be modified in this function).
+context argument.
 
 Called By: post_visit_JavaFederate (in JavaFederate.js)
+
+This modifies context.javaimplfedspec (aliased to renderContext) and
+builds six file generators. The code string in five of the file
+generators is built using renderContext.
 
 Note: implDirPath has / at the end
 
@@ -178,7 +182,6 @@ Note: implDirPath has / at the end
           template = TEMPLATES['java/federateimpl_uberpom.xml.ejs'];
           xmlCode = ejs.render(template, renderContext);
           fullPath = fedPathDir + "/" + 'pom.xml';
-          console.log('calling addFile for: ' + fullPath);
           artifact.addFile(fullPath, xmlCode,
                            function(err) {checkBack(err, callback);});
         });
@@ -205,8 +208,6 @@ in the post_visit_JavaBaseFederate function in JavaBaseFederate.js.
             context.javaimplfedspec.publishedobjectdata;
           template = TEMPLATES['java/federatebase.java.ejs'];
           javaCode = ejs.render(template, renderContext);
-          console.log('calling addFile for: ' +
-                      context.javafedspec.outFileName);
           artifact.addFile(context.javafedspec.outFileName, javaCode,
                            function(err) {checkBack(err, callback);});
         });
@@ -220,7 +221,6 @@ in the post_visit_JavaBaseFederate function in JavaBaseFederate.js.
 
           template = TEMPLATES['java/federateimpl.java.ejs'];
           javaCode = ejs.render(template, renderContext);
-          console.log('calling addFile for: ' + outFileName);
           artifact.addFile(outFileName, javaCode,
                            function(err) {checkBack(err, callback);});
         });
@@ -237,7 +237,6 @@ in the post_visit_JavaBaseFederate function in JavaBaseFederate.js.
           fullPath = fedPathDir + '/RTI.rid';
           template = TEMPLATES['java/rti.rid.ejs'];
           rtiCode = ejs.render(template, renderContext);
-          console.log('calling addFile for: ' + fullPath);
           artifact.addFile(fullPath, rtiCode,
                            function(err) {checkBack(err, callback);});
         });
@@ -254,7 +253,6 @@ in the post_visit_JavaBaseFederate function in JavaBaseFederate.js.
           fullPath = fedPathDir + '/conf/' + renderContext.configFile;
           template = TEMPLATES['java/federate-config.json.ejs'];
           jsonCode = ejs.render(template, renderContext);
-          console.log('calling addFile for: ' + fullPath);
           artifact.addFile(fullPath, jsonCode,
                            function(err) {checkBack(err, callback);});
         });
@@ -271,7 +269,6 @@ in the post_visit_JavaBaseFederate function in JavaBaseFederate.js.
           fullPath = fedPathDir + '/conf/log4j2.xml';
           template = TEMPLATES['java/log4j2.xml.ejs']
           xmlCode = ejs.render(template, self);
-          console.log('calling addFile for: ' + fullPath);
           artifact.addFile(fullPath, xmlCode,
                            function(err) {checkBack(err, callback);});
         });
