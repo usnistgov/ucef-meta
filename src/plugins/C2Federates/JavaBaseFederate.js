@@ -7,7 +7,7 @@ JavaBaseFederate.js is used in the define of:
 
 define
 ([
-  'common/util/ejs',
+  'ejs',
   'C2Core/MavenPOM',
   'C2Federates/Templates/Templates',
   'C2Federates/JavaRTI'],
@@ -107,15 +107,19 @@ define
 
 /* post_visit_JavaBaseFederate
 
-The name of this function is misleading. All this does is add a file
-name property (outFileName) to context.javafedspec.
+Returned Value: none
+
+Called By: post_visit_JavaFederate in JavaFederate.js
+
+All this does is add a file name property (outFileName) to
+context.javafedspec.
  
 Note: baseDirBasePath has / at the end
 
 */
-      this.post_visit_JavaBaseFederate = function(
-       node,     // a federate node
-       context)  // 
+      this.post_visit_JavaBaseFederate = function( /* ARGUMENTS              */
+       node,                                       /* a federate node        */
+       context)                                    /* a model to be modified */
       {
         var self;
         var outFileName;
@@ -130,7 +134,6 @@ Note: baseDirBasePath has / at the end
                       federateName.toLowerCase() + "/" + federateName +
                       "Base.java";
         context.javafedspec.outFileName = outFileName;
-        return {context:context};
       };
 
 /***********************************************************************/
