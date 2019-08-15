@@ -27,6 +27,11 @@ define([
     var OBJ_ATTRIBUTES = ["name", "LogLevel", "EnableLogging"],
             OBJ_ATTRIBUTE_ATTRIBUTES = ["name","Hidden","ParameterType"];
 
+ /*
+    since CodeGeneratedName has been added to the Attributes of an object,
+    it may be desirable to change the definition of OJB_ATTRIBUTES to
+    OBJ_ATTRIBUTES = ["name", "LogLevel", "EnableLogging", "CodeGeneratedName"]
+ */
     
     pluginMetadata = JSON.parse(pluginMetadata);
     var callback = null;
