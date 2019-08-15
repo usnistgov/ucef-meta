@@ -1,6 +1,6 @@
 define
 ([
-  'common/util/ejs',
+  'ejs',
   'C2Core/MavenPOM',
   'C2Federates/Templates/Templates',
   'C2Federates/JavaBaseFederate',
@@ -89,6 +89,24 @@ if JavaFederateExporter is called, which happens in FederatesExporter.js.
 
 /***********************************************************************/
 
+/* post_visit_JavaFederate
+
+Returned Value: a context object
+
+Called By: post_visit_Federate
+
+This is called in post_visit_Federate (in GenericFederate.js) when the
+nodeType in that function is JavaFederate. The name of this function
+in that case is formed by concatenating 'post_visit_' and
+'JavaFederate' rather than by using 'post_visit_JavaFederate'.
+
+This adds information to the context by calling
+post_visit_JavaBaseFederate (in JavaBaseFederate.js) and
+post_visit_JavaImplFederate (in JavaImplFederate.js). The call to
+post_visit_JavaImplFederate also generates code for 6 files.
+
+*/
+      
       this.post_visit_JavaFederate = function(node, context)
       {
         this.post_visit_JavaBaseFederate(node, context);
