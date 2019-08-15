@@ -57,8 +57,39 @@ define
  function()
  {
     'use strict';
-    var PubSubVisitors;
+    var PubSubVisitors;  //function variable
+    var lowerNamer;      //function variable
+
+/***********************************************************************/
+
+/* lowerNamer
+
+Returned Value: string
+
+Called By:
+  visit_StaticInteractionPublish
+  visit_StaticInteractionSubscribe
+  visit_StaticObjectPublish
+  visit_StaticObjectSubscribe
+  visit_StaticObjectAttributePublish
+  visit_StaticObjectAttributeSubscribe
+
+The coname var is the codeName (CodeGeneratedName) of the obint
+(object or interaction) if there is one or the name if not. The
+returned value is the coname with the first character changed to lower
+case.
+
+*/
+
+    lowerNamer = function(obint)
+    {
+      var coname;
+      coname = (obint.codeName || obint.name);
+      return (coname.charAt(0).toLowerCase() + coname.slice(1));
+    };
     
+/***********************************************************************/
+
     PubSubVisitors = function()
     {
 
@@ -144,15 +175,19 @@ created in visit_StaticInteractionSubscribe.
           }
         publication.handler = function(federate, interaction)
         {
-          var interactiondata = {name: interaction.name,
-                                 fullName: interaction.fullName,
-                                 parameters: interaction.parameters,
-                                 publishedLoglevel: publication.LogLevel};
+          var interactiondata =
+            {name: interaction.name,
+             codeName: interaction.codeName,
+             codeNameOrName: (interaction.codeName || interaction.name),
+             fullName: interaction.fullName,
+             lowerName: lowerNamer(interaction),
+             parameters: interaction.parameters,
+             publishedLoglevel: publication.LogLevel};
           if (federate.publishedinteractiondata)
             {
               federate.publishedinteractiondata.push(interactiondata);
             }
-        }
+        };
         if (context.pubsubs)
           {
             context.pubsubs.push(publication);
@@ -244,21 +279,23 @@ been created in another visit_XXX function
           // different FOMSheet. Resolve correct filter at render time.
           var interactiondata =
             {name: interaction.name,
-                   fullName: interaction.fullName,
-                   parameters: interaction.parameters,
-                   subscribedLoglevel: subscription.LogLevel,
-                   originFedFilter: function()
+             codeName: interaction.codeName,
+             codeNameOrName: (interaction.codeName || interaction.name),
+             fullName: interaction.fullName,
+             lowerName: lowerNamer(interaction),
+             parameters: interaction.parameters,
+             subscribedLoglevel: subscription.LogLevel,
+             originFedFilter: function()
                {
                  return self.fedFilterMap[subscription.OriginFedFilter];
                },
-                   srcFedFilter: function()
+             srcFedFilter: function()
                {
                  return interaction.isMapperPublished ?
                  self.fedFilterMap[subscription.SrcFedFilter] :
                  'SOURCE_FILTER_DISABLED';
                }
             };
-
           if (federate.subscribedinteractiondata)
             {
               federate.subscribedinteractiondata.push(interactiondata);
@@ -358,10 +395,14 @@ created in another visit_XXX function.
           }
         publication.handler = function(federate, object)
         {
-          var objectdata = {name: object.name,
-                            fullName: object.fullName,
-                            parameters: object.parameters,
-                            publishedLoglevel: publication.LogLevel};
+          var objectdata =
+            {name: object.name,
+             codeName: object.codeName,
+             codeNameOrName: (object.codeName || object.name),
+             fullName: object.fullName,
+             lowerName: lowerNamer(object),
+             parameters: object.parameters,
+             publishedLoglevel: publication.LogLevel};
           objectdata.publishedAttributeData = [];
           objectdata.logPublishedAttributeData = [];
           object.attributes.forEach(function(a)
@@ -471,10 +512,14 @@ created in another visit_XXX function.
           }   
         subscription.handler = function(federate, object)
         {
-          var objectdata = {name: object.name,
-                            fullName: object.fullName,
-                            parameters: object.parameters,
-                            subscribedLoglevel: subscription.LogLevel};
+          var objectdata =
+            {name: object.name,
+             codeName: object.codeName,
+             codeNameOrName: (object.codeName || object.name),
+             fullName: object.fullName,
+             lowerName: lowerNamer(object),
+             parameters: object.parameters,
+             subscribedLoglevel: subscription.LogLevel};
           objectdata.subscribedAttributeData = [];
           objectdata.logSubscribedAttributeData = [];
           object.attributes.forEach(function(a)
@@ -604,12 +649,16 @@ created in another visit_XXX function.
           }
         publication.handler = function(federate, object)
         {
-          var objectdata = {name: object.name,
-                            fullName: object.fullName,
-                            parameters: object.parameters,
-                            publishedLoglevel: publication.LogLevel,
-                            publishedAttributeData: [],
-                            logPublishedAttributeData: []};
+          var objectdata =
+            {name: object.name,
+             codeName: object.codeName,
+             codeNameOrName: (object.codeName || object.name),
+             fullName: object.fullName,
+             lowerName: lowerNamer(object),
+             parameters: object.parameters,
+             publishedLoglevel: publication.LogLevel,
+             publishedAttributeData: [],
+             logPublishedAttributeData: []};
           
           if (federate.publishedobjectdata)
             {
@@ -751,12 +800,16 @@ created in another visit_XXX function.
           }
         subscription.handler = function(federate, object)
         {
-          var objectdata = {name: object.name,
-                            fullName: object.fullName,
-                            parameters: object.parameters,
-                            subscribedLoglevel: subscription.LogLevel,
-                            subscribedAttributeData: [],
-                            logSubscribedAttributeData: []};
+          var objectdata =
+            {name: object.name,
+             codeName: object.codeName,
+             codeNameOrName: (object.codeName || object.name),
+             fullName: object.fullName,
+             lowerName: lowerNamer(object),
+             parameters: object.parameters,
+             subscribedLoglevel: subscription.LogLevel,
+             subscribedAttributeData: [],
+             logSubscribedAttributeData: []};
 
           if (federate.subscribedobjectdata)
             {
