@@ -1282,6 +1282,74 @@ The function does not return anything.
 
 /***********************************************************************/
 
+      // Script to run the default experiment
+      self.fileGenerators.push(function(artifact, callback)
+      {
+        var renderContext = {federates: self.federates};
+
+        artifact.addFile('run-default.sh',
+                         ejs.render(TEMPLATES['run-default.sh.ejs'],
+                                    renderContext),
+                         function(err)
+                         {
+                           if (err)
+                             {
+                               callback(err);
+                               return;
+                             }
+                           else
+                             {
+                               callback();
+                             }
+                         });
+      });
+
+/***********************************************************************/
+
+      // Script to run just the federation manager
+      self.fileGenerators.push(function(artifact, callback)
+      {
+        artifact.addFile('run-manager.sh',
+                         ejs.render(TEMPLATES['run-manager.sh.ejs'],
+                                    {}),
+                         function(err)
+                         {
+                           if (err)
+                             {
+                               callback(err);
+                               return;
+                             }
+                           else
+                             {
+                               callback();
+                             }
+                         });
+      });
+
+/***********************************************************************/
+
+      // Script to prepare C++ federates for execution
+      self.fileGenerators.push(function(artifact, callback)
+      {
+        artifact.addFile('build-cpp.sh',
+                         ejs.render(TEMPLATES['build-cpp.sh.ejs'],
+                                    {}),
+                         function(err)
+                         {
+                           if (err)
+                             {
+                               callback(err);
+                               return;
+                             }
+                           else
+                             {
+                               callback();
+                             }
+                         });
+      });
+
+/***********************************************************************/
+
       self.fileGenerators.push(function(artifact, callback)
       {
         if (self.experimentPaths.length != 0)

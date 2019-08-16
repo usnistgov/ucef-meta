@@ -113,6 +113,26 @@ define
                           });
        });
 
+       // generate the script that builds the GridLAB-D federate
+       self.fileGenerators.push(function (artifact, callback)
+       {
+         artifact.addFile(moduleName + "/build.sh",
+                          ejs.render(TEMPLATES['java/mvn-install.sh.ejs'],
+                                     renderContext),
+                          function(err)
+                          {
+                            if (err)
+                              {
+                                callback(err);
+                                return;
+                              }
+                            else
+                              {
+                                callback();
+                              }
+                          });
+       });
+
        // generate the script that runs the GridLAB-D federate
        self.fileGenerators.push(function (artifact, callback)
        {

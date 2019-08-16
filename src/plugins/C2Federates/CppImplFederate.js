@@ -21,7 +21,7 @@ define([
                 return;
             }
             
-            var baseDirectoryPath = self.projectName + '-cpp-federates/';
+            var baseDirectoryPath = 'cpp-federates/';
             var implDirectorySpec = {
                 federation_name: self.projectName,
                 artifact_name: "impl",

@@ -225,7 +225,7 @@ define([
             // SIM RTI - Begin
             // 
 
-            var simDirBasePath = self.projectName + '-cpp-federates/',
+            var simDirBasePath = 'cpp-federates/',
                 simDirSpec = {federation_name: self.projectName, artifact_name: "rti", language:"cpp"},
                 simDirPath =  simDirBasePath + ejs.render(self.directoryNameTemplate, simDirSpec);  
 
