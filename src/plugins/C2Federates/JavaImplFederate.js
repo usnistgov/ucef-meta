@@ -15,10 +15,6 @@ define
     JavaImplFederateExporter = function()
     {
       var self;
-      var implOutFilePath;
-      var implOutResPath;
-      var implDirSpec;
-      var implDirPath;
       var checkBack;
 
       self = this;
@@ -42,18 +38,10 @@ define
        longName: 'JavaImplFederate',
        init: function()
              {
-               var dirPath;
                if (self.javaImplFedInitDone)
                  {
                    return;
                  }
-               dirPath = self.projectName + '-java-federates/';
-               implDirSpec = {federation_name: self.projectName,
-                              artifact_name: "impl",
-                              language: "java"};
-               implDirPath = dirPath;
-               implOutFilePath = implDirPath + MavenPOM.mavenJavaPath;
-               implOutResPath = implDirPath + MavenPOM.mavenResourcePath;
                self.projectName = self.core.getAttribute(self.rootNode, 'name');
                self.javaImplFedInitDone = true;
              }
@@ -77,19 +65,9 @@ Called By:
         self = this;
         nodeType = self.core.getAttribute(self.getMetaType(node), 'name');
         self.logger.info('Visiting a JavaImplFederate');
-        if (!self.java_implPOM)
-          {
-            self.java_implPOM = new MavenPOM(self.javaPOM);
-            self.java_implPOM.artifactId =
-               ejs.render(self.directoryNameTemplate, implDirSpec);
-            self.java_implPOM.version = self.project_version;
-            self.java_implPOM.packaging = "jar";
-          }
         context.javaimplfedspec = self.createJavaImplFederateCodeModel();
         context.javaimplfedspec.groupId =
           self.getCurrentConfig().groupId.trim();
-        context.javaimplfedspec.artifactId =
-           ejs.render(self.directoryNameTemplate, implDirSpec);
         context.javaimplfedspec.projectName = self.projectName;
         context.javaimplfedspec.projectVersion = self.project_version;
         context.javaimplfedspec.cpswtVersion =
@@ -106,9 +84,11 @@ Called By:
         context.javaimplfedspec.porticoPOM.scope = self.porticoPOM.scope;
         context.javaimplfedspec.classname =
            self.core.getAttribute(node, 'name');
+        context.javaimplfedspec.jarfile =
+           context.javaimplfedspec.classname + "-" + context.javaimplfedspec.projectVersion + ".jar";
         context.javaimplfedspec.simname = self.projectName;
         context.javaimplfedspec.configFile =
-           self.core.getAttribute(node, 'name') + 'Config.json';
+           self.core.getAttribute(node, 'name') + '.json';
         context.javaimplfedspec.timeconstrained =
            self.core.getAttribute(node, 'TimeConstrained');
         context.javaimplfedspec.timeregulating =
@@ -154,7 +134,7 @@ Note: implDirPath has / at the end
         self = this;
         groupPath = self.getCurrentConfig().groupId.trim().replace(/[.]/g, "/");
         renderContext = context.javaimplfedspec;
-        fedPathDir = implDirPath + self.core.getAttribute(node, 'name');
+        fedPathDir = self.core.getAttribute(node, 'name');
         outFileName = fedPathDir + "/src/main/java/" + groupPath + "/" +
                       self.core.getAttribute(node, 'name').toLowerCase() +
                       "/" + self.core.getAttribute(node, 'name') + ".java";
@@ -193,7 +173,7 @@ Note: implDirPath has / at the end
 This prints files with names of the form <federateName>Base.java
 
 The file name (in context.javafedspec.outFileName) is constructed
-in the post_visit_JavaBaseFederate function in JavaBaseFederate.js.
+in the post_visit_JavaFederate function in JavaFederate.js.
 
 */
         self.fileGenerators.push(function(artifact, callback)
@@ -227,7 +207,41 @@ in the post_visit_JavaBaseFederate function in JavaBaseFederate.js.
 
 /***********************************************************************/
 
-        //Add federate RTi.rid file
+        //Add federate build script
+        self.fileGenerators.push(function(artifact, callback)
+        {
+          var bashScript;
+          var fullPath;
+          var template;
+
+          fullPath = fedPathDir + '/build.sh';
+          template = TEMPLATES['java/mvn-install.sh.ejs'];
+          bashScript = ejs.render(template, renderContext);
+          console.log('calling addFile for: ' + fullPath);
+          artifact.addFile(fullPath, bashScript,
+                           function(err) {checkBack(err, callback);});
+        });
+
+/***********************************************************************/
+
+        //Add federate run script
+        self.fileGenerators.push(function(artifact, callback)
+        {
+          var bashScript;
+          var fullPath;
+          var template;
+
+          fullPath = fedPathDir + '/run.sh';
+          template = TEMPLATES['java/java-run.sh.ejs'];
+          bashScript = ejs.render(template, renderContext);
+          console.log('calling addFile for: ' + fullPath);
+          artifact.addFile(fullPath, bashScript,
+                           function(err) {checkBack(err, callback);});
+        });
+
+/***********************************************************************/
+
+        //Add federate RTI.rid file
         self.fileGenerators.push(function(artifact, callback)
         {
           var rtiCode;

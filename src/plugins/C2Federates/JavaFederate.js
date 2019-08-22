@@ -3,12 +3,12 @@ define
   'ejs',
   'C2Core/MavenPOM',
   'C2Federates/Templates/Templates',
-  'C2Federates/JavaBaseFederate',
+  'C2Federates/JavaRTI',
   'C2Federates/JavaImplFederate'],
  function (ejs,
            MavenPOM,
            TEMPLATES,
-           JavaBaseFederate,
+           JavaRTI,
            JavaImplFederate)
  {
 
@@ -29,8 +29,33 @@ The top-level function returns this function.
     
     JavaFederateExporter = function()
     {
+      var self = this;
       var finalContext;
-      JavaBaseFederate.call(this);
+
+      JavaRTI.call(this);
+      this.federateTypes = this.federateTypes || {};
+
+/***********************************************************************/
+
+      this.federateTypes.JavaFederate =
+        {includeInExport: false,
+         longName: 'JavaFederate',
+         init: function()
+         {
+           var fullPath;
+           var xmlCode;
+
+           self.initJavaRTI();
+           if (self.javaFedInitDone)
+             {
+               return;
+             }
+           self.javaFedInitDone = true;
+         }
+        };
+
+/***********************************************************************/
+
       JavaImplFederate.call(this);
       finalContext = {};
        
@@ -55,10 +80,8 @@ if JavaFederateExporter is called, which happens in FederatesExporter.js.
 
       this.visit_JavaFederate = function(node, parent, context)
       {
-        var self;
         var nodeType; // set here but not used here, may be useless
   
-        self = this;
         nodeType = self.core.getAttribute(self.getMetaType(node), 'name');
         self.logger.info('Visiting the JavaFederates');
         if (!self.javaPOM)
@@ -83,7 +106,20 @@ if JavaFederateExporter is called, which happens in FederatesExporter.js.
             self.porticoPOM.scope = "provided";
           }
 
-        this.visit_JavaBaseFederate(node, parent, context);
+        context.javafedspec = self.createJavaFederateCodeModel();
+        context.javafedspec.classname =
+          self.core.getAttribute(node, 'name');
+        context.javafedspec.simname = self.projectName;
+        context.javafedspec.timeconstrained =
+          self.core.getAttribute(node, 'TimeConstrained');
+        context.javafedspec.timeregulating =
+          self.core.getAttribute(node, 'TimeRegulating');
+        context.javafedspec.lookahead =
+          self.core.getAttribute(node, 'Lookahead');
+        context.javafedspec.asynchronousdelivery =
+          self.core.getAttribute(node, 'EnableROAsynchronousDelivery');
+        self.federates[self.core.getPath(node)] = context.javafedspec;
+
         return this.visit_JavaImplFederate(node, parent, context);
       };
 
@@ -109,10 +145,49 @@ post_visit_JavaImplFederate also generates code for 6 files.
       
       this.post_visit_JavaFederate = function(node, context)
       {
-        this.post_visit_JavaBaseFederate(node, context);
+        var outFileName;
+        var federateName;
+        var groupId;
+
+        groupId = self.getCurrentConfig().groupId.trim();
+        federateName = self.core.getAttribute(node, 'name');
+        outFileName = federateName +
+                      "/src/main/java/" + groupId.replace(/[.]/g, "/") + "/" +
+                      federateName.toLowerCase() + "/" + federateName +
+                      "Base.java";
+        context.javafedspec.outFileName = outFileName;
+
         finalContext = this.post_visit_JavaImplFederate(node, context);
         return finalContext;
       };
+
+
+/***********************************************************************/
+
+      this.createJavaFederateCodeModel = function()
+      {
+         return {simname: "",
+                melderpackagename: null,
+                classname: "",
+                isnonmapperfed: true,
+                timeconstrained: false,
+                timeregulating: false,
+                lookahead: null,
+                asynchronousdelivery: false,
+                publishedinteractiondata: [],
+                subscribedinteractiondata: [],
+                allinteractiondata: [],
+                publishedobjectdata: [],
+                subscribedobjectdata: [],
+                allobjectdata: [],
+                helpers:{},
+                ejs:ejs,
+                TEMPLATES:TEMPLATES};
+      };
+
+/***********************************************************************/
+
+      this.javaCodeModel = this.createJavaFederateCodeModel();
 
 /***********************************************************************/
 

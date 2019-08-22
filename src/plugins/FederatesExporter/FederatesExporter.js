@@ -193,6 +193,7 @@ define
     var objectTraverserXml;         // function variable
     var interactionTraverserCheck;  // function variable
     var interactionTraverserXml;    // function variable
+    var buildScriptGenerator;       // function variable
     var fomGenerator;               // function variable
 
     pluginMetadata = JSON.parse(pluginMetadata);
@@ -727,7 +728,37 @@ by calling ejs.render using the fedfile_siminteraction_xml XML Template.
                             intModel);
         }
     };
-            
+
+/***********************************************************************/
+
+/* buildScriptGenerator
+
+Returned Value: none
+
+Called By: finishExport
+
+This builds a file generator for a top-level build script that compiles
+all of the individual generated federates.
+
+*/
+    buildScriptGenerator = function( /* ARGUMENTS                             */
+     fedEx)                          /* the FederatesExporter function object */
+    {
+      fedEx.fileGenerators.push(function (artifact, callback)
+      {
+        var template = TEMPLATES['build-all.sh.ejs'];
+        var renderContext = {};
+        var fullPath = 'build-all.sh';
+        var bashScript = ejs.render(template, renderContext);
+        console.log('calling addFile for: ' + fullPath);
+        artifact.addFile(fullPath, bashScript,
+                         function (err)
+                         {if (err) {callback(err); return;}
+                          else {callback();}}
+                        );
+      });
+    };
+
 /***********************************************************************/
 
 /* fomGenerator (function-valued variable of top-level function object)
@@ -1075,6 +1106,7 @@ It uses the self variable.
           self.blobClient.createArtifact(self.projectName.trim().
                                          replace(/\s+/g,'_') + '_generated');
         fomGenerator(self);
+        buildScriptGenerator(self);
         if (self.generateExportPackages)
           {
             coreArtifact =

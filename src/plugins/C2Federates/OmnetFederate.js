@@ -25,7 +25,7 @@ define([
             init: function(){
                 self.initCppRTI();
 
-                var omnetDirBasePath = self.projectName + '-cpp-federates/';
+                var omnetDirBasePath = 'cpp-federates/';
                 omnetDirSpec = {federation_name: self.projectName, artifact_name: "omnet", language:"cpp"};
                 var omnetDirPath =  omnetDirBasePath + ejs.render(self.directoryNameTemplate, omnetDirSpec);
                 omnetOutFilePath = omnetDirPath;
@@ -76,7 +76,7 @@ define([
             if(!self.cppPOM){
                 self.cppPOM = new MavenPOM(self.mainPom);
                 self.cppPOM.artifactId = self.projectName + "-cpp";
-                self.cppPOM.directory = self.projectName + "-cpp-federates";
+                self.cppPOM.directory = "cpp-federates";
                 self.cppPOM.version = self.project_version;
                 self.cppPOM.packaging = "pom";
                 self.cppPOM.name = self.projectName + ' C++ root'

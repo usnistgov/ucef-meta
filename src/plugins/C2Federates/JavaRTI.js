@@ -2,7 +2,7 @@
 
 JavaRTI.js is used in the define of:
  C2Federates/MapperFederate.js and
- C2Federates/JavaBaseFederate.js
+ C2Federates/JavaFederate.js
 
 */
 
@@ -378,8 +378,7 @@ will be called; otherwise, the callback will not occur.
                       remaining--;
                       federJavaCode = "package " + groupId + "." +
                         feder.name.toLowerCase() + ".rti;\n" + javaCode;
-                      fullPath = self.projectName + "-java-federates/" +
-                        feder.name + "/src/main/java/" +
+                      fullPath = feder.name + "/src/main/java/" +
                         groupId.replace(/[.]/g, "/") + "/" +
                         feder.name.toLowerCase() + "/rti/" +
                         (model.codeName || model.name) + ".java";
@@ -506,8 +505,7 @@ node in RTIVisitors.js. The model has the following properties:
                     {
                       federJavaCode = "package " + groupId + "." +
                         feder.name.toLowerCase() + ".rti;\n" + javaCode;
-                      fullPath = self.projectName + "-java-federates/" +
-                        feder.name + "/src/main/java/" +
+                      fullPath = feder.name + "/src/main/java/" +
                         groupId.replace(/[.]/g, "/") + "/" +
                         feder.name.toLowerCase() + "/rti/" +
                         (model.codeName || model.name) + ".java";
@@ -623,8 +621,7 @@ that has a publish or subscribe connection to the interaction.
                     {
                       federJavaCode = "package " + groupId + "." +
                         feder.name.toLowerCase() + ".rti;\n" + javaCode;
-                      fullPath = self.projectName + "-java-federates/" +
-                        feder.name + "/src/main/java/" +
+                      fullPath = feder.name + "/src/main/java/" +
                         groupId.replace(/[.]/g, "/") + "/" +
                         feder.name.toLowerCase() + "/rti/" +
                         (model.codeName || model.name) + ".java";
