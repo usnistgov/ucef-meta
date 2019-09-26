@@ -12,14 +12,26 @@ define
 
 /***********************************************************************/
 
+/* JavaImplFederateExporter (function-valued variable of top-level function obj)
+
+Returned Value: none
+
+Called By: JavaFederateExporter in JavaFederate.js
+
+The top-level function returns this function.
+
+*/
+    
     JavaImplFederateExporter = function()
     {
       var self;
       var checkBack;
 
       self = this;
+      
+/***********************************************************************/
 
-      checkBack = function(err, callBack)
+     checkBack = function(err, callBack)
       {
         if (err)
           {
@@ -31,6 +43,8 @@ define
             callBack();
           }
       };
+
+/***********************************************************************/
 
       this.federateTypes = this.federateTypes || {};
       this.federateTypes.JavaImplFederate =
@@ -53,7 +67,7 @@ define
 
 Returned Value: a "{context: context}" object
 
-Called By: 
+Called By: visit_JavaFederate (in JavaFederate.js)
 
 */
 
@@ -61,48 +75,39 @@ Called By:
       {
         var self;
         var nodeType;
+        var fedspec;
          
         self = this;
         nodeType = self.core.getAttribute(self.getMetaType(node), 'name');
-        self.logger.info('Visiting a JavaImplFederate');
-        context.javaimplfedspec = self.createJavaImplFederateCodeModel();
-        context.javaimplfedspec.groupId =
-          self.getCurrentConfig().groupId.trim();
-        context.javaimplfedspec.projectName = self.projectName;
-        context.javaimplfedspec.projectVersion = self.project_version;
-        context.javaimplfedspec.cpswtVersion =
-           self.getCurrentConfig().cpswtVersion;
-        context.javaimplfedspec.snapshotUrl =
-          self.getCurrentConfig().repositoryUrlSnapshot;
-        context.javaimplfedspec.releaseUrl =
-          self.getCurrentConfig().repositoryUrlRelease;
-        context.javaimplfedspec.porticoPOM.artifactId =
-           self.porticoPOM.artifactId;
-        context.javaimplfedspec.porticoPOM.groupId =
-           self.porticoPOM.groupId;
-        context.javaimplfedspec.porticoPOM.version = self.porticoPOM.version;
-        context.javaimplfedspec.porticoPOM.scope = self.porticoPOM.scope;
-        context.javaimplfedspec.classname =
-           self.core.getAttribute(node, 'name');
-        context.javaimplfedspec.jarfile =
-           context.javaimplfedspec.classname + "-" + context.javaimplfedspec.projectVersion + ".jar";
-        context.javaimplfedspec.simname = self.projectName;
-        context.javaimplfedspec.configFile =
-           self.core.getAttribute(node, 'name') + '.json';
-        context.javaimplfedspec.timeconstrained =
+        fedspec = self.createJavaImplFederateCodeModel();
+        context.javaimplfedspec = fedspec;
+        fedspec.groupId = self.getCurrentConfig().groupId.trim();
+        fedspec.projectName = self.projectName;
+        fedspec.projectVersion = self.project_version;
+        fedspec.cpswtVersion = self.getCurrentConfig().cpswtVersion;
+        fedspec.snapshotUrl = self.getCurrentConfig().repositoryUrlSnapshot;
+        fedspec.releaseUrl = self.getCurrentConfig().repositoryUrlRelease;
+        fedspec.porticoPOM.artifactId = self.porticoPOM.artifactId;
+        fedspec.porticoPOM.groupId = self.porticoPOM.groupId;
+        fedspec.porticoPOM.version = self.porticoPOM.version;
+        fedspec.porticoPOM.scope = self.porticoPOM.scope;
+        fedspec.classname = self.core.getAttribute(node, 'name');
+        fedspec.jarfile =
+           fedspec.classname + '-' + fedspec.projectVersion + '.jar';
+        fedspec.simname = self.projectName;
+        fedspec.configFile = self.core.getAttribute(node, 'name') + '.json';
+        fedspec.timeconstrained =
            self.core.getAttribute(node, 'TimeConstrained');
-        context.javaimplfedspec.timeregulating =
+        fedspec.timeregulating =
            self.core.getAttribute(node, 'TimeRegulating');
-        context.javaimplfedspec.lookahead =
-           self.core.getAttribute(node, 'Lookahead');
-        context.javaimplfedspec.step = self.core.getAttribute(node, 'Step');
-        context.javaimplfedspec.asynchronousdelivery =
+        fedspec.lookahead = self.core.getAttribute(node, 'Lookahead');
+        fedspec.step = self.core.getAttribute(node, 'Step');
+        fedspec.asynchronousdelivery =
            self.core.getAttribute(node, 'EnableROAsynchronousDelivery');
-        context.javaimplfedspec.bindAddress =
-           self.getCurrentConfig().bindAddress.trim();
+        fedspec.bindAddress = self.getCurrentConfig().bindAddress.trim();
         self.javafederateName[self.core.getPath(node)] =
            self.core.getAttribute(node, 'name');
-         self.federates[self.core.getPath(node)] = context.javaimplfedspec;
+         self.federates[self.core.getPath(node)] = fedspec;
          return {context: context};
        };
 
@@ -119,8 +124,6 @@ This modifies context.javaimplfedspec (aliased to renderContext) and
 builds six file generators. The code string in five of the file
 generators is built using renderContext.
 
-Note: implDirPath has / at the end
-
 */
       this.post_visit_JavaImplFederate = function(node, context)
       {
@@ -132,17 +135,17 @@ Note: implDirPath has / at the end
         var groupPath;
          
         self = this;
-        groupPath = self.getCurrentConfig().groupId.trim().replace(/[.]/g, "/");
+        groupPath = self.getCurrentConfig().groupId.trim().replace(/[.]/g, '/');
         renderContext = context.javaimplfedspec;
         fedPathDir = self.core.getAttribute(node, 'name');
-        outFileName = fedPathDir + "/src/main/java/" + groupPath + "/" +
+        outFileName = fedPathDir + '/src/main/java/' + groupPath + '/' +
                       self.core.getAttribute(node, 'name').toLowerCase() +
-                      "/" + self.core.getAttribute(node, 'name') + ".java";
+                      '/' + self.core.getAttribute(node, 'name') + '.java';
         // set the SOM.xml output directory
         feder = self.federateInfos[self.core.getPath(node)];
         if (feder)
           {
-            feder.directory = fedPathDir + "/conf/";
+            feder.directory = fedPathDir + '/conf/';
           }
         renderContext.allobjectdata = renderContext.publishedobjectdata.
                                   concat(renderContext.subscribedobjectdata);
@@ -159,9 +162,11 @@ Note: implDirPath has / at the end
           var fullPath;
           var template;
 
+          fullPath = fedPathDir + '/' + 'pom.xml';
           template = TEMPLATES['java/federateimpl_uberpom.xml.ejs'];
           xmlCode = ejs.render(template, renderContext);
-          fullPath = fedPathDir + "/" + 'pom.xml';
+          self.logger.info('calling addFile for ' + fullPath + ' in post_' +
+                           'visit_JavaImplFederate of JavaImplFederate.js');
           artifact.addFile(fullPath, xmlCode,
                            function(err) {checkBack(err, callback);});
         });
@@ -180,15 +185,15 @@ in the post_visit_JavaFederate function in JavaFederate.js.
         {
           var javaCode;
           var template;
-  
+          var fullPath;
+
+          fullPath = context.javafedspec.outFileName;
           renderContext.moduleCollection.push(renderContext.classname);
-          renderContext.publishedinteractiondata =
-            context.javaimplfedspec.publishedinteractiondata;
-          renderContext.publishedobjectdata =
-            context.javaimplfedspec.publishedobjectdata;
           template = TEMPLATES['java/federatebase.java.ejs'];
           javaCode = ejs.render(template, renderContext);
-          artifact.addFile(context.javafedspec.outFileName, javaCode,
+          self.logger.info('calling addFile for ' + fullPath + ' in post_' +
+                           'visit_JavaImplFederate of JavaImplFederate.js');
+          artifact.addFile(fullPath, javaCode,
                            function(err) {checkBack(err, callback);});
         });
 
@@ -198,9 +203,13 @@ in the post_visit_JavaFederate function in JavaFederate.js.
         {
           var javaCode;
           var template;
+          var fullPath;
 
+          fullPath = outFileName;
           template = TEMPLATES['java/federateimpl.java.ejs'];
           javaCode = ejs.render(template, renderContext);
+          self.logger.info('calling addFile for ' + fullPath + ' in post_' +
+                           'visit_JavaImplFederate of JavaImplFederate.js');
           artifact.addFile(outFileName, javaCode,
                            function(err) {checkBack(err, callback);});
         });
@@ -217,7 +226,8 @@ in the post_visit_JavaFederate function in JavaFederate.js.
           fullPath = fedPathDir + '/build.sh';
           template = TEMPLATES['java/mvn-install.sh.ejs'];
           bashScript = ejs.render(template, renderContext);
-          console.log('calling addFile for: ' + fullPath);
+          self.logger.info('calling addFile for ' + fullPath + ' in post_' +
+                           'visit_JavaImplFederate of JavaImplFederate.js');
           artifact.addFile(fullPath, bashScript,
                            function(err) {checkBack(err, callback);});
         });
@@ -234,7 +244,8 @@ in the post_visit_JavaFederate function in JavaFederate.js.
           fullPath = fedPathDir + '/run.sh';
           template = TEMPLATES['java/java-run.sh.ejs'];
           bashScript = ejs.render(template, renderContext);
-          console.log('calling addFile for: ' + fullPath);
+          self.logger.info('calling addFile for ' + fullPath + ' in post_' +
+                           'visit_JavaImplFederate of JavaImplFederate.js');
           artifact.addFile(fullPath, bashScript,
                            function(err) {checkBack(err, callback);});
         });
@@ -251,6 +262,8 @@ in the post_visit_JavaFederate function in JavaFederate.js.
           fullPath = fedPathDir + '/RTI.rid';
           template = TEMPLATES['java/rti.rid.ejs'];
           rtiCode = ejs.render(template, renderContext);
+          self.logger.info('calling addFile for ' + fullPath + ' in post_' +
+                           'visit_JavaImplFederate of JavaImplFederate.js');
           artifact.addFile(fullPath, rtiCode,
                            function(err) {checkBack(err, callback);});
         });
@@ -267,6 +280,8 @@ in the post_visit_JavaFederate function in JavaFederate.js.
           fullPath = fedPathDir + '/conf/' + renderContext.configFile;
           template = TEMPLATES['java/federate-config.json.ejs'];
           jsonCode = ejs.render(template, renderContext);
+          self.logger.info('calling addFile for ' + fullPath + ' in post_' +
+                           'visit_JavaImplFederate of JavaImplFederate.js');
           artifact.addFile(fullPath, jsonCode,
                            function(err) {checkBack(err, callback);});
         });
@@ -283,6 +298,8 @@ in the post_visit_JavaFederate function in JavaFederate.js.
           fullPath = fedPathDir + '/conf/log4j2.xml';
           template = TEMPLATES['java/log4j2.xml.ejs']
           xmlCode = ejs.render(template, self);
+          self.logger.info('calling addFile for ' + fullPath + ' in post_' +
+                           'visit_JavaImplFederate of JavaImplFederate.js');
           artifact.addFile(fullPath, xmlCode,
                            function(err) {checkBack(err, callback);});
         });
@@ -296,9 +313,9 @@ in the post_visit_JavaFederate function in JavaFederate.js.
 
       this.createJavaImplFederateCodeModel = function()
       {
-        return {simname: "",
+        return {simname: '',
                 melderpackagename: null,
-                classname: "",
+                classname: '',
                 isnonmapperfed: true,
                 timeconstrained: false,
                 timeregulating: false,

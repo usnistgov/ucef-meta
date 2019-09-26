@@ -84,7 +84,6 @@ define
        var ret = {context:context};
        var nodeType = self.core.getAttribute(self.getMetaType(node), 'name');
        
-       self.logger.info('Visiting a Federate');
        self.federates[self.core.getPath(node)] = node;
        if(nodeType != 'Federate')
          {
@@ -136,7 +135,6 @@ FederatesExporter/FederatesExporter.js and ModelTraverserMixin.js
        var ret = {context:context};
        var nodeType = self.core.getAttribute(self.getMetaType(node), 'name');
 
-       self.logger.info('Post Visiting a Federate');
        if ((nodeType != 'Federate') && (nodeType in self.federateTypes) &&
            self.core.getAttribute(node, 'EnableCodeGeneration'))
          {

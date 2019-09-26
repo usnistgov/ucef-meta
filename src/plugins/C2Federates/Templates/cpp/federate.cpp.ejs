@@ -1,0 +1,123 @@
+<%/* group cppfederate;
+
+federate(
+        simname,
+        classname,
+        isnonmapperfed,
+        timeconstrained,
+        timeregulating,
+        lookahead,
+        asynchronousdelivery,
+        allinteractiondata,
+        publishedinteractiondata,
+        subscribedinteractiondata,
+        allobjectdata,
+        publishedobjectdata,
+        subscribedobjectdata
+)
+*/ -%>
+
+#include "<%=classname%>Base.hpp"
+
+void <%=classname%>Base::init() {
+    createRTI();
+    joinFederation();
+<% if (timeconstrained){ -%>
+    enableTimeConstrained();
+<%} -%>
+<% if (timeregulating){ -%>
+    enableTimeRegulation( getLookAhead() );
+<%} -%>
+<% if (asynchronousdelivery){ -%>
+    enableAsynchronousDelivery();
+<%} -%>
+<% if (publishedinteractiondata.length || subscribedinteractiondata.length) {-%>
+
+  // interaction pubsub
+<%} -%>
+<% publishedinteractiondata.forEach(function(interactiondata){ -%>
+  <%=interactiondata.name%>::publish( getRTI() );
+<%}); -%>
+<% subscribedinteractiondata.forEach(function(interactiondata){ -%>  
+    <%=interactiondata.name%>::subscribe( getRTI() );
+    _subscribedInteractionFilter.setFedFilters(
+        <%=interactiondata.name%>::get_handle(),
+        SubscribedInteractionFilter::<%=interactiondata.originFedFilter()%>,
+        SubscribedInteractionFilter::<%=interactiondata.srcFedFilter()%>);
+<%}); -%>
+<% if (publishedobjectdata.length || subscribedobjectdata.length) {-%>
+
+    // object pubsub
+<%} -%>
+<% publishedobjectdata.forEach(function(objectdata){ -%>
+<% objectdata.publishedAttributeData.forEach(function(attributedata){ -%>
+    <%=objectdata.name%>::publish_<%=attributedata.name%>();
+<%}); -%>
+    <%=objectdata.name%>::publish( getRTI() );
+<%}); -%>
+<% subscribedobjectdata.forEach(function(objectdata){ -%>
+<% objectdata.subscribedAttributeData.forEach(function(attributedata){ -%>
+    <%=objectdata.name%>::subscribe_<%=attributedata.name%>();
+<%}); -%>
+    <%=objectdata.name%>::subscribe( getRTI() );
+<%}); -%>
+}
+
+<%=classname%>Base::<%=classname%>Base(FederateConfig *fedconfig) : Super(fedconfig) {
+    init();
+}
+<% publishedinteractiondata.forEach(function(interactiondata){ -%>
+
+<%=interactiondata.name%>SP <%=classname%>Base::create_<%=interactiondata.name%>( void ) {
+    <%=interactiondata.name%>SP interactionSP = <%=interactiondata.name%>::create();
+    interactionSP->set_sourceFed( getFederateId() );
+    interactionSP->set_originFed( getFederateId() );
+    return interactionSP;
+}
+<%}); -%>
+
+void <%=classname%>Base::receiveInteraction(
+         RTI::InteractionClassHandle theInteraction,
+         const RTI::ParameterHandleValuePairSet& theParameters,
+         const RTI::FedTime& theTime,
+         const char *theTag,
+         RTI::EventRetractionHandle theHandle)
+  throw (RTI::InteractionClassNotKnown,
+         RTI::InteractionParameterNotKnown,
+         RTI::InvalidFederationTime,
+         RTI::FederateInternalError) {
+    if ( getMoreATRs() ) {
+        InteractionRoot::SP interactionRootSP =
+          InteractionRoot::create_interaction( theInteraction, theParameters, theTime );
+        C2WInteractionRootSP c2wInteractionRootSP =
+          boost::dynamic_pointer_cast<C2WInteractionRoot>( interactionRootSP );
+        if ( c2wInteractionRootSP != 0 ) { 
+            // Filter interaction if src/origin fed requirements (if any) are not met
+            if ( _subscribedInteractionFilter.filterC2WInteraction( getFederateId(), c2wInteractionRootSP ) ) {
+                return;
+            }
+        }
+        Super::receiveInteraction( theInteraction, theParameters, theTime, theTag, theHandle );
+    }
+}
+
+void <%=classname%>Base::receiveInteraction(
+         RTI::InteractionClassHandle theInteraction,
+         const RTI::ParameterHandleValuePairSet& theParameters,
+         const char *theTag)
+  throw (RTI::InteractionClassNotKnown,
+         RTI::InteractionParameterNotKnown,
+         RTI::FederateInternalError) {
+    if ( getMoreATRs() ) {
+        InteractionRoot::SP interactionRootSP = InteractionRoot::create_interaction(theInteraction, theParameters);
+        C2WInteractionRootSP c2wInteractionRootSP =
+          boost::dynamic_pointer_cast<C2WInteractionRoot>(interactionRootSP);
+        if ( c2wInteractionRootSP != 0 ) {
+            // Filter interaction if src/origin fed requirements (if any) are not met
+            if ( _subscribedInteractionFilter.filterC2WInteraction(getFederateId(), c2wInteractionRootSP ) ) {
+              return;
+            }
+        }
+        Super::receiveInteraction( theInteraction, theParameters, theTag );
+    }
+}

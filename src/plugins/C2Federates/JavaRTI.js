@@ -220,6 +220,9 @@ Called By: MapperFederateExporter (in MapperFederate.js)
             return;
           }
 
+        // This lists all the nodes in the BasePackage of the webGME model
+        // other than ObjectRoot and InteractionRoot. All of them except
+        // FederateObject are interactions.
         self.javaCorePackageOISpecs =
                {C2WInteractionRoot: {simname: corePackagePathStr},
                 SimulationControl: {simname: corePackagePathStr},
@@ -275,6 +278,11 @@ will be called; otherwise, the callback will not occur.
           var datamemberList;
           var template;
           var javaCode;
+          var remaining;
+          var federId;
+          var feder;
+          var federJavaCode;
+          var groupId;
           
           context = self.createJavaRTICodeModel();
           packagePath = outFilePath + "/" +
@@ -326,12 +334,6 @@ will be called; otherwise, the callback will not occur.
           javaCode = ejs.render(template, context);
           if (self.federateInfos)
             { // only the FederatesExporter has federateInfos
-              var remaining;
-              var federId;
-              var feder;
-              var federJavaCode;
-              var groupId;
-
               groupId = self.getCurrentConfig().groupId.trim();
 
               if (self.callObjectTraverser)
@@ -382,6 +384,8 @@ will be called; otherwise, the callback will not occur.
                         groupId.replace(/[.]/g, "/") + "/" +
                         feder.name.toLowerCase() + "/rti/" +
                         (model.codeName || model.name) + ".java";
+                      self.logger.info('calling addFile for ' + fullPath +
+                                       ' in renderToFile of JavaRTI.js');
                       artifact.addFile(fullPath, federJavaCode,
                                        (remaining ?
                                         function (err) // there are more
@@ -396,6 +400,8 @@ will be called; otherwise, the callback will not occur.
             }
           else
             { // caller is not the FederatesExporter
+              self.logger.info('calling addFile for ' + fullPath +
+                               ' in renderToFile of JavaRTI.js');
               artifact.addFile(fullPath, javaCode, callback);
             }
         }; // end renderToFile
@@ -429,7 +435,7 @@ node in RTIVisitors.js. The model has the following properties:
          outFilePath,             /* full file name of file to write        */
          model,                   /* data model from which to generate code */
          artifact,                /* array of file generating functions     */
-         callback)                /* function to call in case of error      */
+         callback)                /* function to call if error or done      */
         {
           var context;
           var packagePath;
@@ -509,6 +515,9 @@ node in RTIVisitors.js. The model has the following properties:
                         groupId.replace(/[.]/g, "/") + "/" +
                         feder.name.toLowerCase() + "/rti/" +
                         (model.codeName || model.name) + ".java";
+                      self.logger.info('calling addFile for ' + fullPath +
+                                       ' in renderNotCoreObjectToFile' +
+                                       ' of JavaRTI.js');
                       artifact.addFile(fullPath, federJavaCode,
                                        function (err)
                                        {
@@ -552,6 +561,11 @@ that has a publish or subscribe connection to the interaction.
           var oattr;
           var template;
           var javaCode;
+          var remaining;
+          var federId;
+          var feder;
+          var federJavaCode;
+          var groupId;
           
           context = self.createJavaRTICodeModel();
           packagePath = outFilePath + "/" +
@@ -593,12 +607,6 @@ that has a publish or subscribe connection to the interaction.
           javaCode = ejs.render(template, context);
           if (self.federateInfos)
             { // only the FederatesExporter has federateInfos
-              var remaining;
-              var federId;
-              var feder;
-              var federJavaCode;
-              var groupId;
-
               if (self.callInteractionTraverser)
                 {
                   self.callInteractionTraverser = false;
@@ -625,6 +633,9 @@ that has a publish or subscribe connection to the interaction.
                         groupId.replace(/[.]/g, "/") + "/" +
                         feder.name.toLowerCase() + "/rti/" +
                         (model.codeName || model.name) + ".java";
+                      self.logger.info('calling addFile for ' + fullPath +
+                                       ' in renderNotCoreInteractionToFile' +
+                                       ' of JavaRTI.js');
                       artifact.addFile(fullPath, federJavaCode,
                                        function (err)
                                        {
@@ -890,7 +901,8 @@ ObjectRoot.java file.
 
 If generating export packages, add to the core file generators a
 function that prints a java file for each object in self.objects
-whose name is a property in self.javaCorePackageOISpecs.
+whose name is a property in self.javaCorePackageOISpecs. Those are the
+objects in the BasePackage in the webGME model.
 
 When the added function executes, the renderToFile function defined
 above and the renderNextObjectInCore function defined here call each
@@ -979,6 +991,7 @@ other until all the selected interactions are processed.
               renderNextInteractionInCore = function(err)
               {
                 var nextInteraction;
+                  
                 if (err)
                   {
                     callback(err);
@@ -1109,7 +1122,7 @@ a property in self.javaCorePackageOISpecs.
 /***********************************************************************/
 
         self.javaRTIInitDone = true;
-      } // end initJavaRTI
+      }; // end initJavaRTI
 
 /***********************************************************************/
 
@@ -1213,11 +1226,11 @@ code elsewhere may be looking for "default", so it has been left in.
                 ejs: ejs, 
                 TEMPLATES: TEMPLATES
             };
-      } // end createJavaRTICodeModel function
+      }; // end createJavaRTICodeModel function
 
 /***********************************************************************/
 
-    } // end JavaRTIFederateExporter function
+    }; // end JavaRTIFederateExporter function
 
     return JavaRTIFederateExporter;
 });
