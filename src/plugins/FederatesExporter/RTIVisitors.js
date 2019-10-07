@@ -66,15 +66,17 @@ This processes data for an Interaction.
 */
       this.visit_Interaction = function(node, parent, context)
       {
-        var self = this,
-        nodeType = self.core.getAttribute(self.getMetaType(node), 'name'),
-        nodeBaseName = self.core.getAttribute(node.base, 'name'),
-        nodeBasePath = self.core.getPointerPath(node, 'base'),
-        nodeName = self.core.getAttribute(node, 'name'),
-        nodePath = self.core.getPath(node),
-        interaction = {},
-        fed,
-        nameFragments = [nodeName];
+        var self = this;
+        var nodeType = self.core.getAttribute(self.getMetaType(node), 'name');
+        var nodeBaseName =
+          (self.core.getAttribute(node.base, 'CodeGeneratedName') ||
+           self.core.getAttribute(node.base, 'name'));
+        var nodeBasePath = self.core.getPointerPath(node, 'base');
+        var nodeName = self.core.getAttribute(node, 'name');
+        var nodePath = self.core.getPath(node);
+        var interaction = {};
+        var fed;
+        var nameFragments = [nodeName];
 
         if (self.interactions[nodePath])
           {
@@ -84,18 +86,20 @@ This processes data for an Interaction.
           {
             self.interactions[nodePath] = interaction;
           }
-        interaction['name'] = self.core.getAttribute(node, 'name');
-        interaction['id'] = nodePath;
-        interaction['basePath'] = self.core.getPointerPath(node, 'base');
         interaction['basename'] = nodeBaseName;
+        interaction['basePath'] = self.core.getPointerPath(node, 'base');
+        interaction['children'] = interaction['children'] || [];
+        interaction['codeName'] =
+          self.core.getAttribute(node, 'CodeGeneratedName');
         interaction['delivery'] = self.core.getAttribute(node, 'Delivery');
-        interaction['order'] = self.core.getAttribute(node, 'Order');
+        interaction['id'] = nodePath;
         interaction['inputPlaceName'] = "";
+        interaction['isMapperPublished'] = false;
+        interaction['isroot'] = node.base == self.META['Interaction'];
+        interaction['name'] = self.core.getAttribute(node, 'name');
+        interaction['order'] = self.core.getAttribute(node, 'Order');
         interaction['outputPlaceName'] = "";
         interaction['parameters'] = [];
-        interaction['children'] = interaction['children'] || [];
-        interaction['isroot'] = node.base == self.META['Interaction'];
-        interaction['isMapperPublished'] = false;
         if (self.pubSubInteractions)
           { // only DeploymentExporter has pubSubInteractions
             if (interaction.name == 'SimEnd')
@@ -215,7 +219,13 @@ Returned Value: a context object whose context property is the context
 
 Called By: See notes at top.
 
-This processes data for an Object.
+This is called when a node being processed represents a webgme object. It
+processes data for the object.
+
+Among other activities, this makes the primary model of a webgme
+object used in the federates exporter as shown a few lines
+below. Elsewhere in the JavaScript code, information in models used
+for code generation is extracted from the primary model.
 
 */
       this.visit_Object = function(node, parent, context)
@@ -235,14 +245,15 @@ This processes data for an Object.
           {
             self.objects[self.core.getPath(node)] = object;
           }
-        object['name'] = self.core.getAttribute(node, 'name');
-        object['id'] = self.core.getPath(node);
+        object['attributes'] = [];
         object['basePath'] = self.core.getPointerPath(node, 'base'); //added
         object['basename'] = nodeBaseName;
-        object['attributes'] = [];
-        object['parameters'] = object['attributes'];
         object['children'] = object['children'] || [];
+        object['codeName'] = self.core.getAttribute(node, 'CodeGeneratedName');
+        object['id'] = self.core.getPath(node);
         object['isroot'] = node.base == self.META['Object'];
+        object['name'] = self.core.getAttribute(node, 'name');
+        object['parameters'] = object['attributes'];
         if (self.objects[nodeBasePath])
           {
             self.objects[nodeBasePath]['children'].push(object);
@@ -312,17 +323,38 @@ This processes data for an Attribute.
 
 /***********************************************************************/
 
-      // This is needed to support pulling C2WInteractionRoot from the left-side in part-browser
+/* this.visit_C2WInteractionRoot
+
+Returned Value: whatever visit_Interaction returns
+
+Called By: See notes at top.
+
+This processes C2WInteractionRoot.
+
+*/
       this.visit_C2WInteractionRoot = (node, parent, context) => {
         return this.visit_Interaction(node, parent, context);
       };
 
-      // This is needed to support pulling C2WInteractionRoot from the left-side in part-browser
+/***********************************************************************/
+
+/* this.visit_ObjectRoot
+
+Returned Value: whatever visit_Object returns
+
+Called By: See notes at top.
+
+This processes ObjectRoot.
+
+*/
+
       this.visit_ObjectRoot = (node, parent, context) => {
         return this.visit_Object(node, parent, context);
       };
 
-    };
+/***********************************************************************/
+
+    }; // end of RTIVisitors function
 
     return RTIVisitors;   
  });

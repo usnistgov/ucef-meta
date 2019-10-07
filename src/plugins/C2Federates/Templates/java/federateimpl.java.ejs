@@ -1,3 +1,46 @@
+<% /*
+
+The data structure passed to this is large and deeply nested. Here are the
+top level properties (built in PubSubVisitors.js) used in this file with
+some lower levels expanded. Unused top level properties are elided with ...
+   ...
+   classname (string)
+   ...
+   groupId (string)
+   ...
+   publishedinteractiondata (array of JavaScript objects)
+      [details omitted]
+   publishedobjectdata (array of JavaScript objects)
+      name (string)
+      codeNameOrName (string)
+      fullName (string)
+      lowerName (string)
+      parameters (array of JavaScript objects)
+      publishedAttributeData (array JavaScript objects)
+      publishedLogLevel (string)
+      logPublishedAttributeData (array of JavaScript objects)
+   ...
+   subscribedinteractiondata (array of JavaScript objects)
+      name (string)
+      codeNameOrName (string)
+      fullName (string
+      lowerName (string)
+      originFedFilter (function)
+      parameters (array of JavaScript objects)
+      sourceFedFilter (function)
+      subscribedLogLevel (string)
+   subscribedobjectdata (array of JavaScript objects)
+      name (string)
+      codeNameOrName (string)
+      fullName (string)
+      lowerName (string)
+      parameters (array of JavaScript objects)
+      subscribedAttributeData (array JavaScript objects)
+      subscribedLogLevel (string)
+      logSubscribedAttributeData (array of JavaScript objects)
+   ...
+ 
+*/ -%>
 package <%= groupId %>.<%= classname.toLowerCase() %>;
 
 <% if(publishedinteractiondata.length || subscribedinteractiondata.length || publishedobjectdata.length || subscribedobjectdata.length) { -%>
@@ -18,6 +61,42 @@ import org.cpswt.hla.base.AdvanceTimeRequest;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+<% var codeNameobjects = {}; -%>
+<% var codeNameinteractions = {}; -%>
+<% var n = 0; -%>
+<% var m = 0; -%>
+<% publishedobjectdata.forEach(function(object_data){ -%>
+<% if (object_data.codeName) -%>
+<% {codeNameobjects[object_data.codeName] = object_data.name;}}); -%>
+<% subscribedobjectdata.forEach(function(object_data){ -%>
+<% if (object_data.codeName) -%>
+<% {codeNameobjects[object_data.codeName] = object_data.name;}}); -%>
+<% for (var prop in codeNameobjects) {if (prop && (prop != null)) n++;} -%>
+<% publishedinteractiondata.forEach(function(interact_data){ -%>
+<% if (interact_data.codeName) -%>
+<% {codeNameinteractions[interact_data.codeName] = interact_data.name;}}); -%>
+<% subscribedinteractiondata.forEach(function(interact_data){ -%>
+<% if (interact_data.codeName) -%>
+<% {codeNameinteractions[interact_data.codeName] = interact_data.name;}}); -%>
+<% for (var prop in codeNameobjects) {if (prop && (prop != null)) n++;} -%>
+<% for (var prop in codeNameinteractions) {if (prop && (prop != null)) m++;} -%>
+<% if (n + m) { -%>
+// CodeGeneratedName is used if necessary. Otherwise, name is used.
+<% } -%>
+<% if (n) { -%>
+// The following object classes have both CodeGeneratedName and name.
+<% for (var prop in codeNameobjects){ -%>
+<% if (prop && (prop != null)) { -%>
+// CodeGeneratedName = <%= prop %>   name = <%= codeNameobjects[prop] %>
+<% }}} -%>
+<% if (m) { -%>
+// The following interaction classes have both CodeGeneratedName and name.
+<% for (var prop in codeNameinteractions){ -%>
+<% if (prop && (prop != null)) { -%>
+// CodeGeneratedName = <%= prop %>   name = <%= codeNameinteractions[prop] %>
+<% }}} -%>
+
+
 // Define the <%= classname %> type of federate for the federation.
 
 public class <%= classname %> extends <%= classname %>Base {
@@ -30,8 +109,8 @@ public class <%= classname %> extends <%= classname %>Base {
     // TODO instantiate objects that must be sent every logical time step //
     ////////////////////////////////////////////////////////////////////////
 <% publishedobjectdata.forEach(function(object_data){ -%>
-    // <%=object_data.name%> v<%=object_data.name%> =
-    //     new <%=object_data.name%>();
+    // <%=object_data.codeNameOrName%> <%=object_data.lowerName%> =
+    //     new <%=object_data.codeNameOrName%>();
 <% }); -%>
 <% } -%>
 
@@ -43,7 +122,7 @@ public class <%= classname %> extends <%= classname %>Base {
         // TODO register object instances after super(args) //
         //////////////////////////////////////////////////////
 <% publishedobjectdata.forEach(function(object_data){ -%>
-        // v<%=object_data.name%>.registerObject(getLRC());
+        // <%=object_data.lowerName%>.registerObject(getLRC());
 <% }); -%>
 <% } -%>
     }
@@ -56,8 +135,8 @@ public class <%= classname %> extends <%= classname %>Base {
         InteractionRoot interaction = null;
         while ((interaction = getNextInteractionNoWait()) != null) {
 <% (subscribedinteractiondata.sort(function(a, b){return b.fullName.length-a.fullName.length})).forEach(function(interaction_data){ -%>
-            <%= conditional %> (interaction instanceof <%= interaction_data.name %>) {
-                handleInteractionClass((<%= interaction_data.name %>) interaction);
+            <%= conditional %> (interaction instanceof <%= interaction_data.codeNameOrName %>) {
+                handleInteractionClass((<%= interaction_data.codeNameOrName %>) interaction);
             }
 <% conditional = "else if"; -%>
 <% }); -%>
@@ -74,8 +153,8 @@ public class <%= classname %> extends <%= classname %>Base {
             reflector.reflect();
             ObjectRoot object = reflector.getObjectRoot();
 <% (subscribedobjectdata.sort(function(a, b){return b.fullName.length-a.fullName.length})).forEach(function(object_data){ -%>
-            <%= conditional %> (object instanceof <%= object_data.name %>) {
-                handleObjectClass((<%= object_data.name %>) object);
+            <%= conditional %> (object instanceof <%= object_data.codeNameOrName %>) {
+                handleObjectClass((<%= object_data.codeNameOrName %>) object);
             }
 <% conditional = "else if"; -%>
 <%}) -%>
@@ -133,11 +212,11 @@ public class <%= classname %> extends <%= classname %>Base {
             // Set the interaction's parameters.
             //
 <% publishedinteractiondata.forEach(function(interaction_data){ -%>
-            //    <%= interaction_data.name %> v<%= interaction_data.name %> = create_<%= interaction_data.name %>();
+            //    <%= interaction_data.codeNameOrName %> <%= interaction_data.lowerName %> = create_<%= interaction_data.codeNameOrName %>();
 <% interaction_data.parameters.forEach(function(parameter) { -%>
-            //    v<%= interaction_data.name %>.set_<%= parameter.name %>( < YOUR VALUE HERE > );
+            //    <%= interaction_data.lowerName %>.set_<%= parameter.name %>( < YOUR VALUE HERE > );
 <% }) -%>
-            //    v<%= interaction_data.name %>.sendInteraction(getLRC(), currentTime + getLookAhead());
+            //    <%= interaction_data.lowerName %>.sendInteraction(getLRC(), currentTime + getLookAhead());
 <% }) -%>
 <% } -%>
 <% if (publishedobjectdata.length > 0) { -%>
@@ -148,10 +227,10 @@ public class <%= classname %> extends <%= classname %>Base {
 <% publishedobjectdata.forEach(function(object_data){ -%>
 <% if (object_data.parameters.length > 0) { -%>
 <% object_data.parameters.forEach(function(parameter) { -%>
-            //    v<%= object_data.name %>.set_<%= parameter.name %>(<YOUR VALUE HERE >);
+            //    <%= object_data.lowerName %>.set_<%= parameter.name %>(<YOUR VALUE HERE >);
 <% }) -%>
 <% } -%>
-            //    v<%= object_data.name %>.updateAttributeValues(getLRC(), currentTime + getLookAhead());
+            //    <%= object_data.lowerName %>.updateAttributeValues(getLRC(), currentTime + getLookAhead());
 <% }) -%>
 <% } -%>
 <% if (subscribedinteractiondata.length + subscribedobjectdata.length > 0) { -%>
@@ -183,7 +262,7 @@ public class <%= classname %> extends <%= classname %>Base {
 <%/* allinteractiondata:createInteraction() */ -%>
 <%subscribedinteractiondata.forEach(function(interaction_data){ -%>
 
-    private void handleInteractionClass(<%= interaction_data.name %> interaction) {
+    private void handleInteractionClass(<%= interaction_data.codeNameOrName %> interaction) {
         ///////////////////////////////////////////////////////////////
         // TODO implement how to handle reception of the interaction //
         ///////////////////////////////////////////////////////////////
@@ -192,7 +271,7 @@ public class <%= classname %> extends <%= classname %>Base {
 <%/* allobjectdata:createObject() */ -%>
 <%subscribedobjectdata.forEach(function(object_data){ -%>
 
-    private void handleObjectClass(<%= object_data.name %> object) {
+    private void handleObjectClass(<%= object_data.codeNameOrName %> object) {
         //////////////////////////////////////////////////////////
         // TODO implement how to handle reception of the object //
         //////////////////////////////////////////////////////////

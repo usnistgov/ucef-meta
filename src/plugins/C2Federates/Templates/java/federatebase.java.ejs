@@ -91,23 +91,23 @@ public class <%= classname %>Base extends <% if(melderpackagename) { %><%= class
 <%/* publishedobjectdata:pubobjectdata() */ -%>
 <% publishedobjectdata.forEach(function(objectdata){ -%>
 <% objectdata.publishedAttributeData.forEach(function(a){ -%>
-        <%= objectdata.name %>.publish_<%= a.name %>();
+        <%= objectdata.codeNameOrName %>.publish_<%= a.name %>();
 <% }); -%>
-        <%= objectdata.name %>.publish(getLRC());
+        <%= objectdata.codeNameOrName %>.publish(getLRC());
 <% }); -%>
 <%/* subscribedobjectdata:subobjectdata() */ -%>
 <% subscribedobjectdata.forEach(function(objectdata){ -%>
 <% objectdata.subscribedAttributeData.forEach(function(a){ -%>
-        <%= objectdata.name %>.subscribe_<%= a.name %>();
+        <%= objectdata.codeNameOrName %>.subscribe_<%= a.name %>();
 <% }); -%>
-        <%= objectdata.name %>.subscribe(getLRC());
+        <%= objectdata.codeNameOrName %>.subscribe(getLRC());
 <% }); -%>
     }
 
 <%/* publishedinteractiondata:create_interaction() */ -%>
 <%publishedinteractiondata.forEach(function(interaction_data){ -%>
-    public <%= interaction_data.name %> create_<%= interaction_data.name %>() {
-        <%= interaction_data.name%> interaction = new <%= interaction_data.name %>();
+    public <%= interaction_data.codeNameOrName %> create_<%= interaction_data.codeNameOrName %>() {
+        <%= interaction_data.codeNameOrName%> interaction = new <%= interaction_data.codeNameOrName %>();
         interaction.set_sourceFed(getFederateId());
         interaction.set_originFed(getFederateId());
         return interaction;

@@ -15,55 +15,22 @@ by at least FederatesExporter.js and DeploymentExporter.js.
 define([], function()
  {
     'use strict';
-    /**
-     * Initializes a new instance of JSONLDExport.
-     * @class
-     * @augments {PluginBase}
-     * @classdesc This class represents the plugin JSONLDExport.
-     * @constructor
-     */
-    var withModelTraverser = function()
+    var withModelTraverser;
+
+/***********************************************************************/
+
+/* withModelTraverser
+
+Returned Value: none
+
+Called By: Called automatically when ModelTraverserMixin is used in
+the top-level function of a define (in FederatesExporter.js and
+DeploymentExporter.js).
+
+*/
+
+    withModelTraverser = function()
     {
-        
-/***********************************************************************/
-
-/* this.getVisitorFuncName
-
-Returned Value: a visitor function name
-
-Called By: atModelNode
-
-If this.getVisitorFuncName is already defined (which is possible since
-getVisitorFuncName is defined in FederatesExporter.js), the existing
-definition is used.
-
-*/
-
-      this.getVisitorFuncName = this.getVisitorFuncName ||
-      function(nodeType)
-      {
-        return (nodeType ? 'visit_'+ nodeType : 'generalVisitor');
-      };
-      
-/***********************************************************************/
-
-/* this.getPostVisitorFuncName
-
-Returned Value: a post_visitor function name
-
-Called By: atModelNode
-
-If this.getPostVisitorFuncName is already defined (which is possible since
-getPostVisitorFuncName is defined in FederatesExporter.js), the existing
-definition is used.
-
-*/
-
-      this.getPostVisitorFuncName = this.getPostVisitorFuncName ||
-      function(nodeType)
-      {
-        return (nodeType ? 'post_visit_'+ nodeType : 'generaPostlVisitor');
-      };
         
 /***********************************************************************/
 
@@ -119,7 +86,7 @@ If this.excludeFromVisit is not already defined, it is defined to
 return false.
 
 This function is defined also in FederatesExporter.js and
-DeploymentExporter.js (and possibly elsewhere)
+DeploymentExporter.js (and possibly elsewhere).
 
 */
 
@@ -221,12 +188,16 @@ visitAllChildrenFromRootContainer) is used in all calls to this function.
 
 When this is called from visitAllChildrenFromRootContainer the
 callback is the counterCallback function defined above. When this is
-called recursively, the context is the doneVisitChildCallback function
+called recursively, the callback is the doneVisitChildCallback function
 defined below.
 
 This function seems unnecessarily complex. For example, since the
-function is recursive, the doneModelNodeCallback function is being
-defined each time this function is called.
+function is recursive, the atModelNodeCallback, doneModelNodeCallback,
+and doneVisitChildCallback functions are being defined each time this
+function is called. However, those functions use variables that are
+not passed as arguments and may have different values each time the
+functions are defined. Many hours of trying to make those functions
+have a fixed definition have not succeeded.
 
 */
 
@@ -237,20 +208,28 @@ defined each time this function is called.
        callback)                           /* callback function, see above */
       {
         var self = this;
+        var nodeTypeName;
+
         if (self.excludeFromVisit(node))
           {
+            nodeTypeName =
+              self.core.getAttribute(self.getMetaType(node),'name');
             callback(null, context);
+            if (nodeTypeName in self.federateTypes)
+              {
+                counter.visits -= 1;
+              }
             return;
           }
         self.core.loadChildren(node, function(err, children)
-        {
-          var i,
-            atModelNodeCallback,
-            doneModelNodeCallback,
-            doneVisitChildCallback,
-            nodeType,
-            sorterFunc,
-            childsToVisit = children.length;
+        { // This is defining the function passed to loadChildren
+          var i;
+          var atModelNodeCallback;    // function variable
+          var doneModelNodeCallback;  // function variable
+          var doneVisitChildCallback; // function variable
+          var nodeType;
+          var sorterFunc;             // function variable
+          var childrenToVisit = children.length;
           if (err)
             {
               callback('loadChildren failed for ' +
@@ -273,14 +252,15 @@ defined each time this function is called.
                 }
               return
             };
-          
+        
 /***********************************************************************/
           
-          if (childsToVisit === 0)
+          if (childrenToVisit === 0)
             {
               if (node !== self.rootNode)
                 {
-                  self.doneModelNode(node,context,doneModelNodeCallback);
+                  self.doneModelNode(node, context,
+                                     doneModelNodeCallback);
                 }
               else
                 {
@@ -309,8 +289,8 @@ defined each time this function is called.
                 return; 
               }
             
-            childsToVisit -= 1;
-            if (childsToVisit === 0)
+            childrenToVisit -= 1;
+            if (childrenToVisit === 0)
               {
                 if (node !== self.rootNode)
                   {
@@ -359,29 +339,25 @@ Returned Value: none
 
 Called By: visitAllChildrenRec
 
-The following line of the atModeNode function is strange
+This creates the visitorFuncName by calling getVisitorFuncName,
+which appends 'visit_' and nodeType (except that if nodeType ends
+in 'Federate' it returns 'visit_Federate').  Then this calls
+self[visitorFuncName]. However, that function might not exist, so the
+call is inside a "try" and if the function does not exist, the error
+is catched. If the function exists, it revises the context. In that
+case this calls the callback with the revised context and returns. If
+the function does not exist, unless there is an unexpected error, this
+calls the callback with the original context and returns.
 
-ret = self[self.getVisitorFuncName(nodeType)](node, parent, context);
-
-because one would expect it to be divided into two parts as follows
-
-  funcName = self.getVisitorFuncName(nodeType);
-  ret = self[funcName](node, parent, context);
-
-However, if that is done, the FederatesExporter gives error messages.
-
-It appears that the long line is used because self[funcName] is often
-undefined, causing an error. Thus, if the line is split into two
-parts, a try and catch would be required for both parts. It might be
-better to split it anyway.
-
-Also, it seems kludgy to execute a statement that is known to be in error
-much of the time and recover by catching the error. If possible, it would
-seem better to test for a known name and call the appropriate function.
+It seems kludgy to execute a statement that is known to be in error
+much of the time and recover by catching the error. It would seem
+better to test for a known name and call the appropriate function.
+Currently, however, new visitor functions may be created without
+having to change this function.
 
 If this is called by FederatesExporter, so that federateInfos exists, and
 the node type is in the federateTypes of the FederatesExporter, then
- - If a there is already an entry in federateInfos for the node,
+ - If there is already an entry in federateInfos for the node,
    the name, metaType, and generateCode are added.
  - If not, a new entry in federateInfos is built for the node.
 
@@ -393,6 +369,7 @@ the node type is in the federateTypes of the FederatesExporter, then
         var nodeType = self.core.getAttribute(self.getMetaType(node), 'name');
         var nodeName = self.core.getAttribute(node, 'name');
         var codeGen = self.core.getAttribute(node, 'EnableCodeGeneration');
+        var visitorFuncName = self.getVisitorFuncName(nodeType);
         var id;
         var ret = null;
 
@@ -414,11 +391,15 @@ the node type is in the federateTypes of the FederatesExporter, then
                                           pubSubObjects: {},
                                           pubSubInteractions: {}};
               }
+            if (codeGen != true)
+              {
+                callback(null, context);
+                return;
+              }
           }
         try
           {
-            ret = self[self.getVisitorFuncName(nodeType)](node, parent,
-                                                          context);
+            ret = self[visitorFuncName](node, parent, context);
             if (ret['error'])
               {
                 callback((ret['error'] === '') ? undefined : ret['error']);
@@ -433,8 +414,7 @@ the node type is in the federateTypes of the FederatesExporter, then
           }
         catch(err)
           {
-            if (err.message ==
-                'self[self.getVisitorFuncName(...)] is not a function')
+            if (err.message == 'self[visitorFuncName] is not a function')
               {
               }
             else
@@ -452,21 +432,39 @@ the node type is in the federateTypes of the FederatesExporter, then
 /* this.doneModelNode
 
 Returned Value: none
+This creates the postVisitorFuncName by calling getPostVisitorFuncName,
+which appends 'post_visit_' and nodeType (except that if nodeType ends
+in 'Federate' it returns 'post_visit_Federate').  Then this calls
+self[postVisitorFuncName]. However, that function might not exist, so the
+call is inside a "try" and if the function does not exist, the error
+is catched. If the function exists, it revises the context. In that
+case this calls the callback with the revised context and returns. If
+the function does not exist, unless there is an unexpected error, this
+calls the callback with the original context and returns.
+
+It seems kludgy to execute a statement that is known to be in error
+much of the time and recover by catching the error. It would seem
+better to test for a known name and call the appropriate function.
+Currently, however, new visitor functions may be created without
+having to change this function.
 
 Called By: doneVisitChildCallback (in an anonymous function in the
 call to loadChildren in visitAllChildrenRec)
 
+This is similar to atModelNode. See the documentation of atModelNode (above).
+
 */
       this.doneModelNode = function(node, context, callback)
       {
-        var self = this,
-        nodeType = self.core.getAttribute(self.getMetaType(node), 'name'),
-        nodeName = self.core.getAttribute(node, 'name'),
-        ret = null;
+        var self = this;
+        var nodeType = self.core.getAttribute(self.getMetaType(node), 'name');
+        var nodeName = self.core.getAttribute(node, 'name');
+        var postVisitorFuncName = self.getPostVisitorFuncName(nodeType);
+        var ret = null;
 
         try
           {
-            ret = self[self.getPostVisitorFuncName(nodeType)](node, context);
+            ret = self[postVisitorFuncName](node, context);
             if (ret['error'])
               {
                 callback(ret['error'] === '' ? undefined : ret['error']);
@@ -480,10 +478,8 @@ call to loadChildren in visitAllChildrenRec)
           }
         catch(err)
           {
-            if (err.message ==
-                'self[self.getPostVisitorFuncName(...)] is not a function')
+            if (err.message == 'self[postVisitorFuncName] is not a function')
               {
-                
               }
             else
               {
@@ -519,6 +515,6 @@ Called By: ?
 
 /***********************************************************************/
 
-    };
+    }; // end of withModelTraverser function
     return withModelTraverser;
  }); // closes function and define

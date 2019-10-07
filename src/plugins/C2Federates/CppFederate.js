@@ -1,192 +1,212 @@
-define([
-    'common/util/ejs',
-    'C2Core/MavenPOM',
-	'C2Federates/Templates/Templates',
-    'C2Federates/CppRTI',
-    'C2Federates/CppImplFederate'
-], function (
-    ejs,
-    MavenPOM,
-	TEMPLATES,
-    CppRTI,
-    CppImplFederate
-) {
-
+define
+([
+  'ejs',
+  'C2Core/MavenPOM',
+  'C2Federates/Templates/Templates',
+  'C2Federates/CppRTI',
+  'C2Federates/CppImplFederate'],
+ function(ejs,
+          MavenPOM,
+          TEMPLATES,
+          CppRTI,
+          CppImplFederate)
+ {
     'use strict';
+    var CppFederateExporter; // function variable
+    
+/***********************************************************************/
 
-    var CppFederateExporter  = function () {
-    	var self = this,
-            baseDirSpec,
-            baseOutFilePath;
-        CppRTI.call(this);
-        CppImplFederate.call(this);
+/* CppFederateExporter (function-valued variable of top-level function object)
 
-        this.federateTypes = this.federateTypes || {};
-    	this.federateTypes['CppFederate'] = {
-    		includeInExport: false,
-    		longName: 'CppFederate',
-            init: function(){
-                self.initCppRTI();
-                self.initCppImplFederate();
+Returned Value: none
 
-                var baseDirBasePath = 'cpp-federates/';
-                baseDirSpec = {federation_name: self.projectName, artifact_name: "base", language:"cpp"};
-                var baseDirPath =  baseDirBasePath + ejs.render(self.directoryNameTemplate, baseDirSpec);
-                baseOutFilePath = baseDirPath;
+Called By: FederatesExporter in FederatesExporter.js
 
-                if(!self.cpp_federateBasePOM){
-                    self.cpp_federateBasePOM = new MavenPOM();
-                    self.cpp_federateBasePOM.groupId = 'org.cpswt'
-                    self.cpp_federateBasePOM.artifactId = 'SynchronizedFederate';
-                    self.cpp_federateBasePOM.version = self.cpswt_version;   
-                    self.cpp_federateBasePOM.packaging = "nar";
-                }
+The top-level function returns this function.
 
-                //Add build script
-                self.fileGenerators.push(function(artifact, callback){
-                    if(!self.cppPOM){
-                        callback();
-                        return;
-                    }
+*/
+    
+    CppFederateExporter = function()
+    {
+      var self = this;
+      var baseDirSpec;
+      var baseOutFilePath;
+      
+      CppRTI.call(this);
+      CppImplFederate.call(this);
 
-                    artifact.addFile( baseDirBasePath + '/build.sh', ejs.render(TEMPLATES['cpp/mvn-package-install.sh.ejs'], {}), function (err) {
-                        if (err) {
-                            callback(err);
-                            return;
-                        }else{
-                            callback();
-                            return;
-                        }
-                    });
-                });
+/***********************************************************************/
 
-                
-                //Add sim POM generator
-                self.fileGenerators.push(function(artifact, callback){
-                    if(!self.cppPOM){
-                        callback();
-                        return;
-                    }
-                    artifact.addFile( self.cppPOM.directory + '/pom.xml', ejs.render(TEMPLATES['cpp/cppfedbase_pom.xml.ejs'], self.cppPOM), function (err) {
-                        if (err) {
-                            callback(err);
-                            return;
-                        }else{
-                            callback();
-                            return;
-                        }
-                    });
-                });
+      this.federateTypes = this.federateTypes || {};
+      this.federateTypes.CppFederate =
+        {includeInExport: false,
+         longName: 'CppFederate',
+         init: function()
+         {
+           var baseDirBasePath; // string
+           var baseDirPath;     // string
+           
+           self.initCppRTI();
+           self.initCppImplFederate();
 
-                //Add base POM generator
-                self.fileGenerators.push(function(artifact, callback){
-                    if(!self.cpp_basePOM){
-                        callback();
-                        return;
-                    }
+           baseDirBasePath = 'cpp-federates/';
+           baseDirSpec =
+             {federation_name: self.projectName,
+              artifact_name: "base",
+              language:"cpp"};
+           baseDirPath = baseDirBasePath +
+                         ejs.render(self.directoryNameTemplate, baseDirSpec);
+           baseOutFilePath = baseDirPath;
+           if (!self.cpp_federateBasePOM)
+             {
+               self.cpp_federateBasePOM = new MavenPOM();
+               self.cpp_federateBasePOM.groupId = 'org.cpswt';
+               self.cpp_federateBasePOM.artifactId = 'SynchronizedFederate';
+               self.cpp_federateBasePOM.version = self.cpswt_version;   
+               self.cpp_federateBasePOM.packaging = "nar";
+             }
+           
+/***********************************************************************/
 
-                    artifact.addFile(baseDirPath + '/pom.xml', self._jsonToXml.convertToString( self.cpp_basePOM.toJSON() ), function (err) {
-                        if (err) {
-                            callback(err);
-                            return;
-                        }else{
-                            callback();
-                            return;
-                        }
-                    });
-                });
+         } // closes init function
+        }; // closes setting this.federateTypes['CppFederate']
 
-                self.fileGenerators.push(function(artifact, callback){
-                    if(!self.cppPOM){
-                        callback();
-                        return;
-                    }
-                    var renderContext = {
-                        simname: self.projectName,
-                        version: self.project_version
-                    },
-                    outFileName = baseOutFilePath + MavenPOM.mavenCppPath + "/" + "federate_version.cpp";
-                    self.logger.debug('Rendering template to file: ' + outFileName);
-                    artifact.addFile(outFileName, ejs.render(TEMPLATES['cpp/federate_ver.cpp.ejs'], renderContext), function (err) {
-                        if (err) {
-                            callback(err);
-                            return;
-                        }else{
-                            callback();
-                            return;
-                        }
-                    });
-                });
+/***********************************************************************/
 
+/* visit_CppFederate
 
-            }
-    	};
+Returned Value: a "{context: context}" object
 
-    	this.visit_CppFederate = function(node, parent, context){
-            var self = this,
-                nodeType = self.core.getAttribute( self.getMetaType( node ), 'name' );
+Called By: This may be called by functions that call a function whose
+           name is made by concatentating 'visit_' with other strings.
+           The getVisitorFuncName function in FederatesExporter makes
+           function names that way.
 
-            self.logger.info('Visiting a CppFederate');
+This does not appear to be called unless the node type name is
+CppFederate.  It is defined if CppFederateExporter is called, which
+happens in FederatesExporter.js.
 
-            //Setup project POM files on visiting the first CPP Federate
-            if(!self.cppPOM){
-                self.cppPOM = new MavenPOM(self.mainPom);
-                self.cppPOM.artifactId = self.projectName + "-cpp";
-                self.cppPOM.directory = "cpp-federates";
-                self.cppPOM.version = self.project_version;
-                self.cppPOM.packaging = "pom";
-                self.cppPOM.name = self.projectName + ' C++ root'
-            }
-            if(!self.cpp_basePOM){
-                self.cpp_basePOM = new MavenPOM(self.cppPOM);
-                self.cpp_basePOM.artifactId = ejs.render(self.directoryNameTemplate, baseDirSpec);
-                self.cpp_basePOM.version = self.project_version;
-                self.cpp_basePOM.packaging = "nar";
-                self.cpp_basePOM.dependencies.push(self.cpp_rtiPOM);
-                self.cpp_basePOM.dependencies.push(self.cpp_federateBasePOM);
-            }
+*/
 
-            context['cppfedspec'] = self.createCppFederateCodeModel();
-            context['cppfedspec']['classname'] = self.core.getAttribute(node, 'name');
-            context['cppfedspec']['simname'] = self.projectName;
-            context['cppfedspec']['timeconstrained'] = self.core.getAttribute(node, 'TimeConstrained');
-            context['cppfedspec']['timeregulating'] = self.core.getAttribute(node, 'TimeRegulating');
-            context['cppfedspec']['lookahead'] = self.core.getAttribute(node, 'Lookahead');
-            context['cppfedspec']['asynchronousdelivery'] = self.core.getAttribute(node, 'EnableROAsynchronousDelivery');
+      this.visit_CppFederate = function(node, parent, context)
+      {
+        var self;
+        var fedspec;
 
-            self.visit_CppImplFederate(node, parent, context);
-            self.federates[self.core.getPath(node)] = context['cppfedspec'];
+        self = this;
 
-            return {context:context};
-        };
+        //Set up project POM files on visiting the first CPP Federate
+        // cppPOM is used in CppRTI.js
+        if (!self.cppPOM)
+          {
+            self.cppPOM = new MavenPOM(self.mainPom);
+            self.cppPOM.artifactId = ""; // value changes
+            self.cppPOM.version = self.project_version;
+            self.cppPOM.packaging = "nar";
+          }
+        fedspec = self.createCppFederateCodeModel();
+        context.cppfedspec = fedspec;
+        fedspec.classname = self.core.getAttribute(node, 'name');
+        fedspec.simname = self.projectName;
+        fedspec.timeconstrained =
+          self.core.getAttribute(node, 'TimeConstrained');
+        fedspec.timeregulating =
+          self.core.getAttribute(node, 'TimeRegulating');
+        fedspec.lookahead = self.core.getAttribute(node, 'Lookahead');
+        fedspec.asynchronousdelivery =
+        self.core.getAttribute(node, 'EnableROAsynchronousDelivery');
+        self.visit_CppImplFederate(node, parent, context);
+        self.federates[self.core.getPath(node)] = fedspec;
+        return {context:context};
+      };
 
-        this.post_visit_CppFederate = function(node, context){
-            var self = this,
-                renderContext = context['cppfedspec'],
-                outFileName = baseOutFilePath + MavenPOM.mavenIncludePath + "/" + self.core.getAttribute(node, 'name') + "Base.hpp";
+/***********************************************************************/
+
+/* post_visit_CppFederate
+
+Returned Value: a context object
+
+Called By: post_visit_Federate 
+
+This is called in post_visit_Federate (in GenericFederate.js) when the
+nodeType in that function is CppFederate. The name of this function
+in that case is formed by concatenating 'post_visit_' and
+'CppFederate' rather than by using 'post_visit_CppFederate'.
+
+This adds information to the context itself and by calling
+post_visit_CppImplFederate (in CppImplFederate.js). The call to
+post_visit_CppImplFederate also generates code.
+
+*/
+      
+      this.post_visit_CppFederate = function(node, context)
+      {
+        var self;
+        var federateName;
+        var renderContext;
+        
+        self = this;
+        federateName = self.core.getAttribute(node, 'name');
+        renderContext = context.cppfedspec;
             
-            self.fileGenerators.push(function(artifact, callback){
-                renderContext['allobjectdata'] = renderContext['publishedobjectdata'].concat(renderContext['subscribedobjectdata']);
-                renderContext['allinteractiondata'] = renderContext['publishedinteractiondata'].concat(renderContext['subscribedinteractiondata'])
+        self.fileGenerators.push(function(artifact, callback)
+        {
+          var fullPath;
+          var cppTemplate;
+          var hppTemplate;
+          var cppCode;
+          var hppCode;
+          
+          renderContext.allobjectdata =
+                renderContext.publishedobjectdata.
+                  concat(renderContext.subscribedobjectdata);
+          renderContext.allinteractiondata =
+                renderContext.publishedinteractiondata.
+                   concat(renderContext.subscribedinteractiondata);
+          fullPath = federateName + "/src/main/c++/" + federateName +
+            "Base.cpp";
+          cppTemplate = TEMPLATES['cpp/federate.cpp.ejs'];
+          cppCode = ejs.render(cppTemplate, renderContext);
+          self.logger.info("calling addFile for " + fullPath +
+                           " in post_visit_CppFederate of CppFederate.js");
+          artifact.addFile(fullPath, cppCode,
+                           function (err)
+                           {
+                             if (err)
+                               {
+                                 callback(err);
+                                 return;
+                               }
+                           });
+          fullPath = federateName + "/src/main/include/" + federateName +
+            "Base.hpp";
+          hppTemplate = TEMPLATES['cpp/federate.hpp.ejs'];
+          hppCode = ejs.render(hppTemplate, renderContext);
+          self.logger.info("calling addFile for " + fullPath +
+                           " in post_visit_CppFederate of CppFederate.js");
+          artifact.addFile(fullPath, hppCode,
+                           function (err)
+                           {
+                             if (err)
+                               {
+                                 callback(err);
+                                 return;
+                               }
+                             else
+                               {
+                                 callback();
+                                 return;
+                               }
+                           });
+        });
+        return self.post_visit_CppImplFederate(node, context);
+      };
 
-                self.logger.debug('Rendering template to file: ' + outFileName);
-                artifact.addFile(outFileName, ejs.render(TEMPLATES['cpp/federate.hpp.ejs'], renderContext), function (err) {
-                    if (err) {
-                        callback(err);
-                        return;
-                    }else{
-                        callback();
-                        return;
-                    }
-                });
-            });
+/***********************************************************************/
 
-            return self.post_visit_CppImplFederate(node, context);
-        };
-
-        this.createCppFederateCodeModel = function(){
-            return {
-                simname: "",
+      this.createCppFederateCodeModel = function()
+      {
+        return {simname: "",
                 melderpackagename: null,
                 classname: "",
                 isnonmapperfed: true,
@@ -202,12 +222,18 @@ define([
                 allobjectdata: [],
                 helpers:{},
                 ejs:ejs, 
-                TEMPLATES:TEMPLATES
-            };
-        }
-        this.cppCodeModel = this.createCppFederateCodeModel();
+                TEMPLATES:TEMPLATES};
+      };
+      
+/***********************************************************************/
 
-    }
+      this.cppCodeModel = this.createCppFederateCodeModel();
+
+/***********************************************************************/
+
+    }; // end of setting CppFederateExporter function variable
+
+/***********************************************************************/
 
     return CppFederateExporter;
 });

@@ -8,7 +8,7 @@ JavaRTI.js is used in the define of:
 
 define
 ([
-  'common/util/ejs',
+  'ejs',
   'C2Core/MavenPOM',
   'C2Federates/Templates/Templates'],
  function (ejs,
@@ -220,6 +220,9 @@ Called By: MapperFederateExporter (in MapperFederate.js)
             return;
           }
 
+        // This lists all the nodes in the BasePackage of the webGME model
+        // other than ObjectRoot and InteractionRoot. All of them except
+        // FederateObject are interactions.
         self.javaCorePackageOISpecs =
                {C2WInteractionRoot: {simname: corePackagePathStr},
                 SimulationControl: {simname: corePackagePathStr},
@@ -249,6 +252,11 @@ Called By:
   renderNextObjectInCore (which is also the callback argument)
   renderNextInteractionInCore (which is also the callback argument)
 
+This function generates a code string for a single object or interaction
+that is represented by the "model" argument. The code string is put into
+a file-like thingy for each federate that has generateCode set to true
+and uses the object or interaction.
+
 This function calls its caller when the function that is the last
 argument to addFile executes. Thus, this function and the caller call
 each other until the caller runs out of models. This function
@@ -270,6 +278,11 @@ will be called; otherwise, the callback will not occur.
           var datamemberList;
           var template;
           var javaCode;
+          var remaining;
+          var federId;
+          var feder;
+          var federJavaCode;
+          var groupId;
           
           context = self.createJavaRTICodeModel();
           packagePath = outFilePath + "/" +
@@ -280,6 +293,7 @@ will be called; otherwise, the callback will not occur.
           context.isinteraction = isInteraction;
           context.simname = self.projectName;
           context.classname = model.name;
+          context.codeclassname = (model.codeName || model.name);
           context.hlaclassname = model.fullName;
           context.parentclassname = model.isroot ? "" : model.basename;
           context.isc2winteractionroot = model.isroot && isInteraction;
@@ -320,12 +334,6 @@ will be called; otherwise, the callback will not occur.
           javaCode = ejs.render(template, context);
           if (self.federateInfos)
             { // only the FederatesExporter has federateInfos
-              var remaining;
-              var federId;
-              var feder;
-              var federJavaCode;
-              var groupId;
-
               groupId = self.getCurrentConfig().groupId.trim();
 
               if (self.callObjectTraverser)
@@ -345,6 +353,8 @@ will be called; otherwise, the callback will not occur.
               for (federId in self.federateInfos)
                 {
                   feder = self.federateInfos[federId];
+                  if (!feder.generateCode)
+                    continue;
                   if ((isInteraction &&
                        (model.id in feder.pubSubInteractions)) ||
                       (!isInteraction &&
@@ -353,9 +363,15 @@ will be called; otherwise, the callback will not occur.
                       remaining++;
                     }
                 }
+              if (remaining == 0)
+                { // no federate needing code uses the object or interaction
+                  callback();
+                }
               for (federId in self.federateInfos)
                 {
                   feder = self.federateInfos[federId];
+                  if (!feder.generateCode)
+                    continue;
                   if ((isInteraction &&
                        (model.id in feder.pubSubInteractions)) ||
                       (!isInteraction &&
@@ -366,9 +382,10 @@ will be called; otherwise, the callback will not occur.
                         feder.name.toLowerCase() + ".rti;\n" + javaCode;
                       fullPath = feder.name + "/src/main/java/" +
                         groupId.replace(/[.]/g, "/") + "/" +
-                        feder.name.toLowerCase() + "/rti/" + model.name +
-                        ".java";
-                      console.log('calling addFile for: ' + fullPath);
+                        feder.name.toLowerCase() + "/rti/" +
+                        (model.codeName || model.name) + ".java";
+                      self.logger.info('calling addFile for ' + fullPath +
+                                       ' in renderToFile of JavaRTI.js');
                       artifact.addFile(fullPath, federJavaCode,
                                        (remaining ?
                                         function (err) // there are more
@@ -382,8 +399,9 @@ will be called; otherwise, the callback will not occur.
                 }
             }
           else
-            {
-              console.log('calling addFile for: ' + fullPath);
+            { // caller is not the FederatesExporter
+              self.logger.info('calling addFile for ' + fullPath +
+                               ' in renderToFile of JavaRTI.js');
               artifact.addFile(fullPath, javaCode, callback);
             }
         }; // end renderToFile
@@ -399,13 +417,25 @@ Called By:
 
 This renders a not-core object to a java file for each federate that
 has a publish or subscribe connection to the object.
+
+The "model" argument is the model originally constructed from a webgme
+node in RTIVisitors.js. The model has the following properties:
+ attributes
+ basePath
+ basename
+ children
+ codeName (CodeGeneratedName, may be undefined)
+ id
+ isroot
+ name
+ parameters
   
 */
-        renderNotCoreObjectToFile = function(
-         outFilePath,   // full file name of file to write
-         model,         // data model from which to generate code
-         artifact,      // array of file generating functions
-         callback)      // function to call in case of error
+        renderNotCoreObjectToFile = function( /* ARGUMENTS                  */
+         outFilePath,             /* full file name of file to write        */
+         model,                   /* data model from which to generate code */
+         artifact,                /* array of file generating functions     */
+         callback)                /* function to call if error or done      */
         {
           var context;
           var packagePath;
@@ -413,7 +443,7 @@ has a publish or subscribe connection to the object.
           var oattr;
           var template;
           var javaCode;
-          
+
           context = self.createJavaRTICodeModel();
           packagePath = outFilePath + "/" +
             (self.javaCorePackageOISpecs.hasOwnProperty(model.name) ?
@@ -423,6 +453,7 @@ has a publish or subscribe connection to the object.
           context.isinteraction = false;
           context.simname = self.projectName;
           context.classname = model.name;
+          context.codeclassname = (model.codeName || model.name);
           context.hlaclassname = model.fullName;
           context.parentclassname = model.isroot ? "" : model.basename;
           context.isc2winteractionroot = false;
@@ -474,16 +505,19 @@ has a publish or subscribe connection to the object.
               for (federId in self.federateInfos)
                 {
                   feder = self.federateInfos[federId];
-                  if ((model.id in feder.pubSubObjects) &&
+                  if ((feder.generateCode == true) &&
+                      (model.id in feder.pubSubObjects) &&
                       (feder.metaType == 'JavaFederate'))
                     {
                       federJavaCode = "package " + groupId + "." +
                         feder.name.toLowerCase() + ".rti;\n" + javaCode;
                       fullPath = feder.name + "/src/main/java/" +
                         groupId.replace(/[.]/g, "/") + "/" +
-                        feder.name.toLowerCase() + "/rti/" + model.name +
-                        ".java";
-                      console.log('calling addFile for: ' + fullPath);
+                        feder.name.toLowerCase() + "/rti/" +
+                        (model.codeName || model.name) + ".java";
+                      self.logger.info('calling addFile for ' + fullPath +
+                                       ' in renderNotCoreObjectToFile' +
+                                       ' of JavaRTI.js');
                       artifact.addFile(fullPath, federJavaCode,
                                        function (err)
                                        {
@@ -498,7 +532,6 @@ has a publish or subscribe connection to the object.
             }
           else
             {
-              console.log('calling addFile for: ' + fullPath);
               artifact.addFile(fullPath, javaCode, callback);
             }
         }; // end renderNotCoreObjectToFile
@@ -528,6 +561,11 @@ that has a publish or subscribe connection to the interaction.
           var oattr;
           var template;
           var javaCode;
+          var remaining;
+          var federId;
+          var feder;
+          var federJavaCode;
+          var groupId;
           
           context = self.createJavaRTICodeModel();
           packagePath = outFilePath + "/" +
@@ -538,6 +576,7 @@ that has a publish or subscribe connection to the interaction.
           context.isinteraction = true;
           context.simname = self.projectName;
           context.classname = model.name;
+          context.codeclassname = (model.codeName || model.name);
           context.hlaclassname = model.fullName;
           context.parentclassname = model.isroot ? "" : model.basename;
           context.isc2winteractionroot = model.isroot;
@@ -568,12 +607,6 @@ that has a publish or subscribe connection to the interaction.
           javaCode = ejs.render(template, context);
           if (self.federateInfos)
             { // only the FederatesExporter has federateInfos
-              var remaining;
-              var federId;
-              var feder;
-              var federJavaCode;
-              var groupId;
-
               if (self.callInteractionTraverser)
                 {
                   self.callInteractionTraverser = false;
@@ -590,16 +623,19 @@ that has a publish or subscribe connection to the interaction.
               for (federId in self.federateInfos)
                 {
                   feder = self.federateInfos[federId];
-                  if ((model.id in feder.pubSubInteractions) &&
+                  if ((feder.generateCode == true) &&
+                      (model.id in feder.pubSubInteractions) &&
                       (feder.metaType == 'JavaFederate'))
                     {
                       federJavaCode = "package " + groupId + "." +
                         feder.name.toLowerCase() + ".rti;\n" + javaCode;
                       fullPath = feder.name + "/src/main/java/" +
                         groupId.replace(/[.]/g, "/") + "/" +
-                        feder.name.toLowerCase() + "/rti/" + model.name +
-                        ".java";
-                      console.log('calling addFile for: ' + fullPath);
+                        feder.name.toLowerCase() + "/rti/" +
+                        (model.codeName || model.name) + ".java";
+                      self.logger.info('calling addFile for ' + fullPath +
+                                       ' in renderNotCoreInteractionToFile' +
+                                       ' of JavaRTI.js');
                       artifact.addFile(fullPath, federJavaCode,
                                        function (err)
                                        {
@@ -614,7 +650,6 @@ that has a publish or subscribe connection to the interaction.
             }
           else
             {
-              console.log('calling addFile for: ' + fullPath);
               artifact.addFile(fullPath, javaCode, callback);
             }
         }; // end renderNotCoreInteractionToFile
@@ -695,7 +730,6 @@ using the coreDirPath and self.corePOM.toJSON()
               fullPath = coreDirPath + '/pom.xml';
               xmlCode =
                 self._jsonToXml.convertToString(self.corePOM.toJSON());
-              console.log('calling addFile for: ' + fullPath);
               artifact.addFile(fullPath, xmlCode,
                                function (err)
                                {
@@ -728,7 +762,6 @@ using the eventsDirPath and self.java_core_rtiPOM.toJSON()
               fullPath = eventsDirPath + '/pom.xml';
               xmlCode =
                 self._jsonToXml.convertToString(self.java_core_rtiPOM.toJSON());
-              console.log('calling addFile for: ' + fullPath);
               artifact.addFile(fullPath, xmlCode,
                                function (err)
                                {
@@ -773,7 +806,6 @@ the InteractionRoot.java file.
               renderContext['isinteraction'] = true;
               template = TEMPLATES['java/classroot.java.ejs'];
               xmlCode = ejs.render(template, renderContext);
-              console.log('calling addFile for: ' + fullPath);
               artifact.addFile(fullPath, xmlCode,
                                function (err)
                                {
@@ -786,7 +818,6 @@ the InteractionRoot.java file.
               fullPath = coreOutFilePath + "/" + corePackagePath.join("/") +
                          "/" + 'InteractionRootInterface.java';
               template = TEMPLATES['java/interfaceroot.java.ejs'];
-              console.log('calling addFile for: ' + fullPath);
               xmlCode = ejs.render(template, renderContext);
               artifact.addFile(fullPath, xmlCode,
                                function (err)
@@ -835,7 +866,6 @@ ObjectRoot.java file.
               renderContext.isinteraction = false;
               template = TEMPLATES['java/classroot.java.ejs'];
               xmlCode = ejs.render(template, renderContext);
-              console.log('calling addFile for: ' + fullPath);
               artifact.addFile(fullPath, xmlCode,
                                function (err)
                                {
@@ -849,7 +879,6 @@ ObjectRoot.java file.
                          "/" + 'ObjectRootInterface.java';
               template = TEMPLATES['java/interfaceroot.java.ejs']
               xmlCode = ejs.render(template, renderContext)
-              console.log('calling addFile for: ' + fullPath);
               artifact.addFile(fullPath, xmlCode,
                                function (err)
                                {
@@ -872,7 +901,8 @@ ObjectRoot.java file.
 
 If generating export packages, add to the core file generators a
 function that prints a java file for each object in self.objects
-whose name is a property in self.javaCorePackageOISpecs.
+whose name is a property in self.javaCorePackageOISpecs. Those are the
+objects in the BasePackage in the webGME model.
 
 When the added function executes, the renderToFile function defined
 above and the renderNextObjectInCore function defined here call each
@@ -906,7 +936,6 @@ other until all the selected objects are processed.
                     nextObj = objToRender.pop();
                     if (nextObj)
                       {
-                        console.log("calling renderToFile for core object");
                         renderToFile(eventsOutFilePath, false, nextObj,
                                      artifact, renderNextObjectInCore);
                       }
@@ -962,6 +991,7 @@ other until all the selected interactions are processed.
               renderNextInteractionInCore = function(err)
               {
                 var nextInteraction;
+                  
                 if (err)
                   {
                     callback(err);
@@ -971,7 +1001,6 @@ other until all the selected interactions are processed.
                     nextInteraction = intToRender.pop();
                     if (nextInteraction)
                       {
-                        console.log("calling renderToFile for core interaction");
                         renderToFile(eventsOutFilePath, true,
                                      nextInteraction, artifact,
                                      renderNextInteractionInCore);
@@ -1045,7 +1074,6 @@ property in self.javaCorePackageOISpecs.
                   !self.javaCorePackageOISpecs.
                      hasOwnProperty(objToRender.name))
                 {
-                  console.log("calling renderNotCoreObjectToFile");
                   renderNotCoreObjectToFile(simOutFilePath, objToRender,
                                             artifact, callback);
                 }
@@ -1081,7 +1109,6 @@ a property in self.javaCorePackageOISpecs.
                   !self.javaCorePackageOISpecs.
                      hasOwnProperty(intToRender.name))
                 {
-                  console.log("calling renderNotCoreInteractionToFile");
                   renderNotCoreInteractionToFile(simOutFilePath, intToRender,
                                                  artifact, callback);
                 }
@@ -1095,7 +1122,7 @@ a property in self.javaCorePackageOISpecs.
 /***********************************************************************/
 
         self.javaRTIInitDone = true;
-      } // end initJavaRTI
+      }; // end initJavaRTI
 
 /***********************************************************************/
 
@@ -1199,11 +1226,11 @@ code elsewhere may be looking for "default", so it has been left in.
                 ejs: ejs, 
                 TEMPLATES: TEMPLATES
             };
-      } // end createJavaRTICodeModel function
+      }; // end createJavaRTICodeModel function
 
 /***********************************************************************/
 
-    } // end JavaRTIFederateExporter function
+    }; // end JavaRTIFederateExporter function
 
     return JavaRTIFederateExporter;
 });
