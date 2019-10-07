@@ -21,7 +21,7 @@ define([
                 return;
             }
             
-            var baseDirectoryPath = self.projectName + '-cpp-federates/';
+            var baseDirectoryPath = 'cpp-federates/';
             var implDirectorySpec = {
                 federation_name: self.projectName,
                 artifact_name: "impl",
@@ -76,6 +76,12 @@ define([
             implPOM.directory = context['cppfedspec']['classname'];
 
             var fedDirectoryPath = implDirectoryPath + "/" + context['cppfedspec']['classname'];
+
+            // set the SOM.xml outpit directory
+            var feder = self.federateInfos[self.core.getPath(node)];
+            if (feder) {
+                feder.directory = fedDirectoryPath + "/conf/";
+            }
 
             self.fileGenerators.push(function(artifact, callback) {
                 var xmlPOM = self._jsonToXml.convertToString(implPOM.toJSON());

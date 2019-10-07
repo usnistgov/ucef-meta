@@ -2,17 +2,14 @@
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
-    <parent>
-        <groupId><%= groupId %></groupId>
-        <artifactId><%= projectName %>-impl-java</artifactId>
-        <version><%= projectVersion %></version>
-    </parent>
+    <groupId><%= groupId + "." + classname.toLowerCase() %></groupId>
     <artifactId><%= classname %></artifactId>
+    <version><%= projectVersion %></version>
     <packaging>jar</packaging>
 
     <properties>
         <federation.name><%= projectName %></federation.name>
-        <package.name><%= projectName %></package.name>
+        <package.name><%= groupId + "." + classname.toLowerCase() %></package.name>
         <federate.name><%= classname %></federate.name>
         <federation.version><%= projectVersion %></federation.version>
         <cpswt.version><%= cpswtVersion %></cpswt.version>
@@ -22,14 +19,14 @@
 
     <dependencies>
         <dependency>
-            <groupId><%= groupId %></groupId>
-            <artifactId><%= projectName %>-base-java</artifactId>
-            <version><%= projectVersion %></version>
+            <groupId>org.cpswt</groupId>
+            <artifactId>federate-base</artifactId>
+            <version><%= cpswtVersion %></version>
         </dependency>
         <dependency>
-            <groupId><%= groupId %></groupId>
-            <artifactId><%= projectName %>-rti-java</artifactId>
-            <version><%= projectVersion %></version>
+            <groupId>org.cpswt</groupId>
+            <artifactId>base-events</artifactId>
+            <version><%= cpswtVersion %></version>
         </dependency>
         <dependency>
             <groupId><%= porticoPOM.groupId %></groupId>
@@ -58,7 +55,32 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
-    
+
+    <repositories>
+        <repository>
+            <id>archiva.internal</id>
+            <name>Internal Release Repository</name>
+            <url><%= releaseUrl %></url>
+        </repository>
+        <repository>
+            <id>archiva.snapshots</id>
+            <name>Internal Snapshot Repository</name>
+            <url><%= snapshotUrl %></url>
+        </repository>
+    </repositories>
+    <distributionManagement>
+        <repository>
+            <id>archiva.internal</id>
+            <name>Internal Release Repository</name>
+            <url><%= releaseUrl %></url>
+        </repository>
+        <snapshotRepository>
+            <id>archiva.snapshots</id>
+            <name>Internal Snapshot Repository</name>
+            <url><%= snapshotUrl %></url>
+        </snapshotRepository>
+    </distributionManagement>
+
     <build>
         <plugins>
             <plugin>
@@ -76,8 +98,8 @@
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                                 <mainClass>${package.name}.${federate.name}</mainClass>
                                 </transformer>
-                            </transformers>                            
-                              <filters>
+                            </transformers>
+                            <filters>
                                 <filter>
                                     <artifact>*:*</artifact>
                                     <excludes>
@@ -90,15 +112,15 @@
                         </configuration>
                     </execution>
                 </executions>
-            </plugin>        
+            </plugin>
             <plugin>
-              <groupId>org.apache.maven.plugins</groupId>
-              <artifactId>maven-surefire-plugin</artifactId>
-              <version>2.19.1</version>
-              <configuration>
-                <forkMode>once</forkMode>
-                <argLine>-Djava.library.path=${project.basedir}/target/nar/processid-${cpswt.version}-amd64-Linux-gpp-jni/lib/amd64-Linux-gpp/jni/</argLine>
-              </configuration>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.19.1</version>
+                <configuration>
+                    <forkMode>once</forkMode>
+                    <argLine>-Djava.library.path=${project.basedir}/target/nar/processid-${cpswt.version}-amd64-Linux-gpp-jni/lib/amd64-Linux-gpp/jni/</argLine>
+                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -123,7 +145,7 @@
                     </execution>
                 </executions>
             </plugin>
-              <plugin>
+            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.5.1</version>
@@ -165,7 +187,7 @@
                         </configuration>
                     </plugin>
                 </plugins>
-            </build>	
+            </build>
         </profile>
     </profiles>
 </project>

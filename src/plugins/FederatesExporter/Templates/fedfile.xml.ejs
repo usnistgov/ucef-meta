@@ -1,3 +1,4 @@
+<% /*federateName, projectName, version, pocOrg, dateString, objectsXml, interactionsXml*/ -%>
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <objectModel
     xsi:schemaLocation="http://standards.ieee.org/IEEE1516-2010
@@ -5,13 +6,14 @@
     xmlns="http://standards.ieee.org/IEEE1516-2010" 
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <modelIdentification>
-        <name><%- federationname %></name>
+        <name><%- federateName %></name>
         <type>SOM</type>
         <version><%- version %></version>
         <modificationDate><%- dateString %></modificationDate>
         <securityClassification>Unclassified</securityClassification>
         <description>
-            This file was generated from WebGME based on the <%- federationname %>
+            This file was generated from WebGME based on the federate
+            <%- federateName %> in the <%- projectName %>
             project.
         </description>
         <poc>
@@ -19,9 +21,11 @@
             <pocOrg><%- pocOrg %></pocOrg>
         </poc>
     </modelIdentification>
-    <objects>
+<% if (objectsXml[0]) { %>    <objects>
+<% } -%>
 <% objectsXml.forEach(function(object){ %><%- object %><%}); -%>
-    </objects>
+<% if (objectsXml[0]) { %>    </objects>
+<% } -%>
     <interactions>
 <% interactionsXml.forEach(function(interaction){ %><%- interaction %><% }); -%>
     </interactions>

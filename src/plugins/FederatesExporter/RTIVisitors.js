@@ -44,12 +44,13 @@ define
  function()
  {
    'use strict';
-    console.log("beginning of function in 'define' in RTIVisitors.js");
-    console.log("defining RTIVisitors");
 
-    var RTIVisitors  = function()
+    var RTIVisitors;
+
+/***********************************************************************/
+
+    RTIVisitors = function()
     {
-      console.log("executing RTIVisitors");
 
 /***********************************************************************/
 
@@ -60,10 +61,9 @@ Returned Value: a context object whose context property is the context
 
 Called By: See notes at top.
 
-This processes data for an Interaction.
+This processes data for an Interaction. 
 
 */
-      console.log("defining this.visit_Interaction");
       this.visit_Interaction = function(node, parent, context)
       {
         var self = this,
@@ -73,9 +73,9 @@ This processes data for an Interaction.
         nodeName = self.core.getAttribute(node, 'name'),
         nodePath = self.core.getPath(node),
         interaction = {},
+        fed,
         nameFragments = [nodeName];
 
-        console.log("executing visit_Interaction");
         if (self.interactions[nodePath])
           {
             interaction = self.interactions[nodePath];
@@ -97,7 +97,7 @@ This processes data for an Interaction.
         interaction['isroot'] = node.base == self.META['Interaction'];
         interaction['isMapperPublished'] = false;
         if (self.pubSubInteractions)
-          { // only FederatesExporter has pubSubInteractions
+          { // only DeploymentExporter has pubSubInteractions
             if (interaction.name == 'SimEnd')
               {
                 if (self.pubSubInteractions[nodePath])
@@ -126,14 +126,23 @@ This processes data for an Interaction.
                   }
               }
           }
-        
+        else if (self.endJoinResigns)
+          { // only Federates Exporter has endJoinResigns
+            if ((interaction.name == 'SimEnd') ||
+                (interaction.name == 'FederateResignInteraction') ||
+                (interaction.name == 'FederateJoinInteraction'))
+              { // need to collect these to add to each federate's XML
+                self.endJoinResigns[nodePath] = interaction;
+              }
+          }
+
         var nextBase = node.base;
         while (nextBase != self.META['Interaction'])
           {
             nameFragments.push(self.core.getAttribute(nextBase, 'name'));
             nextBase = nextBase.base;
           }
-        
+
         //Check: Interaction is derived form C2WInteractionRoot
         if (nameFragments.length > 1 &&
             nameFragments.indexOf('C2WInteractionRoot') == -1)
@@ -158,7 +167,7 @@ This processes data for an Interaction.
                 self.interactionRoots.push(interaction);
               }
           }
-        
+
         if (context.hasOwnProperty('interactions'))
           {
             context['interactions'].push(interaction);
@@ -166,7 +175,7 @@ This processes data for an Interaction.
         context['parentInteraction'] = interaction;
         return {context:context};
       }
-      
+
 /***********************************************************************/
 
 /* this.visit_Parameter
@@ -179,11 +188,9 @@ Called By: See notes at top.
 This processes data for a Parameter.
 
 */
-      console.log("defining this.visit_Parameter");
       this.visit_Parameter = function(node, parent, context)
       {
         var self = this;
-        console.log("executing visit_Parameter");
         if (context.hasOwnProperty('parentInteraction'))
           {
             context['parentInteraction']['parameters'].push(
@@ -211,7 +218,6 @@ Called By: See notes at top.
 This processes data for an Object.
 
 */
-       console.log("defining this.visit_Object");
       this.visit_Object = function(node, parent, context)
       {
         var self = this,
@@ -221,7 +227,6 @@ This processes data for an Object.
         nodeName = self.core.getAttribute(node, 'name'),
         nameFragments = [nodeName];
 
-        console.log("executing visit_Object");
         if (self.objects[self.core.getPath(node)])
           {
             object = self.objects[self.core.getPath(node)];
@@ -280,15 +285,15 @@ Called By: See notes at top.
 This processes data for an Attribute.
 
 */
-      console.log("defining this.visit_Attribute");
       this.visit_Attribute = function(node, parent, context)
       {
         var self = this;
         var attribute;
-        console.log("executing this.visit_Attribute");
+
         attribute =
           {
             name: self.core.getAttribute(node,'name'),
+            id: self.core.getPath(node),
             parameterType: self.core.getAttribute(node,'ParameterType'),
             hidden: self.core.getAttribute(node,'Hidden') === true,
             position: self.core.getOwnRegistry(node, 'position'),
@@ -304,7 +309,7 @@ This processes data for an Attribute.
         self.attributes[self.core.getPath(node)] = attribute;
         return {context:context};
       }
-      
+
 /***********************************************************************/
 
       // This is needed to support pulling C2WInteractionRoot from the left-side in part-browser
@@ -317,9 +322,9 @@ This processes data for an Attribute.
         return this.visit_Object(node, parent, context);
       };
 
-      console.log("finished executing RTIVisitors");
     };
 
-    console.log("end of function in 'define' in RTIVisitors.js");
     return RTIVisitors;   
  });
+
+/***********************************************************************/

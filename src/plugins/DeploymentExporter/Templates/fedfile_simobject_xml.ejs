@@ -1,22 +1,17 @@
-<% /*simobject(name,sharing,delivery,order,attributes,children) */ -%>
-<%= indent%>  <objectClass>
-<%= indent%>    <name><%= name %></name>
-<%= indent%>    <sharing><%= sharing %></sharing>
-<%= indent%>    <semantics></semantics><% -%>
-<% for(var i=0; i<attributes.length; i++){ -%>
-<% if(!attributes[i].inherited) { -%>
-<%= indent%>    <attribute>
-<%= indent%>      <name><%= attributes[i].name %></name>
-<%= indent%>      <dataType><%= attributes[i].parameterType %></dataType>
-<%= indent%>      <updateType>NA</updateType>
-<%= indent%>      <ownership>NoTransfer</ownership>
-<%= indent%>      <sharing><%= sharing %></sharing>
-<%= indent%>      <dimensions></dimensions>
-<%= indent%>      <transportation><%= attributes[i].delivery %></transportation>
-<%= indent%>      <order><%= attributes[i].order %></order>
-<%= indent%>      <semantics></semantics>
-<%= indent%>    </attribute><% -%>
-<% } -%>
-<% } -%>
+<% /*simobject(name, sharingXml, indent, attributes, children) */ -%>
+<%= indent%>    <objectClass>
+<%= indent%>        <name><%= name %></name>
+<%= indent%>        <sharing><%= sharingXml %></sharing><% -%>
+<% attributes.forEach(function(attr){ -%>
+<%   if (!attr.inherited || attr.printIt) { %>
+<%= indent%>        <attribute>
+<%= indent%>            <name><%= attr.name %></name>
+<%= indent%>            <dataType><%= attr.parameterType %></dataType>
+<%= indent%>            <updateType>NA</updateType>
+<%= indent%>            <ownership>NoTransfer</ownership>
+<%= indent%>            <sharing><%= attr.sharingXml %></sharing>
+<%= indent%>            <transportation><%= attr.deliveryXml %></transportation>
+<%= indent%>            <order><%= attr.orderXml %></order>
+<%= indent%>        </attribute><% }}); %>
 <% children.forEach(function(child){ %><%- child %><% }); -%>
-<%= indent%>  </objectClass>
+<%= indent%>    </objectClass>

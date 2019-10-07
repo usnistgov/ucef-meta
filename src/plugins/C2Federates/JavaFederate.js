@@ -1,59 +1,181 @@
-define([
-    'common/util/ejs',
-    'C2Core/MavenPOM',
-	'C2Federates/Templates/Templates',
-    'C2Federates/JavaBaseFederate',
-    'C2Federates/JavaImplFederate'
-], function (
-    ejs,
-    MavenPOM,
-	TEMPLATES,
-    JavaBaseFederate,
-    JavaImplFederate
-) {
+define
+([
+  'common/util/ejs',
+  'C2Core/MavenPOM',
+  'C2Federates/Templates/Templates',
+  'C2Federates/JavaRTI',
+  'C2Federates/JavaImplFederate'],
+ function (ejs,
+           MavenPOM,
+           TEMPLATES,
+           JavaRTI,
+           JavaImplFederate)
+ {
 
     'use strict';
+    var JavaFederateExporter; // function variable
+    
+/***********************************************************************/
 
-    var JavaFederateExporter  = function () {
-            
-        JavaBaseFederate.call(this);
-        JavaImplFederate.call(this);
-        var finalContext = {};
+/* JavaFederateExporter (function-valued variable of top-level function object)
 
-    	this.visit_JavaFederate = function(node, parent, context){
-            var self = this,
-                nodeType = self.core.getAttribute( self.getMetaType( node ), 'name' );
+Returned Value: none
 
-            self.logger.info('Visiting the JavaFederates');
+Called By: FederatesExporter in FederatesExporter.js
 
-            if(!self.javaPOM){
-                self.javaPOM = new MavenPOM(self.mainPom);
-                self.javaPOM.artifactId = self.projectName + "-java-federates";
-                self.javaPOM.directory = self.projectName + "-java-federates";
-                self.javaPOM.version = self.project_version;
-                self.javaPOM.addMavenCompiler(self.getCurrentConfig().mavenCompilerPluginJavaVersion);
-                self.javaPOM.packaging = "pom";
-                self.javaPOM.dependencies.push(self.porticoPOM);
-            }               
- 
-            if(!self.porticoPOM){  
-                self.porticoPOM = new MavenPOM();
-                self.porticoPOM.artifactId = "portico";
-                self.porticoPOM.groupId = "org.porticoproject";
-                // Set the portico Release Version
-                self.porticoPOM.version = self.getCurrentConfig().porticoReleaseNum;
-                self.porticoPOM.scope = "provided";
-            }
+The top-level function returns this function.
 
-            this.visit_JavaBaseFederate(node, parent, context);
-            return this.visit_JavaImplFederate(node, parent, context);
+*/
+    
+    JavaFederateExporter = function()
+    {
+      var self = this;
+      var finalContext;
+
+      JavaRTI.call(this);
+      this.federateTypes = this.federateTypes || {};
+
+/***********************************************************************/
+
+      this.federateTypes.JavaFederate =
+        {includeInExport: false,
+         longName: 'JavaFederate',
+         init: function()
+         {
+           var fullPath;
+           var xmlCode;
+
+           self.initJavaRTI();
+           if (self.javaFedInitDone)
+             {
+               return;
+             }
+           self.javaFedInitDone = true;
+         }
         };
 
-        this.post_visit_JavaFederate = function(node, context){
-            this.post_visit_JavaBaseFederate(node, context);
-            finalContext = this.post_visit_JavaImplFederate(node, context);
-            return finalContext;
-        };
-    }
+/***********************************************************************/
+
+      JavaImplFederate.call(this);
+      finalContext = {};
+       
+/***********************************************************************/
+
+/* visit_JavaFederate
+
+Returned Value: a "{context: context}" object returned by
+                visit_JavaImplFederate
+
+Called By: visit_MapperFederate in MapperFederate.js 
+           This may also be called by functions that call a function whose
+           name is made by concatentating 'visit_' with other strings.
+           The getVisitorFuncName function in FederatesExporter makes
+           function names that way.
+
+This does not appear to be called unless the node type name is JavaFederate.
+In visit_MapperFederate it is called only if it is defined. It is defined
+if JavaFederateExporter is called, which happens in FederatesExporter.js.
+
+*/
+
+      this.visit_JavaFederate = function(node, parent, context)
+      {
+        var nodeType; // set here but not used here, may be useless
+  
+        nodeType = self.core.getAttribute(self.getMetaType(node), 'name');
+        self.logger.info('Visiting the JavaFederates');
+        if (!self.javaPOM)
+          {
+            self.javaPOM = new MavenPOM(self.mainPom);
+            self.javaPOM.artifactId = self.projectName + "-java-federates";
+            self.javaPOM.directory = self.projectName + "-java-federates";
+            self.javaPOM.version = self.project_version;
+            self.javaPOM.addMavenCompiler(self.getCurrentConfig().
+                                          mavenCompilerPluginJavaVersion);
+            self.javaPOM.packaging = "pom";
+            self.javaPOM.dependencies.push(self.porticoPOM);
+          }
+        if (!self.porticoPOM)
+          {  
+            self.porticoPOM = new MavenPOM();
+            self.porticoPOM.artifactId = "portico";
+            self.porticoPOM.groupId = "org.porticoproject";
+            // Set the portico Release Version
+            self.porticoPOM.version =
+              self.getCurrentConfig().porticoReleaseNum;
+            self.porticoPOM.scope = "provided";
+          }
+
+        context.javafedspec = self.createJavaFederateCodeModel();
+        context.javafedspec.classname =
+          self.core.getAttribute(node, 'name');
+        context.javafedspec.simname = self.projectName;
+        context.javafedspec.timeconstrained =
+          self.core.getAttribute(node, 'TimeConstrained');
+        context.javafedspec.timeregulating =
+          self.core.getAttribute(node, 'TimeRegulating');
+        context.javafedspec.lookahead =
+          self.core.getAttribute(node, 'Lookahead');
+        context.javafedspec.asynchronousdelivery =
+          self.core.getAttribute(node, 'EnableROAsynchronousDelivery');
+        self.federates[self.core.getPath(node)] = context.javafedspec;
+
+        return this.visit_JavaImplFederate(node, parent, context);
+      };
+
+/***********************************************************************/
+
+      this.post_visit_JavaFederate = function(node, context)
+      {
+        var outFileName;
+        var federateName;
+        var groupId;
+
+        groupId = self.getCurrentConfig().groupId.trim();
+        federateName = self.core.getAttribute(node, 'name');
+        outFileName = federateName +
+                      "/src/main/java/" + groupId.replace(/[.]/g, "/") + "/" +
+                      federateName.toLowerCase() + "/" + federateName +
+                      "Base.java";
+        context.javafedspec.outFileName = outFileName;
+
+        finalContext = this.post_visit_JavaImplFederate(node, context);
+        return finalContext;
+      };
+
+
+/***********************************************************************/
+
+      this.createJavaFederateCodeModel = function()
+      {
+         return {simname: "",
+                melderpackagename: null,
+                classname: "",
+                isnonmapperfed: true,
+                timeconstrained: false,
+                timeregulating: false,
+                lookahead: null,
+                asynchronousdelivery: false,
+                publishedinteractiondata: [],
+                subscribedinteractiondata: [],
+                allinteractiondata: [],
+                publishedobjectdata: [],
+                subscribedobjectdata: [],
+                allobjectdata: [],
+                helpers:{},
+                ejs:ejs,
+                TEMPLATES:TEMPLATES};
+      };
+
+/***********************************************************************/
+
+      this.javaCodeModel = this.createJavaFederateCodeModel();
+
+/***********************************************************************/
+
+    }; // end of setting JavaFederateExporter function variable
+    
+/***********************************************************************/
+
     return JavaFederateExporter;
-});
+ });

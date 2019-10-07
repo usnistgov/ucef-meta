@@ -15,6 +15,10 @@ define([
             labviewGroupId = "gov.nist.hla",
             labviewVersion = "1.0.0-SNAPSHOT";
 
+        this.federateTypes['LabVIEWFederate'] = {
+            includeInExport: false
+        };
+
     	this.visit_LabVIEWFederate = function(node, parent, context) {
             var self = this,
                 nodeType = self.core.getAttribute( self.getMetaType(node), 'name' );
@@ -45,12 +49,30 @@ define([
                 moduleName = renderContext['classname'],
                 configDirectory = moduleName + "/conf";
 
+            // set the SOM.xml outpit directory
+            var feder = self.federateInfos[self.core.getPath(node)];
+            if (feder) {
+                feder.directory = moduleName + "/conf/";
+            }
+
             // TODO rework MavenPOM.js for a more robust solution to link the module
             self.mainPom.projects.push({'directory': moduleName});
 
             // generate the pom.xml that fetches the LabVIEW federate code and resources
             self.fileGenerators.push(function (artifact, callback) {
                 artifact.addFile(moduleName + "/pom.xml", ejs.render(TEMPLATES['java/labview-pom.xml.ejs'], renderContext), function(err) {
+                    if (err) {
+                        callback(err);
+                        return;
+                    } else {
+                        callback();
+                    }
+                });
+            });
+
+            // generate the script that installs the LabVIEW federate
+            self.fileGenerators.push(function (artifact, callback) {
+                artifact.addFile(moduleName + "/build.sh", ejs.render(TEMPLATES['java/mvn-install.sh.ejs'], renderContext), function(err) {
                     if (err) {
                         callback(err);
                         return;
