@@ -1,5 +1,5 @@
 define([
-    'common/util/ejs',
+    'ejs',
     'C2Core/MavenPOM',
 	'C2Federates/Templates/Templates',
     'C2Federates/CppRTI'

@@ -6,7 +6,7 @@ MapperFederate.js is used only in FederatesExporter.js
 
 define
 ([
-    'common/util/ejs',
+    'ejs',
     'C2Core/MavenPOM',
     'C2Federates/Templates/Templates',
     'C2Federates/JavaRTI',
@@ -40,6 +40,8 @@ define
                {
                  var mapperDirBasePath;
                  var mapperDirPath;
+                 var fullPath;
+                 var xmlCode;
                   
                  if (this.federateTypes.JavaFederate)
                    {
@@ -88,13 +90,16 @@ define
                        return;
                      }
                    self.java_mapperPOM.dependencies.push(self.java_rtiPOM);
-		   self.java_mapperPOM.dependencies.
-		     push(self.java_federateBasePOM);
+                   self.java_mapperPOM.dependencies.
+                     push(self.java_federateBasePOM);
                    self.java_mapperPOM.dependencies.push(self.java_basePOM);
-                   
-                   artifact.addFile(mapperDirPath + '/pom.xml',
-                                    self._jsonToXml.
-                                convertToString(self.java_mapperPOM.toJSON()),
+                   fullPath = mapperDirPath + '/pom.xml';
+                   xmlCode = self._jsonToXml.
+                     convertToString(self.java_mapperPOM.toJSON());
+                   self.logger.info('calling addFile for ' + fullPath +
+                                    ' in MapperFederateExporter' +
+                                    ' of MapperFederate.js');
+                   artifact.addFile(fullPath, xmlCode,
                                     function(err)
                                     {
                                       if (err)
@@ -120,7 +125,6 @@ define
         
         self = this;
         nodeType = self.core.getAttribute(self.getMetaType(node), 'name');
-        self.logger.info('Visiting a MapperFederate');
         //Set up project POM files on visiting the first Mapper Federate
         if (!self.javaPOM)
           {
@@ -471,10 +475,14 @@ define
 
         self.fileGenerators.push(function(artifact, callback)
         {
-          self.logger.debug('Rendering template to file: ' + outFileName);
-          artifact.addFile(outFileName,
-                         ejs.render(TEMPLATES['java/mapperfederate.java.ejs'],
-                                    renderContext),
+          var javaCode;
+          var template;
+
+          template = TEMPLATES['java/mapperfederate.java.ejs'];
+          javaCode = ejs.render(template, renderContext);
+          self.logger.info('calling addFile for ' + outFileName + ' in ' +
+                           'post_visit_MapperFederate of MapperFederate.js');
+          artifact.addFile(outFileName, javaCode,
                            function(err)
                            {
                              if (err)

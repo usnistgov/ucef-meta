@@ -27,9 +27,9 @@
 //#include "<%=projectname%>NonOmnetNonGenericSources.hpp"
 
 void <%=projectname%>FilterInit::execute( SubscribedInteractionFilter &subscribedInteractionFilter ) {
-	<% /*subscribedinteractiondata:initInteractionFilter()*/ %>
-	<% subscribedinteractiondata.forEach(function(subscribedinteractiondata){%>
-	subscribedInteractionFilter.setFedFilters( <%=subscribedinteractiondata.name%>::get_handle(), SubscribedInteractionFilter::<%=subscribedinteractiondata.originFedFilter()%>, SubscribedInteractionFilter::<%=subscribedinteractiondata.srcFedFilter()%> );<%});%>
+    <% /*subscribedinteractiondata:initInteractionFilter()*/ %>
+    <% subscribedinteractiondata.forEach(function(subscribedinteractiondata){%>
+    subscribedInteractionFilter.setFedFilters( <%=subscribedinteractiondata.name%>::get_handle(), SubscribedInteractionFilter::<%=subscribedinteractiondata.originFedFilter()%>, SubscribedInteractionFilter::<%=subscribedinteractiondata.srcFedFilter()%> );<%});%>
 
 }
 

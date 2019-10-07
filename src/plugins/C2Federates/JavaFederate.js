@@ -1,6 +1,6 @@
 define
 ([
-  'common/util/ejs',
+  'ejs',
   'C2Core/MavenPOM',
   'C2Federates/Templates/Templates',
   'C2Federates/JavaRTI',
@@ -11,7 +11,6 @@ define
            JavaRTI,
            JavaImplFederate)
  {
-
     'use strict';
     var JavaFederateExporter; // function variable
     
@@ -80,10 +79,12 @@ if JavaFederateExporter is called, which happens in FederatesExporter.js.
 
       this.visit_JavaFederate = function(node, parent, context)
       {
-        var nodeType; // set here but not used here, may be useless
-  
-        nodeType = self.core.getAttribute(self.getMetaType(node), 'name');
-        self.logger.info('Visiting the JavaFederates');
+        var self;
+        var fedspec;
+        
+        self = this;
+
+        //Set up project POM files on visiting the first Java Federate
         if (!self.javaPOM)
           {
             self.javaPOM = new MavenPOM(self.mainPom);
@@ -106,25 +107,42 @@ if JavaFederateExporter is called, which happens in FederatesExporter.js.
             self.porticoPOM.scope = "provided";
           }
 
-        context.javafedspec = self.createJavaFederateCodeModel();
-        context.javafedspec.classname =
-          self.core.getAttribute(node, 'name');
-        context.javafedspec.simname = self.projectName;
-        context.javafedspec.timeconstrained =
+        fedspec = self.createJavaFederateCodeModel();
+        context.javafedspec = fedspec;
+        fedspec.classname = self.core.getAttribute(node, 'name');
+        fedspec.simname = self.projectName;
+        fedspec.timeconstrained =
           self.core.getAttribute(node, 'TimeConstrained');
-        context.javafedspec.timeregulating =
+        fedspec.timeregulating =
           self.core.getAttribute(node, 'TimeRegulating');
-        context.javafedspec.lookahead =
-          self.core.getAttribute(node, 'Lookahead');
-        context.javafedspec.asynchronousdelivery =
+        fedspec.lookahead = self.core.getAttribute(node, 'Lookahead');
+        fedspec.asynchronousdelivery =
           self.core.getAttribute(node, 'EnableROAsynchronousDelivery');
-        self.federates[self.core.getPath(node)] = context.javafedspec;
+        self.federates[self.core.getPath(node)] = fedspec;
 
         return this.visit_JavaImplFederate(node, parent, context);
       };
 
 /***********************************************************************/
 
+/* post_visit_JavaFederate
+
+Returned Value: a context object
+
+Called By: post_visit_Federate
+
+This is called in post_visit_Federate (in GenericFederate.js) when the
+nodeType in that function is JavaFederate. The name of this function
+in that case is formed by concatenating 'post_visit_' and
+'JavaFederate' rather than by using 'post_visit_JavaFederate'.
+
+This adds information to the context by calling
+post_visit_JavaBaseFederate (in JavaBaseFederate.js) and
+post_visit_JavaImplFederate (in JavaImplFederate.js). The call to
+post_visit_JavaImplFederate also generates code for 6 files.
+
+*/
+      
       this.post_visit_JavaFederate = function(node, context)
       {
         var outFileName;
@@ -142,7 +160,6 @@ if JavaFederateExporter is called, which happens in FederatesExporter.js.
         finalContext = this.post_visit_JavaImplFederate(node, context);
         return finalContext;
       };
-
 
 /***********************************************************************/
 
