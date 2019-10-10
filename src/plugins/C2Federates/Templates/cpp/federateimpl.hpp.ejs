@@ -14,18 +14,18 @@ class <%=classname%> : public <%=classname%>Base {
 
         // TODO declare all the published object instances
 <% publishedobjectdata.forEach(function(object_data) { -%>
-        // <%=object_data.name%> v<%=object_data.name%>;
+        // <%=object_data.codeNameOrName%> v<%=object_data.codeNameOrName%>;
 <% }) -%>
 
         void initObjectInstances();
 <%} -%>
 <% subscribedobjectdata.forEach(function(object_data) { -%>
 
-        void handleObjectClass(boost::shared_ptr<<%=object_data.name%>> object);
+        void handleObjectClass(boost::shared_ptr<<%=object_data.codeNameOrName%>> object);
 <% }); -%>
 <% subscribedinteractiondata.forEach(function(interaction_data) { -%>
 
-        void handleInteractionClass(boost::shared_ptr<<%=interaction_data.name%>> interaction);
+        void handleInteractionClass(boost::shared_ptr<<%=interaction_data.codeNameOrName%>> interaction);
 <% }); -%>
 
 <% if (subscribedobjectdata.length + subscribedinteractiondata.length > 0) { -%>

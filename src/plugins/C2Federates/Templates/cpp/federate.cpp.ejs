@@ -1,20 +1,19 @@
 <%/* group cppfederate;
-
-federate(
-        simname,
-        classname,
-        isnonmapperfed,
-        timeconstrained,
-        timeregulating,
-        lookahead,
-        asynchronousdelivery,
-        allinteractiondata,
-        publishedinteractiondata,
-        subscribedinteractiondata,
-        allobjectdata,
-        publishedobjectdata,
-        subscribedobjectdata
-)
+input properties
+----------------
+allinteractiondata         array
+allobjectdata              array
+asynchronousdelivery       boolean
+classname                  string
+isnonmapperfed             boolean
+lookahead                  null or ?
+publishedinteractiondata   array
+publishedobjectdata        array
+simname                    string
+subscribedinteractiondata  array
+subscribedobjectdata       array
+timeconstrained            boolean
+timeregulating             boolean
 */ -%>
 
 #include "<%=classname%>Base.hpp"
@@ -36,12 +35,12 @@ void <%=classname%>Base::init() {
   // interaction pubsub
 <%} -%>
 <% publishedinteractiondata.forEach(function(interactiondata){ -%>
-  <%=interactiondata.name%>::publish( getRTI() );
+  <%=interactiondata.codeNameOrName%>::publish( getRTI() );
 <%}); -%>
 <% subscribedinteractiondata.forEach(function(interactiondata){ -%>  
-    <%=interactiondata.name%>::subscribe( getRTI() );
+    <%=interactiondata.codeNameOrName%>::subscribe( getRTI() );
     _subscribedInteractionFilter.setFedFilters(
-        <%=interactiondata.name%>::get_handle(),
+        <%=interactiondata.codeNameOrName%>::get_handle(),
         SubscribedInteractionFilter::<%=interactiondata.originFedFilter()%>,
         SubscribedInteractionFilter::<%=interactiondata.srcFedFilter()%>);
 <%}); -%>
@@ -51,15 +50,15 @@ void <%=classname%>Base::init() {
 <%} -%>
 <% publishedobjectdata.forEach(function(objectdata){ -%>
 <% objectdata.publishedAttributeData.forEach(function(attributedata){ -%>
-    <%=objectdata.name%>::publish_<%=attributedata.name%>();
+    <%=objectdata.codeNameOrName%>::publish_<%=attributedata.name%>();
 <%}); -%>
-    <%=objectdata.name%>::publish( getRTI() );
+    <%=objectdata.codeNameOrName%>::publish( getRTI() );
 <%}); -%>
 <% subscribedobjectdata.forEach(function(objectdata){ -%>
 <% objectdata.subscribedAttributeData.forEach(function(attributedata){ -%>
-    <%=objectdata.name%>::subscribe_<%=attributedata.name%>();
+    <%=objectdata.codeNameOrName%>::subscribe_<%=attributedata.name%>();
 <%}); -%>
-    <%=objectdata.name%>::subscribe( getRTI() );
+    <%=objectdata.codeNameOrName%>::subscribe( getRTI() );
 <%}); -%>
 }
 
@@ -68,8 +67,8 @@ void <%=classname%>Base::init() {
 }
 <% publishedinteractiondata.forEach(function(interactiondata){ -%>
 
-<%=interactiondata.name%>SP <%=classname%>Base::create_<%=interactiondata.name%>( void ) {
-    <%=interactiondata.name%>SP interactionSP = <%=interactiondata.name%>::create();
+<%=interactiondata.codeNameOrName%>SP <%=classname%>Base::create_<%=interactiondata.codeNameOrName%>( void ) {
+    <%=interactiondata.codeNameOrName%>SP interactionSP = <%=interactiondata.codeNameOrName%>::create();
     interactionSP->set_sourceFed( getFederateId() );
     interactionSP->set_originFed( getFederateId() );
     return interactionSP;

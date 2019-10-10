@@ -28,7 +28,6 @@ Returned Value: none
 
 Called By:
   renderToFile (object is objectRoot)
-  renderNotCoreObjectToFile (object is objectRoot)
   objectTraverserCheck (recursively)
 
 In this documentation, "object" means object in the WebGME sense, not
@@ -121,7 +120,6 @@ self.objectTraverserCheck in this file does not work.
 Returned Value: none
 
 Called By:
-  renderNotCoreInteractionToFile
   interactionTraverserCheck (recursively)
 
 This adds entries to the pubSubInteractions of a federate for all ancestors
@@ -281,6 +279,7 @@ will be called; otherwise, the callback will not occur.
             hasOwnProperty(model.name) ?
             self.cppCorePackageOISpecs[model.name] : self.projectName;
           context.classname = model.name;
+          context.codeclassname = (model.codeName || model.name);
           context.hlaclassname = model.fullName;
           context.parentclassname = model.isroot ? "" : model.basename;
           context.isc2winteractionroot = model.isroot && isInteraction;

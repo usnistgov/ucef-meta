@@ -80,9 +80,9 @@ public class <%= classname %>Base extends <% if(melderpackagename) { %><%= class
 <% }); -%>
 <% /* subscribedinteractiondata:subinter() */ -%>
 <% subscribedinteractiondata.forEach(function(interactiondata){ -%>
-        <%= interactiondata.name %>.subscribe(getLRC());
+        <%= interactiondata.codeNameOrName %>.subscribe(getLRC());
         _subscribedInteractionFilter.setFedFilters( 
-           <%= interactiondata.name %>.get_handle(),
+           <%= interactiondata.codeNameOrName %>.get_handle(),
            SubscribedInteractionFilter.OriginFedFilter.<%= interactiondata.originFedFilter() %>,
            SubscribedInteractionFilter.SourceFedFilter.<%= interactiondata.srcFedFilter() %>);
 <% }); -%>

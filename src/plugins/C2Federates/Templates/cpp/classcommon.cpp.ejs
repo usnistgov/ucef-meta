@@ -1,5 +1,15 @@
-<% /*classcommon(isinteraction,classname,parentclassname,hlaclassname,datamembers,alldatamembers) ::= << */ -%>
-void <%=classname%>::init( RTI::RTIambassador *rti ) {
+<% /*
+input properties
+----------------
+alldatamembers
+classname
+codeclassname
+datamembers
+hlaclassname
+isinteraction
+parentclassname
+*/ -%>
+void <%=codeclassname%>::init( RTI::RTIambassador *rti ) {
     static bool isInitialized = false;
     if ( isInitialized ) {
         return;
@@ -25,8 +35,8 @@ void <%=classname%>::init( RTI::RTIambassador *rti ) {
             std::cerr << getInitErrorMessage() << "Exception caught ... retry" << std::endl;
         }
     }
-    getClassNameHandleMap().insert(  std::make_pair( "<%=classname%>", get_handle() )  );
-    getClassHandleNameMap().insert(  std::make_pair( get_handle(), "<%=classname%>" )  );
+    getClassNameHandleMap().insert(  std::make_pair( "<%=codeclassname%>", get_handle() )  );
+    getClassHandleNameMap().insert(  std::make_pair( get_handle(), "<%=codeclassname%>" )  );
 <% if(alldatamembers && alldatamembers.length > 0){ -%>
     isNotInitialized = true;
     while ( isNotInitialized ) {
@@ -50,8 +60,8 @@ void <%=classname%>::init( RTI::RTIambassador *rti ) {
         }
     }
 <% alldatamembers.forEach(function(datamember){ -%>
-<% /*alldatamembers: { d |<initDatamemberNameHandleMap(classname=classname,datamember=d)>}*/ -%>
-    getDatamemberNameHandleMap().insert(  std::make_pair( "<%=classname%>.<%=datamember.name%>", get_<%=datamember.name%>_handle() )  );
+<% /*alldatamembers: { d |<initDatamemberNameHandleMap(codeclassname=codeclassname,datamember=d)>}*/ -%>
+    getDatamemberNameHandleMap().insert(  std::make_pair( "<%=codeclassname%>.<%=datamember.name%>", get_<%=datamember.name%>_handle() )  );
 <% /*alldatamembers:initDatamemberHandleNameMap()*/ -%>
     getDatamemberHandleNameMap().insert(  std::make_pair( get_<%=datamember.name%>_handle(), "<%=datamember.name%>" )  );
 <% /*alldatamembers:initDatamemberTypeMap()*/ -%>
@@ -60,7 +70,7 @@ void <%=classname%>::init( RTI::RTIambassador *rti ) {
 <% } -%>
 }
 
-void <%=classname%>::publish( RTI::RTIambassador *rti ) {
+void <%=codeclassname%>::publish( RTI::RTIambassador *rti ) {
     if ( getIsPublished() ) {
         return;
     }
@@ -71,7 +81,7 @@ void <%=classname%>::publish( RTI::RTIambassador *rti ) {
     stsItr != getPublishAttributeNameVector().end() ;
     (void)++stsItr ) {
         try {
-            getPublishedAttributeHandleSet_var().add(  getDatamemberNameHandleMap().find( "<%=classname%>." + *stsItr )->second  );
+            getPublishedAttributeHandleSet_var().add(  getDatamemberNameHandleMap().find( "<%=codeclassname%>." + *stsItr )->second  );
         } catch ( ... ) {
             std::cerr << getPublishErrorMessage() << "Could not publish \"" << *stsItr + "\" attribute." << std::endl;
         }
@@ -95,7 +105,7 @@ void <%=classname%>::publish( RTI::RTIambassador *rti ) {
     getIsPublished() = true;
 }
 
-void <%=classname%>::unpublish( RTI::RTIambassador *rti ) {
+void <%=codeclassname%>::unpublish( RTI::RTIambassador *rti ) {
     if ( !getIsPublished() ) {
         return;
     }
@@ -121,7 +131,7 @@ void <%=classname%>::unpublish( RTI::RTIambassador *rti ) {
     getIsPublished() = false;
 }
 
-void <%=classname%>::subscribe( RTI::RTIambassador *rti ) {
+void <%=codeclassname%>::subscribe( RTI::RTIambassador *rti ) {
     if ( getIsSubscribed() ) {
         return;
     }
@@ -132,7 +142,7 @@ void <%=classname%>::subscribe( RTI::RTIambassador *rti ) {
           sstItr != getSubscribeAttributeNameVector().end() ;
 	  (void)++sstItr ) {
         try {
-            getSubscribedAttributeHandleSet_var().add(  getDatamemberNameHandleMap().find( "<%=classname%>." + *sstItr )->second  );
+            getSubscribedAttributeHandleSet_var().add(  getDatamemberNameHandleMap().find( "<%=codeclassname%>." + *sstItr )->second  );
         } catch ( ... ) {
             std::cerr << getSubscribeErrorMessage() << "Could not subscribe to \"" << *sstItr << "\" attribute." << std::endl;
         }
@@ -157,7 +167,7 @@ void <%=classname%>::subscribe( RTI::RTIambassador *rti ) {
     getIsSubscribed() = true;
 }
 
-void <%=classname%>::unsubscribe( RTI::RTIambassador *rti ) {
+void <%=codeclassname%>::unsubscribe( RTI::RTIambassador *rti ) {
     if ( !getIsSubscribed() ) {
         return;
     }
@@ -183,20 +193,20 @@ void <%=classname%>::unsubscribe( RTI::RTIambassador *rti ) {
     getIsSubscribed() = false;
 }
 
-bool <%=classname%>::static_init( void ) {
+bool <%=codeclassname%>::static_init( void ) {
     static bool isInitialized = false;
     if ( isInitialized ) {
         return true;
     }
     isInitialized = true;
-    getClassNameSet().insert( "<%=classname%>" );
-    getClassNameFactoryMap().insert(  std::make_pair( "<%=classname%>", &<%=classname%>::factory )  );
-    getClassNamePublishMap().insert(   std::make_pair(  "<%=classname%>", (PubsubFunctionPtr)( &<%=classname%>::publish )  )   );
-    getClassNameUnpublishMap().insert(   std::make_pair(  "<%=classname%>", (PubsubFunctionPtr)( &<%=classname%>::unpublish )  )   );
-    getClassNameSubscribeMap().insert(   std::make_pair(  "<%=classname%>", (PubsubFunctionPtr)( &<%=classname%>::subscribe )  )   );
-    getClassNameUnsubscribeMap().insert(   std::make_pair(  "<%=classname%>", (PubsubFunctionPtr)( &<%=classname%>::unsubscribe )  )   );
-    getDatamemberClassNameVectorPtrMap().insert(  std::make_pair( "<%=classname%>", &getDatamemberNames() )  );
-    getAllDatamemberClassNameVectorPtrMap().insert(  std::make_pair( "<%=classname%>", &getAllDatamemberNames() )  );
+    getClassNameSet().insert( "<%=codeclassname%>" );
+    getClassNameFactoryMap().insert(  std::make_pair( "<%=codeclassname%>", &<%=codeclassname%>::factory )  );
+    getClassNamePublishMap().insert(   std::make_pair(  "<%=codeclassname%>", (PubsubFunctionPtr)( &<%=codeclassname%>::publish )  )   );
+    getClassNameUnpublishMap().insert(   std::make_pair(  "<%=codeclassname%>", (PubsubFunctionPtr)( &<%=codeclassname%>::unpublish )  )   );
+    getClassNameSubscribeMap().insert(   std::make_pair(  "<%=codeclassname%>", (PubsubFunctionPtr)( &<%=codeclassname%>::subscribe )  )   );
+    getClassNameUnsubscribeMap().insert(   std::make_pair(  "<%=codeclassname%>", (PubsubFunctionPtr)( &<%=codeclassname%>::unsubscribe )  )   );
+    getDatamemberClassNameVectorPtrMap().insert(  std::make_pair( "<%=codeclassname%>", &getDatamemberNames() )  );
+    getAllDatamemberClassNameVectorPtrMap().insert(  std::make_pair( "<%=codeclassname%>", &getAllDatamemberNames() )  );
 <% if(datamembers && datamembers.length > 0){ -%>
 <% /*datamembers:initDatamemberNameSet()*/ -%>
 <% datamembers.forEach(function(datamember){ -%>
@@ -212,20 +222,20 @@ bool <%=classname%>::static_init( void ) {
 <% }); -%>
 <% } -%>
 <% if(!isinteraction){ -%>
-    getClassNamePublishAttributeNameVectorPtrMap().insert(  std::make_pair( "<%=classname%>", &getPublishAttributeNameVector() )  );
-    getClassNameSubscribeAttributeNameVectorPtrMap().insert(  std::make_pair( "<%=classname%>", &getSubscribeAttributeNameVector() )  );
-    getClassNamePublishedAttributesPtrMap().insert(  std::make_pair( "<%=classname%>", &getPublishedAttributeHandleSet_var() )  );
-    getClassNameSubscribedAttributesPtrMap().insert( std::make_pair( "<%=classname%>", &getSubscribedAttributeHandleSet_var() )  );
+    getClassNamePublishAttributeNameVectorPtrMap().insert(  std::make_pair( "<%=codeclassname%>", &getPublishAttributeNameVector() )  );
+    getClassNameSubscribeAttributeNameVectorPtrMap().insert(  std::make_pair( "<%=codeclassname%>", &getSubscribeAttributeNameVector() )  );
+    getClassNamePublishedAttributesPtrMap().insert(  std::make_pair( "<%=codeclassname%>", &getPublishedAttributeHandleSet_var() )  );
+    getClassNameSubscribedAttributesPtrMap().insert( std::make_pair( "<%=codeclassname%>", &getSubscribedAttributeHandleSet_var() )  );
 <% } -%>
     return true;
 }
 
-std::ostream &operator<<( std::ostream &os, <%=classname%>::SP entitySP ) {
+std::ostream &operator<<( std::ostream &os, <%=codeclassname%>::SP entitySP ) {
     return os << *entitySP;
 }
 
-std::ostream &operator<<( std::ostream &os, const <%=classname%> &entity ) {
-    return os << "<%=classname%>("
+std::ostream &operator<<( std::ostream &os, const <%=codeclassname%> &entity ) {
+    return os << "<%=codeclassname%>("
 <% alldatamembers.forEach(function(datamember,i){ -%>
              <% if( i > 0){%> << ", "<%}%> << "<%=datamember.name%>:" << entity.get_<%=datamember.name%>()
 <% }); -%>
