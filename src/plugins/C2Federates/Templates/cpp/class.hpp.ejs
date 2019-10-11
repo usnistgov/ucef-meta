@@ -35,11 +35,11 @@ simname              string
  */
 
 /*
- * 	NOTE:  ALL "if" STATEMENTS IN THIS CODE THAT HAD THE FORM:
+ *     NOTE:  ALL "if" STATEMENTS IN THIS CODE THAT HAD THE FORM:
  *
  *  if (condition) statement;
  *
- *	OR
+ *    OR
  *
  *  if (condition) statement1;
  *  else           statement2;
@@ -47,18 +47,18 @@ simname              string
  *  HAVE BEEN CONVERTED TO THE FORMS:
  *
  *  if (condition) {
- *		statement;
- *	}
+ *        statement;
+ *    }
  *
- *	AND
+ *    AND
  *
  *  if (condition) {
- *		statement1;
- *	} else {
- *		statement2;
- *	}
+ *        statement1;
+ *    } else {
+ *        statement2;
+ *    }
  *
- *	RESPECTIVELY.  THIS IS BECAUSE THE OMNET DEBUGGER APPEARS TO HAVE A PROBLEM
+ *    RESPECTIVELY.  THIS IS BECAUSE THE OMNET DEBUGGER APPEARS TO HAVE A PROBLEM
  *  WITH THE NON-BRACED FORMS OF THE IF STATEMENT.  *PLEASE* DO NOT CHANGE IT BACK.
  *  -- H.S.N.
  *
@@ -77,55 +77,55 @@ simname              string
 
 class <%=codeclassname%> : public <%=parentclassname%> {
 public:
-	typedef <%=parentclassname%> Super;
-	typedef boost::shared_ptr< <%=codeclassname%> > SP;
+    typedef <%=parentclassname%> Super;
+    typedef boost::shared_ptr< <%=codeclassname%> > SP;
 
-	static StringVector get_<%=isinteraction?"parameter":"attribute"%>_names() {
-		return getDatamemberNames();
-	}
+    static StringVector get_<%=isinteraction?"parameter":"attribute"%>_names() {
+        return getDatamemberNames();
+    }
 
-	static StringVector get_all_<%=isinteraction?"parameter":"attribute"%>_names() {
-		return getAllDatamemberNames();
-	}
+    static StringVector get_all_<%=isinteraction?"parameter":"attribute"%>_names() {
+        return getAllDatamemberNames();
+    }
 
-	<%=codeclassname%>( void ) { }
+    <%=codeclassname%>( void ) { }
 
-	static SP create( void ) { return SP( new <%=codeclassname%> ); }
+    static SP create( void ) { return SP( new <%=codeclassname%> ); }
 <% if(alldatamembers && alldatamembers.length > 0){ -%>
 
 private:
 <% if(!isinteraction){ -%>
-	static boost::unordered_set< std::string > m_publishedAttributeNames;
+    static boost::unordered_set< std::string > m_publishedAttributeNames;
 
 <% } -%>
 <% /*alldatamembers:handle()*/ -%>
 <% alldatamembers.forEach(function(datamember){ -%>
-	static int &get_<%=datamember.name%>_handle_var( void ) {
-		static int <%=datamember.name%>_handle;
-		return <%=datamember.name%>_handle;
-	}
+    static int &get_<%=datamember.name%>_handle_var( void ) {
+        static int <%=datamember.name%>_handle;
+        return <%=datamember.name%>_handle;
+    }
 
 <% }); -%>
 public:
 <% /*alldatamembers:gethandle()*/ -%>
 <% alldatamembers.forEach(function(datamember){ -%>
-	static int get_<%=datamember.name%>_handle( void ) { return get_<%=datamember.name%>_handle_var(); }
+    static int get_<%=datamember.name%>_handle( void ) { return get_<%=datamember.name%>_handle_var(); }
 <% }); -%>
 <% } -%>
 
 <% /*classcommon(...)*/ -%>
 <%- ejs.render(TEMPLATES["cpp/classcommon.hpp.ejs"], {
-		isinteraction: isinteraction,
-		classname: codeclassname,
-		parentclassname: parentclassname,
-		datamembers: datamembers,
-		alldatamembers: alldatamembers
+        isinteraction: isinteraction,
+        classname: codeclassname,
+        parentclassname: parentclassname,
+        datamembers: datamembers,
+        alldatamembers: alldatamembers
 }) -%>
 <% if(isc2winteractionroot){ -%>
 
 public:
-	void sendInteraction( RTI::RTIambassador *rti, double time );
-	void sendInteraction( RTI::RTIambassador *rti );
+    void sendInteraction( RTI::RTIambassador *rti, double time );
+    void sendInteraction( RTI::RTIambassador *rti );
 <% } -%>
 <% if(isinteraction){ -%>
 <% if(datamembers && datamembers.length > 0){ -%>
@@ -133,15 +133,15 @@ public:
 private:
 <% /*datamembers:interactionmembers()*/ -%>
 <% datamembers.forEach(function(datamember){ -%>
-	<%- helpers.cppjavaTypeMap(datamember.parameterType) %> _<%=datamember.name%>;
+    <%- helpers.cppjavaTypeMap(datamember.parameterType) %> _<%=datamember.name%>;
 <% }); -%>
 
 public:
 <% /*datamembers:interactiongetters()*/ -%>
 <% datamembers.forEach(function(datamember){ -%>
-	void set_<%=datamember.name%>( <%- helpers.cppjavaArgumentTypeMap(datamember.parameterType) %> <%=datamember.name%> ) { _<%=datamember.name%> = <%=datamember.name%>; }
+    void set_<%=datamember.name%>( <%- helpers.cppjavaArgumentTypeMap(datamember.parameterType) %> <%=datamember.name%> ) { _<%=datamember.name%> = <%=datamember.name%>; }
 
-	<%- helpers.cppjavaArgumentTypeMap(datamember.parameterType) %> get_<%=datamember.name%>( void ) const { return _<%=datamember.name%>; }
+    <%- helpers.cppjavaArgumentTypeMap(datamember.parameterType) %> get_<%=datamember.name%>( void ) const { return _<%=datamember.name%>; }
 
 <% }); -%>
 <% } -%>
@@ -151,98 +151,98 @@ public:
 public:
 <% alldatamembers.forEach(function(attribute){ -%>
 <% /*alldatamembers:{ a |<publish(codeclassname=codeclassname,attribute=a)> }*/ -%>
-	static void publish_<%=attribute.name%>( void ) {
-		getPublishAttributeNameVector().push_back( "<%=attribute.name%>" );
-		m_publishedAttributeNames.emplace( "<%=attribute.name%>" );
-	}
+    static void publish_<%=attribute.name%>( void ) {
+        getPublishAttributeNameVector().push_back( "<%=attribute.name%>" );
+        m_publishedAttributeNames.emplace( "<%=attribute.name%>" );
+    }
 
-	static void unpublish_<%=attribute.name%>( void ) {
-		getPublishAttributeNameVector().erase( std::remove( getPublishAttributeNameVector().begin(), getPublishAttributeNameVector().end(), "<%=attribute.name%>" ), getPublishAttributeNameVector().end() );
-		m_publishedAttributeNames.erase( "<%=attribute.name%>" );
-	}
+    static void unpublish_<%=attribute.name%>( void ) {
+        getPublishAttributeNameVector().erase( std::remove( getPublishAttributeNameVector().begin(), getPublishAttributeNameVector().end(), "<%=attribute.name%>" ), getPublishAttributeNameVector().end() );
+        m_publishedAttributeNames.erase( "<%=attribute.name%>" );
+    }
 
 <% /*alldatamembers:{ a |<subscribe(codeclassname=codeclassname,attribute=a)> }*/ -%>
-	static void subscribe_<%=attribute.name%>( void ) {
-		getSubscribeAttributeNameVector().push_back( "<%=attribute.name%>" );
-	}
+    static void subscribe_<%=attribute.name%>( void ) {
+        getSubscribeAttributeNameVector().push_back( "<%=attribute.name%>" );
+    }
 
-	static void unsubscribe_<%=attribute.name%>(void ) {
-		getSubscribeAttributeNameVector().erase( std::remove( getSubscribeAttributeNameVector().begin(), getSubscribeAttributeNameVector().end(), "<%=attribute.name%>" ), getSubscribeAttributeNameVector().end() );
-	}
+    static void unsubscribe_<%=attribute.name%>(void ) {
+        getSubscribeAttributeNameVector().erase( std::remove( getSubscribeAttributeNameVector().begin(), getSubscribeAttributeNameVector().end(), "<%=attribute.name%>" ), getSubscribeAttributeNameVector().end() );
+    }
 
 <% }); -%>
 protected:
 <% /*datamembers:objectmembers()*/ -%>
 <% datamembers.forEach(function(datamember){ -%>
-	Attribute< int, <%- helpers.cppjavaTypeMap(datamember.parameterType) %> > _<%=datamember.name%>;
+    Attribute< int, <%- helpers.cppjavaTypeMap(datamember.parameterType) %> > _<%=datamember.name%>;
 <% }); -%>
 
 public:
 <% datamembers.forEach(function(datamember){ -%>
 <% /*datamembers:objectsetters()*/ -%>
-	void set_<%=datamember.name%>( <%- helpers.cppjavaArgumentTypeMap(datamember.parameterType) %> <%=datamember.name%> ) {
-		_<%=datamember.name%>.setValue( <%=datamember.name%> );
-		_<%=datamember.name%>.setTime( getTime() );
-	}
+    void set_<%=datamember.name%>( <%- helpers.cppjavaArgumentTypeMap(datamember.parameterType) %> <%=datamember.name%> ) {
+        _<%=datamember.name%>.setValue( <%=datamember.name%> );
+        _<%=datamember.name%>.setTime( getTime() );
+    }
 
 <% /*datamembers:objectgetters()*/ -%>
-	<%- helpers.cppjavaArgumentTypeMap(datamember.parameterType) %> get_<%=datamember.name%>( void ) const {
-		return _<%=datamember.name%>.getValue();
-	}
+    <%- helpers.cppjavaArgumentTypeMap(datamember.parameterType) %> get_<%=datamember.name%>( void ) const {
+        return _<%=datamember.name%>.getValue();
+    }
 
 <% /*datamembers:objecttimegetters()*/ -%>
-	double get_<%=datamember.name%>_time( void ) {
-		return _<%=datamember.name%>.getTime();
-	}
+    double get_<%=datamember.name%>_time( void ) {
+        return _<%=datamember.name%>.getTime();
+    }
 
 <% }); -%>
 <% } -%>
 <% } -%>
-	<%=codeclassname%>( const RTI::<%=isinteraction?"Parameter":"Attribute"%>HandleValuePairSet &datamemberMap ) : Super( datamemberMap ) { }
+    <%=codeclassname%>( const RTI::<%=isinteraction?"Parameter":"Attribute"%>HandleValuePairSet &datamemberMap ) : Super( datamemberMap ) { }
 
-	<%=codeclassname%>( const RTI::<%=isinteraction?"Parameter":"Attribute"%>HandleValuePairSet &datamemberMap, const RTIfedTime &logicalTime ) : Super( datamemberMap, logicalTime ) { }
+    <%=codeclassname%>( const RTI::<%=isinteraction?"Parameter":"Attribute"%>HandleValuePairSet &datamemberMap, const RTIfedTime &logicalTime ) : Super( datamemberMap, logicalTime ) { }
 <% if(datamembers && datamembers.length > 0){ -%>
 
 public:
-	TypeMedley get<%=isinteraction?"Parameter":"Attribute"%>( const std::string &datamemberName ) const {
+    TypeMedley get<%=isinteraction?"Parameter":"Attribute"%>( const std::string &datamemberName ) const {
 <% /*first(datamembers):startgetbyname()*/ -%>
 <% for(var i = 0; i<datamembers.length; i++ ){ -%>
-<%= i == 0  ? '		if' : ' else if' %> ( "<%=datamembers[i].name%>" == datamemberName ) {
-			return TypeMedley( get_<%=datamembers[i].name%>() );
-		}<%}%> else {
-			return Super::get<%=isinteraction?"Parameter":"Attribute"%>( datamemberName );
-		}
-	}
+<%= i == 0  ? '        if' : ' else if' %> ( "<%=datamembers[i].name%>" == datamemberName ) {
+            return TypeMedley( get_<%=datamembers[i].name%>() );
+        }<%}%> else {
+            return Super::get<%=isinteraction?"Parameter":"Attribute"%>( datamemberName );
+        }
+    }
 
 protected:
-	virtual bool set<%=isinteraction?"Parameter":"Attribute"%>Aux( const std::string &datamemberName, const std::string &val ) {
-		bool retval = true;
+    virtual bool set<%=isinteraction?"Parameter":"Attribute"%>Aux( const std::string &datamemberName, const std::string &val ) {
+        bool retval = true;
 <% /*first(datamembers):startifstring()*/ -%>
 <% for(var i = 0; i<datamembers.length; i++ ){ -%>
-<%= i == 0  ? '		if' : ' else if'%> ( "<%=datamembers[i].name%>" == datamemberName ) {
-			set_<%=datamembers[i].name%>(  TypeMedley( val )  );
-		}<%}%> else {
-			retval = Super::set<%=isinteraction?"Parameter":"Attribute"%>Aux( datamemberName, val );
-		}
+<%= i == 0  ? '        if' : ' else if'%> ( "<%=datamembers[i].name%>" == datamemberName ) {
+            set_<%=datamembers[i].name%>(  TypeMedley( val )  );
+        }<%}%> else {
+            retval = Super::set<%=isinteraction?"Parameter":"Attribute"%>Aux( datamemberName, val );
+        }
 
-		return retval;
-	}
+        return retval;
+    }
 
-	virtual bool set<%=isinteraction?"Parameter":"Attribute"%>Aux( const std::string &datamemberName, const TypeMedley &val ) {
-		bool retval = true;
+    virtual bool set<%=isinteraction?"Parameter":"Attribute"%>Aux( const std::string &datamemberName, const TypeMedley &val ) {
+        bool retval = true;
 <% /*first(datamembers):startifname()*/ -%>
 <% for(var i = 0; i<datamembers.length; i++ ){ -%>
-<%= i == 0  ? '		if' : ' else if'%> ( "<%=datamembers[i].name%>" == datamemberName ) {
-			set_<%=datamembers[i].name%>( val );
-		}<%}%> else {
-			retval = Super::set<%=isinteraction?"Parameter":"Attribute"%>Aux( datamemberName, val );
-		}
+<%= i == 0  ? '        if' : ' else if'%> ( "<%=datamembers[i].name%>" == datamemberName ) {
+            set_<%=datamembers[i].name%>( val );
+        }<%}%> else {
+            retval = Super::set<%=isinteraction?"Parameter":"Attribute"%>Aux( datamemberName, val );
+        }
 
-		return retval;
-	}
+        return retval;
+    }
 <% if(!isinteraction){ -%>
 
-	virtual AttributeHandleValuePairSetSP createDatamemberHandleValuePairSet( bool force );
+    virtual AttributeHandleValuePairSetSP createDatamemberHandleValuePairSet( bool force );
 <% } -%>
 <% } -%>
 };

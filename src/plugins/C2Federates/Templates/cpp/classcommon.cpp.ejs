@@ -140,7 +140,7 @@ void <%=codeclassname%>::subscribe( RTI::RTIambassador *rti ) {
     getSubscribedAttributeHandleSet_var().empty();
     for ( StringVector::iterator sstItr = getSubscribeAttributeNameVector().begin() ;
           sstItr != getSubscribeAttributeNameVector().end() ;
-	  (void)++sstItr ) {
+          (void)++sstItr ) {
         try {
             getSubscribedAttributeHandleSet_var().add(  getDatamemberNameHandleMap().find( "<%=codeclassname%>." + *sstItr )->second  );
         } catch ( ... ) {

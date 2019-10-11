@@ -230,12 +230,15 @@ for code generation is extracted from the primary model.
 */
       this.visit_Object = function(node, parent, context)
       {
-        var self = this,
-        object = {},
-        nodeBasePath = self.core.getPointerPath(node, 'base'),
-        nodeBaseName = self.core.getAttribute(node.base, 'name'),
-        nodeName = self.core.getAttribute(node, 'name'),
-        nameFragments = [nodeName];
+        var self = this;
+        var object = {};
+        var nodeBasePath = self.core.getPointerPath(node, 'base');
+        var nodeBaseName =
+          (self.core.getAttribute(node.base, 'CodeGeneratedName') ||
+           self.core.getAttribute(node.base, 'name'));
+        var nodeName = self.core.getAttribute(node, 'name');
+        var nameFragments = [nodeName];
+        var nextBase;
 
         if (self.objects[self.core.getPath(node)])
           {
@@ -269,7 +272,7 @@ for code generation is extracted from the primary model.
                 self.objectRoots.push(object);
               }
           }
-        var nextBase = node.base;
+        nextBase = node.base;
         while (nextBase != self.META['Object'])
           {
             nameFragments.push(self.core.getAttribute(nextBase, 'name'));

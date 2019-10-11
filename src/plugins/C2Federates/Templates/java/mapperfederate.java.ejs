@@ -2,10 +2,10 @@
 
 mapperfederate(
     classname,
-	simname,
-	step_size,
-	mappingconnsdata,
-	mappingobjectsdata
+    simname,
+    step_size,
+    mappingconnsdata,
+    mappingobjectsdata
 ) ::= <<*/ -%>
 
 package <%=simname%>;
@@ -22,10 +22,10 @@ public class <%=classname%> extends <%=classname%>Base {
 
     private static Pattern pattern = Pattern.compile( "[^#]" );
 
-	public <%=classname%>(String federationId, String federateId)
-			throws Exception {
-		super(federationId, federateId);
-	}
+    public <%=classname%>(String federationId, String federateId)
+            throws Exception {
+        super(federationId, federateId);
+    }
 
     public <%=classname%>( String[] args ) throws Exception {
         super( args );
@@ -39,151 +39,151 @@ public class <%=classname%> extends <%=classname%>Base {
 
     <% /*mappingconnsdata:mappingconnections()*/ %>
     <% mappingconnsdata.forEach(function(mappingconnectiondata){ %>
-	///////////////////////////////////////////////////////////////////////////////////////
-	//
-	// For <% if(mappingconnectiondata.isSimpleConn){ %>Simple<% }else{ %>Complex<% } %>MappingConnection (ID: <%=mappingconnectiondata.uniqueId%>) between interactions:
-	//
-	//         <%=mappingconnectiondata.lHSInteractionName%> --to--> <%=mappingconnectiondata.rHSInteractionName%>
-	//
-	// This <% if(mappingconnectiondata.isSimpleConn){ %>Simple<% }else{ %>Complex<% } %>MappingConnection is located at:
-	//
-	//         <%=mappingconnectiondata.parentPath%>
-	//
-	///////////////////////////////////////////////////////////////////////////////////////
-	public boolean isGuardConditionMet_<%=mappingconnectiondata.lHSInteractionName%>_to_<%=mappingconnectiondata.rHSInteractionName%>_<%=mappingconnectiondata.uniqueId%>(<%=mappingconnectiondata.lHSInteractionName%> i1) {
-		<%-mappingconnectiondata.guardCondition%>
-		<% if(mappingconnectiondata.guardConditionInvalid){ %>return true;<% } %>
-	}
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // For <% if(mappingconnectiondata.isSimpleConn){ %>Simple<% }else{ %>Complex<% } %>MappingConnection (ID: <%=mappingconnectiondata.uniqueId%>) between interactions:
+    //
+    //         <%=mappingconnectiondata.lHSInteractionName%> --to--> <%=mappingconnectiondata.rHSInteractionName%>
+    //
+    // This <% if(mappingconnectiondata.isSimpleConn){ %>Simple<% }else{ %>Complex<% } %>MappingConnection is located at:
+    //
+    //         <%=mappingconnectiondata.parentPath%>
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+    public boolean isGuardConditionMet_<%=mappingconnectiondata.lHSInteractionName%>_to_<%=mappingconnectiondata.rHSInteractionName%>_<%=mappingconnectiondata.uniqueId%>(<%=mappingconnectiondata.lHSInteractionName%> i1) {
+        <%-mappingconnectiondata.guardCondition%>
+        <% if(mappingconnectiondata.guardConditionInvalid){ %>return true;<% } %>
+    }
 
 
-	public <%=mappingconnectiondata.rHSInteractionName%> map_<%=mappingconnectiondata.lHSInteractionName%>_to_<%=mappingconnectiondata.rHSInteractionName%>_<%=mappingconnectiondata.uniqueId%>(<%=mappingconnectiondata.lHSInteractionName%> i1) {
-		<%=mappingconnectiondata.rHSInteractionName%> o1 = create_<%=mappingconnectiondata.rHSInteractionName%>();
-		InteractionRoot o1IR = (InteractionRoot) o1;
-	    <% if(mappingconnectiondata.isMappedInteractionANetworkPacket){ %>
-		boolean __NETWORK_PACKET_CORRUPT__ = false;
-		InteractionRoot __I1__ = (InteractionRoot) i1;
-		if(__I1__ instanceof NetworkPacket ) {
-	    	int numParams = o1.getParameterNames().size();
-	    	String __DATA__ = ((NetworkPacket) __I1__).get_data();
-	    	if(numParams > 0) {
-			    Matcher matcher = pattern.matcher( __DATA__ );
-			    if ( !matcher.find() ) {
-	    			__NETWORK_PACKET_CORRUPT__ = true;
-	    			if(o1IR instanceof NetworkPacket && __DATA__.length() == 0 ) {
-			    		__NETWORK_PACKET_CORRUPT__ = false;
-			    	}
-	    		}
-	    	} else {
-	    		if(__DATA__.length() > 0) {
-	    			__NETWORK_PACKET_CORRUPT__ = true;
-	    		}
-	    	}
-		}
-		if(!__NETWORK_PACKET_CORRUPT__) {
-		    <% if(mappingconnectiondata.isMappingSpecsNotEmpty){ %>
-			<%-mappingconnectiondata.mappingSpecs%><%}%>
-		}
-		<% }else{ %>
-	    <% if(mappingconnectiondata.isMappingSpecsNotEmpty){ %>
-		<%-mappingconnectiondata.mappingSpecs%><%}%>
-		<%}%>
+    public <%=mappingconnectiondata.rHSInteractionName%> map_<%=mappingconnectiondata.lHSInteractionName%>_to_<%=mappingconnectiondata.rHSInteractionName%>_<%=mappingconnectiondata.uniqueId%>(<%=mappingconnectiondata.lHSInteractionName%> i1) {
+        <%=mappingconnectiondata.rHSInteractionName%> o1 = create_<%=mappingconnectiondata.rHSInteractionName%>();
+        InteractionRoot o1IR = (InteractionRoot) o1;
+        <% if(mappingconnectiondata.isMappedInteractionANetworkPacket){ %>
+        boolean __NETWORK_PACKET_CORRUPT__ = false;
+        InteractionRoot __I1__ = (InteractionRoot) i1;
+        if(__I1__ instanceof NetworkPacket ) {
+            int numParams = o1.getParameterNames().size();
+            String __DATA__ = ((NetworkPacket) __I1__).get_data();
+            if(numParams > 0) {
+                Matcher matcher = pattern.matcher( __DATA__ );
+                if ( !matcher.find() ) {
+                    __NETWORK_PACKET_CORRUPT__ = true;
+                    if(o1IR instanceof NetworkPacket && __DATA__.length() == 0 ) {
+                        __NETWORK_PACKET_CORRUPT__ = false;
+                    }
+                }
+            } else {
+                if(__DATA__.length() > 0) {
+                    __NETWORK_PACKET_CORRUPT__ = true;
+                }
+            }
+        }
+        if(!__NETWORK_PACKET_CORRUPT__) {
+            <% if(mappingconnectiondata.isMappingSpecsNotEmpty){ %>
+            <%-mappingconnectiondata.mappingSpecs%><%}%>
+        }
+        <% }else{ %>
+        <% if(mappingconnectiondata.isMappingSpecsNotEmpty){ %>
+        <%-mappingconnectiondata.mappingSpecs%><%}%>
+        <%}%>
 
-		o1.set_originFed(i1.get_originFed());
-		o1.set_actualLogicalGenerationTime(i1.get_actualLogicalGenerationTime());
+        o1.set_originFed(i1.get_originFed());
+        o1.set_actualLogicalGenerationTime(i1.get_actualLogicalGenerationTime());
 
-		return o1;
-	}
+        return o1;
+    }
     <%/*EMPTY*/});%>
     
     <% /*mappingobjectsdata:mappingobjects()*/ %>
     <% mappingobjectsdata.forEach(function(mappingobjectdata){ %><%/*EMPTY*/});%>
     
 
-	<% /*execute_method()*/ %>
-	public void execute() throws Exception {
-	    double currentTime = 0;
+    <% /*execute_method()*/ %>
+    public void execute() throws Exception {
+        double currentTime = 0;
 
-	    AdvanceTimeRequest atr = new AdvanceTimeRequest( currentTime );
-	    putAdvanceTimeRequest( atr );
+        AdvanceTimeRequest atr = new AdvanceTimeRequest( currentTime );
+        putAdvanceTimeRequest( atr );
 
-	    readyToPopulate();
-	    readyToRun();
+        readyToPopulate();
+        readyToRun();
 
-	    startAdvanceTimeThread(TIME_ADVANCE_MODE.NEXT_EVENT_REQUEST_AVAILABLE);
+        startAdvanceTimeThread(TIME_ADVANCE_MODE.NEXT_EVENT_REQUEST_AVAILABLE);
 
-	    while( true ) {
-	    	System.out.print( "<%=classname%>: Requesting RTI to proceed to (" + currentTime + ")..." );
-	    	
-	        atr.requestSyncStart();
-	        currentTime = atr.getCurrentTime();
+        while( true ) {
+            System.out.print( "<%=classname%>: Requesting RTI to proceed to (" + currentTime + ")..." );
+            
+            atr.requestSyncStart();
+            currentTime = atr.getCurrentTime();
 
-	        System.out.println( "granted!" );
+            System.out.println( "granted!" );
 
-	        InteractionRoot interactionRoot;
+            InteractionRoot interactionRoot;
 
-	        System.out.println("Now waiting to receive an interaction...");
-	        while(  ( interactionRoot = getNextInteractionNoWait() ) != null ) {
-	            	
-				System.out.println( "<%=classname%>: received interaction: \"" + interactionRoot + "\" at time: " + getCurrentTime() );
+            System.out.println("Now waiting to receive an interaction...");
+            while(  ( interactionRoot = getNextInteractionNoWait() ) != null ) {
+                    
+                System.out.println( "<%=classname%>: received interaction: \"" + interactionRoot + "\" at time: " + getCurrentTime() );
 
-				boolean interactionMapped = false;			
-				<% /*mappingconnsdata:mappingCheck()*/ %>
-				<% mappingconnsdata.forEach(function(mappingconnectiondata){%>
-				if( interactionRoot instanceof <%=mappingconnectiondata.lHSInteractionName%> ) {
-					<%=mappingconnectiondata.lHSInteractionName%> i1 = (<%=mappingconnectiondata.lHSInteractionName%>) interactionRoot;
-					
-						if(  !(interactionRoot instanceof NetworkPacket) || "<%=mappingconnectiondata.rHSInteractionName%>".equals(((NetworkPacket) interactionRoot).get_packetType())  ) {
-	
-							if( isGuardConditionMet_<%=mappingconnectiondata.lHSInteractionName%>_to_<%=mappingconnectiondata.rHSInteractionName%>_<%=mappingconnectiondata.uniqueId%>(i1) ) {
-								<%=mappingconnectiondata.rHSInteractionName%> o1 = map_<%=mappingconnectiondata.lHSInteractionName%>_to_<%=mappingconnectiondata.rHSInteractionName%>_<%=mappingconnectiondata.uniqueId%>(i1);
-								System.out.println( "<%=classname%>: Sending interaction: " + o1 );
-								o1.sendInteraction( getRTI(), getMinTSOTimestamp() );
-							}
-							
-							interactionMapped = true;
-						}
-						
-						<% if(mappingconnectiondata.areBothEndsOfMappingANetworkPacket){ %>
-						// Or, if it is a mapping from an interaction type to itself then only check the guard condition
-						if ( interactionRoot instanceof NetworkPacket && "<%=mappingconnectiondata.lHSInteractionName%>".equals("<%=mappingconnectiondata.rHSInteractionName%>") ) {
-							if( isGuardConditionMet_NetworkPacket_to_NetworkPacket_<%=mappingconnectiondata.uniqueId%>(i1) ) {
-								NetworkPacket o1 = map_NetworkPacket_to_NetworkPacket_<%=mappingconnectiondata.uniqueId%>(i1);
-								System.out.println( "<%=classname%>: Sending interaction: " + o1 );
-								o1.sendInteraction( getRTI(), getMinTSOTimestamp() );
-							}
-							
-							interactionMapped = true;
-						}
-						<% } %>
-				}<%});%>
+                boolean interactionMapped = false;
+                <% /*mappingconnsdata:mappingCheck()*/ %>
+                <% mappingconnsdata.forEach(function(mappingconnectiondata){%>
+                if( interactionRoot instanceof <%=mappingconnectiondata.lHSInteractionName%> ) {
+                    <%=mappingconnectiondata.lHSInteractionName%> i1 = (<%=mappingconnectiondata.lHSInteractionName%>) interactionRoot;
+                    
+                        if(  !(interactionRoot instanceof NetworkPacket) || "<%=mappingconnectiondata.rHSInteractionName%>".equals(((NetworkPacket) interactionRoot).get_packetType())  ) {
+    
+                            if( isGuardConditionMet_<%=mappingconnectiondata.lHSInteractionName%>_to_<%=mappingconnectiondata.rHSInteractionName%>_<%=mappingconnectiondata.uniqueId%>(i1) ) {
+                                <%=mappingconnectiondata.rHSInteractionName%> o1 = map_<%=mappingconnectiondata.lHSInteractionName%>_to_<%=mappingconnectiondata.rHSInteractionName%>_<%=mappingconnectiondata.uniqueId%>(i1);
+                                System.out.println( "<%=classname%>: Sending interaction: " + o1 );
+                                o1.sendInteraction( getRTI(), getMinTSOTimestamp() );
+                            }
+                            
+                            interactionMapped = true;
+                        }
+                        
+                        <% if(mappingconnectiondata.areBothEndsOfMappingANetworkPacket){ %>
+                        // Or, if it is a mapping from an interaction type to itself then only check the guard condition
+                        if ( interactionRoot instanceof NetworkPacket && "<%=mappingconnectiondata.lHSInteractionName%>".equals("<%=mappingconnectiondata.rHSInteractionName%>") ) {
+                            if( isGuardConditionMet_NetworkPacket_to_NetworkPacket_<%=mappingconnectiondata.uniqueId%>(i1) ) {
+                                NetworkPacket o1 = map_NetworkPacket_to_NetworkPacket_<%=mappingconnectiondata.uniqueId%>(i1);
+                                System.out.println( "<%=classname%>: Sending interaction: " + o1 );
+                                o1.sendInteraction( getRTI(), getMinTSOTimestamp() );
+                            }
+                            
+                            interactionMapped = true;
+                        }
+                        <% } %>
+                }<%});%>
 
-				if( !interactionMapped ) {
-	          		System.out.println( "<%=classname%>: Received unknown interaction: " + interactionRoot );
-	           	}
-	        }
+                if( !interactionMapped ) {
+                      System.out.println( "<%=classname%>: Received unknown interaction: " + interactionRoot );
+                   }
+            }
 
-	        currentTime = getCurrentTime() + <%=step_size%> + STEP_EPSILON;
-	        AdvanceTimeRequest newATR = new AdvanceTimeRequest( currentTime );
-	        putAdvanceTimeRequest( newATR );
-	        
-	        atr.requestSyncEnd();
-	        atr = newATR;
-	    }
-	}
+            currentTime = getCurrentTime() + <%=step_size%> + STEP_EPSILON;
+            AdvanceTimeRequest newATR = new AdvanceTimeRequest( currentTime );
+            putAdvanceTimeRequest( newATR );
+            
+            atr.requestSyncEnd();
+            atr = newATR;
+        }
+    }
 
-	<% /*main_method()*/ %>
-	/**
-	 * @param args
-	 */
-	public static void main(String[] args) {
-	    System.out.println( "<%=classname%> federate starting" );
-	    try {
-	    	<%=classname%> mapperFed = new <%=classname%>( args );
-	        mapperFed.execute();
-	    } catch ( Exception e ) {
-	        System.err.println( "Exception caught: " + e.getMessage() );
-	        e.printStackTrace();
-	    }
-	}
+    <% /*main_method()*/ %>
+    /**
+     * @param args
+     */
+    public static void main(String[] args) {
+        System.out.println( "<%=classname%> federate starting" );
+        try {
+            <%=classname%> mapperFed = new <%=classname%>( args );
+            mapperFed.execute();
+        } catch ( Exception e ) {
+            System.err.println( "Exception caught: " + e.getMessage() );
+            e.printStackTrace();
+        }
+    }
 
 }
