@@ -1,5 +1,5 @@
 define([
-    'common/util/ejs',
+    'ejs',
     'C2Core/MavenPOM',
 	'C2Federates/Templates/Templates'
 ], function (
@@ -61,6 +61,18 @@ define([
             // generate the pom.xml that fetches the LabVIEW federate code and resources
             self.fileGenerators.push(function (artifact, callback) {
                 artifact.addFile(moduleName + "/pom.xml", ejs.render(TEMPLATES['java/labview-pom.xml.ejs'], renderContext), function(err) {
+                    if (err) {
+                        callback(err);
+                        return;
+                    } else {
+                        callback();
+                    }
+                });
+            });
+
+            // generate the script that installs the LabVIEW federate
+            self.fileGenerators.push(function (artifact, callback) {
+                artifact.addFile(moduleName + "/build.sh", ejs.render(TEMPLATES['java/mvn-install.sh.ejs'], renderContext), function(err) {
                     if (err) {
                         callback(err);
                         return;

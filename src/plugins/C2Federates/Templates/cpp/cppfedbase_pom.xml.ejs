@@ -1,31 +1,31 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-<% if (parent){ %>
-  <parent>
-    <groupId><%=parent.groupId%></groupId>
-    <artifactId><%=parent.artifactId%></artifactId>
-    <version><%=parent.version%></version>
-  </parent>
-<%} -%>
-  <groupId><%=groupId%></groupId>
-  <artifactId><%=artifactId%></artifactId>
-  <version><%=version%></version>
-  <packaging><%=packaging%></packaging>
-  <name><%=name%></name>
-  <description><%=description%></description>
+    <modelVersion>4.0.0</modelVersion>
+    <groupId><%=groupId%></groupId>
+    <artifactId><%=artifactId%></artifactId>
+    <version><%=version%></version>
+    <packaging><%=packaging%></packaging>
 
-<% if(projects && projects.length > 0){ %> 
-    <modules>
-      <% projects.forEach(function(project){ %>
-      <module><%= project.directory ? project.directory : project.artifactId %></module><%}); %> 
-    </modules>  
-<%}%>
     <properties>
         <boost.version>1.57.0+nar.10</boost.version>
         <nar-plugin.version>3.3.0</nar-plugin.version>
         <compiler-name>g++</compiler-name>
         <linker-name>g++</linker-name>
     </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.cpswt</groupId>
+            <artifactId>SynchronizedFederate</artifactId>
+            <version>0.6.0-SNAPSHOT</version>
+            <type>nar</type>
+        </dependency>
+        <dependency>
+            <groupId>org.cpswt</groupId>
+            <artifactId>rti-base-cpp</artifactId>
+            <version>0.6.0-SNAPSHOT</version>
+            <type>nar</type>
+        </dependency>
+    </dependencies>
 
     <build>
         <plugins>
@@ -37,7 +37,7 @@
                 <configuration>
                     <libraries>
                         <library> 
-                            <type>static</type>
+                            <type>executable</type>
                         </library>
                     </libraries>
                     <cpp>
@@ -59,68 +59,56 @@
                             <option>-Wno-variadic-macros</option>
                         </options>
                         <defines>
-                          <!--define>USE_MYSQL_LOGGING</define-->
-                          <define>RTI_USES_STD_FSTREAM</define>
+                            <!--define>USE_MYSQL_LOGGING</define-->
+                            <define>RTI_USES_STD_FSTREAM</define>
                         </defines>
                         <systemIncludePaths>
-                          <systemIncludePath>${build.BOOST_INC_DIR}</systemIncludePath>
-                          <systemIncludePath>${build.RTI_INC_DIR}</systemIncludePath>
+                            <systemIncludePath>${build.BOOST_INC_DIR}</systemIncludePath>
+                            <systemIncludePath>${build.RTI_INC_DIR}</systemIncludePath>
                         </systemIncludePaths>
                     </cpp>
                     <linker>
                         <name>${linker-name}</name>
                         <incremental>false</incremental>
                         <libs>
-                          <lib>
-                            <name>RTI-NG_64d</name>
-                            <type>shared</type>
-                            <directory>${build.RTI_LIB_DIR}</directory>
-                          </lib>
-                          <lib>
-                            <name>FedTime_64d</name>
-                            <type>shared</type>
-                            <directory>${build.RTI_LIB_DIR}</directory>
-                          </lib>
-                          <lib>
-                            <name>boost_thread</name>
-                            <type>shared</type>
-                            <directory>${build.BOOST_LIB_DIR}</directory>
-                          </lib>
-                          <lib>
-                            <name>boost_system</name>
-                            <type>shared</type>
-                            <directory>${build.BOOST_LIB_DIR}</directory>
-                          </lib>
-                          <lib>
-                            <name>mysqlcppconn</name>
-                            <type>shared</type>
-                            <directory>${build.MYSQL_LIB_DIR}</directory>
-                          </lib>
-                          <lib>
+                            <lib>
+                                <name>RTI-NG_64d</name>
+                                <type>shared</type>
+                                <directory>${build.RTI_LIB_DIR}</directory>
+                            </lib>
+                            <lib>
+                                <name>FedTime_64d</name>
+                                <type>shared</type>
+                                <directory>${build.RTI_LIB_DIR}</directory>
+                            </lib>
+                            <lib>
+                                <name>boost_thread</name>
+                                <type>shared</type>
+                                <directory>${build.BOOST_LIB_DIR}</directory>
+                            </lib>
+                            <lib>
+                                <name>boost_system</name>
+                                <type>shared</type>
+                                <directory>${build.BOOST_LIB_DIR}</directory>
+                            </lib>
+                            <lib>
+                                <name>mysqlcppconn</name>
+                                <type>shared</type>
+                                <directory>${build.MYSQL_LIB_DIR}</directory>
+                            </lib>
+                            <lib>
                                 <name>jvm</name>
                                 <type>shared</type>
                                 <directory>${build.RTI_LIB_JVM_DIR}</directory>
                             </lib>
                         </libs>
-                        
                     </linker>
                 </configuration>
             </plugin>
         </plugins>
     </build>
 
-
     <profiles>
-        <profile>
-          <id>include-generated</id>
-          <activation>
-                <activeByDefault>false</activeByDefault>
-            </activation>
-          <modules>
-              <module>HelloWorld_base-cpp</module>   
-          </modules>  
-        </profile>
-
         <profile>
             <id>windows-common</id>
             <activation>
@@ -218,5 +206,4 @@
             </build>
         </profile>
     </profiles>
-  
 </project>

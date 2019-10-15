@@ -30,194 +30,187 @@ C2WLogger* <%=isinteraction?"Interaction":"Object"%>Root::_logger = &C2W_RTI_LOG
 
 <% /*classcommon(classname=apMap.classfirstupper+"Root",hlaclassname=apMap.classfirstupper+"Root",...)*/ %>
 <%- ejs.render(TEMPLATES["cpp/classcommon.cpp.ejs"],
-	{	isinteraction: isinteraction,
-		classname: isinteraction?"InteractionRoot":"ObjectRoot",
-		parentclassname: "",
-		hlaclassname: isinteraction?"InteractionRoot":"ObjectRoot",
-		datamembers: [],
-		alldatamembers: []
+    {    isinteraction: isinteraction,
+        classname: isinteraction?"InteractionRoot":"ObjectRoot",
+        parentclassname: "",
+        hlaclassname: isinteraction?"InteractionRoot":"ObjectRoot",
+        datamembers: [],
+        alldatamembers: []
 }) %>
 
 <% if(!isinteraction){ %>
 void <%=isinteraction?"Interaction":"Object"%>Root::publish( const std::string &className, const std::string &attributeName ) {
-	NameStringVectorPtrMap::iterator camItr = getClassNamePublishAttributeNameVectorPtrMap().find( className );
-	if ( camItr == getClassNamePublishAttributeNameVectorPtrMap().end() ) {
-		std::cerr << "ERROR:  ObjectRoot.publish:  could not publish class \"" << className << "\" \"" << attributeName << "\" attribute." << std::endl;
-		return;
-	}
-	NameStringVectorPtrMap::iterator dnsItr = getAllDatamemberClassNameVectorPtrMap().find( className );
-	if ( dnsItr == getAllDatamemberClassNameVectorPtrMap().end() ) {
-		std::cerr << "ERROR:  ObjectRoot.publish:  unexpected error:  no datamember vector for class \"" << className << "\"" << std::endl;
-		return;
-	}
-	if (  std::find ( dnsItr->second->begin(), dnsItr->second->end(), attributeName ) == dnsItr->second->end()  ) {
-		std::cerr << "ERROR:  ObjectRoot.publish:  no datamember named \"" << attributeName << "\" in class \"" << className << "\"" << std::endl;
-		return;
-	}
-	camItr->second->push_back( attributeName );
+    NameStringVectorPtrMap::iterator camItr = getClassNamePublishAttributeNameVectorPtrMap().find( className );
+    if ( camItr == getClassNamePublishAttributeNameVectorPtrMap().end() ) {
+        std::cerr << "ERROR:  ObjectRoot.publish:  could not publish class \"" << className << "\" \"" << attributeName << "\" attribute." << std::endl;
+        return;
+    }
+    NameStringVectorPtrMap::iterator dnsItr = getAllDatamemberClassNameVectorPtrMap().find( className );
+    if ( dnsItr == getAllDatamemberClassNameVectorPtrMap().end() ) {
+        std::cerr << "ERROR:  ObjectRoot.publish:  unexpected error:  no datamember vector for class \"" << className << "\"" << std::endl;
+        return;
+    }
+    if (  std::find ( dnsItr->second->begin(), dnsItr->second->end(), attributeName ) == dnsItr->second->end()  ) {
+        std::cerr << "ERROR:  ObjectRoot.publish:  no datamember named \"" << attributeName << "\" in class \"" << className << "\"" << std::endl;
+        return;
+    }
+    camItr->second->push_back( attributeName );
 }
 
 void <%=isinteraction?"Interaction":"Object"%>Root::subscribe( const std::string &className, const std::string &attributeName ) {
-	NameStringVectorPtrMap::iterator camItr = getClassNameSubscribeAttributeNameVectorPtrMap().find( className );
-	if ( camItr == getClassNameSubscribeAttributeNameVectorPtrMap().end() ) {
-		std::cerr << "ERROR:  ObjectRoot.subscribe:  could not subscribe class \"" << className << "\" \"" << attributeName << "\" attribute." << std::endl;
-		return;
-	}
-	NameStringVectorPtrMap::iterator dnsItr = getAllDatamemberClassNameVectorPtrMap().find( className );
-	if ( dnsItr == getAllDatamemberClassNameVectorPtrMap().end() ) {
-		std::cerr << "ERROR:  ObjectRoot.subscribe:  unexpected error:  no datamember vector for class \"" << className << "\"" << std::endl;
-		return;
-	}
-	if (  std::find ( dnsItr->second->begin(), dnsItr->second->end(), attributeName ) == dnsItr->second->end()  ) {
-		std::cerr << "ERROR:  ObjectRoot.subscribe:  no datamember named \"" << attributeName << "\" in class \"" << className << "\"" << std::endl;
-		return;
-	}
-	camItr->second->push_back( attributeName );
+    NameStringVectorPtrMap::iterator camItr = getClassNameSubscribeAttributeNameVectorPtrMap().find( className );
+    if ( camItr == getClassNameSubscribeAttributeNameVectorPtrMap().end() ) {
+        std::cerr << "ERROR:  ObjectRoot.subscribe:  could not subscribe class \"" << className << "\" \"" << attributeName << "\" attribute." << std::endl;
+        return;
+    }
+    NameStringVectorPtrMap::iterator dnsItr = getAllDatamemberClassNameVectorPtrMap().find( className );
+    if ( dnsItr == getAllDatamemberClassNameVectorPtrMap().end() ) {
+        std::cerr << "ERROR:  ObjectRoot.subscribe:  unexpected error:  no datamember vector for class \"" << className << "\"" << std::endl;
+        return;
+    }
+    if (  std::find ( dnsItr->second->begin(), dnsItr->second->end(), attributeName ) == dnsItr->second->end()  ) {
+        std::cerr << "ERROR:  ObjectRoot.subscribe:  no datamember named \"" << attributeName << "\" in class \"" << className << "\"" << std::endl;
+        return;
+    }
+    camItr->second->push_back( attributeName );
 }
 
 <%}%>
-	
-<%=isinteraction?"Interaction":"Object"%>Root::SP <%=isinteraction?"Interaction":"Object"%>Root::create_<%=isinteraction?"interaction":"object"%>( int classHandle, const RTI::<%=isinteraction?"Parameter":"Attribute"%>HandleValuePairSet &datamemberMap ) {
-	IntegerStringMap::iterator ismItr = getClassHandleNameMap().find( classHandle );
-	if ( ismItr == getClassHandleNameMap().end() ) {
-		return SP( (<%=isinteraction?"Interaction":"Object"%>Root *)0 );
-	}
-	
-	ClassNameFactoryMap::iterator cfmItr = getClassNameFactoryMap().find( ismItr->second );
-	if ( cfmItr == getClassNameFactoryMap().end() ) {
-		return SP( (<%=isinteraction?"Interaction":"Object"%>Root *)0 );
-	}
-	
-	SP sp = (*cfmItr->second)();
-	sp->set<%=isinteraction?"Parameter":"Attribute"%>s( datamemberMap );
 
-	return sp;
+<%=isinteraction?"Interaction":"Object"%>Root::SP <%=isinteraction?"Interaction":"Object"%>Root::create_<%=isinteraction?"interaction":"object"%>( int classHandle, const RTI::<%=isinteraction?"Parameter":"Attribute"%>HandleValuePairSet &datamemberMap ) {
+    IntegerStringMap::iterator ismItr = getClassHandleNameMap().find( classHandle );
+    if ( ismItr == getClassHandleNameMap().end() ) {
+        return SP( (<%=isinteraction?"Interaction":"Object"%>Root *)0 );
+    }
+    ClassNameFactoryMap::iterator cfmItr = getClassNameFactoryMap().find( ismItr->second );
+    if ( cfmItr == getClassNameFactoryMap().end() ) {
+        return SP( (<%=isinteraction?"Interaction":"Object"%>Root *)0 );
+    }
+    SP sp = (*cfmItr->second)();
+    sp->set<%=isinteraction?"Parameter":"Attribute"%>s( datamemberMap );
+    return sp;
 }
 
 <%=isinteraction?"Interaction":"Object"%>Root::SP <%=isinteraction?"Interaction":"Object"%>Root::create_<%=isinteraction?"interaction":"object"%>( int classHandle, const RTI::<%=isinteraction?"Parameter":"Attribute"%>HandleValuePairSet &datamemberMap, const RTIfedTime &dlc13FedTime ) {
-	IntegerStringMap::iterator ismItr = getClassHandleNameMap().find( classHandle );
-	if ( ismItr == getClassHandleNameMap().end() ) {
-		return SP( (<%=isinteraction?"Interaction":"Object"%>Root *)0 );
-	}
-	
-	ClassNameFactoryMap::iterator cfmItr = getClassNameFactoryMap().find( ismItr->second );
-	if ( cfmItr == getClassNameFactoryMap().end() ) {
-		return SP( (<%=isinteraction?"Interaction":"Object"%>Root *)0 );
-	}
-	
-	SP sp = (*cfmItr->second)();
-	sp->set<%=isinteraction?"Parameter":"Attribute"%>s( datamemberMap );
-	sp->setTime( dlc13FedTime.getTime() );
-
-	return sp;
+    IntegerStringMap::iterator ismItr = getClassHandleNameMap().find( classHandle );
+    if ( ismItr == getClassHandleNameMap().end() ) {
+        return SP( (<%=isinteraction?"Interaction":"Object"%>Root *)0 );
+    }
+    ClassNameFactoryMap::iterator cfmItr = getClassNameFactoryMap().find( ismItr->second );
+    if ( cfmItr == getClassNameFactoryMap().end() ) {
+        return SP( (<%=isinteraction?"Interaction":"Object"%>Root *)0 );
+    }
+    SP sp = (*cfmItr->second)();
+    sp->set<%=isinteraction?"Parameter":"Attribute"%>s( datamemberMap );
+    sp->setTime( dlc13FedTime.getTime() );
+    return sp;
 }
-
 
 <% if(!isinteraction){ %>
 void <%=isinteraction?"Interaction":"Object"%>Root::requestUpdate( RTI::RTIambassador *rti ) {
-	bool requestNotSubmitted = true;
-	while( requestNotSubmitted ) {
-		try {		
-			rti->requestObjectAttributeValueUpdate( getObjectHandle(), getSubscribedAttributeHandleSet_var() );
-			requestNotSubmitted = false;
-		} catch ( RTI::FederateNotExecutionMember & ) {
-			std::cerr << "ERROR: " << getClassName() << "request for update failed:  Federate Not Execution Member" << std::endl;
-			return;				
-		} catch ( RTI::ObjectNotKnown & ) {
-			std::cerr << "ERROR: " << getClassName() << "request for update failed:  Object Not Known" << std::endl;
-			return;				
-		} catch ( RTI::AttributeNotDefined & ) {
-			std::cerr << "ERROR: " << getClassName() << "request for update failed:  Name Not Found" << std::endl;
-			return;				
-		} catch ( ... ) {
-			std::cerr << "ERROR: " << getClassName() << "request for update failed:  Unknown Exception" << std::endl;			}
-	}
+    bool requestNotSubmitted = true;
+    while ( requestNotSubmitted ) {
+        try {        
+            rti->requestObjectAttributeValueUpdate( getObjectHandle(), getSubscribedAttributeHandleSet_var() );
+            requestNotSubmitted = false;
+        } catch ( RTI::FederateNotExecutionMember & ) {
+            std::cerr << "ERROR: " << getClassName() << "request for update failed:  Federate Not Execution Member" << std::endl;
+            return;
+        } catch ( RTI::ObjectNotKnown & ) {
+            std::cerr << "ERROR: " << getClassName() << "request for update failed:  Object Not Known" << std::endl;
+            return;
+        } catch ( RTI::AttributeNotDefined & ) {
+            std::cerr << "ERROR: " << getClassName() << "request for update failed:  Name Not Found" << std::endl;
+            return;
+        } catch ( ... ) {
+            std::cerr << "ERROR: " << getClassName() << "request for update failed:  Unknown Exception" << std::endl;
+        }
+    }
 }
-
-<%}%>
+<%} -%>
 
 void <%=isinteraction?"Interaction":"Object"%>Root::set<%=isinteraction?"Parameter":"Attribute"%>s( const RTI::<%=isinteraction?"Parameter":"Attribute"%>HandleValuePairSet &datamemberMap ) {
-	int size = datamemberMap.size();
-	for( int ix = 0 ; ix < size ; ++ix ) {
-		try {
-			static RTI::ULong valueLength;
-			char *value = datamemberMap.getValuePointer( ix, valueLength );
-			set<%=isinteraction?"Parameter":"Attribute"%>(  datamemberMap.getHandle( ix ), std::string( value, valueLength )  );
-		} catch ( ... ) {
-			std::cerr << "set<%=isinteraction?"Parameter":"Attribute"%>s: Exception caught!" << std::endl;
-		}
-	}
+    int size = datamemberMap.size();
+    for ( int ix = 0 ; ix < size ; ++ix ) {
+        try {
+            static RTI::ULong valueLength;
+            char *value = datamemberMap.getValuePointer( ix, valueLength );
+            set<%=isinteraction?"Parameter":"Attribute"%>(  datamemberMap.getHandle( ix ), std::string( value, valueLength )  );
+        } catch ( ... ) {
+            std::cerr << "set<%=isinteraction?"Parameter":"Attribute"%>s: Exception caught!" << std::endl;
+        }
+    }
 }
 
 <% if(isinteraction){ %>
 void <%=isinteraction?"Interaction":"Object"%>Root::sendInteraction( RTI::RTIambassador *rti, double time ) {
-	bool interactionNotSent = true;
-	while( interactionNotSent ) {
-		try {
-			ParameterHandleValuePairSetSP datamembers = createDatamemberHandleValuePairSet( 0 );
-			rti->sendInteraction(  getClassHandle(), *datamembers, RTIfedTime( time ), 0  );
-			createLog( time, true );
-			interactionNotSent = false;
-		} catch ( RTI::InteractionClassNotDefined & ) {
-			std::cerr << "ERROR:  " << getClassName() << ":  could not send interaction:  Interaction Class Not Defined" << std::endl;
-			return;
-		} catch ( RTI::InteractionClassNotPublished & ) {
-			std::cerr << "ERROR:  " << getClassName() << ":  could not send interaction:  Interaction Class Not Published" << std::endl;
-			return;
-		} catch ( RTI::InteractionParameterNotDefined & ) {
-			std::cerr << "ERROR:  " << getClassName() << ":  could not send interaction:  Interaction Parameter Not Defined" << std::endl;
-			return;
-		} catch ( RTI::InvalidFederationTime & ) {
-			std::cerr << "ERROR:  " << getClassName() << ":  could not send interaction:  Invalid Federation Time" << std::endl;
-			return;
-		} catch ( RTI::FederateNotExecutionMember & ) {
-			std::cerr << "ERROR:  " << getClassName() << ":  could not send interaction:  Federate Not Execution Member" << std::endl;
-			return;
-		} catch ( RTI::ConcurrentAccessAttempted & ) {
-			std::cerr << "ERROR:  " << getClassName() << ":  could not send interaction:  ConcurrentAccessAttempted" << std::endl;
-			return;
-		} catch ( ... ) {
-			std::cerr << "ERROR:  " << getClassName() << ":  could not send interaction:  Exception caught ... retry" << std::endl;
+    bool interactionNotSent = true;
+    while ( interactionNotSent ) {
+        try {
+            ParameterHandleValuePairSetSP datamembers = createDatamemberHandleValuePairSet( 0 );
+            rti->sendInteraction(  getClassHandle(), *datamembers, RTIfedTime( time ), 0  );
+            createLog( time, true );
+            interactionNotSent = false;
+        } catch ( RTI::InteractionClassNotDefined & ) {
+            std::cerr << "ERROR:  " << getClassName() << ":  could not send interaction:  Interaction Class Not Defined" << std::endl;
+            return;
+        } catch ( RTI::InteractionClassNotPublished & ) {
+            std::cerr << "ERROR:  " << getClassName() << ":  could not send interaction:  Interaction Class Not Published" << std::endl;
+            return;
+        } catch ( RTI::InteractionParameterNotDefined & ) {
+            std::cerr << "ERROR:  " << getClassName() << ":  could not send interaction:  Interaction Parameter Not Defined" << std::endl;
+            return;
+        } catch ( RTI::InvalidFederationTime & ) {
+            std::cerr << "ERROR:  " << getClassName() << ":  could not send interaction:  Invalid Federation Time" << std::endl;
+            return;
+        } catch ( RTI::FederateNotExecutionMember & ) {
+            std::cerr << "ERROR:  " << getClassName() << ":  could not send interaction:  Federate Not Execution Member" << std::endl;
+            return;
+        } catch ( RTI::ConcurrentAccessAttempted & ) {
+            std::cerr << "ERROR:  " << getClassName() << ":  could not send interaction:  ConcurrentAccessAttempted" << std::endl;
+            return;
+        } catch ( ... ) {
+            std::cerr << "ERROR:  " << getClassName() << ":  could not send interaction:  Exception caught ... retry" << std::endl;
 #ifdef _WIN32
-			Sleep( 500 );
+            Sleep( 500 );
 #else
-			usleep( 500000 );
+            usleep( 500000 );
 #endif
-		}
-	}
+        }
+    }
 }
 
 void <%=isinteraction?"Interaction":"Object"%>Root::sendInteraction( RTI::RTIambassador *rti ) {
-	bool interactionNotSent = true;
-	while( interactionNotSent ) {
-		try {
-			ParameterHandleValuePairSetSP datamembers = createDatamemberHandleValuePairSet( 0 );
-			rti->sendInteraction(  getClassHandle(), *datamembers, 0  );
-			createLog( 0, true );
-		} catch ( RTI::InteractionClassNotDefined & ) {
-			std::cerr << "ERROR:  " << getClassName() << ":  could not send interaction:  Interaction Class Not Defined" << std::endl;
-			return;
-		} catch ( RTI::InteractionClassNotPublished & ) {
-			std::cerr << "ERROR:  " << getClassName() << ":  could not send interaction:  Interaction Class Not Published" << std::endl;
-			return;
-		} catch ( RTI::InteractionParameterNotDefined & ) {
-			std::cerr << "ERROR:  " << getClassName() << ":  could not send interaction:  Interaction Parameter Not Defined" << std::endl;
-			return;
-		} catch ( RTI::FederateNotExecutionMember & ) {
-			std::cerr << "ERROR:  " << getClassName() << ":  could not send interaction:  Federate Not Execution Member" << std::endl;
-			return;
-		} catch ( RTI::ConcurrentAccessAttempted & ) {
-			std::cerr << "ERROR:  " << getClassName() << ":  could not send interaction:  ConcurrentAccessAttempted" << std::endl;
-			return;
-		} catch ( ... ) {
-			std::cerr << "ERROR:  " << getClassName() << ":  could not send interaction:  Exception caught ... retry" << std::endl;
+    bool interactionNotSent = true;
+    while ( interactionNotSent ) {
+        try {
+            ParameterHandleValuePairSetSP datamembers = createDatamemberHandleValuePairSet( 0 );
+            rti->sendInteraction(  getClassHandle(), *datamembers, 0  );
+            createLog( 0, true );
+        } catch ( RTI::InteractionClassNotDefined & ) {
+            std::cerr << "ERROR:  " << getClassName() << ":  could not send interaction:  Interaction Class Not Defined" << std::endl;
+            return;
+        } catch ( RTI::InteractionClassNotPublished & ) {
+            std::cerr << "ERROR:  " << getClassName() << ":  could not send interaction:  Interaction Class Not Published" << std::endl;
+            return;
+        } catch ( RTI::InteractionParameterNotDefined & ) {
+            std::cerr << "ERROR:  " << getClassName() << ":  could not send interaction:  Interaction Parameter Not Defined" << std::endl;
+            return;
+        } catch ( RTI::FederateNotExecutionMember & ) {
+            std::cerr << "ERROR:  " << getClassName() << ":  could not send interaction:  Federate Not Execution Member" << std::endl;
+            return;
+        } catch ( RTI::ConcurrentAccessAttempted & ) {
+            std::cerr << "ERROR:  " << getClassName() << ":  could not send interaction:  ConcurrentAccessAttempted" << std::endl;
+            return;
+        } catch ( ... ) {
+            std::cerr << "ERROR:  " << getClassName() << ":  could not send interaction:  Exception caught ... retry" << std::endl;
 #ifdef _WIN32
-			Sleep( 500 );
+            Sleep( 500 );
 #else
-			usleep( 500000 );
+            usleep( 500000 );
 #endif
-		}
-	}
+        }
+    }
 }
 
 std::string <%=isinteraction?"Interaction":"Object"%>Root::fedName = "";
@@ -227,103 +220,97 @@ std::string <%=isinteraction?"Interaction":"Object"%>Root::pubLogLevel = "";
 std::string <%=isinteraction?"Interaction":"Object"%>Root::subLogLevel = "";
 
 void InteractionRoot::enablePublishLog( const std::string &interaction, const std::string &fed, const std::string &thislevel, const std::string &globallevel ) {
-	if ( globallevel.empty() ) {
-		return;
-	}
-	if (  _logger->getLogLevel( thislevel ) > _logger->getLogLevel( globallevel )  ) {
-		return;
-	}
-	fedName = fed;
-	enablePubLog = true;
-	pubLogLevel = thislevel;
-	_logger->addLog(interaction, fedName, true);
+    if ( globallevel.empty() ) {
+        return;
+    }
+    if (  _logger->getLogLevel( thislevel ) > _logger->getLogLevel( globallevel )  ) {
+        return;
+    }
+    fedName = fed;
+    enablePubLog = true;
+    pubLogLevel = thislevel;
+    _logger->addLog(interaction, fedName, true);
 }
 
 void InteractionRoot::enableSubscribeLog( const std::string &interaction, const std::string &fed, const std::string &thislevel, const std::string &globallevel ) {
-	if ( globallevel.empty() ) {
-		return;
-	}
-	if (  _logger->getLogLevel( thislevel ) > _logger->getLogLevel( globallevel )  ) {
-		return;
-	}
-	fedName = fed;
-	enableSubLog = true;
-	subLogLevel = thislevel;
-	_logger->addLog( interaction, fedName, false );
+    if ( globallevel.empty() ) {
+        return;
+    }
+    if (  _logger->getLogLevel( thislevel ) > _logger->getLogLevel( globallevel )  ) {
+        return;
+    }
+    fedName = fed;
+    enableSubLog = true;
+    subLogLevel = thislevel;
+    _logger->addLog( interaction, fedName, false );
 }
 
 void <%=isinteraction?"Interaction":"Object"%>Root::createLog( double time, bool isPub ) {
-	if (  ( isPub && !enablePubLog ) || ( !isPub && !enableSubLog )  ) {
-		return;
-	}
-
-	std::string interactionId;
-	if ( isPub ) {
-		interactionId = "pub_" + getClassName();
-		if ( !fedName.empty() ) {
-			interactionId = fedName + "_" + interactionId;
-		}
-	} else {
-		interactionId = getClassName() + "_sub";
-		if ( !fedName.empty() ) {
-			interactionId += "_" + fedName;
-		}
-	}
-	
-	_logger->addLog( interactionId, *this, time, pubLogLevel );
+    if (  ( isPub && !enablePubLog ) || ( !isPub && !enableSubLog )  ) {
+        return;
+    }
+    std::string interactionId;
+    if ( isPub ) {
+        interactionId = "pub_" + getClassName();
+        if ( !fedName.empty() ) {
+            interactionId = fedName + "_" + interactionId;
+        }
+    } else {
+        interactionId = getClassName() + "_sub";
+        if ( !fedName.empty() ) {
+            interactionId += "_" + fedName;
+        }
+    }
+    _logger->addLog( interactionId, *this, time, pubLogLevel );
 }
 
-<%}else{%>
+<%}else{ -%>
 void ObjectRoot::registerObject( RTI::RTIambassador *rti ) {
     
-    while( !_isRegistered ) {
+    while ( !_isRegistered ) {
         try {
             _object_handle = rti->registerObjectInstance( getClassHandle() );
             _isRegistered = true;
         } catch ( RTI::ObjectClassNotDefined & ) {
-        	std::cerr << "ERROR:  InteractionRoot::registerObject:  Object Class Not Defined" << std::endl;
+            std::cerr << "ERROR:  InteractionRoot::registerObject:  Object Class Not Defined" << std::endl;
             return;
         } catch ( RTI::ObjectClassNotPublished & ) {
-        	std::cerr << "ERROR:  InteractionRoot::registerObject:  Object Class Not Published" << std::endl;
+            std::cerr << "ERROR:  InteractionRoot::registerObject:  Object Class Not Published" << std::endl;
             return;
         } catch ( RTI::FederateNotExecutionMember & ) {
-        	std::cerr << "ERROR:  InteractionRoot::registerObject:  Federate Not Execution Member" << std::endl;
+            std::cerr << "ERROR:  InteractionRoot::registerObject:  Federate Not Execution Member" << std::endl;
             return;
         } catch ( ... ) {
-        	std::cerr << "InteractionRoot::registerObject:  Exception caught ... retry" << std::endl;
+            std::cerr << "InteractionRoot::registerObject:  Exception caught ... retry" << std::endl;
         }
     }
-
 }
 
 void ObjectRoot::unregisterObject( RTI::RTIambassador *rti ) {
-    
-    while( _isRegistered ) {
+    while ( _isRegistered ) {
         try {
             rti->deleteObjectInstance( getObjectHandle(), 0 );
             _isRegistered = false;
         } catch ( RTI::ObjectNotKnown & ) {
-        	std::cerr << "ERROR:  InteractionRoot::unregisterObject:  Object Not Known" << std::endl;
+            std::cerr << "ERROR:  InteractionRoot::unregisterObject:  Object Not Known" << std::endl;
             return;
         } catch ( RTI::DeletePrivilegeNotHeld & ) {
-        	std::cerr << "ERROR:  InteractionRoot::unregisterObject:  Delete Privilege Not Held" << std::endl;
+            std::cerr << "ERROR:  InteractionRoot::unregisterObject:  Delete Privilege Not Held" << std::endl;
             return;
         } catch ( RTI::FederateNotExecutionMember & ) {
-        	std::cerr << "ERROR:  InteractionRoot::unregisterObject:  Federate Not Execution Member" << std::endl;
+            std::cerr << "ERROR:  InteractionRoot::unregisterObject:  Federate Not Execution Member" << std::endl;
             return;
         } catch ( ... ) {
-        	std::cerr << "InteractionRoot::unregisterObject:  Exception caught ... retry" << std::endl;
+            std::cerr << "InteractionRoot::unregisterObject:  Exception caught ... retry" << std::endl;
         }
     }
 }
 
 void ObjectRoot::updateAttributeValues( RTI::RTIambassador *rti, double time, bool force ) {
-
     AttributeHandleValuePairSetSP suppliedAttributesSP = createDatamemberHandleValuePairSet( force );
     if ( suppliedAttributesSP->size() == 0 ) {
-    	return;
+        return;
     }
-
     try {
         rti->updateAttributeValues(  getObjectHandle(), *suppliedAttributesSP, RTIfedTime( time ), 0  );
         createLog( time, true );
@@ -351,12 +338,10 @@ void ObjectRoot::updateAttributeValues( RTI::RTIambassador *rti, double time, bo
 }
 
 void ObjectRoot::updateAttributeValues( RTI::RTIambassador *rti, bool force ) {
-
     AttributeHandleValuePairSetSP suppliedAttributesSP = createDatamemberHandleValuePairSet( force );
     if ( suppliedAttributesSP->size() == 0 ) {
-    	return;
+        return;
     }
-
     try {
         rti->updateAttributeValues( getObjectHandle(), *suppliedAttributesSP, 0 );
         createLog( 0, true );
@@ -386,37 +371,34 @@ void ObjectRoot::updateAttributeValues( RTI::RTIambassador *rti, bool force ) {
 std::string ObjectRoot::fedName = "";
 
 void ObjectRoot::enablePublishLog(const std::string &object, const std::string &attribute, const std::string &fed, const std::string &thislevel, const std::string &globallevel) {
-
-	if ( globallevel.empty() ) {
-		return;
-	}
-	if (  _logger->getLogLevel( thislevel ) > _logger->getLogLevel( globallevel )  ) {
-		return;
-	}
-	fedName = fed;
-	getPubAttributeLogMap().insert(  make_pair( attribute, thislevel )  );
-	_logger->addLog( object, attribute, fed, true );
+    if ( globallevel.empty() ) {
+        return;
+    }
+    if (  _logger->getLogLevel( thislevel ) > _logger->getLogLevel( globallevel )  ) {
+        return;
+    }
+    fedName = fed;
+    getPubAttributeLogMap().insert(  make_pair( attribute, thislevel )  );
+    _logger->addLog( object, attribute, fed, true );
 }
 
 void ObjectRoot::enableSubscribeLog( const std::string &object, const std::string &attribute, const std::string &fed, const std::string &thislevel, const std::string &globallevel ) {
-	if ( globallevel.empty() ) {
-		return;
-	}
-	if (  _logger->getLogLevel( thislevel ) > _logger->getLogLevel( globallevel )  ) {
-		return;
-	}
-	fedName = fed;
-	getSubAttributeLogMap().insert(  make_pair( attribute, thislevel )  );
-	_logger->addLog( object, attribute, fed, false );
+    if ( globallevel.empty() ) {
+        return;
+    }
+    if (  _logger->getLogLevel( thislevel ) > _logger->getLogLevel( globallevel )  ) {
+        return;
+    }
+    fedName = fed;
+    getSubAttributeLogMap().insert(  make_pair( attribute, thislevel )  );
+    _logger->addLog( object, attribute, fed, false );
 }
 
 void ObjectRoot::createLog( double time, bool isPub ) {
-
-	if ( getPubAttributeLogMap().empty() ) {
-		return;
-	}
-	std::string id = isPub ? fedName + "_pub_" + getClassName() : getClassName() + "_sub_" + fedName;
-	_logger->addLog( id, *this, time );
+    if ( getPubAttributeLogMap().empty() ) {
+        return;
+    }
+    std::string id = isPub ? fedName + "_pub_" + getClassName() : getClassName() + "_sub_" + fedName;
+    _logger->addLog( id, *this, time );
 }
-
-<%}%>
+<%} %>

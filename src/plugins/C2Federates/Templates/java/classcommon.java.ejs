@@ -1,4 +1,14 @@
-<% /*classcommon(isinteraction,classname,parentclassname,hlaclassname,datamembers,alldatamembers) */ -%>
+<% /*
+input properties
+----------------
+alldatamembers
+classname
+codeclassname
+datamembers
+hlaclassname
+isinteraction
+parentclassname
+*/ -%>
     private static boolean _isInitialized = false;
 
     private static int _handle;
@@ -79,7 +89,7 @@
 
     static {
         _classNameSet.add("<%= hlaclassname %>");
-        _classNameClassMap.put("<%= hlaclassname %>", <%= classname %>.class);
+        _classNameClassMap.put("<%= hlaclassname %>", <%= codeclassname %>.class);
 
         _datamemberClassNameSetMap.put("<%= hlaclassname %>", _datamemberNames);
         _allDatamemberClassNameSetMap.put("<%= hlaclassname %>", _allDatamemberNames);

@@ -1,243 +1,321 @@
-define([
-    'common/util/ejs',
-    'C2Core/MavenPOM',
-    'C2Federates/Templates/Templates'
-], function (
-    ejs,
-    MavenPOM,
-    TEMPLATES
-) {
-
+define
+([
+  'ejs',
+  'C2Core/MavenPOM',
+  'C2Federates/Templates/Templates'],
+ function(ejs,
+          MavenPOM,
+          TEMPLATES)
+ {
     'use strict';
+    var JavaImplFederateExporter;
 
-    var JavaImplFederateExporter = function () {
-        var self = this,
-            implOutFilePath,
-            implOutResPath,
-            implDirSpec,
-            implDirPath;
+/***********************************************************************/
 
-        this.federateTypes = this.federateTypes || {};
-        this.federateTypes['JavaImplFederate'] = {
-            includeInExport: false,
-            longName: 'JavaImplFederate',
-            init: function () {
+/* JavaImplFederateExporter (function-valued variable of top-level function obj)
 
-                if (self.javaImplFedInitDone) {
-                    return;
-                }
+Returned Value: none
 
-                var dirPath = self.projectName + '-java-federates/';
-                implDirSpec = {
-                    federation_name: self.projectName,
-                    artifact_name: "impl",
-                    language: "java"
-                };
+Called By: JavaFederateExporter in JavaFederate.js
 
-                implDirPath = dirPath + ejs.render(self.directoryNameTemplate, implDirSpec);
-                console.log('implDirPath=' + implDirPath);
-                implOutFilePath = implDirPath + MavenPOM.mavenJavaPath;
-                console.log('implOutFilePath=' + implOutFilePath);
+The top-level function returns this function.
 
-                implOutResPath = implDirPath + MavenPOM.mavenResourcePath;
-                console.log('implOutResPath=' + implOutResPath);
-                self.projectName = self.core.getAttribute(self.rootNode, 'name');
+*/
+    
+    JavaImplFederateExporter = function()
+    {
+      var self;
+      var checkBack;
 
-                //Add sim POM generator
-                self.fileGenerators.push(function(artifact, callback){
-                    if(!self.javaPOM){
-                        callback();
-                        return;
-                    }
-                   artifact.addFile( self.javaPOM.directory + '/pom.xml', self._jsonToXml.convertToString( self.javaPOM.toJSON() ), function (err) {
-                        if (err) {
-                            callback(err);
-                            return;
-                        }else{
-                            callback();
-                        }
-                    });
-                });
-                self.javaImplFedInitDone = true;
-            }
-        };
+      self = this;
+      
+/***********************************************************************/
 
-        this.visit_JavaImplFederate = function (node, parent, context) {
-            var self = this,
-                nodeType = self.core.getAttribute(self.getMetaType(node), 'name');
+     checkBack = function(err, callBack)
+      {
+        if (err)
+          {
+            callBack(err);
+            return;
+          }
+        else
+          {
+            callBack();
+          }
+      };
 
-            self.logger.info('Visiting a JavaImplFederate');
+/***********************************************************************/
 
-            if(!self.java_implPOM){
-                self.java_implPOM = new MavenPOM(self.javaPOM);
-                self.java_implPOM.artifactId = ejs.render(self.directoryNameTemplate, implDirSpec);
-                self.java_implPOM.version = self.project_version;
-                self.java_implPOM.packaging = "jar";
-            }
+      this.federateTypes = this.federateTypes || {};
+      this.federateTypes.JavaImplFederate =
+      {includeInExport: false,
+       longName: 'JavaImplFederate',
+       init: function()
+             {
+               if (self.javaImplFedInitDone)
+                 {
+                   return;
+                 }
+               self.projectName = self.core.getAttribute(self.rootNode, 'name');
+               self.javaImplFedInitDone = true;
+             }
+      };
 
-            context['javaimplfedspec'] = self.createJavaImplFederateCodeModel();
-            context['javaimplfedspec']['groupId'] = self.mainPom.groupId.trim();
-            context['javaimplfedspec']['artifactId'] = ejs.render(self.directoryNameTemplate, implDirSpec);
-            context['javaimplfedspec']['projectName'] = self.projectName;
-            context['javaimplfedspec']['projectVersion'] = self.project_version;
-            context['javaimplfedspec']['cpswtVersion'] = self.getCurrentConfig().cpswtVersion;
-            context['javaimplfedspec']['porticoPOM']['artifactId'] = self.porticoPOM.artifactId;
-            context['javaimplfedspec']['porticoPOM']['groupId'] = self.porticoPOM.groupId;
-            context['javaimplfedspec']['porticoPOM']['version'] = self.porticoPOM.version;
-            context['javaimplfedspec']['porticoPOM']['scope'] = self.porticoPOM.scope;
-            context['javaimplfedspec']['classname'] = self.core.getAttribute(node, 'name');
-            context['javaimplfedspec']['simname'] = self.projectName;
-            context['javaimplfedspec']['configFile'] = self.core.getAttribute(node, 'name') + 'Config.json';
-            context['javaimplfedspec']['timeconstrained'] = self.core.getAttribute(node, 'TimeConstrained');
-            context['javaimplfedspec']['timeregulating'] = self.core.getAttribute(node, 'TimeRegulating');
-            context['javaimplfedspec']['lookahead'] = self.core.getAttribute(node, 'Lookahead');
-            context['javaimplfedspec']['step'] = self.core.getAttribute(node, 'Step');
-            context['javaimplfedspec']['asynchronousdelivery'] = self.core.getAttribute(node, 'EnableROAsynchronousDelivery');
-            context['javaimplfedspec']['bindAddress'] = self.getCurrentConfig().bindAddress.trim();
+/***********************************************************************/
 
-            self.javafederateName[self.core.getPath(node)] = self.core.getAttribute(node, 'name');
+/* visit_JavaImplFederate
 
-            self.federates[self.core.getPath(node)] = context['javaimplfedspec'];
+Returned Value: a "{context: context}" object
 
-            return {
-                context: context
-            };
-        };
+Called By: visit_JavaFederate (in JavaFederate.js)
 
-        this.post_visit_JavaImplFederate = function (node, context) {
-            var self = this,
-                renderContext = context['javaimplfedspec']
-                
+*/
 
-            var fedPathDir = implDirPath + "/" + self.core.getAttribute(node, 'name')        
-            var outFileName = fedPathDir + MavenPOM.mavenJavaPath + "/"+renderContext['simname'] + "/" + self.core.getAttribute(node, 'name') + ".java"
+      this.visit_JavaImplFederate = function(node, parent, context)
+      {
+        var self;
+        var nodeType;
+        var fedspec;
+         
+        self = this;
+        nodeType = self.core.getAttribute(self.getMetaType(node), 'name');
+        fedspec = self.createJavaImplFederateCodeModel();
+        context.javaimplfedspec = fedspec;
+        fedspec.groupId = self.getCurrentConfig().groupId.trim();
+        fedspec.projectName = self.projectName;
+        fedspec.projectVersion = self.project_version;
+        fedspec.cpswtVersion = self.getCurrentConfig().cpswtVersion;
+        fedspec.snapshotUrl = self.getCurrentConfig().repositoryUrlSnapshot;
+        fedspec.releaseUrl = self.getCurrentConfig().repositoryUrlRelease;
+        fedspec.porticoPOM.artifactId = self.porticoPOM.artifactId;
+        fedspec.porticoPOM.groupId = self.porticoPOM.groupId;
+        fedspec.porticoPOM.version = self.porticoPOM.version;
+        fedspec.porticoPOM.scope = self.porticoPOM.scope;
+        fedspec.classname = self.core.getAttribute(node, 'name');
+        fedspec.jarfile =
+           fedspec.classname + '-' + fedspec.projectVersion + '.jar';
+        fedspec.simname = self.projectName;
+        fedspec.configFile = self.core.getAttribute(node, 'name') + '.json';
+        fedspec.timeconstrained =
+           self.core.getAttribute(node, 'TimeConstrained');
+        fedspec.timeregulating =
+           self.core.getAttribute(node, 'TimeRegulating');
+        fedspec.lookahead = self.core.getAttribute(node, 'Lookahead');
+        fedspec.step = self.core.getAttribute(node, 'Step');
+        fedspec.asynchronousdelivery =
+           self.core.getAttribute(node, 'EnableROAsynchronousDelivery');
+        fedspec.bindAddress = self.getCurrentConfig().bindAddress.trim();
+        self.javafederateName[self.core.getPath(node)] =
+           self.core.getAttribute(node, 'name');
+         self.federates[self.core.getPath(node)] = fedspec;
+         return {context: context};
+       };
 
-            // set the SOM.xml outpit directory
-            var feder = self.federateInfos[self.core.getPath(node)];
-            if (feder) {
-                feder.directory = fedPathDir + "/conf/";
-            }
+/***********************************************************************/
 
-            renderContext['allobjectdata'] = renderContext['publishedobjectdata'].concat(renderContext['subscribedobjectdata']);
-            renderContext['allinteractiondata'] = renderContext['publishedinteractiondata'].concat(renderContext['subscribedinteractiondata']);
+/* post_visit_JavaImplFederate
 
-            //Add impl POM from template
-            self.fileGenerators.push(function (artifact, callback) {
-                self.logger.debug('Rendering template to file: ' + implDirPath + '/pom.xml');
+Returned Value: an object with a context property whose value is the
+context argument.
 
-                //artifact.addFile(fedPathDir + "/"+'pom.xml', ejs.render(TEMPLATES['java/federateimpl_pom.xml.ejs'], renderContext), function (err) {
-                artifact.addFile(fedPathDir + "/"+'pom.xml', ejs.render(TEMPLATES['java/federateimpl_uberpom.xml.ejs'], renderContext), function (err) {
-                    if (err) {
-                        callback(err);
-                        return;
-                    } else {
-                        callback();
-                    }
-                });
-            });
+Called By: post_visit_JavaFederate (in JavaFederate.js)
 
-            self.fileGenerators.push(function (artifact, callback) {
+This modifies context.javaimplfedspec (aliased to renderContext) and
+builds six file generators. The code string in five of the file
+generators is built using renderContext.
 
-                self.logger.debug('Rendering template to file: ' + context['javafedspec']['outFileName']);
+*/
+      this.post_visit_JavaImplFederate = function(node, context)
+      {
+        var self;
+        var renderContext;
+        var fedPathDir;
+        var outFileName;
+        var feder;
+        var groupPath;
+         
+        self = this;
+        groupPath = self.getCurrentConfig().groupId.trim().replace(/[.]/g, '/');
+        renderContext = context.javaimplfedspec;
+        fedPathDir = self.core.getAttribute(node, 'name');
+        outFileName = fedPathDir + '/src/main/java/' + groupPath + '/' +
+                      self.core.getAttribute(node, 'name').toLowerCase() +
+                      '/' + self.core.getAttribute(node, 'name') + '.java';
+        // set the SOM.xml output directory
+        feder = self.federateInfos[self.core.getPath(node)];
+        if (feder)
+          {
+            feder.directory = fedPathDir + '/conf/';
+          }
+        renderContext.allobjectdata = renderContext.publishedobjectdata.
+                                  concat(renderContext.subscribedobjectdata);
+        renderContext.allinteractiondata =
+            renderContext.publishedinteractiondata.
+               concat(renderContext.subscribedinteractiondata);
 
-                renderContext.moduleCollection.push(renderContext.classname);
-                renderContext['publishedinteractiondata'] = context['javaimplfedspec']['publishedinteractiondata'];
-                renderContext['publishedobjectdata'] = context['javaimplfedspec']['publishedobjectdata'];
+/***********************************************************************/
 
-                artifact.addFile(context['javafedspec']['outFileName'], ejs.render(TEMPLATES['java/federatebase.java.ejs'], renderContext), function (err) {
-                    if (err) {
-                        callback(err);
-                        return;
-                    } else {
-                        callback();
-                    }
-                });
-            });
+        //Add impl POM from template
+        self.fileGenerators.push(function(artifact, callback)
+        {
+          var xmlCode;
+          var fullPath;
+          var template;
 
-            self.fileGenerators.push(function (artifact, callback) {
+          fullPath = fedPathDir + '/' + 'pom.xml';
+          template = TEMPLATES['java/federateimpl_uberpom.xml.ejs'];
+          xmlCode = ejs.render(template, renderContext);
+          self.logger.info('calling addFile for ' + fullPath + ' in post_' +
+                           'visit_JavaImplFederate of JavaImplFederate.js');
+          artifact.addFile(fullPath, xmlCode,
+                           function(err) {checkBack(err, callback);});
+        });
 
-                self.logger.debug('Rendering template to file: ' + outFileName);
+/***********************************************************************/
 
-                artifact.addFile(outFileName, ejs.render(TEMPLATES['java/federateimpl.java.ejs'], renderContext), function (err) {
-                    if (err) {
-                        callback(err);
-                        return;
-                    } else {
-                        callback();
-                    }
-                });
-            });
+/*
 
-            //Add federate RTi.rid file
-            self.fileGenerators.push(function (artifact, callback) {
-                artifact.addFile(fedPathDir + '/RTI.rid', ejs.render(TEMPLATES['java/rti.rid.ejs'], renderContext), function (err) {
-                    if (err) {
-                        callback(err);
-                        return;
-                    } else {
-                        callback();
-                    }
-                });
-            });
+This prints files with names of the form <federateName>Base.java
 
-            //Add federate config file
-            self.fileGenerators.push(function (artifact, callback) {
-                artifact.addFile(fedPathDir + '/conf/' + renderContext.configFile, ejs.render(TEMPLATES['java/federate-config.json.ejs'], renderContext), function (err) {
-                    if (err) {
-                        callback(err);
-                        return;
-                    } else {
-                        callback();
-                    }
-                });
-            });
+The file name (in context.javafedspec.outFileName) is constructed
+in the post_visit_JavaFederate function in JavaFederate.js.
 
-            //Add impl log config from template
-            self.fileGenerators.push(function (artifact, callback) {
-                artifact.addFile(fedPathDir + '/conf/log4j2.xml', ejs.render(TEMPLATES['java/log4j2.xml.ejs'], self), function (err) {
-                    if (err) {
-                        callback(err);
-                        return;
-                    } else {
-                        callback();
-                    }
-                });
-            });
+*/
+        self.fileGenerators.push(function(artifact, callback)
+        {
+          var javaCode;
+          var template;
+          var fullPath;
 
-            return {
-                context: context
-            };
-        };
+          fullPath = context.javafedspec.outFileName;
+          renderContext.moduleCollection.push(renderContext.classname);
+          template = TEMPLATES['java/federatebase.java.ejs'];
+          javaCode = ejs.render(template, renderContext);
+          self.logger.info('calling addFile for ' + fullPath + ' in post_' +
+                           'visit_JavaImplFederate of JavaImplFederate.js');
+          artifact.addFile(fullPath, javaCode,
+                           function(err) {checkBack(err, callback);});
+        });
 
-        this.postAllVisits = function(context) {
+/***********************************************************************/
 
-            self.fileGenerators.push(function (artifact, callback) {
-                if (!context.federates) {
-                    callback();
-                    return;
-                }
-                context["artifactId"]= ejs.render(self.directoryNameTemplate, implDirSpec);
-                artifact.addFile(implDirPath + '/pom.xml', ejs.render(TEMPLATES['java/federateimpl_pom.xml.ejs'], context), function (err) {
-                    if (err) {
-                        callback(err);
-                        return;
-                    } else {
-                        callback();
-                    }
-                });
-            });
+        self.fileGenerators.push(function(artifact, callback)
+        {
+          var javaCode;
+          var template;
+          var fullPath;
 
-             return {
-                context: context
-            };      
-        };
+          fullPath = outFileName;
+          template = TEMPLATES['java/federateimpl.java.ejs'];
+          javaCode = ejs.render(template, renderContext);
+          self.logger.info('calling addFile for ' + fullPath + ' in post_' +
+                           'visit_JavaImplFederate of JavaImplFederate.js');
+          artifact.addFile(outFileName, javaCode,
+                           function(err) {checkBack(err, callback);});
+        });
 
+/***********************************************************************/
 
-        this.createJavaImplFederateCodeModel = function () {
-            return {
-                simname: "",
+        //Add federate build script
+        self.fileGenerators.push(function(artifact, callback)
+        {
+          var bashScript;
+          var fullPath;
+          var template;
+
+          fullPath = fedPathDir + '/build.sh';
+          template = TEMPLATES['java/mvn-install.sh.ejs'];
+          bashScript = ejs.render(template, renderContext);
+          self.logger.info('calling addFile for ' + fullPath + ' in post_' +
+                           'visit_JavaImplFederate of JavaImplFederate.js');
+          artifact.addFile(fullPath, bashScript,
+                           function(err) {checkBack(err, callback);});
+        });
+
+/***********************************************************************/
+
+        //Add federate run script
+        self.fileGenerators.push(function(artifact, callback)
+        {
+          var bashScript;
+          var fullPath;
+          var template;
+
+          fullPath = fedPathDir + '/run.sh';
+          template = TEMPLATES['java/java-run.sh.ejs'];
+          bashScript = ejs.render(template, renderContext);
+          self.logger.info('calling addFile for ' + fullPath + ' in post_' +
+                           'visit_JavaImplFederate of JavaImplFederate.js');
+          artifact.addFile(fullPath, bashScript,
+                           function(err) {checkBack(err, callback);});
+        });
+
+/***********************************************************************/
+
+        //Add federate RTI.rid file
+        self.fileGenerators.push(function(artifact, callback)
+        {
+          var rtiCode;
+          var fullPath;
+          var template;
+
+          fullPath = fedPathDir + '/RTI.rid';
+          template = TEMPLATES['java/rti.rid.ejs'];
+          rtiCode = ejs.render(template, renderContext);
+          self.logger.info('calling addFile for ' + fullPath + ' in post_' +
+                           'visit_JavaImplFederate of JavaImplFederate.js');
+          artifact.addFile(fullPath, rtiCode,
+                           function(err) {checkBack(err, callback);});
+        });
+
+/***********************************************************************/
+
+        //Add federate config file
+        self.fileGenerators.push(function(artifact, callback)
+        {
+          var jsonCode;
+          var fullPath;
+          var template;
+
+          fullPath = fedPathDir + '/conf/' + renderContext.configFile;
+          template = TEMPLATES['java/federate-config.json.ejs'];
+          jsonCode = ejs.render(template, renderContext);
+          self.logger.info('calling addFile for ' + fullPath + ' in post_' +
+                           'visit_JavaImplFederate of JavaImplFederate.js');
+          artifact.addFile(fullPath, jsonCode,
+                           function(err) {checkBack(err, callback);});
+        });
+
+/***********************************************************************/
+
+        //Add impl log config from template
+        self.fileGenerators.push(function(artifact, callback)
+        {
+          var xmlCode;
+          var fullPath;
+          var template;
+
+          fullPath = fedPathDir + '/conf/log4j2.xml';
+          template = TEMPLATES['java/log4j2.xml.ejs']
+          xmlCode = ejs.render(template, self);
+          self.logger.info('calling addFile for ' + fullPath + ' in post_' +
+                           'visit_JavaImplFederate of JavaImplFederate.js');
+          artifact.addFile(fullPath, xmlCode,
+                           function(err) {checkBack(err, callback);});
+        });
+
+/***********************************************************************/
+
+        return {context: context}; // context object does not appear used
+      }; // end of post_visit_JavaImplFederate function
+
+/***********************************************************************/
+
+      this.createJavaImplFederateCodeModel = function()
+      {
+        return {simname: '',
                 melderpackagename: null,
-                classname: "",
+                classname: '',
                 isnonmapperfed: true,
                 timeconstrained: false,
                 timeregulating: false,
@@ -253,12 +331,15 @@ define([
                 helpers: {},
                 ejs: ejs,
                 moduleCollection: [],
-                TEMPLATES: TEMPLATES
-            };
-        }
-        this.javaImplCodeModel = this.createJavaImplFederateCodeModel();
+                TEMPLATES: TEMPLATES};
+      }
 
-    }
+/***********************************************************************/
+
+      this.javaImplCodeModel = this.createJavaImplFederateCodeModel();
+    } // end of JavaImplFederateExporter function
+
+/***********************************************************************/
 
     return JavaImplFederateExporter;
-});
+ }); // end define
