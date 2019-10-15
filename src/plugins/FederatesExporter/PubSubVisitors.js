@@ -32,7 +32,7 @@ The "this" above is either the FederatesExporter function in
 FederatesExporter.js or the DeploymentExporter function in
 DeploymentExporter.js.
 
-The first four of these functions are called in the atModelNode function
+These functions are called in the atModelNode function
 of ModelTraverserMixin.js (at ret = ...).  The "parent"
 argument is not used in any of the functions, but is needed to be a
 placeholder in the arguments. All of the visit_XXX functions (many of
@@ -40,9 +40,15 @@ which are defined elsewhere but are called from atModelNode) take the
 arguments (node, parent, context). They are called by constructing
 the name by concatenating 'visit_' with the name of the type of node.
 
-It is not clear whether the last two functions are used anywhere. They
-are not called in running the FederatesExporter in the SOMGeneration
-project or the SOMGenerationWithObjects project.
+The last two functions are called in (at least) the deployment exporter
+if there are crosscuts.
+
+The createMessage function is defined in cpswt-meta/node_modules/webgme/
+node_modules/webgme-engine/src/plugin/PluginBase.js . When createMessage
+runs it packages the message (its second argument) inside a larger
+pluginMessage along with other data and then does
+    this.result.addMessage(pluginMessage);
+which apparently just adds a message for the user to the result.
 
 */
 
@@ -50,11 +56,12 @@ define
 ([],
  function()
  {
-   'use strict';
+    'use strict';
+    var PubSubVisitors;
+    
     console.log("beginning of function in 'define' in PubSubVisitors.js");
     console.log("defining PubSubVisitors function");
-
-    var PubSubVisitors = function()
+    PubSubVisitors = function()
     {
       console.log("executing PubSubVisitors");
 
@@ -69,20 +76,28 @@ Called By: See notes at top.
 
 This processes data for a StaticInteractionPublish.
 
-Where the entry for the interaction is made in pubSubInteractions, a
-check is made whether there is already an entry, because it may have
-been created in visit_StaticInteractionSubscribe.
+Where the entry for the interaction is made in pubSubInts, a check is
+made whether there is already an entry, because it may have been
+created in visit_StaticInteractionSubscribe.
 
 */
       console.log("defining this.visit_StaticInteractionPublish");
-      this.visit_StaticInteractionPublish = function(node, parent, context)
+      this.visit_StaticInteractionPublish =
+      function( /* ARGUMENTS                                      */
+       node,    /* (webgme node) a StaticInteractionPublish node  */
+       parent,  /* (webgme node)? not used                        */
+       context) /* (object)                                       */
       {
-        var self = this,
-            publication = {interaction: self.core.getPointerPath(node,'dst'),
-                           federate: self.core.getPointerPath(node,'src')},
-            nodeAttrNames = self.core.getAttributeNames(node);
+        var self = this;
+        var publication = {interaction: self.core.getPointerPath(node,'dst'),
+                           federate: self.core.getPointerPath(node,'src')};
+        var nodeAttrNames = self.core.getAttributeNames(node);
+        var pubSubInts = 0;
+        var federateInfo;
+        var i;
+        
         console.log("executing visit_StaticInteractionPublish");
-        if (!publication.interaction )
+        if (!publication.interaction)
           {
             self.createMessage(node,
                  '[ERROR] Invalid dst pointer in StaticInteractionPublish!',
@@ -93,21 +108,39 @@ been created in visit_StaticInteractionSubscribe.
             self.createMessage(node,
                  '[ERROR] Invalid src pointer in StaticInteractionPublish!',
                                'error');
-	  }
-	if (self.pubSubInteractions)
-	  { //only FederatesExporter has pubSubInteractions
-	    if (publication.interaction in self.pubSubInteractions)
-	      {
-		self.pubSubInteractions[publication.interaction].publish = 1;
-	      }
-	    else
-	      {
-		self.pubSubInteractions[publication.interaction] =
-		{publish: 1,
-		 subscribe: 0};
-	      }
-	  }
-        for ( var i = 0; i < nodeAttrNames.length; i += 1 )
+          }
+        if (self.pubSubInteractions)
+          { // only DeploymentExporter has pubSubInteractions
+            pubSubInts = self.pubSubInteractions;
+          }
+        
+        else if (self.federateInfos)
+          { // only FederatesExporter has federateInfos
+            federateInfo = self.federateInfos[publication.federate];
+            if (!federateInfo)
+              {
+                self.federateInfos[publication.federate] =
+                  {name: null,
+                   directory: null,
+                   pubSubObjects: {},
+                   pubSubInteractions: {}};
+                federateInfo = self.federateInfos[publication.federate];
+              }
+            pubSubInts = federateInfo.pubSubInteractions;
+          }
+        if (pubSubInts)
+          { // for both DeploymentExporter and FederatesExporter
+            if (publication.interaction in pubSubInts)
+              {
+                pubSubInts[publication.interaction].publish = 1;
+              }
+            else
+              {
+                pubSubInts[publication.interaction] = {publish: 1,
+                                                       subscribe: 0};
+              }
+          }
+        for (i = 0; i < nodeAttrNames.length; i += 1)
           {
             publication[nodeAttrNames[i]] =
               self.core.getAttribute( node, nodeAttrNames[i]);
@@ -143,19 +176,26 @@ This processes data for a StaticInteractionSubscribe.
 
 Where the entry for the interaction is made in pubSubInteractions, a
 check is made whether there is already an entry, because it may have
-been created in visit_StaticInteractionPublish.
+been created in another visit_XXX function
 
 */
       console.log("defining this.visit_StaticInteractionSubscribe");
-      this.visit_StaticInteractionSubscribe = function(node, parent, context)
+      this.visit_StaticInteractionSubscribe =
+      function( /* ARGUMENTS                                       */
+       node,    /* (webgme node) a StaticInteractionSubscribe node */
+       parent,  /* (webgme node)? not used                         */
+       context) /* (object)                                        */
       {
-        var self = this,
-        subscription = {interaction: self.core.getPointerPath(node,'src'),
-                        federate: self.core.getPointerPath(node,'dst')},
-        nodeAttrNames = self.core.getAttributeNames(node);
-
+        var self = this;
+        var subscription = {interaction: self.core.getPointerPath(node,'src'),
+                            federate: self.core.getPointerPath(node,'dst')};
+        var nodeAttrNames = self.core.getAttributeNames(node);
+        var pubSubInts = 0;
+        var federateInfo;
+        var i;
+        
       console.log("executing visit_StaticInteractionSubscribe");
-        if (!subscription.interaction )
+        if (!subscription.interaction)
           {
             self.createMessage(node,
                  '[ERROR] Invalid src pointer in StaticInteractionSubscribe!',
@@ -167,20 +207,37 @@ been created in visit_StaticInteractionPublish.
                  '[ERROR] Invalid dst pointer in StaticInteractionSubscribe!',
                                'error');
           }
-	if (self.pubSubInteractions)
-	  { //only FederatesExporter has pubSubInteractions
-	    if (subscription.interaction in self.pubSubInteractions)
-	      {
-		self.pubSubInteractions[subscription.interaction].subscribe = 1;
-	      }
-	    else
-	      {
-		self.pubSubInteractions[subscription.interaction] =
-		{publish: 0,
-		 subscribe: 1};
-	      }
-	  }
-        for ( var i = 0; i < nodeAttrNames.length; i += 1 )
+        if (self.pubSubInteractions)
+          { // only DeploymentExporter has pubSubInteractions
+            pubSubInts = self.pubSubInteractions;
+          }
+        else if (self.federateInfos)
+          { // only FederatesExporter has federateInfos
+            federateInfo = self.federateInfos[subscription.federate];
+            if (!federateInfo)
+              {
+                self.federateInfos[subscription.federate] =
+                  {name: null,
+                   directory: null,
+                   pubSubObjects: {},
+                   pubSubInteractions: {}};
+                federateInfo = self.federateInfos[subscription.federate];
+              }
+            pubSubInts = federateInfo.pubSubInteractions;
+          }
+        if (pubSubInts)
+          { // for both DeploymentExporter and FederatesExporter
+            if (subscription.interaction in pubSubInts)
+              {
+                pubSubInts[subscription.interaction].subscribe = 1;
+              }
+            else
+              {
+                pubSubInts[subscription.interaction] = {publish: 0,
+                                                        subscribe: 1};
+              }
+          }
+        for (i = 0; i < nodeAttrNames.length; i += 1)
           {
             subscription[nodeAttrNames[i]] =
             self.core.getAttribute(node, nodeAttrNames[i]);
@@ -230,19 +287,26 @@ This processes data for a StaticObjectPublish.
 
 Where the entry for the object is made in pubSubObjects, a check is
 made whether there is already an entry, because it may have been
-created in visit_StaticObjectSubscribe.
+created in another visit_XXX function.
 
 */
       console.log("defining this.visit_StaticObjectPublish");
-      this.visit_StaticObjectPublish = function(node, parent, context)
+      this.visit_StaticObjectPublish =
+      function( /* ARGUMENTS                                */
+       node,    /* (webgme node) a StaticObjectPublish node */
+       parent,  /* (webgme node)? not used                  */
+       context) /* (object)                                 */
       {
-        var self = this,
-        publication = {object: self.core.getPointerPath(node,'dst'),
-                       federate: self.core.getPointerPath(node,'src')},
-        nodeAttrNames = self.core.getAttributeNames(node);
-
-	console.log("executing visit_StaticObjectPublish");
-        if (!publication.object )
+        var self = this;
+        var publication = {object: self.core.getPointerPath(node,'dst'),
+                           federate: self.core.getPointerPath(node,'src')};
+        var nodeAttrNames = self.core.getAttributeNames(node);
+        var pubSubObjs = 0;
+        var federateInfo;
+        var i;
+        
+        console.log("executing visit_StaticObjectPublish");
+        if (!publication.object)
           {
             self.createMessage(node,
                  '[ERROR] Invalid dst pointer in StaticObjectPublish!',
@@ -254,19 +318,40 @@ created in visit_StaticObjectSubscribe.
                  '[ERROR] Invalid src pointer in StaticObjectPublish!',
                                'error');
           }
-	if (self.pubSubObjects)
-	  {// only FederatesExporter has pubSubObjects
-	    if (publication.object in self.pubSubObjects) //added
-	      {
-		self.pubSubObjects[publication.object].publish = 1;
-	      }
-	    else
-	      {
-		self.pubSubObjects[publication.object] = {publish: 1,
-							  subscribe: 0};
-	      }
-	  }
-        for ( var i = 0; i < nodeAttrNames.length; i += 1 )
+        if (self.pubSubObjects)
+          { // only DeploymentExporter has pubSubObjects
+            pubSubObjs = self.pubSubObjects;
+          }
+        else if (self.federateInfos)
+          { // only FederatesExporter has federateInfos
+            federateInfo = self.federateInfos[publication.federate];
+            if (!federateInfo)
+              {
+                self.federateInfos[publication.federate] =
+                  {name: null,
+                   directory: null,
+                   pubSubObjects: {},
+                   pubSubInteractions: {}};
+                federateInfo = self.federateInfos[publication.federate];
+              }
+            pubSubObjs = federateInfo.pubSubObjects;
+          }
+        if (pubSubObjs)
+          { // for both DeploymentExporter and FederatesExporter
+            if (publication.object in pubSubObjs)
+              {
+                pubSubObjs[publication.object].publish = 1;
+                pubSubObjs[publication.object].mayPublish = 1;
+              }
+            else
+              {
+                pubSubObjs[publication.object] = {publish: 1,
+                                                  mayPublish: 1,
+                                                  subscribe: 0,
+                                                  maySubscribe: 0};
+              }
+          }
+        for (i = 0; i < nodeAttrNames.length; i += 1)
           {
             publication[nodeAttrNames[i]] =
             self.core.getAttribute( node, nodeAttrNames[i]);
@@ -312,19 +397,26 @@ This processes data for a StaticObjectSubscribe.
 
 Where the entry for the object is made in pubSubObjects, a check is
 made whether there is already an entry, because it may have been
-created in visit_StaticObjectPublish.
+created in another visit_XXX function.
 
 */
       console.log("defining this.visit_StaticObjectSubscribe");
-      this.visit_StaticObjectSubscribe = function(node, parent, context)
+      this.visit_StaticObjectSubscribe =
+      function( /* ARGUMENTS                                  */
+       node,    /* (webgme node) a StaticObjectSubscribe node */
+       parent,  /* (webgme node)? not used                    */
+       context) /* (object)                                   */
       {
-        var self = this,
-            subscription = {object: self.core.getPointerPath(node,'src'),
-                            federate: self.core.getPointerPath(node,'dst')},
-            nodeAttrNames = self.core.getAttributeNames(node);
-
-	console.log("executing visit_StaticObjectSubscribe");
-        if (!subscription.object )
+        var self = this;
+        var subscription = {object: self.core.getPointerPath(node,'src'),
+                            federate: self.core.getPointerPath(node,'dst')};
+        var nodeAttrNames = self.core.getAttributeNames(node);
+        var pubSubObjs = 0;
+        var federateInfo;
+        var i;
+        
+        console.log("executing visit_StaticObjectSubscribe");
+        if (!subscription.object)
           {
             self.createMessage(node,
                  '[ERROR] Invalid src pointer in StaticObjectSubscribe!',
@@ -336,19 +428,40 @@ created in visit_StaticObjectPublish.
                  '[ERROR] Invalid dst pointer in StaticObjectSubscribe!',
                                'error');
           }
-	if (self.pubSubObjects)
-	  {// only FederatesExporter has pubSubObjects
-	    if (subscription.object in self.pubSubObjects)
-	      {
-		self.pubSubObjects[subscription.object].subscribe = 1;
-	      }
-	    else
-	      {
-		self.pubSubObjects[subscription.object] = {publish: 0,
-							   subscribe: 1};
-	      }
-	  }
-        for ( var i = 0; i < nodeAttrNames.length; i += 1 )
+        if (self.pubSubObjects)
+          { // only DeploymentExporter has pubSubObjects
+            pubSubObjs = self.pubSubObjects;
+          }
+        else if (self.federateInfos)
+          { // only FederatesExporter has federateInfos
+            federateInfo = self.federateInfos[subscription.federate];
+            if (!federateInfo)
+              {
+                self.federateInfos[subscription.federate] =
+                  {name: null,
+                   directory: null,
+                   pubSubObjects: {},
+                   pubSubInteractions: {}};
+                federateInfo = self.federateInfos[subscription.federate];
+              }
+            pubSubObjs = federateInfo.pubSubObjects;
+          }
+        if (pubSubObjs)
+          { // for both DeploymentExporter and FederatesExporter
+            if (subscription.object in pubSubObjs)
+              {
+                pubSubObjs[subscription.object].subscribe = 1;
+                pubSubObjs[subscription.object].maySubscribe = 1;
+              }
+            else
+              {
+                pubSubObjs[subscription.object] = {publish: 0,
+                                                   mayPublish: 0,
+                                                   subscribe: 1,
+                                                   maySubscribe: 1};
+              }
+          }
+        for (i = 0; i < nodeAttrNames.length; i += 1)
           {
             subscription[nodeAttrNames[i]] =
             self.core.getAttribute(node, nodeAttrNames[i]);
@@ -383,27 +496,48 @@ created in visit_StaticObjectPublish.
 
 /***********************************************************************/
 
+/* this.visit_StaticObjectAttributePublish
+
+Returned Value: a context object whose context property is the context
+  argument, possibly with data added.
+
+Called By: See notes at top.
+
+This processes data for a StaticObjectAttributePublish.
+
+Where the entry for the object is made in pubSubObjects, a check is
+made whether there is already an entry, because it may have been
+created in another visit_XXX function.
+
+*/
       console.log("defining this.visit_StaticObjectAttributePublish");
       this.visit_StaticObjectAttributePublish =
-      function(node, parent, context)
+      function( /* ARGUMENTS                                         */
+       node,    /* (webgme node) a StaticObjectAttributePublish node */
+       parent,  /* (webgme node)? not used                           */
+       context) /* (object)                                          */
       {
-        var self = this,
-        publication =
+        var self = this;
+        var publication =
           {object:
              self.calculateParentPath(self.core.getPointerPath(node,'dst')),
            attribute: self.core.getPointerPath(node,'dst'),
            federate: self.core.getPointerPath(node,'src')
-          },
-        nodeAttrNames = self.core.getAttributeNames(node);
-	console.log("executing visit_StaticObjectAttributeSubscribe");
+          };
+        var nodeAttrNames = self.core.getAttributeNames(node);
+        var pubSubObjs = 0;
+        var federateInfo;
+        var i;
+        
+        console.log("executing visit_StaticObjectAttributePublish");
 
-        if (!publication.object )
+        if (!publication.object)
           {
             self.createMessage(node,
                 '[ERROR] Invalid dst pointer in StaticObjectAttributePublish!',
                                'error');
           }
-        if (!publication.attribute )
+        if (!publication.attribute)
           {
             self.createMessage(node,
                 '[ERROR] Invalid dst pointer in StaticObjectAttributePublish!',
@@ -415,7 +549,40 @@ created in visit_StaticObjectPublish.
                 '[ERROR] Invalid src pointer in StaticObjectAttributePublish!',
                                'error');
           }
-        for (var i = 0; i < nodeAttrNames.length; i++)
+        if (self.pubSubObjects)
+          { // only DeploymentExporter has pubSubObjects
+            pubSubObjs = self.pubSubObjects;
+          }
+        else if (self.federateInfos)
+          { // only FederatesExporter has federateInfos
+            federateInfo = self.federateInfos[publication.federate];
+            if (!federateInfo)
+              {
+                self.federateInfos[publication.federate] =
+                  {name: null,
+                   directory: null,
+                   pubSubObjects: {},
+                   pubSubInteractions: {}};
+                federateInfo = self.federateInfos[publication.federate];
+              }
+            pubSubObjs = federateInfo.pubSubObjects;
+          }
+        if (pubSubObjs)
+          { // for both DeploymentExporter and FederatesExporter
+            if (publication.object in pubSubObjs)
+              {
+                pubSubObjs[publication.object].publish = 1;
+                pubSubObjs[publication.object].mayPublish = 1;
+              }
+            else
+              {
+                pubSubObjs[publication.object] = {publish: 1,
+                                                  mayPublish: 1,
+                                                  subscribe: 0,
+                                                  maySubscribe: 0};
+              }
+          }
+        for (i = 0; i < nodeAttrNames.length; i++)
           {
             publication[nodeAttrNames[i]] =
             self.core.getAttribute( node, nodeAttrNames[i]);
@@ -423,6 +590,8 @@ created in visit_StaticObjectPublish.
         publication['handler'] = function(federate, object)
         {
           var objectdata = {name: object.name,
+	                    fullName: object.fullName,
+                            parameters: object.parameters,
                             publishedLoglevel: publication['LogLevel'],
                             publishedAttributeData: [],
                             logPublishedAttributeData: []};
@@ -462,26 +631,47 @@ created in visit_StaticObjectPublish.
 
 /***********************************************************************/
 
+/* this.visit_StaticObjectAttributeSubscribe
+
+Returned Value: a context object whose context property is the context
+  argument, possibly with data added.
+
+Called By: See notes at top.
+
+This processes data for a StaticObjectAttributeSubscribe.
+
+Where the entry for the object is made in pubSubObjects, a check is
+made whether there is already an entry, because it may have been
+created in another visit_XXX function.
+
+*/
       console.log("defining this.visit_StaticObjectAttributeSubscribe");
-      this.visit_StaticObjectAttributeSubscribe = function(node,parent,context)
+      this.visit_StaticObjectAttributeSubscribe =
+      function( /* ARGUMENTS                                           */
+       node,    /* (webgme node) a StaticObjectAttributeSubscribe node */
+       parent,  /* (webgme node)? not used                             */
+       context) /* (object)                                            */
       {
-        var self = this,
-            subscription =
+        var self = this;
+        var subscription =
             {object:
                self.calculateParentPath(self.core.getPointerPath(node,'src')),
              attribute: self.core.getPointerPath(node,'src'),
              federate: self.core.getPointerPath(node,'dst')
-            },
-            nodeAttrNames = self.core.getAttributeNames(node);
+            };
+        var nodeAttrNames = self.core.getAttributeNames(node);
+        var pubSubObjs = 0;
+        var federateInfo;
+        var i;
 
-	console.log("executing visit_StaticObjectAttributeSubscribe");
-        if (!subscription.object )
+        console.log("executing visit_StaticObjectAttributeSubscribe");
+        if (!subscription.object)
           {
             self.createMessage(node,
                '[ERROR] Invalid src pointer in StaticObjectAttributeSubscribe!',
                                'error');
           }
-        if (!subscription.attribute )
+        if (!subscription.attribute)
           {
             self.createMessage(node,
                '[ERROR] Invalid src pointer in StaticObjectAttributeSubscribe!',
@@ -493,7 +683,40 @@ created in visit_StaticObjectPublish.
                '[ERROR] Invalid dst pointer in StaticObjectAttributeSubscribe!',
                                'error');
           }
-        for (var i = 0; i < nodeAttrNames.length; i++)
+        if (self.pubSubObjects)
+          { // only DeploymentExporter has pubSubObjects
+            pubSubObjs = self.pubSubObjects;
+          }
+        else if (self.federateInfos)
+          { // only FederatesExporter has federateInfos
+            federateInfo = self.federateInfos[subscription.federate];
+            if (!federateInfo)
+              {
+                self.federateInfos[subscription.federate] =
+                  {name: null,
+                   directory: null,
+                   pubSubObjects: {},
+                   pubSubInteractions: {}};
+                federateInfo = self.federateInfos[subscription.federate];
+              }
+            pubSubObjs = federateInfo.pubSubObjects;
+          }
+        if (pubSubObjs)
+          { // for both DeploymentExporter and FederatesExporter
+            if (subscription.object in pubSubObjs)
+              {
+                pubSubObjs[subscription.object].subscribe = 1;
+                pubSubObjs[subscription.object].maySubscribe = 1;
+              }
+            else
+              {
+                pubSubObjs[subscription.object] = {publish: 0,
+                                                   mayPublish: 0,
+                                                   subscribe: 1,
+                                                   maySubscribe: 1};
+              }
+          }
+        for (i = 0; i < nodeAttrNames.length; i++)
           {
             subscription[nodeAttrNames[i]] =
             self.core.getAttribute( node, nodeAttrNames[i]);
@@ -501,6 +724,8 @@ created in visit_StaticObjectPublish.
         subscription['handler'] = function(federate, object)
         {
           var objectdata = {name: object.name,
+	                    fullName: object.fullName,
+                            parameters: object.parameters,
                             subscribedLoglevel: subscription['LogLevel'],
                             subscribedAttributeData: [],
                             logSubscribedAttributeData: []};

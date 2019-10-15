@@ -1,3 +1,11 @@
+/*
+
+This "define" appears to be intended to be used by any other "define"
+that needs to go through all the nodes in a webgme model. It is used
+by at least FederatesExporter.js and DeploymentExporter.js.
+
+*/
+
 define([], function()
   {
     'use strict';
@@ -13,41 +21,45 @@ define([], function()
     var withModelTraverser = function()
     {
       console.log("executing withModelTraverser");
-	
+        
 /***********************************************************************/
 
       console.log("defining this.getVisitorFuncName");
       this.getVisitorFuncName = this.getVisitorFuncName ||
       function(nodeType)
       {
-	var self = this,
-	visitorName = 'generalVisitor';
-	console.log("executing getVisitorFuncName");
-	if (nodeType)
-	  {
-	    visitorName = 'visit_'+ nodeType;
-	  }
-	return visitorName;
+        var self = this,
+        visitorName = 'generalVisitor';
+        console.log("executing getVisitorFuncName");
+        if (nodeType)
+          {
+            visitorName = 'visit_'+ nodeType;
+          }
+        return visitorName;
       }
-
+      
 /***********************************************************************/
 
       console.log("defining this.getPostVisitorFuncName");
       this.getPostVisitorFuncName = this.getPostVisitorFuncName ||
       function(nodeType)
       {
-	var self = this,
-	visitorName = 'generalPostVisitor';
-	if (nodeType)
-	  {
-	    visitorName = 'post_visit_'+ nodeType;
-	  }
-	return visitorName;
+        var self = this,
+        visitorName = 'generalPostVisitor';
+        if (nodeType)
+          {
+            visitorName = 'post_visit_'+ nodeType;
+          }
+        return visitorName;
       }
         
 /***********************************************************************/
 
-	console.log("defining this.getChildSorterFunc");
+/* this.getChildSorterFunc
+
+*/
+
+        console.log("defining this.getChildSorterFunc");
         this.getChildSorterFunc = this.getChildSorterFunc ||
         function(nodeType, self)
           {
@@ -79,12 +91,12 @@ Called By: visitAllChildrenRec
 If this.excludeFromVisit is not already defined, it is defined to
 return false.
 
-It is not clear why this function is defined. It is defined also in 
-FederatesExporter.js.
+This function is defined also in FederatesExporter.js and
+DeploymentExporter.js (and possibly elsewhere)
 
 */
 
-	console.log("defining this.excludeFromVisit");
+        console.log("defining this.excludeFromVisit");
         this.excludeFromVisit = this.excludeFromVisit ||
         function(node)
           {
@@ -99,11 +111,13 @@ FederatesExporter.js.
 Returned Value: none
 
 Called By:
-  FederatesExporter.prototype.main
+  FederatesExporter.prototype.main in FederatesExporter.js
+  DeploymentExporter.Prototype.main in DeploymentExporter.js
+  and maybe other functions
 
 */
 
-	console.log("defining this.visitAllChildrenFromRootContainer");
+        console.log("defining this.visitAllChildrenFromRootContainer");
         this.visitAllChildrenFromRootContainer = function(rootNode, callback)
           {
             var self = this,
@@ -112,7 +126,7 @@ Called By:
                 counter,
                 counterCallback;
 
-	    console.log("executing visitAllChildrenFromRootContainer");
+            console.log("start executing visitAllChildrenFromRootContainer");
             counter = {visits: 1};
             counterCallback = function(err)
               {
@@ -157,8 +171,9 @@ Called By:
 
             self.visitAllChildrenRec(rootNode, context, counter,
                                      counterCallback);
+            console.log("end executing visitAllChildrenFromRootContainer");
           };
-	
+        
 /***********************************************************************/
 
 /* this.visitAllChildrenRec
@@ -171,11 +186,11 @@ Called By:
 
 */
 
-	console.log("defining this.visitAllChildrenRec");
+        console.log("defining this.visitAllChildrenRec");
         this.visitAllChildrenRec = function(node, context, counter, callback)
           {
             var self = this;
-	    console.log("executing visitAllChildrenRec");
+            console.log("executing visitAllChildrenRec");
             if (self.excludeFromVisit(node))
               {
                 callback(null, context);
@@ -286,7 +301,7 @@ Called By:
 
 Returned Value: none
 
-Called By: ?
+Called By: visitAllChildrenRec
 
 The following line of the atModeNode function is strange
 
@@ -310,14 +325,31 @@ seem better to test for a known name and call the appropriate function.
 
 */
 
-	console.log("defining this.atModelNode");
+        console.log("defining this.atModelNode");
         this.atModelNode = function(node, parent, context, callback)
           {
             var self = this,
                 nodeType = self.core.getAttribute(self.getMetaType(node),
                                                   'name'),
                 nodeName = self.core.getAttribute(node, 'name'),
+                id,
                 ret = null;
+            if (self.federateInfos && (nodeType in self.federateTypes))
+              {
+                console.log("building federateInfos in this.atModelNode");
+                id = self.core.getPath(node);
+                if (self.federateInfos[id])
+                  {
+                    self.federateInfos[id].name = nodeName;
+                  }
+                else
+                  {
+                    self.federateInfos[id] = {name: nodeName,
+                                              directory: null,
+                                              pubSubObjects: {},
+                                              pubSubInteractions: {}};
+                  }
+              }
             try
               {
                 ret = self[self.getVisitorFuncName(nodeType)](node, parent,
@@ -360,7 +392,7 @@ Returned Value: none
 Called By: ?
 
 */
-	console.log("defining this.doneModelNode");
+        console.log("defining this.doneModelNode");
         this.doneModelNode = function(node, context, callback)
           {
             var self = this,
@@ -409,7 +441,7 @@ Returned Value: a copy of an object
 Called By: ?
 
 */
-	console.log("defining this.cloneCtx");
+        console.log("defining this.cloneCtx");
         this.cloneCtx = function(obj)
           {
             var copy;
@@ -419,7 +451,7 @@ Called By: ?
             for (var attr in obj)
               {
                 if (obj.hasOwnProperty(attr))
-		  copy[attr] = obj[attr];
+                  copy[attr] = obj[attr];
               }
             return copy;
           }
