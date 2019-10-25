@@ -1215,7 +1215,7 @@ code elsewhere may be looking for "default", so it has been left in.
                                  "long"    : "0",
                                  "short"   : "0",
                                  "byte"    : "0",
-                                 "char"    : "\\000",
+                                 "char"    : "'\\0'",
                                  "double"  : "0",
                                  "float"   : "0",
                                  "boolean" : "false",

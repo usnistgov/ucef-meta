@@ -167,6 +167,7 @@ define
   'C2Federates/OmnetFederate',
   'C2Federates/CPNFederate',
   'C2Federates/GridLabDFederate',
+  'C2Federates/TRNSYSFederate',
   'C2Federates/LabVIEWFederate'],
  function (pluginMetadata,
            PluginBase,
@@ -184,6 +185,7 @@ define
            OmnetFederate,
            CPNFederate,
            GridLabDFederate,
+           TRNSYSFederate,
            LabVIEWFederate)
  {
     'use strict';
@@ -195,6 +197,8 @@ define
     var interactionTraverserXml;    // function variable
     var buildScriptGenerator;       // function variable
     var fomGenerator;               // function variable
+    var makeVariablesModel;         // function variable
+    var processInteraction;         // function variable
 
     pluginMetadata = JSON.parse(pluginMetadata);
 
@@ -224,10 +228,12 @@ define
       OmnetFederate.call(this);
       CPNFederate.call(this);
       GridLabDFederate.call(this);
+      TRNSYSFederate.call(this);
       LabVIEWFederate.call(this);      
       
       this.mainPom = new MavenPOM();
       this._jsonToXml = new JSON2XMLConverter.Json2xml();
+      this._xmlToJson = new JSON2XMLConverter.Xml2json();
       this.pluginMetadata = pluginMetadata;
     };
 
@@ -760,6 +766,167 @@ all of the individual generated federates.
 
 /***********************************************************************/
 
+/* processInteraction
+
+Returned Value: none
+
+Called By: 
+  makeVariablesModel
+  processInteraction (recursively)
+
+When _xmlToJson.convertFromString runs:
+- If an element with a given name occurs twice or more in a row,
+   the json model has an array of objects for the occurrences.
+- If the element occurs only once, the json model has a single object.
+Below, for an element that might or might not occur multiple times, a
+check is made of whether it is represented by an array. If the element
+exists but is not an array, it is put into an array for further
+processing.
+
+When this is called by makeVariablesModel, the longName is
+"InteractionRoot.C2WInteractionRoot", and the parentameters is an
+empty array.
+
+*/
+
+    processInteraction = function( /* ARGUMENTS                         */
+      interact,                    /* an interaction                    */
+      variablesModel,              /* model of variables, enhanced here */
+      longName,                    /* inheritance hierarchy in string   */
+      parentameters)               /* usually all parameters of parent  */
+    {
+      var n;
+      var inters;
+      var parameters;
+      var parameter;
+      var inn;
+      var out;
+      var thisLongName;
+      var typeName;
+      
+      if ((interact.name['#text'] == "FederateJoinInteraction") ||
+          (interact.name['#text'] == "FederateResignInteraction") ||
+          (interact.name['#text'] == "SimulationControl"))
+        return;
+      thisLongName = longName + '.' + interact.name['#text'];
+      if (interact.parameter)
+        {
+          if (Array.isArray(interact.parameter))
+            {
+              parameters = interact.parameter.concat(parentameters);
+            }
+          else
+            {
+              parameters = [];
+              parameters.push(interact.parameter);
+              parameters = parameters.concat(parentameters);
+            }
+        }
+      else
+        {
+          parameters = parentameters;
+        }
+      if (interact.interactionClass)
+        {
+          if (Array.isArray(interact.interactionClass))
+            {
+              inters = interact.interactionClass;
+            }
+          else
+            {
+              inters = [];
+              inters.push(interact.interactionClass);
+            }
+          inters.forEach(function(inter)
+            {
+              processInteraction(inter, variablesModel,
+                                 thisLongName, parameters);
+            });
+        }
+      out = ((interact.sharing['#text'] == "Publish") ||
+             (interact.sharing['#text'] == "PublishSubscribe"));
+      inn  = ((interact.sharing['#text'] == "Subscribe") ||
+              (interact.sharing['#text'] == "PublishSubscribe"));
+      if (!inn && !out)
+        return;
+      for (n = 0; n < parameters.length; n++)
+        {
+          parameter = parameters[n];
+          typeName = parameter.dataType['#text'];
+          if ((typeName != "double") &&
+              (typeName != "long") &&
+              (typeName != "short") &&
+              (typeName != "int") &&
+              (typeName != "float") &&
+              (typeName != "boolean"))
+            continue;
+          if (inn)
+            {
+              variablesModel.inputs.push({name: parameter.name['#text'],
+                    hlaClass: thisLongName});
+            }
+          if (out)
+            {
+              variablesModel.outputs.push({name: parameter.name['#text'],
+                    hlaClass: thisLongName});
+            }
+        }
+    };
+
+/***********************************************************************/
+
+/* makeVariablesModel
+
+Returned Value: none
+
+Called By: fomGenerator
+
+This makes the variables model from the json model of interactions.
+
+See documentation of processInteraction regarding making sure inters
+is an array.
+
+*/
+
+    makeVariablesModel = function( /* ARGUMENTS                  */
+      variablesModel,              /* model to build             */
+      interactions)                /* json model of interactions */
+    {
+      var c2w;      // C2WInteractionRoot
+      var longName; // "InteractionRoot.C2WInteractionRoot"
+      var inters;   // interactions derived from C2WInteractionRoot
+      
+      variablesModel.inputs = [];
+      variablesModel.outputs = [];
+      longName = "InteractionRoot.C2WInteractionRoot";
+      c2w = interactions.interactionClass.interactionClass;
+      if (!c2w || (c2w.name['#text'] != "C2WInteractionRoot"))
+        {
+          callback("C2WInteractionRoot missing from interactions");
+          return;
+        }
+      if (c2w.interactionClass)
+        {
+          if (Array.isArray(c2w.interactionClass))
+            {
+              inters = c2w.interactionClass;
+            }
+          else
+            {
+              inters = [];
+              inters.push(c2w.interactionClass);
+            }
+          inters.forEach (function(inter)
+            {
+              processInteraction(inter, variablesModel, longName, []);
+            });
+        }
+      variablesModel.inputs.sort();
+      variablesModel.outputs.sort();
+    };
+    
+/***********************************************************************/
+
 /* fomGenerator (function-valued variable of top-level function object)
 
 Returned Value: none
@@ -767,7 +934,9 @@ Returned Value: none
 Called By: finishExport
 
 This builds a file generator that generates a separate fom file for each
-federate in a project.
+federate in a project and generates a Variables.json file for each
+federate of type TRNSYS. Both the fom file and the variables file are
+generated from data in the federate's fomModelXml, which is built first.
 
 Where fedEx.objectRoots.forEach is called, objectTraverserXml will
 return undefined if there is no XML for objects. In that case,
@@ -778,7 +947,11 @@ printing all the files that have been put into the artifact. If callback
 is called each time around the loop below, a zip file is generated each
 time containing one more fom file than the preceding zip file. Hence
 that call can be made only once. In addition, webGME complains if
-callback is called more than once.
+callback is called more than once. 
+
+The "remaining" variable keeps track of the number of federates in
+fedEx.federateInfos that have not yet been processed so that it will be
+clear when to call the callback. 
 
 */
     fomGenerator = function( /* ARGUMENTS                             */
@@ -797,11 +970,12 @@ callback is called more than once.
       var directory;        // directory for a federate
       var endJoinResign;
       var remaining;
-      var xmlCode;
+      var code;
       var fullPath;
       var template;
+      var interactionsJson; // fomModelXml.interactionsXml converted to json
+      var variablesModel;   // model of variables built from interactionsJson
 
-      template = TEMPLATES['fedfile.xml.ejs'];
       remaining = 0;
       for (federId in fedEx.federateInfos)
         {
@@ -845,10 +1019,26 @@ callback is called more than once.
               fomModelXml.objectsXml.push
                 (objectTraverserXml(feder, objectRoot, "    "));
             });
+            if (feder.metaType == "TRNSYSFederate")
+              { // add Variables.json
+                interactionsJson =
+                  fedEx._xmlToJson.convertFromString(fomModelXml.
+                                                     interactionsXml[0]);
+                variablesModel = {};
+                makeVariablesModel(variablesModel, interactionsJson);
+                fullPath = directory + 'Variables.json';
+                template = TEMPLATES['variables.ejs'];
+                code = ejs.render(template, variablesModel);
+                artifact.addFile(fullPath, code,
+                                 function (err)
+                                 {if (err) {callback(err); return;}}
+                                 );
+              }
             // add fom XML files to artifact
             fullPath = directory + feder.name + '.xml';
-            xmlCode = ejs.render(template, fomModelXml);
-            artifact.addFile(fullPath, xmlCode,
+            template = TEMPLATES['fedfile.xml.ejs'];
+            code = ejs.render(template, fomModelXml);
+            artifact.addFile(fullPath, code,
                              (remaining ?
                               function (err) // there are more
                               {if (err) {callback(err); return;}} :
@@ -856,8 +1046,8 @@ callback is called more than once.
                               {if (err) {callback(err); return;}
                                 else {callback();}}
                               )
-                             );
-          }
+                            );
+          } 
       });
     };
       

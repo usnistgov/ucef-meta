@@ -224,7 +224,7 @@ in the post_visit_JavaFederate function in JavaFederate.js.
           var template;
 
           fullPath = fedPathDir + '/build.sh';
-          template = TEMPLATES['java/mvn-install.sh.ejs'];
+          template = TEMPLATES['common/mvn-install.sh.ejs'];
           bashScript = ejs.render(template, renderContext);
           self.logger.info('calling addFile for ' + fullPath + ' in post_' +
                            'visit_JavaImplFederate of JavaImplFederate.js');
@@ -260,7 +260,7 @@ in the post_visit_JavaFederate function in JavaFederate.js.
           var template;
 
           fullPath = fedPathDir + '/RTI.rid';
-          template = TEMPLATES['java/rti.rid.ejs'];
+          template = TEMPLATES['common/rti.rid.ejs'];
           rtiCode = ejs.render(template, renderContext);
           self.logger.info('calling addFile for ' + fullPath + ' in post_' +
                            'visit_JavaImplFederate of JavaImplFederate.js');
@@ -296,7 +296,7 @@ in the post_visit_JavaFederate function in JavaFederate.js.
           var template;
 
           fullPath = fedPathDir + '/conf/log4j2.xml';
-          template = TEMPLATES['java/log4j2.xml.ejs']
+          template = TEMPLATES['common/log4j2.xml.ejs']
           xmlCode = ejs.render(template, self);
           self.logger.info('calling addFile for ' + fullPath + ' in post_' +
                            'visit_JavaImplFederate of JavaImplFederate.js');

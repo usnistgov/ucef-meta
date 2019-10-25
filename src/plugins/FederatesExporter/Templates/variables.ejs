@@ -1,0 +1,29 @@
+<% /* 
+inputs:  array
+outputs: array
+*/ -%>
+{
+<% var n; -%>
+<% if (inputs.length) { -%>
+    "inputs":[
+<%     for (n = 1; n <= inputs.length; n++) { -%>
+        {
+            "index":<%-n%>,
+            "variable":"<%-inputs[n-1].name%>",
+            "hlaClass":"<%-inputs[n-1].hlaClass%>"
+        }<% if (n < inputs.length) { %>,<% } %>
+<% } -%>
+    ]<% if (outputs.length) { %>,<% } %>
+<%   } -%>
+<% if (outputs.length) { -%>
+    "outputs":[
+<%     for (n = 1; n <= outputs.length; n++) { -%>
+        {
+            "index":<%-n%>,
+            "variable":"<%-outputs[n-1].name%>",
+            "hlaClass":"<%-outputs[n-1].hlaClass%>"
+        }<% if (n < outputs.length) { %>,<% } %>
+<%  } -%>
+    ]
+<% } -%>
+}
