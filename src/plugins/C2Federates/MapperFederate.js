@@ -144,11 +144,16 @@ define
             self.java_mapperPOM.version = self.project_version;
             self.java_mapperPOM.packaging = "jar";
           }
-        context.mapperfedspec = self.createMapperFederateCodeModel();
-        context.mapperfedspec.classname = self.core.getAttribute(node, 'name');
-        context.mapperfedspec.simname = self.projectName;
-        context.mapperfedspec.step_size = parseFloat(self.core.
-                                                 getAttribute(node, 'Step'));
+	self.mapperCodeModel =
+	   {simname: self.projectName,
+	    classname: self.core.getAttribute(node, 'name'),
+	    step_size: parseFloat(self.core. getAttribute(node, 'Step')),
+	    mappingconnsdata: [],
+	    mappingobjectsdata: [],
+	    helpers: {},
+	    ejs: ejs, 
+	    TEMPLATES: TEMPLATES};
+        context.mapperfedspec = self.mapperCodeModel;
         if (isNaN(context.mapperfedspec.step_size))
           {
             self.createMessage(node,
@@ -479,7 +484,7 @@ define
           var template;
 
           template = TEMPLATES['java/mapperfederate.java.ejs'];
-          javaCode = ejs.render(template, renderContext);
+          javaCode = ejs.render(template, self.mapperCodeMode);
           self.logger.info('calling addFile for ' + outFileName + ' in ' +
                            'post_visit_MapperFederate of MapperFederate.js');
           artifact.addFile(outFileName, javaCode,
@@ -508,24 +513,6 @@ define
             return {context:context};
           }
       }; // end of post_visit_MapperFederate function
-
-/***********************************************************************/
-
-      this.createMapperFederateCodeModel = function()
-      {
-        return {simname: "",
-                classname: "",
-                step_size: "",
-                mappingconnsdata: [],
-                mappingobjectsdata: [],
-                helpers: {},
-                ejs: ejs, 
-                TEMPLATES: TEMPLATES};
-      }
-      
-/***********************************************************************/
-
-      this.mapperCodeModel = this.createMapperFederateCodeModel();
 
 /***********************************************************************/
 

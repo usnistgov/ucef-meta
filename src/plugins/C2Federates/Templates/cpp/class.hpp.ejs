@@ -1,19 +1,29 @@
 <% /*
 input properties
 ----------------
-alldatamembers       array
-classname            string
-codeclassname        string
-datamembers          array
-hlaclassname         string
-isc2winteractionroot boolean
-isinteraction        boolean
-parentclassname      string
-simname              string
+alldatamembers         array
+classname              string
+codeclassname          string
+cppjavaArgumentTypeMap object
+cppjavaTypeMap         object
+datamembers            array
+hlaclassname           string
+isc2winteractionroot   boolean
+isinteraction          boolean
+parentclassname        string
+TEMPLATES              object
+
+used in
+-------
+CppRTI.js
+
+This also uses ejs, but apparently ejs is available without being passed in.
+
 */ -%>
 
 /*
- * Copyright (c) 2008, Institute for Software Integrated Systems, Vanderbilt University
+ * Copyright (c) 2008, Institute for Software Integrated Systems,
+ * Vanderbilt University
  * All rights reserved.
  *
  * Permission to use, copy, modify, and distribute this software and its
@@ -58,8 +68,9 @@ simname              string
  *        statement2;
  *    }
  *
- *    RESPECTIVELY.  THIS IS BECAUSE THE OMNET DEBUGGER APPEARS TO HAVE A PROBLEM
- *  WITH THE NON-BRACED FORMS OF THE IF STATEMENT.  *PLEASE* DO NOT CHANGE IT BACK.
+ * RESPECTIVELY.  THIS IS BECAUSE THE OMNET DEBUGGER APPEARS TO HAVE
+ * A PROBLEM WITH THE NON-BRACED FORMS OF THE IF STATEMENT.
+ *     *PLEASE* DO NOT CHANGE IT BACK.
  *  -- H.S.N.
  *
  */
@@ -115,11 +126,11 @@ public:
 
 <% /*classcommon(...)*/ -%>
 <%- ejs.render(TEMPLATES["cpp/classcommon.hpp.ejs"], {
-        isinteraction: isinteraction,
+        alldatamembers: alldatamembers,
         classname: codeclassname,
-        parentclassname: parentclassname,
         datamembers: datamembers,
-        alldatamembers: alldatamembers
+        isinteraction: isinteraction,
+        parentclassname: parentclassname
 }) -%>
 <% if(isc2winteractionroot){ -%>
 
@@ -133,15 +144,15 @@ public:
 private:
 <% /*datamembers:interactionmembers()*/ -%>
 <% datamembers.forEach(function(datamember){ -%>
-    <%- helpers.cppjavaTypeMap(datamember.parameterType) %> _<%=datamember.name%>;
+    <%- cppjavaTypeMap[datamember.parameterType] %> _<%=datamember.name%>;
 <% }); -%>
 
 public:
 <% /*datamembers:interactiongetters()*/ -%>
 <% datamembers.forEach(function(datamember){ -%>
-    void set_<%=datamember.name%>( <%- helpers.cppjavaArgumentTypeMap(datamember.parameterType) %> <%=datamember.name%> ) { _<%=datamember.name%> = <%=datamember.name%>; }
+    void set_<%=datamember.name%>( <%- cppjavaArgumentTypeMap[datamember.parameterType] %> <%=datamember.name%> ) { _<%=datamember.name%> = <%=datamember.name%>; }
 
-    <%- helpers.cppjavaArgumentTypeMap(datamember.parameterType) %> get_<%=datamember.name%>( void ) const { return _<%=datamember.name%>; }
+    <%- cppjavaArgumentTypeMap[datamember.parameterType] %> get_<%=datamember.name%>( void ) const { return _<%=datamember.name%>; }
 
 <% }); -%>
 <% } -%>
@@ -174,19 +185,19 @@ public:
 protected:
 <% /*datamembers:objectmembers()*/ -%>
 <% datamembers.forEach(function(datamember){ -%>
-    Attribute< int, <%- helpers.cppjavaTypeMap(datamember.parameterType) %> > _<%=datamember.name%>;
+    Attribute< int, <%- cppjavaTypeMap[datamember.parameterType] %> > _<%=datamember.name%>;
 <% }); -%>
 
 public:
 <% datamembers.forEach(function(datamember){ -%>
 <% /*datamembers:objectsetters()*/ -%>
-    void set_<%=datamember.name%>( <%- helpers.cppjavaArgumentTypeMap(datamember.parameterType) %> <%=datamember.name%> ) {
+    void set_<%=datamember.name%>( <%- cppjavaArgumentTypeMap[datamember.parameterType] %> <%=datamember.name%> ) {
         _<%=datamember.name%>.setValue( <%=datamember.name%> );
         _<%=datamember.name%>.setTime( getTime() );
     }
 
 <% /*datamembers:objectgetters()*/ -%>
-    <%- helpers.cppjavaArgumentTypeMap(datamember.parameterType) %> get_<%=datamember.name%>( void ) const {
+    <%- cppjavaArgumentTypeMap[datamember.parameterType] %> get_<%=datamember.name%>( void ) const {
         return _<%=datamember.name%>.getValue();
     }
 

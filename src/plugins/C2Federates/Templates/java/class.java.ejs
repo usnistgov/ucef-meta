@@ -1,7 +1,6 @@
 <% /*
 input properties
 ----------------
-TEMPLATES            object
 alldatamembers       array
 classname            string
 codeclassname        string
@@ -13,6 +12,12 @@ isc2winteractionroot boolean
 isinteraction        boolean
 parentclassname      string
 simname              string
+TEMPLATES            object
+
+used in
+-------
+JavaRTI.js
+
 */ -%>
 
 import java.util.HashSet;
@@ -69,13 +74,13 @@ public class <%=codeclassname%> extends <%=parentclassname%> {
 
 <% /*classcommon(...)*/ -%>
 <%- ejs.render(TEMPLATES["java/classcommon.java.ejs"],
-    {   isinteraction: isinteraction,
-        classname: classname,
-        codeclassname: codeclassname,
-        parentclassname: parentclassname,
-        hlaclassname: hlaclassname,
-        datamembers: datamembers,
-        alldatamembers: alldatamembers
+    {alldatamembers: alldatamembers,
+     classname: classname,
+     codeclassname: codeclassname,
+     datamembers: datamembers,
+     hlaclassname: hlaclassname,
+     isinteraction: isinteraction,
+     parentclassname: parentclassname
 }) -%>
 <% if(isc2winteractionroot){ -%>
 

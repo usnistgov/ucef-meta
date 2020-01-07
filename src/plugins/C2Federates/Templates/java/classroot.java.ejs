@@ -1,6 +1,16 @@
+<% /*
+input properties
+----------------
+isinteraction boolean
 
-<%/* THIS IS THE ROOT CLASS OF EITHER THE INTERACTION OR OBJECT-CLASS HEIRARCHY (I.E. "InteractionRoot" OR "ObjectRoot") */%>
-<%/*classroot(isinteraction)*/%>
+used in
+-------
+JavaRTI.js
+
+This also uses ejs, but apparently ejs is available without being passed in.
+*/ -%>
+/* THIS IS THE ROOT CLASS OF EITHER THE INTERACTION OR OBJECT-CLASS HEIRARCHY
+(i.e. "InteractionRoot" OR "ObjectRoot") */
 
 /*
  * Copyright (c) 2016, Institute for Software Integrated Systems, Vanderbilt University
@@ -24,6 +34,8 @@
  *
  * @author Himanshu Neema
  */
+<% var rootname = isinteraction ? "InteractionRoot" : "ObjectRoot"; -%>
+<% var create = isinteraction ? "create_interaction" : "create_object"; -%>
 <% var IntOb = isinteraction ? "Interaction" : "Object"; -%>
 <% var intob = isinteraction ? "interaction" : "object"; -%>
 <% var ParAtt = isinteraction ? "Parameter" : "Attribute"; -%>
@@ -44,28 +56,28 @@ import java.util.Set;
 import org.portico.impl.hla13.types.DoubleTime;
 
 /**
- * <%= IntOb %>Root is the base class for all <%= intob %>s
- * defined in a given federation.  As such, an <%= IntOb %>Root
+ * <%=rootname%> is the base class for all <%= intob %>s
+ * defined in a given federation.  As such, an <%=rootname%>
  * variable may refer to any type of interaction defined in the
  * federation.
  * <p/>
- * This <%= IntOb %>Root class provides the following:
+ * This <%=rootname%> class provides the following:
  * - methods for constructing any <%= intob %> in the federation, either from
  * data provided by the RTI (for example, see
- * {@link #create_<%= intob %>( int classHandle )} or from a string argument
+ * {@link #<%=create%>( int classHandle )} or from a string argument
  * specifying the name of <%= intob %> to construct (see
- * {@link #create_<%= intob %>( String className )}.
+ * {@link #<%=create%>( String className )}.
  * - methods for sending <% if(isinteraction){ %>an interaction<%}else{%>object updates<%}%> to the RTI (see
  * {@link <% if(isinteraction){ %>#sendInteraction( RTIambassador rti )<%}else{%>#updateAttributeValues( RTIambassador rti )<%}%>} for an example).
  * - methods for publishing/subscribing to any <% if(isinteraction){ %>interaction<%}else{%>object/object attribute<%}%> 
  * defined in the federation (see
  * {@link #publish( String className, RTIambassador rti )} for example).
  * - methods for getting/setting any <%=  paratt  %> in the <%= intob %> to
- * which a given <%= IntOb %>Root variable is referring
+ * which a given <%=rootname%> variable is referring
  * (see {@link #get<%=  paratt  %>( String datamemberName )} and
  * {@link #set<%= ParAtt %>( String datamemberName, Object value )}
  */
-public class <%= IntOb %>Root implements <%= IntOb %>RootInterface {
+public class <%=rootname%> implements <%=rootname%>Interface {
 
     private static int logId = 0;
     private static int _globalUniqueID = 0;
@@ -143,14 +155,13 @@ public class <%= IntOb %>Root implements <%= IntOb %>RootInterface {
     }                                                                                                                      // NOMELD
 <%}%>
 
-    <% /*classcommon(classname=%= IntOb %+"Root",hlaclassname=%= IntOb %+"Root",...)*/ %>
     <%- ejs.render(TEMPLATES["java/classcommon.java.ejs"],
         {
             isinteraction: isinteraction,
-            classname: isinteraction?"InteractionRoot":"ObjectRoot",
-            codeclassname: isinteraction?"InteractionRoot":"ObjectRoot",
+            classname: rootname,
+            codeclassname: rootname,
             parentclassname: "",
-            hlaclassname: isinteraction?"InteractionRoot":"ObjectRoot",
+            hlaclassname: rootname,
             datamembers: [],
             alldatamembers: []
     }) %>
@@ -272,8 +283,8 @@ public class <%= IntOb %>Root implements <%= IntOb %>RootInterface {
     * Publishes the <%= intob %> class named by "className" for a federate.
     * This can also be performed by calling the publish( RTIambassador rti )
     * method directly on the <%= intob %> class named by "className" (for
-    * example, to publish the <%= IntOb %>Root class in particular,
-    * see {@link <%= IntOb %>Root#publish( RTIambassador rti )}).
+    * example, to publish the <%=rootname%> class in particular,
+    * see {@link <%=rootname%>#publish( RTIambassador rti )}).
     *
     * @param className name of <%= intob %> class to be published for the federate
     * @param rti handle to the RTI, usu. obtained through the
@@ -298,8 +309,8 @@ public class <%= IntOb %>Root implements <%= IntOb %>RootInterface {
     * Unpublishes the <%= intob %> class named by "className" for a federate.
     * This can also be performed by calling the unpublish( RTIambassador rti )
     * method directly on the <%= intob %> class named by "className" (for
-    * example, to unpublish the <%= IntOb %>Root class in particular,
-    * see {@link <%= IntOb %>Root#unpublish( RTIambassador rti )}).
+    * example, to unpublish the <%=rootname%> class in particular,
+    * see {@link <%=rootname%>#unpublish( RTIambassador rti )}).
     *
     * @param className name of <%= intob %> class to be unpublished for the federate
     * @param rti handle to the RTI, usu. obtained through the
@@ -324,8 +335,8 @@ public class <%= IntOb %>Root implements <%= IntOb %>RootInterface {
     * Subscribes federate to the <%= intob %> class names by "className"
     * This can also be performed by calling the subscribe( RTIambassador rti )
     * method directly on the <%= intob %> class named by "className" (for
-    * example, to subscribe a federate to the <%= IntOb %>Root class
-    * in particular, see {@link <%= IntOb %>Root#subscribe( RTIambassador rti )}).
+    * example, to subscribe a federate to the <%=rootname%> class
+    * in particular, see {@link <%=rootname%>#subscribe( RTIambassador rti )}).
     *
     * @param className name of <%= intob %> class to which to subscribe the federate
     * @param rti handle to the RTI, usu. obtained through the
@@ -350,8 +361,8 @@ public class <%= IntOb %>Root implements <%= IntOb %>RootInterface {
     * Unsubscribes federate from the <%= intob %> class names by "className"
     * This can also be performed by calling the unsubscribe( RTIambassador rti )
     * method directly on the <%= intob %> class named by "className" (for
-    * example, to unsubscribe a federate to the <%= IntOb %>Root class
-    * in particular, see {@link <%= IntOb %>Root#unsubscribe( RTIambassador rti )}).
+    * example, to unsubscribe a federate to the <%=rootname%> class
+    * in particular, see {@link <%=rootname%>#unsubscribe( RTIambassador rti )}).
     *
     * @param className name of <%= intob %> class to which to unsubscribe the federate
     * @param rti handle to the RTI, usu. obtained through the
@@ -474,32 +485,32 @@ public class <%= IntOb %>Root implements <%= IntOb %>RootInterface {
     }
 <%}%>
     
-    private static <%= IntOb %>Root create_<%= intob %>( Class<?> rtiClass ) {
-        <%= IntOb %>Root classRoot = null;
+    private static <%=rootname%> <%=create%>( Class<?> rtiClass ) {
+        <%=rootname%> classRoot = null;
         try {
-            classRoot = (<%= IntOb %>Root)rtiClass.newInstance();
+            classRoot = (<%=rootname%>)rtiClass.newInstance();
         } catch( Exception e ) {
-            System.err.println( "ERROR:  <%= IntOb %>Root:  create_<%= intob %>:  could not create/cast new <%= IntOb %>" );
+            System.err.println( "ERROR:  <%=rootname%>:  <%=create%>:  could not create/cast new <%= IntOb %>" );
             e.printStackTrace();
         }
         
         return classRoot;
     }
 
-    private static <%= IntOb %>Root create_<%= intob %>( Class<?> rtiClass, LogicalTime logicalTime ) {    
-        <%= IntOb %>Root classRoot = create_<%= intob %>( rtiClass );
+    private static <%=rootname%> <%=create%>( Class<?> rtiClass, LogicalTime logicalTime ) {    
+        <%=rootname%> classRoot = <%=create%>( rtiClass );
         if ( classRoot != null ) classRoot.setTime( logicalTime );
         return classRoot;
     }
 
-    private static <%= IntOb %>Root create_<%= intob %>( Class<?> rtiClass, <%=isinteraction?"ReceivedInteraction":"ReflectedAttributes"%> datamemberMap ) {
-        <%= IntOb %>Root classRoot = create_<%= intob %>( rtiClass );
+    private static <%=rootname%> <%=create%>( Class<?> rtiClass, <%=isinteraction?"ReceivedInteraction":"ReflectedAttributes"%> datamemberMap ) {
+        <%=rootname%> classRoot = <%=create%>( rtiClass );
         classRoot.set<%= ParAtt %>s( datamemberMap );
         return classRoot;
     }
     
-    private static <%= IntOb %>Root create_<%= intob %>( Class<?> rtiClass, <%=isinteraction?"ReceivedInteraction":"ReflectedAttributes"%> datamemberMap, LogicalTime logicalTime ) {
-        <%= IntOb %>Root classRoot = create_<%= intob %>( rtiClass );
+    private static <%=rootname%> <%=create%>( Class<?> rtiClass, <%=isinteraction?"ReceivedInteraction":"ReflectedAttributes"%> datamemberMap, LogicalTime logicalTime ) {
+        <%=rootname%> classRoot = <%=create%>( rtiClass );
         classRoot.set<%= ParAtt %>s( datamemberMap );
         classRoot.setTime( logicalTime );
         return classRoot;
@@ -507,31 +518,31 @@ public class <%= IntOb %>Root implements <%= IntOb %>RootInterface {
     
     /**
     * Create an <%= intob %> that is in instance of <%= intob %> class
-    * "className". An <%= IntOb %>Root reference is returned,
+    * "className". An <%=rootname%> reference is returned,
     * so to refer to the instance using a reference to a "className" interaction,
     * the returned reference must be cast down the <%= intob %> inheritance
     * hierarchy.
     * An instance of the "className" <%= intob %> class may also be created
     * by using the "new" operator directory on the "className" <%= intob %>
-    * class.  For instance, two ways to create an <%= IntOb %>Root
+    * class.  For instance, two ways to create an <%=rootname%>
     * instance are
-    * <%= IntOb %>.create_<%= intob %>( "<%= IntOb %>Root" ),
+    * <%= IntOb %>.<%=create%>( "<%=rootname%>" ),
     * and
-    * new <%= IntOb %>Root()
+    * new <%=rootname%>()
     *
     * @param className fully-qualified (dot-delimited) name of the <%= intob %>
     * class for which to create an instance
     * @return instance of "className" <%= intob %> class
     */
-    public static <%= IntOb %>Root create_<%= intob %>( String className ) {
+    public static <%=rootname%> <%=create%>( String className ) {
         Class<?> rtiClass = _classNameClassMap.get( className );
         if ( rtiClass == null ) return null;
 
-        return create_<%= intob %>( rtiClass );
+        return <%=create%>( rtiClass );
     }
 
     /**
-    * Like {@link #create_<%= intob %>( String className )}, but <%= intob %>
+    * Like {@link #<%=create%>( String className )}, but <%= intob %>
     * is created with a timestamp based on "logicalTime".
     *
     * @param className fully-qualified (dot-delimited) name of the <%= intob %>
@@ -539,17 +550,17 @@ public class <%= IntOb %>Root implements <%= IntOb %>RootInterface {
     * @param logicalTime timestamp to place on the new <%= intob %> class instance
     * @return instance of "className" <%= intob %> class with "logicalTime" time stamp.
     */
-    public static <%= IntOb %>Root create_<%= intob %>( String className, LogicalTime logicalTime ) {
+    public static <%=rootname%> <%=create%>( String className, LogicalTime logicalTime ) {
         Class<?> rtiClass = _classNameClassMap.get( className );
         if ( rtiClass == null ) return null;
 
-        return create_<%= intob %>( rtiClass, logicalTime );
+        return <%=create%>( rtiClass, logicalTime );
     }
 
     /**
     * Create an <%= intob %> that is in instance of <%= intob %> class
     * that corresponds to the "classHandle" handle (RTI assigned). An
-    * <%= IntOb %>Root reference is returned, so to refer to the
+    * <%=rootname%> reference is returned, so to refer to the
     * instance using a reference to a "className" interaction, the returned
     * reference must be cast down the <%= intob %> inheritance hierarchy.
     *
@@ -557,15 +568,15 @@ public class <%= IntOb %>Root implements <%= IntOb %>RootInterface {
     * which to create an instance
     * @return instance of <%= intob %> class corresponding to "classHandle"
     */
-    public static <%= IntOb %>Root create_<%= intob %>( int classHandle ) {
+    public static <%=rootname%> <%=create%>( int classHandle ) {
         Class<?> rtiClass = _classNameClassMap.get(  _classHandleNameMap.get( classHandle )  );
         if ( rtiClass == null ) return null;
 
-        return create_<%= intob %>( rtiClass );
+        return <%=create%>( rtiClass );
     }
 
     /**
-    * Like {@link #create_<%= intob %>( int classHandle )}, but the <%= intob %>
+    * Like {@link #<%=create%>( int classHandle )}, but the <%= intob %>
     * is created with a timestamp based on "logicalTime".
     *
     * @param classHandle handle of <%= intob %> class (RTI assigned) class for
@@ -574,15 +585,15 @@ public class <%= IntOb %>Root implements <%= IntOb %>RootInterface {
     * @return instance of <%= intob %> class corresponding to "classHandle" with
     * "logicalTime" time stamp
     */
-    public static <%= IntOb %>Root create_<%= intob %>( int classHandle, LogicalTime logicalTime ) {
+    public static <%=rootname%> <%=create%>( int classHandle, LogicalTime logicalTime ) {
         Class<?> rtiClass = _classNameClassMap.get(  _classHandleNameMap.get( classHandle )  );
         if ( rtiClass == null ) return null;
 
-        return create_<%= intob %>( rtiClass, logicalTime );
+        return <%=create%>( rtiClass, logicalTime );
     }
 
     /**
-    * Like {@link #create_<%= intob %>( int classHandle )}, but the <%= intob %>'s
+    * Like {@link #<%=create%>( int classHandle )}, but the <%= intob %>'s
     * <%= paratt %>s are initialized using "datamemberMap".  The "datamemberMap"
     * is usually acquired as an argument to an RTI callback method of a federate.
     *
@@ -593,15 +604,15 @@ public class <%= IntOb %>Root implements <%= IntOb %>RootInterface {
     * @return instance of <%= intob %> class corresponding to "classHandle" with
     * its <%= paratt %>s initialized with the "datamemberMap"
     */
-    public static <%= IntOb %>Root create_<%= intob %>( int classHandle, <%=isinteraction?"ReceivedInteraction":"ReflectedAttributes"%> datamemberMap ) {
+    public static <%=rootname%> <%=create%>( int classHandle, <%=isinteraction?"ReceivedInteraction":"ReflectedAttributes"%> datamemberMap ) {
         Class<?> rtiClass = _classNameClassMap.get(  _classHandleNameMap.get( classHandle )  );
         if ( rtiClass == null ) return null;
 
-        return create_<%= intob %>( rtiClass, datamemberMap );
+        return <%=create%>( rtiClass, datamemberMap );
     }
 
     /**
-    * Like {@link #create_<%= intob %>( int classHandle, <%=isinteraction?"ReceivedInteraction":"ReflectedAttributes"%> datamemberMap )},
+    * Like {@link #<%=create%>( int classHandle, <%=isinteraction?"ReceivedInteraction":"ReflectedAttributes"%> datamemberMap )},
     * but the <%= intob %> is given a timestamp based on "logicalTime".
     *
     * @param classHandle handle of <%= intob %> class (RTI assigned) class for
@@ -613,11 +624,11 @@ public class <%= IntOb %>Root implements <%= IntOb %>RootInterface {
     * its <%= paratt %>s initialized with the "datamemberMap" and with
     * "logicalTime" timestamp
     */
-    public static <%= IntOb %>Root create_<%= intob %>( int classHandle, <%=isinteraction?"ReceivedInteraction":"ReflectedAttributes"%> datamemberMap, LogicalTime logicalTime ) {
+    public static <%=rootname%> <%=create%>( int classHandle, <%=isinteraction?"ReceivedInteraction":"ReflectedAttributes"%> datamemberMap, LogicalTime logicalTime ) {
         Class<?> rtiClass = _classNameClassMap.get(  _classHandleNameMap.get( classHandle )  );
         if ( rtiClass == null ) return null;
 
-        return create_<%= intob %>( rtiClass, datamemberMap, logicalTime );
+        return <%=create%>( rtiClass, datamemberMap, logicalTime );
     }
 
 <% if(isinteraction){ %><%}else{%>
@@ -837,27 +848,27 @@ public class <%= IntOb %>Root implements <%= IntOb %>RootInterface {
 
 
     /**
-    * Creates a new <%= IntOb %>Root instance.
+    * Creates a new <%=rootname%> instance.
     */
-    public <%= IntOb %>Root() {
+    public <%=rootname%>() {
         _uniqueID = generateUniqueID();
     }
     
     /**
-    * Creates a copy of an <%= IntOb %>Root instance.  As an
-    * <%= IntOb %>Root instance contains no <%= paratt %>s,
+    * Creates a copy of an <%=rootname%> instance.  As an
+    * <%=rootname%> instance contains no <%= paratt %>s,
     * this has the same effect as the default constructor.
     */
-    public <%= IntOb %>Root( <%= IntOb %>Root <%= intob %>Root ) {
+    public <%=rootname%>( <%=rootname%> <%= intob %>Root ) {
         this();
     }
 
-    protected <%= IntOb %>Root( <%=isinteraction?"ReceivedInteraction":"ReflectedAttributes"%> datamemberMap, boolean initFlag ) {
+    protected <%=rootname%>( <%=isinteraction?"ReceivedInteraction":"ReflectedAttributes"%> datamemberMap, boolean initFlag ) {
         this();
         if ( initFlag ) set<%= ParAtt %>s( datamemberMap );
     }
     
-    protected <%= IntOb %>Root( <%=isinteraction?"ReceivedInteraction":"ReflectedAttributes"%> datamemberMap, LogicalTime logicalTime, boolean initFlag ) {
+    protected <%=rootname%>( <%=isinteraction?"ReceivedInteraction":"ReflectedAttributes"%> datamemberMap, LogicalTime logicalTime, boolean initFlag ) {
         this();
         setTime( logicalTime );
         if ( initFlag ) set<%= ParAtt %>s( datamemberMap );
@@ -875,19 +886,19 @@ public class <%= IntOb %>Root implements <%= IntOb %>RootInterface {
     * @param datamemberMap contains <%= paratt %> values for the newly created
     * <%= intob %>
     */
-    public <%= IntOb %>Root( <%=isinteraction?"ReceivedInteraction":"ReflectedAttributes"%> datamemberMap ) {
+    public <%=rootname%>( <%=isinteraction?"ReceivedInteraction":"ReflectedAttributes"%> datamemberMap ) {
         this( datamemberMap, true );
     }
 
     /**
-    * Like {@link #<%= IntOb %>Root( <%=isinteraction?"ReceivedInteraction":"ReflectedAttributes"%> datamemberMap )},
+    * Like {@link #<%=rootname%>( <%=isinteraction?"ReceivedInteraction":"ReflectedAttributes"%> datamemberMap )},
     * except the new instance has an initial timestamp of "logicalTime".
     *
     * @param datamemberMap contains <%= paratt %> values for the newly created
     * <%= intob %>
     * @param logicalTime initial timestamp for newly created <%= intob %> instance
     */    
-    public <%= IntOb %>Root( <%=isinteraction?"ReceivedInteraction":"ReflectedAttributes"%> datamemberMap, LogicalTime logicalTime ) {
+    public <%=rootname%>( <%=isinteraction?"ReceivedInteraction":"ReflectedAttributes"%> datamemberMap, LogicalTime logicalTime ) {
         this( datamemberMap, logicalTime, true );
     }
 
@@ -1081,7 +1092,7 @@ public class <%= IntOb %>Root implements <%= IntOb %>RootInterface {
 
                     // Now, log detailed simulation data of the interaction
                     String logIdLocal = null;
-                    synchronized( <%= IntOb %>Root.class ) {
+                    synchronized( <%=rootname%>.class ) {
                         logIdLocal = Integer.toString( logId++ );
                     }
 
@@ -1339,7 +1350,7 @@ public class <%= IntOb %>Root implements <%= IntOb %>RootInterface {
 
                     // Now, log detailed simulation data of the object update
                     String logIdLocal = null;
-                    synchronized( <%= IntOb %>Root.class ) {
+                    synchronized( <%=rootname%>.class ) {
                         logIdLocal = Integer.toString( logId++ );
                     }
                     for(int ix =0; ix < suppliedAttributes.size();ix++){                            
@@ -1364,27 +1375,27 @@ public class <%= IntOb %>Root implements <%= IntOb %>RootInterface {
 
     /**
     * For use with the melding API -- this method is used to cast
-    * <%= IntOb %>Root instance reference into the
-    * <%= IntOb %>RootInterface interface.
+    * <%=rootname%> instance reference into the
+    * <%=rootname%>Interface interface.
     *
-    * @param rootInstance <%= IntOb %>Root instance reference to be
-    * cast into the <%= IntOb %>RootInterface interface
-    * @return <%= IntOb %>RootInterface reference to the instance
+    * @param rootInstance <%=rootname%> instance reference to be
+    * cast into the <%=rootname%>Interface interface
+    * @return <%=rootname%>Interface reference to the instance
     */
-    public <%= IntOb %>RootInterface cast( <%= IntOb %>Root rootInstance ) {
+    public <%=rootname%>Interface cast( <%=rootname%> rootInstance ) {
         return rootInstance;
     }        
 
     /**
     * For use with the melding API -- this method creates a new
-    * <%= IntOb %>Root instance and returns a
-    * <%= IntOb %>RootInterface reference to it.
+    * <%=rootname%> instance and returns a
+    * <%=rootname%>Interface reference to it.
     *
-    * @return <%= IntOb %>RootInterface reference to a newly created
-    * <%= IntOb %>Root instance
+    * @return <%=rootname%>Interface reference to a newly created
+    * <%=rootname%> instance
     */
-    public <%= IntOb %>RootInterface create() {
-        return new <%= IntOb %>Root();
+    public <%=rootname%>Interface create() {
+        return new <%=rootname%>();
     }        
 
     public void copyFrom( Object object ) { }

@@ -38,7 +38,7 @@ DeploymentExporter.js).
 
 Returned Value: 0, 1, or -1 (see below)
 
-Called By: visitAllChildrenRec
+Called By: this.visitAllChildrenRec
 
 This defines the this.getChildSorterFunc function that defines a
 function to be passed to a sorting routine. The function to be passed
@@ -80,7 +80,7 @@ arguments.
 
 Returned Value: none
 
-Called By: visitAllChildrenRec
+Called By: this.visitAllChildrenRec
   
 If this.excludeFromVisit is not already defined, it is defined to
 return false.
@@ -108,38 +108,66 @@ Called By:
   DeploymentExporter.Prototype.main in DeploymentExporter.js
   and maybe other functions
 
+The context variable declared here is passed around extensively and gets
+properties added to it in many places. It gets cloned in loadChildren, so
+that each child has its own version.
+
 */
 
       this.visitAllChildrenFromRootContainer = function(rootNode, callback)
       {
         var self = this;
         var error = '';
-        var context = {};
-        var counter = {visits: 1};
-        var counterCallback;
+        var context = {};          // initialization of model used extensively
+        var counter = {visits: 1}; 
+        var counterCallback;       // function 
 
 /***********************************************************************/
 
+/* counterCallback
+
+Returned Value: none
+
+Called By: this.visitAllChildrenRec
+
+First, this subtracts 1 from counter.visits.
+
+Then, if counter.visits is now 0, (which indicates completion), then this
+calls self['ROOT_post_visitor'] and ignores any error. Then it calls
+the callback (an argument passed to visitAllChildrenFromRootContainer)
+using as an argument [the current value of error with the err argument
+appended]. Then it returns.
+
+Otherwise, if the err argument is not nullish, this calls callback as
+described above.
+
+Otherwise, this does nothing more.
+
+It is not clear why errors from the try are ignored. It would seem more
+reasonable to append them to error.
+
+*/
+
         counterCallback = function(err)
         {
-          error = err ? error + err : error;
           counter.visits -= 1;
           if (counter.visits === 0)
             {
               try
                 {
-                  var ret = self['ROOT_post_visitor'](rootNode, context);
+                  self['ROOT_post_visitor'](rootNode, context);
                 }
-              catch(err)
+              catch(tryErr)
                 {
-                  
+                  // errors from the try are ignored
                 }
+	      error = err ? error + err : error;
               callback(error === '' ? undefined : error);
               return;
             }
-          if (err)
+          else if (err)
             {
-              callback(error);
+              callback(error + err);
               return;
             }
         };
@@ -173,11 +201,12 @@ Returned Value: none
 
 Called By:
   visitAllChildrenFromRootContainer
-  visitAllChildrenRec (recursively -- likely "Rec" in the name means recursive) 
+  this.visitAllChildrenRec (recursively) 
 
-By calling atModelNodeCallback, which calls visitAllChildrenRec
-recursively, this processes the tree of children with the node
-argument at the top.
+Likely "Rec" in the name means recursive.
+
+By calling atModelNodeCallback, which calls visitAllChildrenRec recursively,
+this processes the tree of children with the node argument at the top.
 
 When this is called from visitAllChildrenFromRootContainer the context is
 the one in that function. When this is called recursively, the context is
@@ -496,7 +525,11 @@ This is similar to atModelNode. See the documentation of atModelNode (above).
 
 Returned Value: a copy of an object
 
-Called By: ?
+Called By: self.core.loadChildren
+
+This makes a copy of an object by first setting the copy to a call to
+the constructor of the object and then adding any own properties of the
+object.
 
 */
       this.cloneCtx = function(obj)

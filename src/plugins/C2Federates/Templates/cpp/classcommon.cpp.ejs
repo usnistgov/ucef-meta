@@ -2,12 +2,17 @@
 input properties
 ----------------
 alldatamembers
-classname
 codeclassname
 datamembers
 hlaclassname
 isinteraction
 parentclassname
+
+used in
+-------
+class.cpp.ejs
+classroot.cpp.ejs
+
 */ -%>
 void <%=codeclassname%>::init( RTI::RTIambassador *rti ) {
     static bool isInitialized = false;

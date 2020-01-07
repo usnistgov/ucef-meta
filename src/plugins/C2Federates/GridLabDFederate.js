@@ -148,7 +148,7 @@ The top-level function returns this function.
 
           fullPath = moduleName + "/build.sh";
           template = TEMPLATES['common/mvn-install.sh.ejs'];
-          code = ejs.render(template, renderContext);
+          code = ejs.render(template, {});
           self.logger.info('calling addFile for ' + fullPath + ' in post_' +
                            'visit_GridLabDFederate of GridLabDFederate.js');
           artifact.addFile(fullPath, code,
@@ -161,10 +161,13 @@ The top-level function returns this function.
           var code;
           var fullPath;
           var template;
+          var model;
 
+          model = {classname: renderContext.classname,
+                   jarfile: renderContext.jarfile};
           fullPath = moduleName + "/run.sh";
           template = TEMPLATES['common/run.sh.ejs'];
-          code = ejs.render(template, renderContext);
+          code = ejs.render(template, model);
           self.logger.info('calling addFile for ' + fullPath + ' in post_' +
                            'visit_GridLabDFederate of GridLabDFederate.js');
           artifact.addFile(fullPath, code,
@@ -180,7 +183,8 @@ The top-level function returns this function.
 
           fullPath = moduleName + '/RTI.rid';
           template = TEMPLATES['common/rti.rid.ejs'];
-          code = ejs.render(template, renderContext);
+          code = ejs.render(template,
+			    {bindAddress: renderContext.bindAddress});
           self.logger.info('calling addFile for ' + fullPath + ' in post_' +
                            'visit_GridLabDFederate of GridLabDFederate.js');
           artifact.addFile(fullPath, code,
@@ -193,10 +197,15 @@ The top-level function returns this function.
           var code;
           var fullPath;
           var template;
+          var model;
 
+          model = {classname: renderContext.classname,
+                   lookahead: renderContext.lookahead,
+                   projectName: renderContext.projectName,
+                   step: renderContext.step};
           fullPath = configDirectory + "/" + moduleName + ".json";
           template = TEMPLATES['java/gridlabd-config.json.ejs'];
-          code = ejs.render(template, renderContext);
+          code = ejs.render(template, model);
           self.logger.info('calling addFile for ' + fullPath + ' in post_' +
                            'visit_GridLabDFederate of GridLabDFederate.js');
           artifact.addFile(fullPath, code,
@@ -212,7 +221,7 @@ The top-level function returns this function.
 
           fullPath = configDirectory + "/log4j2.xml";
           template = TEMPLATES['common/log4j2.xml.ejs'];
-          code = ejs.render(template, renderContext);
+          code = ejs.render(template, {});
           self.logger.info('calling addFile for ' + fullPath + ' in post_' +
                            'visit_GridLabDFederate of GridLabDFederate.js');
           artifact.addFile(fullPath, code,

@@ -1,11 +1,7 @@
 <% /*
-
-The data structure passed to this is large and deeply nested. Here are the
-top level properties (built in PubSubVisitors.js) used in this file with
-some lower levels expanded. Unused top level properties are elided with ...
-   ...
+input properties
+----------------
    classname (string)
-   ...
    publishedinteractiondata (array of JavaScript objects)
       name (string)
       codeName (string)
@@ -23,7 +19,6 @@ some lower levels expanded. Unused top level properties are elided with ...
       parameters (array of JavaScript objects)
       publishedAttributeData (array JavaScript objects)
       publishedLogLevel (string)
-    ...
    subscribedinteractiondata (array of JavaScript objects)
       name (string)
       codeName (string)
@@ -44,7 +39,10 @@ some lower levels expanded. Unused top level properties are elided with ...
       subscribedAttributeData (array JavaScript objects)
       subscribedLogLevel (string)
       logSubscribedAttributeData (array of JavaScript objects)
-   ...
+
+used in
+-------
+CppImplFederate.js
  
 */ -%>
 

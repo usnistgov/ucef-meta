@@ -753,9 +753,10 @@ all of the individual generated federates.
       fedEx.fileGenerators.push(function (artifact, callback)
       {
         var template = TEMPLATES['build-all.sh.ejs'];
-        var renderContext = {};
         var fullPath = 'build-all.sh';
-        var bashScript = ejs.render(template, renderContext);
+        var bashScript = ejs.render(template, {});
+        fedEx.logger.info('calling addFile for ' + fullPath +
+                          ' in buildScriptGenerator of FederatesExporter.js');
         artifact.addFile(fullPath, bashScript,
                          function (err)
                          {if (err) {callback(err); return;}
@@ -1029,6 +1030,8 @@ clear when to call the callback.
                 fullPath = directory + 'Variables.json';
                 template = TEMPLATES['variables.ejs'];
                 code = ejs.render(template, variablesModel);
+                fedEx.logger.info('calling addFile for ' + fullPath +
+                                  ' in fomGenerator of FederatesExporter.js');
                 artifact.addFile(fullPath, code,
                                  function (err)
                                  {if (err) {callback(err); return;}}
@@ -1038,6 +1041,8 @@ clear when to call the callback.
             fullPath = directory + feder.name + '.xml';
             template = TEMPLATES['fedfile.xml.ejs'];
             code = ejs.render(template, fomModelXml);
+            fedEx.logger.info('calling addFile for ' + fullPath +
+                              ' in fomGenerator of FederatesExporter.js');
             artifact.addFile(fullPath, code,
                              (remaining ?
                               function (err) // there are more

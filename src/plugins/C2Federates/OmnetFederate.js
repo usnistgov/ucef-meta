@@ -24,7 +24,7 @@ The top-level function returns this function.
 
 */
     
-    OmnetFederateExporter = function ()
+    OmnetFederateExporter = function()
     {
       var self = this;
       var omnetOutFilePath;
@@ -33,6 +33,9 @@ The top-level function returns this function.
       CppRTI.call(this);
 
       this.federateTypes = this.federateTypes || {};
+
+/***********************************************************************/
+
       this.federateTypes['OmnetFederate'] =
         {
           includeInExport: false,
@@ -41,7 +44,8 @@ The top-level function returns this function.
           {
             var omnetDirBasePath;
             var omnetDirPath;
-             
+            var fullPath;
+            
             self.initCppRTI();
             omnetDirBasePath = 'cpp-federates/';
             omnetDirSpec = {federation_name: self.projectName,
@@ -71,21 +75,16 @@ The top-level function returns this function.
                   callback();
                   return;
                 }
-              artifact.addFile(omnetDirPath + '/pom.xml',
-                               self._jsonToXml.convertToString(self.omnet_basePOM.toJSON()),
+              fullPath = omnetDirPath + '/pom.xml';
+              self.logger.info('calling addFile for ' + fullPath + ' in ' +
+                               'OmnetFederateExporter of OmnetFederate.js');
+              artifact.addFile(fullPath,
+                               self._jsonToXml.
+                                 convertToString(self.omnet_basePOM.toJSON()),
                                function(err)
-                               {
-                                 if (err)
-                                   {
-                                     callback(err);
-                                     return;
-                                   }
-                                 else
-                                   {
-                                     callback();
-                                     return;
-                                   }
-                               });
+                               {if (err) {callback(err); return;}
+                                else {callback(); return;}}
+                              );
             });
             
           } // end of init function
@@ -98,7 +97,6 @@ The top-level function returns this function.
         var self = this;
         var nodeType = self.core.getAttribute(self.getMetaType(node), 'name');
 
-        self.logger.info('Visiting a OmnetFederate');
         //Set up project POM files on visiting the first Mapper Federate
         if (!self.cppPOM)
           {
@@ -151,6 +149,8 @@ The top-level function returns this function.
 
         self.fileGenerators.push(function(artifact, callback)
         {
+          var cppModel;
+            
           if (self.omnet_filterGenerated)
             {
               callback();
@@ -161,12 +161,15 @@ The top-level function returns this function.
               concat(renderContext['subscribedobjectdata']);
           renderContext['allinteractiondata'] =
             renderContext['publishedinteractiondata'].
-              concat(renderContext['subscribedinteractiondata'])
-
-            self.logger.debug('Rendering template to file: ' + outFileName);
+            concat(renderContext['subscribedinteractiondata']);
+          self.logger.info('calling addFile for ' + outFileName + ' in ' +
+                           'post_visit_OmnetFederate of OmnetFederate.js');
+          cppModel = {projectname: renderContext.projectname,
+                      subscribedinteractiondata:
+                      renderContext.subscribedinteractiondata};
           artifact.addFile(outFileName,
                            ejs.render(TEMPLATES['cpp/omnetfilter.cpp.ejs'],
-                                      renderContext),
+                                      cppModel),
                            function(err)
                            {
                              if (err)
@@ -179,10 +182,13 @@ The top-level function returns this function.
                                  outFileName = omnetOutFilePath +
                                    MavenPOM.mavenIncludePath + "/" +
                                    fileName + ".h";
-                                 self.logger.debug('Rendering template to file: ' + outFileName);
+                                 self.logger.info('calling addFile for ' +
+                                            outFileName + ' in ' +
+                                            'post_visit_OmnetFederate of ' +
+                                            'OmnetFederate.js');
                                  artifact.addFile(outFileName,
                                                   ejs.render(TEMPLATES['cpp/omnetfilter.hpp.ejs'],
-                                                             renderContext),
+                                                             {projectname: renderContext.projectname}),
                                                   function(err)
                                                   {
                                                     if(err)

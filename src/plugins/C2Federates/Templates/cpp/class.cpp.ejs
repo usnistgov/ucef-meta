@@ -1,23 +1,29 @@
 <% /*
 input properties
 ----------------
-alldatamembers       array
-classname            string
-codeclassname        string
-datamembers          array
-hlaclassname         string
-isc2winteractionroot boolean
-isinteraction        boolean
-parentclassname      string
-simname              string
-*/ -%>
+alldatamembers         array
+codeclassname          string
+cppjavaArgumentTypeMap object not used here
+cppjavaTypeMap         object not used here
+datamembers            array
+hlaclassname           string
+isc2winteractionroot   boolean
+isinteraction          boolean
+parentclassname        string
+TEMPLATES              object
 
+used in
+-------
+CppRTI.js
+
+This also uses ejs, but apparently it is available without being passed in.
+
+*/ -%>
 #include "rti/<%=codeclassname%>.hpp"
 
 <% /*classcommon(...)*/ -%>
 <%- ejs.render(TEMPLATES["cpp/classcommon.cpp.ejs"], {
                 isinteraction: isinteraction,
-                classname: classname,
                 codeclassname: codeclassname,
                 parentclassname: parentclassname,
                 hlaclassname: hlaclassname,
@@ -44,14 +50,14 @@ void C2WInteractionRoot::sendInteraction( RTI::RTIambassador *rti ) {
 <% if(alldatamembers && alldatamembers.length > 0){ -%>
 
 <%=codeclassname%>::AttributeHandleValuePairSetSP <%=codeclassname%>::createDatamemberHandleValuePairSet( bool force ) {
-    AttributeHandleValuePairSetSP datamembers = AttributeHandleValuePairSetSP(RTI::AttributeSetFactory::create(<%=alldatamembers.length%>));
+    AttributeHandleValuePairSetSP datamembers = AttributeHandleValuePairSetSP(RTI::AttributeSetFactory::create(<%=alldatamembers.length%>) );
     std::string stringConversion;
     bool isPublished;
 <% /*alldatamembers:{ d |<supplied_attribute(codeclassname=codeclassname,datamember=d)>}*/ -%>
 <% alldatamembers.forEach(function(datamember){ -%>
-    isPublished = (m_publishedAttributeNames.find("<%=datamember.name%>") != m_publishedAttributeNames.end());
-    if (  isPublished && _<%=datamember.name%>.shouldBeUpdated( force )  ) {
-        stringConversion = static_cast< std::string >(  TypeMedley( get_<%=datamember.name%>() )  );
+    isPublished = ( m_publishedAttributeNames.find( "<%=datamember.name%>" ) != m_publishedAttributeNames.end() );
+    if ( isPublished && _<%=datamember.name%>.shouldBeUpdated(force) ) {
+        stringConversion = static_cast< std::string >( TypeMedley(get_<%=datamember.name%>() ) );
         datamembers->add( get_<%=datamember.name%>_handle(), stringConversion.c_str(), stringConversion.size() );
         _<%=datamember.name%>.setHasBeenUpdated();
         }
