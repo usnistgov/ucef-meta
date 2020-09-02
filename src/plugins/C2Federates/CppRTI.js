@@ -28,7 +28,6 @@ Returned Value: none
 
 Called By:
   renderToFile (object is objectRoot)
-  renderNotCoreObjectToFile (object is objectRoot)
   objectTraverserCheck (recursively)
 
 In this documentation, "object" means object in the WebGME sense, not
@@ -121,7 +120,6 @@ self.objectTraverserCheck in this file does not work.
 Returned Value: none
 
 Called By:
-  renderNotCoreInteractionToFile
   interactionTraverserCheck (recursively)
 
 This adds entries to the pubSubInteractions of a federate for all ancestors
@@ -264,7 +262,7 @@ will be called; otherwise, the callback will not occur.
          artifact,               /* array of file generating functions     */
          callback)               /* function to call if error or done      */
         {
-          var context = self.createCppRTICodeModel();
+          var context;
           var fullPath;
           var datamemberList;
           var cppTemplate;
@@ -275,17 +273,39 @@ will be called; otherwise, the callback will not occur.
           var federId;
           var feder;
           var groupId;
-
-          context.isinteraction = isInteraction;
-          context.simname = self.cppCorePackageOISpecs.
-            hasOwnProperty(model.name) ?
-            self.cppCorePackageOISpecs[model.name] : self.projectName;
-          context.classname = model.name;
-          context.hlaclassname = model.fullName;
-          context.parentclassname = model.isroot ? "" : model.basename;
-          context.isc2winteractionroot = model.isroot && isInteraction;
+          var cjTypeMap;
+          var cjArgumentTypeMap;
           
-          datamemberList = [];
+          cjTypeMap = {"String"  : "std::string",
+                       "int"     : "int",
+                       "long"    : "long",
+                       "short"   : "short",
+                       "byte"    : "char",
+                       "char"    : "char",
+                       "double"  : "double",
+                       "float"   : "float",
+                       "boolean" : "bool"};
+	  cjArgumentTypeMap = {"String"  : "const std::string &",
+                               "int"     : "int",
+                               "long"    : "long",
+                               "short"   : "short",
+                               "byte"    : "char",
+                               "char"    : "char",
+                               "double"  : "double",
+                               "float"   : "float",
+                               "boolean" : "bool"};
+          context = 
+          {alldatamembers : [],
+           codeclassname : (model.codeName || model.name),
+           cppjavaArgumentTypeMap : cjArgumentTypeMap,
+           cppjavaTypeMap : cjTypeMap,
+           datamembers : [],
+           hlaclassname : model.fullName,
+           isc2winteractionroot : model.isroot && isInteraction,
+           isinteraction : isInteraction,
+           parentclassname : model.isroot ? "" : model.basename,
+           TEMPLATES : TEMPLATES
+          };
           if (isInteraction)
             {
               datamemberList = model.parameters;
@@ -493,9 +513,8 @@ using the coreDirPath and self.corePOM.toJSON()
               var template;
 
               fullPath = coreOutSrcFilePath + '/InteractionRoot.cpp';
-              renderContext['isinteraction'] = true;
               template = TEMPLATES['cpp/classroot.cpp.ejs'];
-              xmlCode = ejs.render(template, renderContext);
+              xmlCode = ejs.render(template, {isinteraction: true});
               artifact.addFile(fullPath, xmlCode,
                                function (err)
                                {
@@ -507,7 +526,7 @@ using the coreDirPath and self.corePOM.toJSON()
                                });
               fullPath = coreOutIncFilePath + '/InteractionRoot.hpp';
               template = TEMPLATES['cpp/classroot.hpp.ejs'];
-              xmlCode = ejs.render(template, renderContext);
+              xmlCode = ejs.render(template, {isinteraction: true});
               artifact.addFile(fullPath, template,
                                function (err)
                                {
@@ -543,11 +562,10 @@ ObjectRoot.cpp file.
               var fullPath;
               var xmlCode;
               var template;
-              
+
               fullPath = coreOutSrcFilePath + '/ObjectRoot.cpp';
-              renderContext.isinteraction = false;
               template = TEMPLATES['cpp/classroot.cpp.ejs'];
-              xmlCode = ejs.render(template, renderContext);
+              xmlCode = ejs.render(template, {isinteraction: false});
               artifact.addFile(fullPath, xmlCode,
                                function (err)
                                {
@@ -559,7 +577,7 @@ ObjectRoot.cpp file.
                                });
               fullPath = coreOutIncFilePath + '/ObjectRoot.hpp';
               template = TEMPLATES['cpp/classroot.hpp.ejs'];
-              xmlCode = ejs.render(template, renderContext);
+              xmlCode = ejs.render(template, {isinteraction: false});
               artifact.addFile(fullPath, xmlCode,
                                function (err)
                                {
@@ -856,61 +874,6 @@ other until all the selected interactions are processed.
         self.cppRTIInitDone = true;
       }; // end initCppRTI
 
-/***********************************************************************/
-
-/* createCppRTICodeModel
-
-Returned Value: A large object
-
-Called By: renderToFile
-
-*/
-      this.createCppRTICodeModel = function()
-      {
-        return {simname: "",
-                classname: "",
-                parentclassname: "",
-                hlaclassname: "",
-                isinteraction: false,
-                isc2winteractionroot: false,
-                datamembers: [],
-                alldatamembers: [],
-                
-                helpers:{
-                    cppjavaTypeMap: function(type)
-                    {
-                      var typeMap;
-                      typeMap = {"String"  : "std::string",
-                                 "int"     : "int",
-                                 "long"    : "long",
-                                 "short"   : "short",
-                                 "byte"    : "char",
-                                 "char"    : "char",
-                                 "double"  : "double",
-                                 "float"   : "float",
-                                 "boolean" : "bool"};
-                      return typeMap[type] || "";
-                    },
-                    cppjavaArgumentTypeMap: function(type, name)
-                    {
-                      var typeMap;
-                      typeMap = {"String"  : "const std::string &",
-                                 "int"     : "int",
-                                 "long"    : "long",
-                                 "short"   : "short",
-                                 "byte"    : "char",
-                                 "char"    : "char",
-                                 "double"  : "double",
-                                 "float"   : "float",
-                                 "boolean" : "bool"};
-                      return typeMap[type] || "";
-                    }
-                },
-                ejs:ejs, 
-                TEMPLATES:TEMPLATES
-        };
-      };  // end createCppRTICodeModel function
-      
 /***********************************************************************/
 
     }; // end CppRTIFederateExporter function

@@ -226,9 +226,7 @@ define([
 	// render docker compose file with federate type + shared folder name + command
 	var self = this;
 
-	self.startScriptData = ejs.render(
-	    TEMPLATES['startScript.ejs'], {}
-	);
+	self.startScriptData = ejs.render(TEMPLATES['startScript.ejs'], {});
     };
 
     RunFederation.prototype.createInputsFolder = function() {

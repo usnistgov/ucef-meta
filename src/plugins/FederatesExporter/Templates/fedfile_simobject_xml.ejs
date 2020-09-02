@@ -1,4 +1,18 @@
-<% /* simobject(name, sharingXml, indent, attributes, children) */ -%>
+<% /*
+input properties
+----------------
+attributes  array
+children    array
+indent	    string of spaces
+name        string
+sharingXml  string
+
+used in
+-------
+DeploymentExporter.js
+FederatesExporter.js
+
+*/ -%>
 <%= indent%>    <objectClass>
 <%= indent%>        <name><%= name %></name>
 <%= indent%>        <sharing><%= sharingXml %></sharing><% -%>

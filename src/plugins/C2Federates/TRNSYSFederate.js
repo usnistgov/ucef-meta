@@ -9,11 +9,11 @@ define
  {
     'use strict';
 
-    var LabVIEWFederateExporter;
+    var TRNSYSFederateExporter;
 
 /***********************************************************************/
 
-/* LabVIEWFederateExporter (function-valued variable of
+/* TRNSYSFederateExporter (function-valued variable of
    top-level function object)
 
 Returned Value: none
@@ -23,16 +23,16 @@ Called By: FederatesExporter in FederatesExporter.js
 The top-level function returns this function.
 
 */
-    
-    LabVIEWFederateExporter = function ()
+
+    TRNSYSFederateExporter = function()
     {
-      var labviewArtifactId = "labview-federate";
-      var labviewGroupId = "gov.nist.hla";
-      var labviewVersion = "1.0.0-SNAPSHOT";
+      var trnsysArtifactId = "trnsys-wrapper";
+      var trnsysGroupId = "gov.nist.hla.trnsys";
+      var trnsysVersion = "0.1.0-SNAPSHOT";
       var checkBack;
 
 /***********************************************************************/
-      
+
       checkBack = function(err, callBack)
       {
         if (err)
@@ -47,51 +47,60 @@ The top-level function returns this function.
       };
 
 /***********************************************************************/
-      
-      this.federateTypes['LabVIEWFederate'] = {includeInExport: false};
+
+      this.federateTypes['TRNSYSFederate'] = {includeInExport: false};
 
 /***********************************************************************/
 
-      this.visit_LabVIEWFederate = function(node, parent, context)
+      this.visit_TRNSYSFederate = function(node, parent, context)
       {
-        var self = this;
-        var nodeType =
-          self.core.getAttribute( self.getMetaType(node), 'name' );
+        var self;
+        var nodeType;
 
-        context['labviewfedspec'] = {};
-        context['labviewfedspec']['groupId'] = self.mainPom.groupId.trim();
-        context['labviewfedspec']['projectName'] = self.projectName;
-        context['labviewfedspec']['projectVersion'] = self.project_version;
-        context['labviewfedspec']['classname'] =
+        self = this;
+        nodeType = self.core.getAttribute( self.getMetaType(node), 'name' );
+        context['trnsysfedspec'] = {};
+        context['trnsysfedspec']['projectName'] = self.projectName;
+        context['trnsysfedspec']['projectVersion'] = self.project_version;
+        context['trnsysfedspec']['classname'] =
           self.core.getAttribute(node, 'name');
-        context['labviewfedspec']['lookahead'] =
+        context['trnsysfedspec']['lookahead'] =
           self.core.getAttribute(node, 'Lookahead');
-        context['labviewfedspec']['step'] =
-          self.core.getAttribute(node, 'Step');
-        context['labviewfedspec']['bindAddress'] =
+        context['trnsysfedspec']['step'] = self.core.getAttribute(node, 'Step');
+        context['trnsysfedspec']['bindAddress'] =
           self.getCurrentConfig().bindAddress.trim();
-        context['labviewfedspec']['rootdir'] =
-          self.getCurrentConfig().codebaseDirectory.trim();
-        context['labviewfedspec']['jarfile'] =
-          labviewArtifactId + "-" + labviewVersion + ".jar";
-        context['labviewfedspec']['labviewPOM'] = {};
-        context['labviewfedspec']['labviewPOM']['artifactId'] =
-          labviewArtifactId;
-        context['labviewfedspec']['labviewPOM']['groupId'] = labviewGroupId;
-        context['labviewfedspec']['labviewPOM']['version'] = labviewVersion;
-        self.federates[self.core.getPath(node)] = context['labviewfedspec'];
+        context['trnsysfedspec']['jarfile'] =
+          trnsysArtifactId + "-" + trnsysVersion + ".jar";
+        self.federates[self.core.getPath(node)] = context['trnsysfedspec'];
         return {context: context};
+      }; // end of visit_TRNSYSFederate function
+
+/***********************************************************************/
+
+      this.makeTRNSYSVariables = function(node)
+      {
+        var self;
+        var feder;
+        var trnsysVariables;
+
+        self = this;
+        feder = self.federateInfos[self.core.getPath(node)];
+        trnsysVariables = {};
+        return trnsysVariables;
       };
 
 /***********************************************************************/
 
-      this.post_visit_LabVIEWFederate = function(node, context)
+      this.post_visit_TRNSYSFederate = function(node, context)
       {
         var self = this;
-        var renderContext = context['labviewfedspec'];
+        var renderContext = context['trnsysfedspec'];
         var moduleName = renderContext['classname'];
         var configDirectory = moduleName + "/conf";
         var feder;
+        var trnsysPOM = new MavenPOM();
+        var trnsysHelperPOM = new MavenPOM();
+        var trnsysVariables = self.makeTRNSYSVariables(node);
 
         // set the SOM.xml output directory
         feder = self.federateInfos[self.core.getPath(node)];
@@ -100,35 +109,54 @@ The top-level function returns this function.
             feder.directory = moduleName + "/conf/";
           }
 
-        // TODO rework MavenPOM.js for a more robust solution to
-        // link the module
-        self.mainPom.projects.push({'directory': moduleName});
+        // reference to the TRNSYS wrapper
+        trnsysPOM.artifactId = trnsysArtifactId;
+        trnsysPOM.groupId = trnsysGroupId;
+        trnsysPOM.version = trnsysVersion;
 
-        // generate the pom.xml that fetches the LabVIEW federate code
+        // pom.xml that fetches the resources required to run the TRNSYS
+        // federate. The maven-dependency-plugin will pull in the TRNSYS
+        // wrapper code. The maven-resources-plugin will pull in the
+        // FederatesExporter FOM.xml file
+        trnsysHelperPOM.groupId = 'gov.nist.hla.trnsys';
+        trnsysHelperPOM.version = renderContext['projectVersion'];
+        trnsysHelperPOM.artifactId = moduleName;
+        trnsysHelperPOM.dependencies.push(trnsysPOM);
+        trnsysHelperPOM.plugins.push({
+          'groupId': {'#text': 'org.apache.maven.plugins'},
+          'artifactId': {'#text': 'maven-dependency-plugin'},
+          'version': {'#text': '3.1.1'},
+          'executions':
+             {'execution':
+                {'id': {'#text': 'copy-dependencies'},
+                 'phase': {'#text': 'package'},
+                 'goals': {'goal': {'#text': 'copy-dependencies'}},
+                 'configuration':
+                   {'outputDirectory': {'#text': '${project.basedir}'},
+                    'overWriteReleases': {'#text': 'true'},
+                    'overWriteSnapshots': {'#text': 'true'},
+                    'overWriteIfNewer': {'#text': 'true'}
+                   }
+                }
+             }
+          });
+
+        // generate the pom.xml that fetches the TRNSYS federate code
         // and resources
         self.fileGenerators.push(function (artifact, callback)
         {
           var code;
           var fullPath;
-          var template;
-          var model;
 
-          model = {groupId: renderContext.groupId,
-                   labviewPOMartifactId: renderContext.labviewPOM.artifactId,
-                   labviewPOMgroupId: renderContext.labviewPOM.groupId,
-                   labviewPOMversion: renderContext.labviewPOM.version,
-                   projectVersion: renderContext.projectVersion,
-                   rootdir: renderContext.rootdir};
           fullPath = moduleName + "/pom.xml";
-          template = TEMPLATES['labview/labview-pom.xml.ejs'];
-          code = ejs.render(template, model);
+          code = self._jsonToXml.convertToString(trnsysHelperPOM.toJSON());
           self.logger.info('calling addFile for ' + fullPath + ' in post_' +
-                           'visit_LabVIEWFederate of LabVIEWFederate.js');
-          artifact.addFile(fullPath, code, 
+                           'visit_TRNSYSFederate of TRNSYSFederate.js');
+           artifact.addFile(fullPath, code,
                            function(err) {checkBack(err, callback);});
         });
 
-        // generate the script that installs the LabVIEW federate
+        // generate the script that builds the TRNSYS federate
         self.fileGenerators.push(function (artifact, callback)
         {
           var code;
@@ -139,12 +167,12 @@ The top-level function returns this function.
           template = TEMPLATES['common/mvn-install.sh.ejs'];
           code = ejs.render(template, {});
           self.logger.info('calling addFile for ' + fullPath + ' in post_' +
-                           'visit_LabVIEWFederate of LabVIEWFederate.js');
+                           'visit_TRNSYSFederate of TRNSYSFederate.js');
           artifact.addFile(fullPath, code,
                            function(err) {checkBack(err, callback);});
         });
 
-        // generate the script that runs the LabVIEW federate
+        // generate the script that runs the TRNSYS federate
         self.fileGenerators.push(function (artifact, callback)
         {
           var code;
@@ -158,7 +186,7 @@ The top-level function returns this function.
           template = TEMPLATES['common/run.sh.ejs'];
           code = ejs.render(template, model);
           self.logger.info('calling addFile for ' + fullPath + ' in post_' +
-                           'visit_LabVIEWFederate of LabVIEWFederate.js');
+                           'visit_TRNSYSFederate of TRNSYSFederate.js');
           artifact.addFile(fullPath, code,
                            function(err) {checkBack(err, callback);});
         });
@@ -170,17 +198,17 @@ The top-level function returns this function.
           var fullPath;
           var template;
 
-          fullPath = moduleName + '/RTI.rid';
+          fullPath = moduleName + "/RTI.rid";
           template = TEMPLATES['common/rti.rid.ejs'];
           code = ejs.render(template,
                             {bindAddress: renderContext.bindAddress});
           self.logger.info('calling addFile for ' + fullPath + ' in post_' +
-                           'visit_LabVIEWFederate of LabVIEWFederate.js');
+                           'visit_TRNSYSFederate of TRNSYSFederate.js');
           artifact.addFile(fullPath, code,
                            function(err) {checkBack(err, callback);});
         });
 
-        // generate the LabVIEW federate configuration file
+        // generate the TRNSYS federate configuration file
         self.fileGenerators.push(function (artifact, callback)
         {
           var code;
@@ -190,13 +218,13 @@ The top-level function returns this function.
 
           model = {classname: renderContext.classname,
                    lookahead: renderContext.lookahead,
-                   projectName: renderContext.projectName,
+                   projectName:renderContext. projectName,
                    step: renderContext.step};
           fullPath = configDirectory + "/" + moduleName + ".json";
-          template = TEMPLATES['labview/labview-config.json.ejs'];
+          template = TEMPLATES['trnsys/trnsys-config.json.ejs'];
           code = ejs.render(template, model);
           self.logger.info('calling addFile for ' + fullPath + ' in post_' +
-                           'visit_LabVIEWFederate of LabVIEWFederate.js');
+                           'visit_TRNSYSFederate of TRNSYSFederate.js');
           artifact.addFile(fullPath, code,
                            function(err) {checkBack(err, callback);});
         });
@@ -212,19 +240,19 @@ The top-level function returns this function.
           template = TEMPLATES['common/log4j2.xml.ejs'];
           code = ejs.render(template, {});
           self.logger.info('calling addFile for ' + fullPath + ' in post_' +
-                           'visit_LabVIEWFederate of LabVIEWFederate.js');
+                           'visit_TRNSYSFederate of TRNSYSFederate.js');
           artifact.addFile(fullPath, code,
                            function(err) {checkBack(err, callback);});
         });
-        
         return {context: context};
-      }; // end of post_visit_LabVIEWFederate function
-      
+      };
+      // end of post_visit_TRNSYSFederate function
+
 /***********************************************************************/
 
-    }; // end of setting LabVIEWFederateExporter function variable
-    
+    } // end of TRNSYSFederateExporter function
+   
 /***********************************************************************/
 
-    return LabVIEWFederateExporter;
-}); // end define
+   return TRNSYSFederateExporter;
+ }); // end define

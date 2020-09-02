@@ -1,20 +1,23 @@
-<%/* group federate;
+<% /*
+input properties
+----------------
+allinteractiondata
+allobjectdata
+asynchronousdelivery
+classname
+melderpackagename
+publishedinteractiondata
+publishedobjectdata
+subscribedinteractiondata
+subscribedobjectdata
+timeconstrained
+timeregulating
+(and others not used)
 
-federate(
-        simname,
-        melderpackagename,
-        classname,
-        isnonmapperfed,
-        timeconstrained,
-        timeregulating,
-        asynchronousdelivery,
-        publishedinteractiondata,
-        subscribedinteractiondata,
-        allinteractiondata,
-        publishedobjectdata,
-        subscribedobjectdata,
-        allobjectdata
-) ::= <<
+used in
+-------
+JavaImplFederate.js
+
 */ -%>
 package <%= groupId %>.<%= classname.toLowerCase() %>;
 
@@ -80,9 +83,9 @@ public class <%= classname %>Base extends <% if(melderpackagename) { %><%= class
 <% }); -%>
 <% /* subscribedinteractiondata:subinter() */ -%>
 <% subscribedinteractiondata.forEach(function(interactiondata){ -%>
-        <%= interactiondata.name %>.subscribe(getLRC());
+        <%= interactiondata.codeNameOrName %>.subscribe(getLRC());
         _subscribedInteractionFilter.setFedFilters( 
-           <%= interactiondata.name %>.get_handle(),
+           <%= interactiondata.codeNameOrName %>.get_handle(),
            SubscribedInteractionFilter.OriginFedFilter.<%= interactiondata.originFedFilter() %>,
            SubscribedInteractionFilter.SourceFedFilter.<%= interactiondata.srcFedFilter() %>);
 <% }); -%>

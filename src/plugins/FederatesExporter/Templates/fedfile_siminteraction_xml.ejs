@@ -1,4 +1,20 @@
-<% /* name,sharingXml,deliveryXml,orderXml,indent,parameters,children */ -%>
+<% /*
+input properties
+----------------
+children    array
+deliveryXml string
+indent	    string of spaces
+name        string
+orderXml    string
+parameters  array
+sharingXml  string
+
+used in
+-------
+DeploymentExporter.js
+FederatesExporter.js
+
+*/ -%>
 <%= indent%>    <interactionClass>
 <%= indent%>        <name><%= name %></name>
 <%= indent%>        <sharing><%= sharingXml %></sharing>

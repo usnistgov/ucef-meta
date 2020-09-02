@@ -1,14 +1,14 @@
 <% /*
 input properties
 ----------------
-classname    string
-lookahead    number
-projectName  string
-step         number
+classname       string
+lookahead       number
+projectName     string
+step            number
 
 used in
 -------
-GridLabDFederate.js
+TRNSYSFederate.js
 
 */ -%>
 {
@@ -20,6 +20,6 @@ GridLabDFederate.js
     "isLateJoiner": false,
     "stepSize": <%=step%>,
     "lookAhead": <%=lookahead%>,
-    "workingDirectory": ".",
-    "modelFilePath": "model.glm"
+    "portNumber": 1345,
+    "variableMapping": "conf/Variables.json"
 }
