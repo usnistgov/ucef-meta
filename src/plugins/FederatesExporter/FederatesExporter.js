@@ -754,7 +754,7 @@ all of the individual generated federates.
       {
         var template = TEMPLATES['build-all.sh.ejs'];
         var fullPath = 'build-all.sh';
-        var bashScript = ejs.render(template, {});
+          var bashScript = ejs.render(template, {dummy: 0});
         fedEx.logger.info('calling addFile for ' + fullPath +
                           ' in buildScriptGenerator of FederatesExporter.js');
         artifact.addFile(fullPath, bashScript,
@@ -1363,8 +1363,10 @@ Returned Value: true or false
 
 Called By: visitAllChildrenRec (in ModelTraverserMixin.js)
 
-A function named excludeFromVisit is also defined (and called) in
-C2Core/ModelTraverserMixin.js.
+In C2Core/ModelTraverserMixin.js, this.excludeFromVisit is set to the
+function defined here.
+
+
 
 */
 
@@ -1373,17 +1375,22 @@ C2Core/ModelTraverserMixin.js.
     {
       var self;
       var exclude;
+      var nodeName;
       var nodeTypeName;
       
       self = this,
       exclude = false;
       
       if (self.rootNode != node)
-        {    
-          nodeTypeName =
-            self.core.getAttribute(self.getMetaType(node),'name');
+        {
+          nodeName = self.core.getAttribute(node, 'name');
+          nodeTypeName = ((nodeName === 'CPSWT') ? 'CPSWT' :
+			  (nodeName === 'CPSWTMeta') ? 'CPSWTMeta' :
+                self.core.getAttribute(self.getMetaType(node),'name'));
           exclude = exclude 
             || self.isMetaTypeOf(node, self.META['Language [C2WT]'])
+	    || self.isMetaTypeOf(node,
+			self.META['CPSWT.CPSWTMeta.Language [CPSWT]'])
             || (self.federateTypes.hasOwnProperty(nodeTypeName) &&
                 !self.federateTypes[nodeTypeName].includeInExport)
             || ((nodeTypeName in self.federateTypes) &&
