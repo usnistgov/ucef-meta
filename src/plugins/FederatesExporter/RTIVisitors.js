@@ -15,13 +15,13 @@ The RTIVisitors function is then called at the
 DeploymentExporter.js when the FederatesExporter or DeploymentExporter
 function starts to execute.
 
-The result of calling the RTISubVisitors function is that four
+The result of calling the RTIVisitors function is that four
 functions are defined as properties of the FederatesExporter or
 DeploymentExporter function (which is also an object). The lines of
 this function that begin the definitions of the four functions are:
 
 this.visit_Interaction = function(node, parent, context)
-this.visit_Parameter = function(node, parent, context)
+this.visit_Object = function(node, parent, context)
 this.visit_Parameter = function(node, parent, context)
 this.visit_Attribute = function(node, parent, context)
 
@@ -95,13 +95,15 @@ This processes data for an Interaction.
         interaction['id'] = nodePath;
         interaction['inputPlaceName'] = "";
         interaction['isMapperPublished'] = false;
-        interaction['isroot'] = node.base == self.META['Interaction'];
+        interaction['isroot'] = // FIX - remove next line
+	   ((node.base == self.META['Interaction']) || // FIX - remove this line
+	   (node.base == self.META['CPSWT.CPSWTMeta.Interaction']));
         interaction['name'] = self.core.getAttribute(node, 'name');
         interaction['order'] = self.core.getAttribute(node, 'Order');
         interaction['outputPlaceName'] = "";
         interaction['parameters'] = [];
         if (self.pubSubInteractions)
-          { // only DeploymentExporter has pubSubInteractions
+          {//only DeploymentExporter&FederatesExporter have pubSubInteractions
             if (interaction.name == 'SimEnd')
               {
                 if (self.pubSubInteractions[nodePath])
@@ -141,13 +143,14 @@ This processes data for an Interaction.
           }
 
         var nextBase = node.base;
-        while (nextBase != self.META['Interaction'])
+        while ((nextBase != self.META['Interaction']) && //remove this line
+	       (nextBase != self.META['CPSWT.CPSWTMeta.Interaction']))
           {
             nameFragments.push(self.core.getAttribute(nextBase, 'name'));
             nextBase = nextBase.base;
           }
 
-        //Check: Interaction is derived form C2WInteractionRoot
+        //Check: Interaction is derived from C2WInteractionRoot
         if (nameFragments.length > 1 &&
             nameFragments.indexOf('C2WInteractionRoot') == -1)
           {
@@ -254,7 +257,9 @@ for code generation is extracted from the primary model.
         object['children'] = object['children'] || [];
         object['codeName'] = self.core.getAttribute(node, 'CodeGeneratedName');
         object['id'] = self.core.getPath(node);
-        object['isroot'] = node.base == self.META['Object'];
+        object['isroot'] =
+	((node.base == self.META['Object']) || // FIX remove this line
+	 (node.base == self.META['CPSWT.CPSWTMeta.Object']));
         object['name'] = self.core.getAttribute(node, 'name');
         object['parameters'] = object['attributes'];
         if (self.objects[nodeBasePath])
@@ -273,7 +278,8 @@ for code generation is extracted from the primary model.
               }
           }
         nextBase = node.base;
-        while (nextBase != self.META['Object'])
+        while ((nextBase != self.META['Object']) && // FIX - remove this line
+	       (nextBase != self.META['CPSWT.CPSWTMeta.Object']))
           {
             nameFragments.push(self.core.getAttribute(nextBase, 'name'));
             nextBase = nextBase.base;
