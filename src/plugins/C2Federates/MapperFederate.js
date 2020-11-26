@@ -144,15 +144,15 @@ define
             self.java_mapperPOM.version = self.project_version;
             self.java_mapperPOM.packaging = "jar";
           }
-	self.mapperCodeModel =
-	   {simname: self.projectName,
-	    classname: self.core.getAttribute(node, 'name'),
-	    step_size: parseFloat(self.core. getAttribute(node, 'Step')),
-	    mappingconnsdata: [],
-	    mappingobjectsdata: [],
-	    helpers: {},
-	    ejs: ejs, 
-	    TEMPLATES: TEMPLATES};
+        self.mapperCodeModel =
+           {simname: self.projectName,
+            classname: self.core.getAttribute(node, 'name'),
+            step_size: parseFloat(self.core. getAttribute(node, 'Step')),
+            mappingconnsdata: [],
+            mappingobjectsdata: [],
+            helpers: {},
+            ejs: ejs, 
+            TEMPLATES: TEMPLATES};
         context.mapperfedspec = self.mapperCodeModel;
         if (isNaN(context.mapperfedspec.step_size))
           {
@@ -201,8 +201,10 @@ define
           }   
         mapping.uniqueId = nodeGUID.replace(/-/g,'_');
         // See if it is a Simple/Complex MappingConnection
-        mapping.isSimpleConn =
-          !self.isMetaTypeOf(node, self.META.ComplexMappingConnection);
+        mapping.isSimpleConn = // FIX - remove next line
+          ((!self.isMetaTypeOf(node, self.META.ComplexMappingConnection)) &&
+           (!self.isMetaTypeOf(node,
+                 self.META['CPSWT.CPSWTMeta.ComplexMappingConnection'])));
         mapping.parentPath = self.core.getAttribute(parent.parent, 'name') +
                              "/" + self.core.getAttribute(parent, 'name');
         // Check if it is a direct mapping (no mapping specs provided to)
