@@ -1,29 +1,32 @@
 /*globals define, _*/
 /*jshint browser: true, camelcase: false*/
+
 /**
- * @author pmeijer / https://github.com/pmeijer
+ * @author rkereskenyi / https://github.com/rkereskenyi
  */
 
 define([
-    'decorators/ModelDecorator/ModelDecorator',
+    'js/Decorators/DecoratorBase',
     './DiagramDesigner/RegistryDecorator.DiagramDesignerWidget',
     './PartBrowser/RegistryDecorator.PartBrowserWidget'
-], function (ModelDecorator, RegistryDecoratorDiagramDesignerWidget, RegistryDecoratorPartBrowserWidget) {
+], function (DecoratorBase, RegistryDecoratorDiagramDesignerWidget, RegistryDecoratorPartBrowserWidget) {
 
     'use strict';
 
     var RegistryDecorator,
+        __parent__ = DecoratorBase,
+        __parent_proto__ = DecoratorBase.prototype,
         DECORATOR_ID = 'RegistryDecorator';
 
     RegistryDecorator = function (params) {
         var opts = _.extend({loggerName: this.DECORATORID}, params);
 
-        ModelDecorator.apply(this, [opts]);
+        __parent__.apply(this, [opts]);
 
         this.logger.debug('RegistryDecorator ctor');
     };
 
-    _.extend(RegistryDecorator.prototype, ModelDecorator.prototype);
+    _.extend(RegistryDecorator.prototype, __parent_proto__);
     RegistryDecorator.prototype.DECORATORID = DECORATOR_ID;
 
     /*********************** OVERRIDE DecoratorBase MEMBERS **************************/
