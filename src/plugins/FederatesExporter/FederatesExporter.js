@@ -1385,12 +1385,12 @@ function defined here.
         {
           nodeName = self.core.getAttribute(node, 'name');
           nodeTypeName = ((nodeName === 'CPSWT') ? 'CPSWT' :
-			  (nodeName === 'CPSWTMeta') ? 'CPSWTMeta' :
+                          (nodeName === 'CPSWTMeta') ? 'CPSWTMeta' :
                 self.core.getAttribute(self.getMetaType(node),'name'));
           exclude = exclude 
             || self.isMetaTypeOf(node, self.META['Language [C2WT]'])
-	    || self.isMetaTypeOf(node,
-			self.META['CPSWT.CPSWTMeta.Language [CPSWT]'])
+            || self.isMetaTypeOf(node,
+                        self.META['CPSWT.CPSWTMeta.Language [CPSWT]'])
             || (self.federateTypes.hasOwnProperty(nodeTypeName) &&
                 !self.federateTypes[nodeTypeName].includeInExport)
             || ((nodeTypeName in self.federateTypes) &&
