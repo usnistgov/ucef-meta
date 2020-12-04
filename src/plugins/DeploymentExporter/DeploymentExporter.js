@@ -1949,7 +1949,9 @@ The adds properties to the obj argument and to self.
       var self = this;
 
       obj.name = self.core.getAttribute(node, 'name');
-      obj.nodeType = self.core.getAttribute(self.getMetaType(node), 'name');
+      obj.nodeType = ((obj.name === 'CPSWT') ? 'CPSWT' :
+                      (obj.name === 'CPSWTMeta') ? 'CPSWTMeta' :
+                      self.core.getAttribute(self.getMetaType(node), 'name'));
       obj.ID = self.core.getGuid(node);
       self.coaNodes.push(obj);
       self.coaPaths[self.core.getPath(node)] = self.core.getGuid(node);
@@ -2225,7 +2227,10 @@ Called By: apparently never called
       var self = this;
 
       obj.name = self.core.getAttribute(node, 'name');
-      obj.type = self.core.getAttribute(self.getMetaType(node), 'name');
+      
+      obj.type = ((obj.name === 'CPSWT') ? 'CPSWT' :
+                  (obj.name === 'CPSWTMeta') ? 'CPSWTMeta' :
+                  self.core.getAttribute(self.getMetaType(node), 'name'));
       obj.ID = self.core.getGuid(node);
       obj.flowID = self.core.getAttribute(node, 'flowID');
       obj.fromNode = self.core.getPointerPath(node, 'src');
@@ -2367,24 +2372,30 @@ Called By: atModelNode (in ModelTraverserMixin.js)
       context)  /* (object) a context object, may be modified     */
     {
       var self = this;
+      var nodeName;
       var ret = {context: context};
-      var nodeType = self.core.getAttribute(self.getMetaType(node), 'name');
-      var fed = {name: self.core.getAttribute(node, 'name')};
+      var nodeMetaTypeName;
+      var fed;
       var nodeAttrNames;
       var i; // counter in for loop
-      
+
+      nodeName = self.core.getAttribute(node, 'name');
+      fed = {name: nodeName};
+      nodeMetaTypeName = ((nodeName === 'CPSWT') ? 'CPSWT' :
+                          (nodeName === 'CPSWTMeta') ? 'CPSWTMeta' :
+                       self.core.getAttribute(self.getMetaType(node),'name'));
       nodeAttrNames = self.core.getAttributeNames(node);
       for (i = 0; i < nodeAttrNames.length; i++)
         {
           fed[nodeAttrNames[i]] =
             self.core.getAttribute(node, nodeAttrNames[i]);
         }
-      fed.FederateType = nodeType;
+      fed.FederateType = nodeMetaTypeName;
       fed.configFilename = fed.name.toLowerCase() + ".json";
       self.federates.push(fed);
-      if (nodeType != 'Federate')
+      if (nodeMetaTypeName != 'Federate')
         {
-          try {ret = self['visit_' + nodeType](node, parent, context);}
+          try {ret = self['visit_' + nodeMetaTypeName](node, parent, context);}
           catch (err)
             {
 
@@ -2411,7 +2422,10 @@ C2Core/ModelTraverserMixin.js.
     {
       var self = this;
 
-      return (false || self.isMetaTypeOf(node, self.META['Language [C2WT]']));
+      return (false ||
+              self.isMetaTypeOf(node, self.META['Language [C2WT]']) ||
+              self.isMetaTypeOf(node,
+                                self.META['CPSWT.CPSWTMeta.Language [CPSWT]']));
     }
 
 /***********************************************************************/
