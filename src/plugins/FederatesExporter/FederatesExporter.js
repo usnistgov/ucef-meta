@@ -960,7 +960,7 @@ clear when to call the callback.
     {
       var today = new Date();
       var year = today.getFullYear();
-      var month = today.getMonth();
+      var month = (1 + today.getMonth());
       var day = today.getDate();
       var dateString = (year + "-" + ((month < 10) ? "0" : "") + month +
                         "-" + ((day < 10) ? "0" : "") + day);
