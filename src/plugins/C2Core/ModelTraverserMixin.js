@@ -1,6 +1,4 @@
-/*
-
-File completed by unknown programmer (probably H. Neema)
+/**
 
 File modified extensively by T. Kramer 
 
@@ -18,8 +16,6 @@ It might be useful to move those parts of this function that are
 specific to the FederatesExporters out of this function, so that any
 caller can use it.
 
-The doneModelNode function
-
 */
 
 define([], function()
@@ -27,9 +23,9 @@ define([], function()
     'use strict';
     var withModelTraverser;
 
-/***********************************************************************/
+/* ******************************************************************* */
 
-/* withModelTraverser
+/** withModelTraverser
 
 Returned Value: none
 
@@ -42,9 +38,9 @@ DeploymentExporter.js).
     withModelTraverser = function()
     {
         
-/***********************************************************************/
+/* ******************************************************************* */
 
-/* this.getChildSorterFunc
+/** this.getChildSorterFunc
 
 Returned Value: a comparer function that can be passed to a generic
 sorting routine
@@ -91,9 +87,9 @@ not a sorter.
         return comparer;
       };
 
-/***********************************************************************/
+/* ******************************************************************* */
 
-/* this.excludeFromVisit
+/** this.excludeFromVisit
 
 Returned Value: none
 
@@ -114,9 +110,9 @@ DeploymentExporter.js (and possibly elsewhere).
         return exclude;
       }
 
-/***********************************************************************/
+/* ******************************************************************* */
 
-/* this.visitAllChildrenFromRootContainer
+/** this.visitAllChildrenFromRootContainer
 
 Returned Value: none
 
@@ -139,9 +135,9 @@ that each child has its own version.
         var counter = {visits: 1}; 
         var counterCallback;       // function 
 
-/***********************************************************************/
+/* ******************************************************************* */
 
-/* counterCallback
+/** counterCallback
 
 Returned Value: none
 
@@ -178,7 +174,7 @@ have been visited (possibly involving the rootNode), but no need arose.
                 }
               catch(tryErr)
                 {
-                  // errors from the try are ignored
+                  // catch here in order to continue
                 }
               error = err ? error + err : error;
               callback(error === '' ? undefined : error);
@@ -191,7 +187,7 @@ have been visited (possibly involving the rootNode), but no need arose.
             }
         }; // end of counterCallback function
         
-/***********************************************************************/
+/* ******************************************************************* */
         try
           {
             var ret = self['ROOT_visitor'](rootNode, context);
@@ -212,9 +208,9 @@ have been visited (possibly involving the rootNode), but no need arose.
         self.visitAllChildrenRec(rootNode, context, counter, counterCallback);
       }; // end of visitAllChildrenFromRootContainer function
         
-/***********************************************************************/
+/* ******************************************************************* */
 
-/* this.visitAllChildrenRec
+/** this.visitAllChildrenRec
 
 Returned Value: none
 
@@ -240,12 +236,12 @@ callback is the counterCallback function defined above. When this is
 called recursively, the callback is the doneVisitChildCallback function
 defined below.
 
-This function seems unnecessarily complex. For example, since the
-function is recursive, the atModelNodeChildCallback,
-doneModelNodeCallback, and doneVisitChildCallback functions are being
-defined each time this function is called. However, those functions
-use variables that are not passed as arguments and may have different
-values each time the functions are defined.
+This function is complex. Since the function is recursive, the
+atModelNodeChildCallback, doneModelNodeCallback, and
+doneVisitChildCallback functions are being defined each time this
+function is called. Those functions use variables that are not passed
+as arguments and may have different values each time the functions are
+defined.
 
 CPSWT and CPSWTMeta have a null base, they are their own metaTypes, and
 the metaType is not an attribute, so setting nodeMetaTypeName needs
@@ -259,20 +255,20 @@ of the queue and executes it.
 
 */
 
-      this.visitAllChildrenRec = function( /* ARGUMENTS                    */
-       node,                               /* node that may have children  */
-       context,                            /* a context, see above         */
-       counter,                            /* counter object, see above    */
-       callback)                           /* callback function, see above */
+      this.visitAllChildrenRec = function( /* ARGUMENTS                      */
+       node,                               /**< node that may have children  */
+       context,                            /**< a context, see above         */
+       counter,                            /**< counter object, see above    */
+       callback)                           /**< callback function, see above */
       {
         var self = this;
         var nodeName;         // name of node
         var nodeMetaTypeName; // name of metaType of node
         var passedToLoad;     // function passed to core.loadChildren
 
-/***********************************************************************/
+/* ******************************************************************* */
 
-/* passedToLoad
+/** passedToLoad
 
 Called By: not called directly, passed as callback to core.loadChildren
 
@@ -297,9 +293,9 @@ Called By: not called directly, passed as callback to core.loadChildren
             }
           counter.visits -= 1;
           
-/***********************************************************************/
+/* ******************************************************************* */
 
-/* doneModelNodeCallback (function defined within passedToLoad)
+/** doneModelNodeCallback (function defined within passedToLoad)
 
 Called By:
   passedToLoad (a few lines down)
@@ -323,7 +319,7 @@ Called By:
               return
             }; // closes doneModelNodeCallback
         
-/***********************************************************************/
+/* ******************************************************************* */
           
           if (childrenToVisit === 0)
             { // node has no children
@@ -352,9 +348,9 @@ Called By:
               children.sort(comparisonFunc);
             }
           
-/***********************************************************************/
+/* ******************************************************************* */
 
-/* doneVisitChildCallback (function defined within passedToLoad)
+/** doneVisitChildCallback (function defined within passedToLoad)
 
 Called By: not called directly, passed as callback to visitAllChildrenRec
 
@@ -383,7 +379,7 @@ Called By: not called directly, passed as callback to visitAllChildrenRec
               } 
           }; // closes doneVisitChildCallback
 
-/***********************************************************************/
+/* ******************************************************************* */
           
           for (i = 0; i < children.length; i += 1)
             {
@@ -404,7 +400,7 @@ Called By: not called directly, passed as callback to visitAllChildrenRec
             }
         }; // closes passedToLoad =
 
-/***********************************************************************/
+/* ******************************************************************* */
         
         nodeName = self.core.getAttribute(node, 'name');
         if (self.excludeFromVisit(node))
@@ -422,35 +418,24 @@ Called By: not called directly, passed as callback to visitAllChildrenRec
         self.core.loadChildren(node, passedToLoad);
       }; // closes this.visitAllChildrenRec =
 
-/***********************************************************************/
+/* ******************************************************************* */
 
-/* this.atModelNode
+/** this.atModelNode
 
 Returned Value: none
 
 Called By: visitAllChildrenRec
-
-This creates the visitorFuncName by calling getVisitorFuncName, which
-appends 'visit_' and nodeMetaTypeName (except that if nodeMetaTypeName
-ends in 'Federate' it returns 'visit_Federate').  Then this calls
-self[visitorFuncName]. However, that function might not exist, so the
-call is inside a "try" and if the function does not exist, the error
-is catched. If the function exists, it revises the context. In that
-case this calls the callback with the revised context and returns. If
-the function does not exist, unless there is an unexpected error, this
-calls the callback with the original context and returns.
-
-It seems kludgy to execute a statement that is known to be in error
-much of the time and recover by catching the error. It would seem
-better to test for a known name and call the appropriate function.
-Currently, however, new visitor functions may be created without
-having to change this function.
 
 If this is called by FederatesExporter, so that federateInfos exists, and
 the node type is in the federateTypes of the FederatesExporter, then
  - If there is already an entry in federateInfos for the node,
    the name, metaType, and generateCode are added.
  - If not, a new entry in federateInfos is built for the node.
+
+This selects the visitorFuncName from the visitorNames according to
+the metaType name of the node. If there is such a visitorFuncName, it
+then calls self[visitorFuncName]. If there is an unexpected error,
+this calls the callback with the original context and returns.
 
 The only use of the parent argument is for passing to the visitor function.
 
@@ -461,19 +446,18 @@ The only use of the parent argument is for passing to the visitor function.
         var self;
         var nodeName;
         var nodeMetaTypeName;
-        var codeGen;
         var visitorFuncName;
+        var codeGen;
         var id;
         var ret;
-
+        
         self = this;
         nodeName = self.core.getAttribute(node, 'name');
         nodeMetaTypeName = ((nodeName === 'CPSWT') ? 'CPSWT' :
                             (nodeName === 'CPSWTMeta') ? 'CPSWTMeta' :
                 self.core.getAttribute(self.getMetaType(node),'name'));
+        visitorFuncName = self.visitorNames[nodeMetaTypeName];
         codeGen = self.core.getAttribute(node, 'EnableCodeGeneration');
-        visitorFuncName = self.getVisitorFuncName(nodeMetaTypeName);
-        id;
         ret = null;
 
         if (self.federateInfos && (nodeMetaTypeName in self.federateTypes))
@@ -500,56 +484,46 @@ The only use of the parent argument is for passing to the visitor function.
                 return;
               }
           }
-        try
+        if (visitorFuncName)
           {
-            ret = self[visitorFuncName](node, parent, context);
-            if (ret['error'])
-              {
-                callback((ret['error'] === '') ? undefined : ret['error']);
-                return;
-              }
-            else
-              {
-                callback(null, ret['context']);
-                return;
-              }
-          }
-        catch(err)
-          {
-            if (err.message == 'self[visitorFuncName] is not a function')
-              {
-
-              }
-            else
-              {
-                callback(err);
-                return;
-              }
+            try
+            {
+              ret = self[visitorFuncName](node, parent, context);
+              if (ret['error'])
+                {
+                  callback((ret['error'] === '') ? undefined : ret['error']);
+                  return;
+                }
+              else
+                {
+                  callback(null, ret['context']);
+                  return;
+                }
+            }
+            catch(err)
+            {
+              callback(err);
+              return;
+            }
           }
         callback(null, context);
         return;
       }; // closes this.atModelNode=
 
-/***********************************************************************/
+/* ******************************************************************* */
 
-/* this.doneModelNode
+/** this.doneModelNode
 
-Returned Value: none This creates the postVisitorFuncName by calling
-getPostVisitorFuncName, which appends 'post_visit_' and
-nodeMetaTypeName (except that if nodeMetaTypeName ends in 'Federate'
-it returns 'post_visit_Federate').  Then this calls
-self[postVisitorFuncName]. However, that function might not exist, so
-the call is inside a "try" and if the function does not exist, the
-error is catched. If the function exists, it revises the context. In
-that case this calls the callback with the revised context and
-returns. If the function does not exist, unless there is an unexpected
-error, this calls the callback with the original context and returns.
+Returned Value: none
 
-It seems kludgy to execute a statement that is known to be in error
-much of the time and recover by catching the error. It would seem
-better to test for a known name and call the appropriate function.
-Currently, however, new visitor functions may be created without
-having to change this function.
+This asks for the postVisitorFuncName from the postVisitorNames.  If
+that name exists, then this calls self[postVisitorFuncName], which
+revises the context. In that case this calls the callback with the
+revised context and returns, unless there is an unexpected error.
+
+Whenever a new post visitor function is created for a specfic metaType,
+the function name must be made the value of the metaType name property
+in the postVisitorNames.
 
 Called By: doneVisitChildCallback (in an anonymous function in the
 call to loadChildren in visitAllChildrenRec)
@@ -559,46 +533,47 @@ This is similar to atModelNode. See the documentation of atModelNode (above).
 */
       this.doneModelNode = function(node, context, callback)
       {
-        var self = this;
-        var nodeName = self.core.getAttribute(node, 'name');
-        var nodeMetaTypeName = ((nodeName === 'CPSWT') ? 'CPSWT' :
-                                (nodeName === 'CPSWTMeta') ? 'CPSWTMeta' :
-                     self.core.getAttribute(self.getMetaType(node),'name'));
-        var postVisitorFuncName =
-          self.getPostVisitorFuncName(nodeMetaTypeName);
-        var ret = null;
+        var self;
+        var nodeName;
+        var nodeMetaTypeName;
+        var postVisitorFuncName;
+        var ret;
 
-        try
+        self = this;
+        nodeName = self.core.getAttribute(node, 'name');
+        nodeMetaTypeName = ((nodeName === 'CPSWT') ? 'CPSWT' :
+                            (nodeName === 'CPSWTMeta') ? 'CPSWTMeta' :
+                      self.core.getAttribute(self.getMetaType(node),'name'));
+        postVisitorFuncName = self.postVisitorNames[nodeMetaTypeName];
+        if (postVisitorFuncName)
           {
-            ret = self[postVisitorFuncName](node, context);
-            if (ret['error'])
+            try
               {
-                callback(ret['error'] === '' ? undefined : ret['error']);
-                return;
+                ret = self[postVisitorFuncName](node, context);
+                if (ret['error'])
+                  {
+                    callback(ret['error'] === '' ? undefined : ret['error']);
+                    return;
+                  }
+                else
+                  {
+                    callback(null, ret['context']);
+                    return;
+                  }
               }
-            else
-              {
-                callback(null, ret['context']);
-                return;
-              }
-          }
-        catch(err)
-          {
-            if (err.message == 'self[postVisitorFuncName] is not a function')
-              {
-              }
-            else
-              {
-                callback(err);
-              }
+
+            catch(err)
+            {
+              callback(err);
+            }
           }
         callback(null, context);
         return;
       }; // closes this.doneModelNode =
 
-/***********************************************************************/
+/* ******************************************************************* */
 
-/* this.cloneCtx
+/** this.cloneCtx
 
 Returned Value: a copy of an object
 
@@ -623,7 +598,7 @@ object.
         return copy;
       }
 
-/***********************************************************************/
+/* ******************************************************************* */
 
     }; // closes withModelTraverser =
     return withModelTraverser;
