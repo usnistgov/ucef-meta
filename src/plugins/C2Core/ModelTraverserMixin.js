@@ -203,7 +203,7 @@ have been visited (possibly involving the rootNode), but no need arose.
           }
         catch(err)
           {
-            
+
           }
         self.visitAllChildrenRec(rootNode, context, counter, counterCallback);
       }; // end of visitAllChildrenFromRootContainer function
