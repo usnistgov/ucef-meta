@@ -9,10 +9,10 @@ define
  {
     'use strict';
     var CppImplFederateExporter;
-    
-/***********************************************************************/
 
-/* CppImplFederateExporter (function-valued variable of top-level function obj)
+/* ******************************************************************* */
+
+/** CppImplFederateExporter (function-valued variable of top-level function obj)
 
 Returned Value: none
 
@@ -30,7 +30,7 @@ The top-level function returns this function.
 
       self = this;
 
-/***********************************************************************/
+/* ******************************************************************* */
 
      checkBack = function(err, callBack)
       {
@@ -44,10 +44,10 @@ The top-level function returns this function.
             callBack();
           }
       };
-      
-/***********************************************************************/
 
-/* initCppImplFederate
+/* ******************************************************************* */
+
+/** initCppImplFederate
 
 Returned Value: none
 
@@ -84,15 +84,15 @@ anonymous function that includes a call to self.initCppImplFederate.
         self.cpp_federateImplPOM.version = self.project_version;
         self.cpp_federateImplPOM.packaging = "nar";
         self.cpp_federateImplPOM.addNarPlugin("executable");
-        
-/***********************************************************************/
+
+/* ******************************************************************* */
 
         self.cppImplFederateInitDone = true;
       }; // end initCppImplFederate
 
-/***********************************************************************/
+/* ******************************************************************* */
 
-/* visit_CppImplFederate
+/** visit_CppImplFederate
 
 Returned Value: a "{context: context}" object
 
@@ -107,9 +107,9 @@ Called By: visit_CppFederate (in CppFederate.js)
         return {context:context};
       };
 
-/***********************************************************************/
+/* ******************************************************************* */
 
-/* post_visit_CppImplFederate
+/** post_visit_CppImplFederate
 
 Returned Value: an object with a context property whose value is the
 context argument.
@@ -148,7 +148,7 @@ This modifies context.cppfedspec and builds three file generators.
             feder.directory = fedPathDir + "/conf/";
           }
 
-/***********************************************************************/
+/* ******************************************************************* */
 
 // Add federate POM generator
         self.fileGenerators.push(function(artifact, callback)
@@ -172,8 +172,8 @@ This modifies context.cppfedspec and builds three file generators.
           artifact.addFile(fullPath, xmlPOM,
                            function(err) {checkBack(err, callback);});
         });
-            
-/***********************************************************************/
+
+/* ******************************************************************* */
 
 // Add federate header file generator
 // For the SOMGenerationWithCpp project, this is writing the file
@@ -182,18 +182,18 @@ This modifies context.cppfedspec and builds three file generators.
         {
           var hppCode;
           var fullPath;
-	  var template;
-	  var model;
+          var template;
+          var model;
 
-	  model = {classname: renderContext.classname,
-		   interaction_data: renderContext.interaction_data,
-		   object_data: renderContext.object_data,
-		   publishedinteractiondata:
-		     renderContext.publishedinteractiondata,
-		   publishedobjectdata: renderContext.publishedobjectdata,
-		   subscribedinteractiondata:
-		     renderContext.subscribedinteractiondata,
-		   subscribedobjectdata: renderContext.subscribedobjectdata};
+          model = {classname: renderContext.classname,
+                   interaction_data: renderContext.interaction_data,
+                   object_data: renderContext.object_data,
+                   publishedinteractiondata:
+                     renderContext.publishedinteractiondata,
+                   publishedobjectdata: renderContext.publishedobjectdata,
+                   subscribedinteractiondata:
+                     renderContext.subscribedinteractiondata,
+                   subscribedobjectdata: renderContext.subscribedobjectdata};
           template = TEMPLATES['cpp/federateimpl.hpp.ejs'];
           hppCode = ejs.render(template, model);
           fullPath = outFileNameStart + "include/" + fedPathDir + ".hpp";
@@ -203,7 +203,7 @@ This modifies context.cppfedspec and builds three file generators.
                            function(err) {checkBack(err, callback);});
         });
 
-/***********************************************************************/
+/* ******************************************************************* */
 
 // Add federate cpp file generator
 // For the SOMGenerationWithCpp project, this is writing the file
@@ -214,16 +214,16 @@ This modifies context.cppfedspec and builds three file generators.
           var cppCode;
           var fullPath;
           var template;
-	  var model;
+          var model;
 
-	  model = {classname: renderContext.classname,
-		   publishedinteractiondata:
-		     renderContext.publishedinteractiondata,
-		   publishedobjectdata:
-		     renderContext.publishedobjectdata,
-		   subscribedinteractiondata:
-		     renderContext.subscribedinteractiondata,
-		   subscribedobjectdata: renderContext.subscribedobjectdata};
+          model = {classname: renderContext.classname,
+                   publishedinteractiondata:
+                     renderContext.publishedinteractiondata,
+                   publishedobjectdata:
+                     renderContext.publishedobjectdata,
+                   subscribedinteractiondata:
+                     renderContext.subscribedinteractiondata,
+                   subscribedobjectdata: renderContext.subscribedobjectdata};
           template = TEMPLATES['cpp/federateimpl.cpp.ejs'];
           cppCode = ejs.render(template, model);
           fullPath = outFileNameStart + "c++/" + fedPathDir + ".cpp";
@@ -233,7 +233,7 @@ This modifies context.cppfedspec and builds three file generators.
                            function(err) {checkBack(err, callback);});
         });
 
-/***********************************************************************/
+/* ******************************************************************* */
 
 // Add federate build file generator
         self.fileGenerators.push(function(artifact, callback)
@@ -250,8 +250,8 @@ This modifies context.cppfedspec and builds three file generators.
           artifact.addFile(fullPath, scriptCode,
                            function(err) {checkBack(err, callback);});
         });
-        
-/***********************************************************************/
+
+/* ******************************************************************* */
         
 // Add federate version cpp file
 
@@ -273,14 +273,14 @@ This modifies context.cppfedspec and builds three file generators.
                            function(err) {checkBack(err, callback);});
         });
 
-
-/***********************************************************************/
+/* ******************************************************************* */
         
         return {context:context};
       }; // end of post_visit_CppImplFederate function
+
     }; // end of CppImplFederateExporter function
 
-/***********************************************************************/
+/* ******************************************************************* */
 
     return CppImplFederateExporter;
 }); // end define

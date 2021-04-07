@@ -1,4 +1,4 @@
-/*
+/**
 
 CppRTI.js is used in the define of:
   C2Federates/CppFederate.js.
@@ -20,9 +20,9 @@ define
     var objectTraverserCheck;      // function variable
     var interactionTraverserCheck; // function variable
 
-/***********************************************************************/
+/* ******************************************************************* */
     
-/* objectTraverserCheck
+/** objectTraverserCheck
 
 Returned Value: none
 
@@ -76,8 +76,8 @@ self.objectTraverserCheck in this file does not work.
 */
 
     objectTraverserCheck = function( /* ARGUMENTS                           */
-     federate,               /* (object) data in FederateInfos for federate */
-     object)                 /* (object) object to process                  */
+     federate,             /**< (object) data in FederateInfos for federate */
+     object)               /**< (object) object to process                  */
     {
       var objectPubSub;
       var parentPubSub;
@@ -111,11 +111,11 @@ self.objectTraverserCheck in this file does not work.
                  maySubscribe: objectPubSub.maySubscribe};
             }
         }
-    };
+    }; // end objectTraverserCheck
 
-/***********************************************************************/
+/* ******************************************************************* */
 
-/* interactionTraverserCheck (function-valued var of top-level function object)
+/** interactionTraverserCheck (function-valued var of top-level function object)
 
 Returned Value: none
 
@@ -138,14 +138,14 @@ The final effect is that any interaction that is an ancestor of any
 interaction originally put on the pubSubInteractions in PubSubVisitors
 is also on pubSubInteractions.
 
-This function is identical to interactionTraverserCheck in
-FederatesExporter.js. It would be nice to have only one, but that
+This function is identical to interactionTraverserCheck in JavaRTI.js
+and FederatesExporter.js. It would be nice to have only one, but that
 requires figuring out where to put it and how to refererence it.
 
 */
     interactionTraverserCheck = function( /* ARGUMENTS                       */
-     federate,                /* (object) data in federateInfos for federate */
-     interaction)             /* (object) interaction to process             */
+     federate,              /**< (object) data in federateInfos for federate */
+     interaction)           /**< (object) interaction to process             */
     {
       interaction.children.forEach(function (child)
       {
@@ -161,11 +161,11 @@ requires figuring out where to put it and how to refererence it.
                  subscribe: 0};
             }
         }
-    };
+    }; // end interactionTraverserCheck
 
-/***********************************************************************/
+/* ******************************************************************* */
 
-/* CppRTIFederateExporter
+/** CppRTIFederateExporter
 
 Returned Value: none
 
@@ -174,10 +174,10 @@ Called By: Called automatically when CppRTI is called (in CppFederate.js)
 */
     CppRTIFederateExporter = function()
     {
-        
-/***********************************************************************/
 
-/* initCppRTI
+/* ******************************************************************* */
+
+/** initCppRTI
 
 Returned Value: none
 
@@ -233,9 +233,9 @@ Called By: OmnetFederateExporter (in OmnetFederate.js)
                 ActionBase: coreNamespace
                };
 
-/***********************************************************************/
+/* ******************************************************************* */
 
-/* renderToFile
+/** renderToFile
 
 Returned Value: none
 
@@ -255,12 +255,12 @@ should not be called for a model unless it is certain that addFile
 will be called; otherwise, the callback will not occur.
   
 */
-        renderToFile = function( /* ARGUMENTS                              */
-         outFilePath,            /* full file name of file to write        */
-         isInteraction,          /* true = interaction, false = object     */
-         model,                  /* data model from which to generate code */
-         artifact,               /* array of file generating functions     */
-         callback)               /* function to call if error or done      */
+        renderToFile = function( /*   ARGUMENTS                              */
+         outFilePath,            /**< full file name of file to write        */
+         isInteraction,          /**< true = interaction, false = object     */
+         model,                  /**< data model from which to generate code */
+         artifact,               /**< array of file generating functions     */
+         callback)               /**< function to call if error or done      */
         {
           var context;
           var fullPath;
@@ -285,7 +285,7 @@ will be called; otherwise, the callback will not occur.
                        "double"  : "double",
                        "float"   : "float",
                        "boolean" : "bool"};
-	  cjArgumentTypeMap = {"String"  : "const std::string &",
+          cjArgumentTypeMap = {"String"  : "const std::string &",
                                "int"     : "int",
                                "long"    : "long",
                                "short"   : "short",
@@ -410,7 +410,7 @@ will be called; otherwise, the callback will not occur.
             }
         }; // end renderToFile
 
-/***********************************************************************/
+/* ******************************************************************* */
         
 /*
    
@@ -445,8 +445,8 @@ Begin FOUNDATION RTI
         self.cpp_corePOM.packaging = "nar";
         self.cpp_corePOM.dependencies.push(porticoPOM);
         self.cpp_corePOM.dependencies.push(C2WLoggingPOM);
-          
-/***********************************************************************/
+
+/* ******************************************************************* */
 
 /*
 
@@ -467,7 +467,7 @@ currently there are none.
         if (self.generateExportPackages)
           {
 
-/***********************************************************************/
+/* ******************************************************************* */
 
 /*
 
@@ -496,9 +496,9 @@ using the coreDirPath and self.corePOM.toJSON()
                                      callback();
                                    }
                                });
-            });
-              
-/***********************************************************************/
+            }); // end push function
+
+/* ******************************************************************* */
 
 /*
 
@@ -541,10 +541,9 @@ using the coreDirPath and self.corePOM.toJSON()
                                      return;
                                    }
                                });
-            });
-                
-                
-/***********************************************************************/
+            }); // end push function
+
+/* ******************************************************************* */
 
 /*
 
@@ -592,9 +591,9 @@ ObjectRoot.cpp file.
                                      return;
                                    }
                                });
-            });
-            
-/***********************************************************************/
+            }); // end push function
+
+/* ******************************************************************* */
 
 /* 
 
@@ -656,9 +655,9 @@ other until all the selected objects are processed.
                     }
                 }
               renderNextObject();
-            });
+            }); //end push function
 
-/***********************************************************************/
+/* ******************************************************************* */
 
 /* 
 
@@ -720,11 +719,11 @@ other until all the selected interactions are processed.
                     }
                 }
               renderNextInteraction();
-            });
+            }); // end push function
           } // end if (self.generateExportPackages)
 // end FOUNDATION RTI
 
-/***********************************************************************/
+/* ******************************************************************* */
 
 // begin SIM RTI
 
@@ -741,7 +740,7 @@ other until all the selected interactions are processed.
         self.cpp_rtiPOM.packaging = "nar";
         self.cpp_rtiPOM.dependencies.push(self.cpp_corePOM);
 
-/***********************************************************************/
+/* ******************************************************************* */
 
 /* 
 
@@ -802,9 +801,9 @@ until all the selected objects are processed.
                 }
             }
           renderNextObject();
-        });
+        }); // end push function
 
-/***********************************************************************/
+/* ******************************************************************* */
 
 /* 
 
@@ -818,7 +817,7 @@ other until all the selected interactions are processed.
 
 */
         
-         self.fileGenerators.push(function(artifact, callback)
+        self.fileGenerators.push(function(artifact, callback)
         {
           var intToRender;
           var renderNextInteraction;
@@ -865,18 +864,17 @@ other until all the selected interactions are processed.
                 }
             }
           renderNextInteraction();
-        });
+        }); //end push function
+  // end SIM RTI
 
-// end SIM RTI
-
-/***********************************************************************/
+/* ******************************************************************* */
 
         self.cppRTIInitDone = true;
       }; // end initCppRTI
 
-/***********************************************************************/
+/* ******************************************************************* */
 
     }; // end CppRTIFederateExporter function
 
     return CppRTIFederateExporter;
- });
+ }); // end define

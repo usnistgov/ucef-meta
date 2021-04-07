@@ -13,8 +13,8 @@ define
  {
     'use strict';
     var CppFederateExporter; // function variable
-    
-/***********************************************************************/
+
+/* ******************************************************************* */
 
 /* CppFederateExporter (function-valued variable of top-level function object)
 
@@ -35,7 +35,7 @@ The top-level function returns this function.
       CppRTI.call(this);
       CppImplFederate.call(this);
 
-/***********************************************************************/
+/* ******************************************************************* */
 
       this.federateTypes = this.federateTypes || {};
       this.federateTypes.CppFederate =
@@ -65,27 +65,20 @@ The top-level function returns this function.
                self.cpp_federateBasePOM.version = self.cpswt_version;   
                self.cpp_federateBasePOM.packaging = "nar";
              }
-           
-/***********************************************************************/
+
+/* ******************************************************************* */
 
          } // closes init function
         }; // closes setting this.federateTypes['CppFederate']
 
-/***********************************************************************/
+/* ******************************************************************* */
 
-/* visit_CppFederate
+/** visit_CppFederate
 
 Returned Value: a "{context: context}" object
 
-Called By: This may be called by functions that call a function whose
-           name is made by concatentating 'visit_' with other strings.
-           The getVisitorFuncName function in FederatesExporter makes
-           function names that way.
-
-This does not appear to be called unless the node type name is
-CppFederate.  It is defined if CppFederateExporter is called, which
-happens in FederatesExporter.js.
-
+Called By: atModelNode in modelTraverserMixin.js
+  
 */
 
       this.visit_CppFederate = function(node, parent, context)
@@ -120,18 +113,16 @@ happens in FederatesExporter.js.
         return {context:context};
       };
 
-/***********************************************************************/
+/* ******************************************************************* */
 
-/* post_visit_CppFederate
+/** post_visit_CppFederate
 
 Returned Value: a context object
 
-Called By: post_visit_Federate 
+Called By: doneModelNode in ModelTraverserMixin.js
 
-This is called in post_visit_Federate (in GenericFederate.js) when the
-nodeType in that function is CppFederate. The name of this function
-in that case is formed by concatenating 'post_visit_' and
-'CppFederate' rather than by using 'post_visit_CppFederate'.
+This is called in doneModelNode in ModelTraverserMixin.js when the
+node nodeMetaTypeName in that function is CppFederate.
 
 This adds information to the context itself and by calling
 post_visit_CppImplFederate (in CppImplFederate.js). The call to
@@ -158,32 +149,32 @@ in cppTemplate and hppTemplate, respectively.
           var cppTemplate;
           var hppTemplate;
           var cppCode;
-	  var hppCode;
-	  var cppModel;
-	  var hppModel;
+          var hppCode;
+          var cppModel;
+          var hppModel;
 
-	  cppModel =
-	    {asynchronousdelivery: renderContext.asynchronousdelivery,
-	     classname : renderContext.classname,
-	     publishedinteractiondata : renderContext.publishedinteractiondata,
-	     subscribedinteractiondata :
-	       renderContext.subscribedinteractiondata,
-	     publishedobjectdata : renderContext.publishedobjectdata,
-	     subscribedobjectdata : renderContext.subscribedobjectdata,
-	     timeconstrained : renderContext.timeconstrained,
-	     timeregulating : renderContext.timeregulating
-	    };
-	  
-	  hppModel =
-	    {allinteractiondata : renderContext.publishedinteractiondata.
-	       concat(renderContext.subscribedinteractiondata),
-	     allobjectdata : renderContext.publishedobjectdata.
-	       concat(renderContext.subscribedobjectdata),
-	     classname : renderContext.classname,
-	     lookahead : renderContext.lookahead,
-	     publishedinteractiondata : renderContext.publishedinteractiondata
-	    };
-	  
+          cppModel =
+            {asynchronousdelivery: renderContext.asynchronousdelivery,
+             classname : renderContext.classname,
+             publishedinteractiondata : renderContext.publishedinteractiondata,
+             subscribedinteractiondata :
+               renderContext.subscribedinteractiondata,
+             publishedobjectdata : renderContext.publishedobjectdata,
+             subscribedobjectdata : renderContext.subscribedobjectdata,
+             timeconstrained : renderContext.timeconstrained,
+             timeregulating : renderContext.timeregulating
+            };
+          
+          hppModel =
+            {allinteractiondata : renderContext.publishedinteractiondata.
+               concat(renderContext.subscribedinteractiondata),
+             allobjectdata : renderContext.publishedobjectdata.
+               concat(renderContext.subscribedobjectdata),
+             classname : renderContext.classname,
+             lookahead : renderContext.lookahead,
+             publishedinteractiondata : renderContext.publishedinteractiondata
+            };
+          
           fullPath = federateName + "/src/main/c++/" + federateName +
             "Base.cpp";
           cppTemplate = TEMPLATES['cpp/federate.cpp.ejs'];
@@ -198,8 +189,7 @@ in cppTemplate and hppTemplate, respectively.
                                  callback(err);
                                  return;
                                }
-                           });
-	  
+                           });  
           fullPath = federateName + "/src/main/include/" + federateName +
             "Base.hpp";
           hppTemplate = TEMPLATES['cpp/federate.hpp.ejs'];
@@ -222,9 +212,9 @@ in cppTemplate and hppTemplate, respectively.
                            });
         });
         return self.post_visit_CppImplFederate(node, context);
-      };
+      }; // end of post_visit_CppFederate function
 
-/***********************************************************************/
+/* ******************************************************************* */
 
       this.createCppFederateCodeModel = function()
       {
@@ -242,12 +232,12 @@ in cppTemplate and hppTemplate, respectively.
                 timeregulating: false,
                 helpers:{}};
       };
-      
-/***********************************************************************/
+
+/* ******************************************************************* */
 
     }; // end of setting CppFederateExporter function variable
 
-/***********************************************************************/
+/* ******************************************************************* */
 
     return CppFederateExporter;
 });
