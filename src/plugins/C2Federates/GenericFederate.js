@@ -10,8 +10,8 @@ define
      this.federateTypes = this.federateTypes || {};
      this.federateTypes['Federate'] = {includeInExport: false,
                                        longName: 'Federate'};
-     
-/***********************************************************************/
+
+/* ******************************************************************* */
 
      this.visit_FOMSheet = function(node, parent, context)
      {
@@ -21,9 +21,9 @@ define
        context['parent'] = {};
        context['pubsubs'] = [];
        return {context:context};
-     }
+     } // end visit_FOMSheet
 
-/***********************************************************************/
+/* ******************************************************************* */
 
      this.post_visit_FOMSheet = function(node, context)
      {
@@ -60,107 +60,27 @@ define
              }
          }
        return {context:context};
-     }
+     } // end post_visit_FOMSheet
 
-/***********************************************************************/
+/* ******************************************************************* */
      
      this.visit_FedIntPackage = function(node, parent, context)
      {
        return {context:context};
      }
 
-/***********************************************************************/
+/* ******************************************************************* */
      
      this.post_visit_FedIntPackage = function(node, context)
      {
        return {context:context};
      }
 
-/***********************************************************************/
-     
-     this.visit_Federate = function(node, parent, context)
-     {
-       var self = this;
-       var ret = {context:context};
-       var nodeType = self.core.getAttribute(self.getMetaType(node), 'name');
-       var functionName;
-       
-       self.federates[self.core.getPath(node)] = node;
-       if (nodeType != 'Federate')
-         {
-           functionName = 'visit_' + nodeType;
-           try
-             {
-               ret = self[functionName](node, parent, context);
-             }
-           catch(err)
-             {
-               if (err.message == 'self[functionName] is not a function')
-                 {
-                   err.message =
-                     'self[' + functionName + '] is not a function';
-                 }
-               return {error: err};
-             }
-         }
-       return ret;
-     };
-
-/***********************************************************************/
-
-/* post_visit_Federate
-
-Returned Value: a "{context: context}" object, where the second
-'context' is the modified 'context' argument to the function.  It
-appears that this is done so that if the calling function has named
-the returned value 'ret', the modified context argument can be
-referenced as ret.context.
-
-
-Called By: doneModelNode (in ModelTraverserMixin.js)
-
-This is called only by functions that select the name by concatenating
-'post_visit_' with 'Federate'. That includes:
-  C2Core/ModelTraverserMixin.js:
-  DeploymentExporter/DeploymentExporter.js
-
-The getPostVisitorFuncName function defined in both 
-FederatesExporter/FederatesExporter.js and ModelTraverserMixin.js 
-
-*/
-     this.post_visit_Federate = function(node, context)
-     {
-       var self = this;
-       var ret = {context:context};
-       var nodeType = self.core.getAttribute(self.getMetaType(node), 'name');
-       var functionName;
-
-       if ((nodeType != 'Federate') && (nodeType in self.federateTypes) &&
-           self.core.getAttribute(node, 'EnableCodeGeneration'))
-         {
-           functionName = 'post_visit_' + nodeType;
-           try
-             {
-               ret = self[functionName](node, context);
-             }
-           catch(err)
-             {
-               if (err.message == 'self[functionName] is not a function')
-                 {
-                   err.message =
-                     'self[' + functionName + '] is not a function';
-                 }
-               return {error: err};
-             }
-         }  
-       return ret;
-     };
-     
-/***********************************************************************/
+/* ******************************************************************* */
 
    }; //  end of setting GenericFederateExporter function variable
 
-/***********************************************************************/
+/* ******************************************************************* */
    
    return GenericFederateExporter;
  });
