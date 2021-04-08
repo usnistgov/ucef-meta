@@ -1,14 +1,14 @@
-/*
+/**
 
 Modified by T. Kramer
 
 Reformatted in C style, as far as possible.
 
-This is executed automatically at the beginning of
-FederatesExporter.js and DeploymentExporter.js in the first stages of
-running the "define" at the top level of that file. The result of the
-execution is that the RTIVisitors argument in the function of the
-"define" is defined as a function.
+This is executed automatically at the beginning of FederatesExporter.js
+and DeploymentExporter.js in the first stages of running the "define"
+at the top level of that file. The result of the execution is that the
+RTIVisitors argument in the function of the "define" is defined as a
+function.
 
 The RTIVisitors function is then called at the
 "RTIVisitors.call(this);" lines of FederatesExporter.js and
@@ -34,8 +34,8 @@ ModelTraverserMixin.js (at ret = ...).  The "parent" argument is not
 used in any of the functions, but is needed to be a placeholder in the
 arguments. All of the visit_XXX functions (many of which are defined
 elsewhere but are called from atModelNode) take the arguments (node,
-parent, context). They are called by constructing the name by
-concatenating 'visit_' with the name of the type of node.
+parent, context). They are called by using the this.visitorNames map to
+select the function for the metaType of the object being processed.
 
 */
 
@@ -47,14 +47,14 @@ define
 
     var RTIVisitors;
 
-/***********************************************************************/
+/* ******************************************************************* */
 
     RTIVisitors = function()
     {
 
-/***********************************************************************/
+/* ******************************************************************* */
 
-/* this.visit_Interaction
+/** this.visit_Interaction
 
 Returned Value: a context object whose context property is the context
   argument, possibly with data added.
@@ -96,8 +96,8 @@ This processes data for an Interaction.
         interaction['inputPlaceName'] = "";
         interaction['isMapperPublished'] = false;
         interaction['isroot'] = // FIX - remove next line
-	   ((node.base == self.META['Interaction']) || // FIX - remove this line
-	   (node.base == self.META['CPSWT.CPSWTMeta.Interaction']));
+           ((node.base == self.META['Interaction']) || // FIX - remove this line
+           (node.base == self.META['CPSWT.CPSWTMeta.Interaction']));
         interaction['name'] = self.core.getAttribute(node, 'name');
         interaction['order'] = self.core.getAttribute(node, 'Order');
         interaction['outputPlaceName'] = "";
@@ -144,7 +144,7 @@ This processes data for an Interaction.
 
         var nextBase = node.base;
         while ((nextBase != self.META['Interaction']) && //remove this line
-	       (nextBase != self.META['CPSWT.CPSWTMeta.Interaction']))
+               (nextBase != self.META['CPSWT.CPSWTMeta.Interaction']))
           {
             nameFragments.push(self.core.getAttribute(nextBase, 'name'));
             nextBase = nextBase.base;
@@ -181,11 +181,11 @@ This processes data for an Interaction.
           }
         context['parentInteraction'] = interaction;
         return {context:context};
-      }
+      } // end visit_Interaction function
 
-/***********************************************************************/
+/* ******************************************************************* */
 
-/* this.visit_Parameter
+/** this.visit_Parameter
 
 Returned Value: a context object whose context property is the context
   argument, possibly with data added.
@@ -213,9 +213,9 @@ This processes data for a Parameter.
         return {context:context};
       }
 
-/***********************************************************************/
+/* ******************************************************************* */
 
-/* this.visit_Object
+/** this.visit_Object
 
 Returned Value: a context object whose context property is the context
   argument, possibly with data added.
@@ -258,8 +258,8 @@ for code generation is extracted from the primary model.
         object['codeName'] = self.core.getAttribute(node, 'CodeGeneratedName');
         object['id'] = self.core.getPath(node);
         object['isroot'] =
-	((node.base == self.META['Object']) || // FIX remove this line
-	 (node.base == self.META['CPSWT.CPSWTMeta.Object']));
+        ((node.base == self.META['Object']) || // FIX remove this line
+         (node.base == self.META['CPSWT.CPSWTMeta.Object']));
         object['name'] = self.core.getAttribute(node, 'name');
         object['parameters'] = object['attributes'];
         if (self.objects[nodeBasePath])
@@ -279,7 +279,7 @@ for code generation is extracted from the primary model.
           }
         nextBase = node.base;
         while ((nextBase != self.META['Object']) && // FIX - remove this line
-	       (nextBase != self.META['CPSWT.CPSWTMeta.Object']))
+               (nextBase != self.META['CPSWT.CPSWTMeta.Object']))
           {
             nameFragments.push(self.core.getAttribute(nextBase, 'name'));
             nextBase = nextBase.base;
@@ -293,9 +293,9 @@ for code generation is extracted from the primary model.
         return {context:context};
       }
 
-/***********************************************************************/
+/* ******************************************************************* */
       
-/* this.visit_Attribute
+/** this.visit_Attribute
 
 Returned Value: a context object whose context property is the context
   argument, possibly with data added.
@@ -328,44 +328,13 @@ This processes data for an Attribute.
           }
         self.attributes[self.core.getPath(node)] = attribute;
         return {context:context};
-      }
-
-/***********************************************************************/
-
-/* this.visit_C2WInteractionRoot
-
-Returned Value: whatever visit_Interaction returns
-
-Called By: See notes at top.
-
-This processes C2WInteractionRoot.
-
-*/
-      this.visit_C2WInteractionRoot = (node, parent, context) => {
-        return this.visit_Interaction(node, parent, context);
-      };
-
-/***********************************************************************/
-
-/* this.visit_ObjectRoot
-
-Returned Value: whatever visit_Object returns
-
-Called By: See notes at top.
-
-This processes ObjectRoot.
-
-*/
-
-      this.visit_ObjectRoot = (node, parent, context) => {
-        return this.visit_Object(node, parent, context);
-      };
-
-/***********************************************************************/
+      }; // end visit_Attribute function
+      
+/* ******************************************************************* */
 
     }; // end of RTIVisitors function
 
     return RTIVisitors;   
- });
+ }); // end define
 
-/***********************************************************************/
+/* ******************************************************************* */
