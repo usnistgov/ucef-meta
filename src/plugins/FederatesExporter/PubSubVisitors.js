@@ -1,4 +1,4 @@
-/*
+/**
 
 Modified by T. Kramer
 
@@ -42,7 +42,7 @@ the name by concatenating 'visit_' with the name of the type of node.
 
 The last two functions are called in (at least) the deployment exporter
 if there are crosscuts.
-
+FederatesExporter.js
 The createMessage function is defined in cpswt-meta/node_modules/webgme/
 node_modules/webgme-engine/src/plugin/PluginBase.js . When createMessage
 runs it packages the message (its second argument) inside a larger
@@ -60,9 +60,9 @@ define
     var PubSubVisitors;  //function variable
     var lowerNamer;      //function variable
 
-/***********************************************************************/
+/* ******************************************************************* */
 
-/* lowerNamer
+/** lowerNamer
 
 Returned Value: string
 
@@ -87,15 +87,15 @@ case.
       coname = (obint.codeName || obint.name);
       return (coname.charAt(0).toLowerCase() + coname.slice(1));
     };
-    
-/***********************************************************************/
+
+/* ******************************************************************* */
 
     PubSubVisitors = function()
     {
 
-/***********************************************************************/
+/* ******************************************************************* */
 
-/* this.visit_StaticInteractionPublish
+/** this.visit_StaticInteractionPublish
 
 Returned Value: a context object whose context property is the context
   argument, possibly with data added.
@@ -110,10 +110,10 @@ created in visit_StaticInteractionSubscribe.
 
 */
       this.visit_StaticInteractionPublish =
-      function( /* ARGUMENTS                                      */
-       node,    /* (webgme node) a StaticInteractionPublish node  */
-       parent,  /* (webgme node)? not used                        */
-       context) /* (object)                                       */
+      function( /* ARGUMENTS                                        */
+       node,    /**< (webgme node) a StaticInteractionPublish node  */
+       parent,  /**< (webgme node)? not used                        */
+       context) /**< (object)                                       */
       {
         var self = this;
         var publication = {interaction: self.core.getPointerPath(node,'dst'),
@@ -193,11 +193,11 @@ created in visit_StaticInteractionSubscribe.
             context.pubsubs.push(publication);
           }
         return {context:context};
-      };
+      }; // end visit_StaticInteractionPublish function
 
-/***********************************************************************/
+/* ******************************************************************* */
 
-/* this.visit_StaticInteractionSubscribe
+/** this.visit_StaticInteractionSubscribe
 
 Returned Value: a context object whose context property is the context
   argument, possibly with data added.
@@ -212,10 +212,10 @@ been created in another visit_XXX function
 
 */
       this.visit_StaticInteractionSubscribe =
-      function( /* ARGUMENTS                                       */
-       node,    /* (webgme node) a StaticInteractionSubscribe node */
-       parent,  /* (webgme node)? not used                         */
-       context) /* (object)                                        */
+      function( /* ARGUMENTS                                         */
+       node,    /**< (webgme node) a StaticInteractionSubscribe node */
+       parent,  /**< (webgme node)? not used                         */
+       context) /**< (object)                                        */
       {
         var self = this;
         var subscription = {interaction: self.core.getPointerPath(node,'src'),
@@ -306,11 +306,11 @@ been created in another visit_XXX function
             context.pubsubs.push(subscription);
           }
         return {context:context};
-      };
+      }; // end visit_StaticInteractionSubscribe function
 
-/***********************************************************************/
+/* ******************************************************************* */
 
-/* this.visit_StaticObjectPublish
+/** this.visit_StaticObjectPublish
 
 Returned Value: a context object whose context property is the context
   argument, possibly with data added.
@@ -325,10 +325,10 @@ created in another visit_XXX function.
 
 */
       this.visit_StaticObjectPublish =
-      function( /* ARGUMENTS                                */
-       node,    /* (webgme node) a StaticObjectPublish node */
-       parent,  /* (webgme node)? not used                  */
-       context) /* (object)                                 */
+      function( /* ARGUMENTS                                  */
+       node,    /**< (webgme node) a StaticObjectPublish node */
+       parent,  /**< (webgme node)? not used                  */
+       context) /**< (object)                                 */
       {
         var self = this;
         var objId = self.core.getPointerPath(node,'dst');
@@ -423,11 +423,11 @@ created in another visit_XXX function.
             context.pubsubs.push(publication);
           }
         return {context:context};
-      };
+      }; // end visit_StaticObjectPublish function
 
-/***********************************************************************/
+/* ******************************************************************* */
 
-/* this.visit_StaticObjectSubscribe
+/** this.visit_StaticObjectSubscribe
 
 Returned Value: a context object whose context property is the context
   argument, possibly with data added.
@@ -442,10 +442,10 @@ created in another visit_XXX function.
 
 */
       this.visit_StaticObjectSubscribe =
-      function( /* ARGUMENTS                                  */
-       node,    /* (webgme node) a StaticObjectSubscribe node */
-       parent,  /* (webgme node)? not used                    */
-       context) /* (object)                                   */
+      function( /* ARGUMENTS                                    */
+       node,    /**< (webgme node) a StaticObjectSubscribe node */
+       parent,  /**< (webgme node)? not used                    */
+       context) /**< (object)                                   */
       {
         var self = this;
         var objId = self.core.getPointerPath(node,'src');
@@ -540,11 +540,11 @@ created in another visit_XXX function.
             context.pubsubs.push(subscription);
           }
         return {context:context};
-      };
+      }; // end visit_StaticObjectSubscribe function
 
-/***********************************************************************/
+/* ******************************************************************* */
 
-/* this.visit_StaticObjectAttributePublish
+/** this.visit_StaticObjectAttributePublish
 
 Returned Value: a context object whose context property is the context
   argument, possibly with data added.
@@ -559,10 +559,10 @@ created in another visit_XXX function.
 
 */
       this.visit_StaticObjectAttributePublish =
-      function( /* ARGUMENTS                                         */
-       node,    /* (webgme node) a StaticObjectAttributePublish node */
-       parent,  /* (webgme node)? not used                           */
-       context) /* (object)                                          */
+      function( /* ARGUMENTS                                           */
+       node,    /**< (webgme node) a StaticObjectAttributePublish node */
+       parent,  /**< (webgme node)? not used                           */
+       context) /**< (object)                                          */
       {
         var self = this;
         var fedId = self.core.getPointerPath(node,'src');
@@ -691,11 +691,11 @@ created in another visit_XXX function.
             context.pubsubs.push(publication);
           }
         return {context:context};
-      };
+      }; // end visit_StaticObjectAttributePublish function
 
-/***********************************************************************/
+/* ******************************************************************* */
 
-/* this.visit_StaticObjectAttributeSubscribe
+/** this.visit_StaticObjectAttributeSubscribe
 
 Returned Value: a context object whose context property is the context
   argument, possibly with data added.
@@ -710,10 +710,10 @@ created in another visit_XXX function.
 
 */
       this.visit_StaticObjectAttributeSubscribe =
-      function( /* ARGUMENTS                                           */
-       node,    /* (webgme node) a StaticObjectAttributeSubscribe node */
-       parent,  /* (webgme node)? not used                             */
-       context) /* (object)                                            */
+      function( /* ARGUMENTS                                             */
+       node,    /**< (webgme node) a StaticObjectAttributeSubscribe node */
+       parent,  /**< (webgme node)? not used                             */
+       context) /**< (object)                                            */
       {
         var self = this;
         var fedId = self.core.getPointerPath(node,'dst');
@@ -843,12 +843,12 @@ created in another visit_XXX function.
             context.pubsubs.push(subscription);
           }
         return {context:context};
-      };
+      }; // end visit_StaticObjectAttributeSubscribe function
 
-/***********************************************************************/
+/* ******************************************************************* */
       
-    };
+    }; // end PubSubVisitors function
     return PubSubVisitors;
- });
+ }); // end define
 
-/***********************************************************************/
+/* ******************************************************************* */
