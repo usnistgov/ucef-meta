@@ -1,4 +1,4 @@
-/*
+/**
 
 JavaRTI.js is used in the define of:
  C2Federates/MapperFederate.js and
@@ -20,9 +20,9 @@ define
     var objectTraverserCheck;      // function variable
     var interactionTraverserCheck; // function variable
 
-/***********************************************************************/
+/* ******************************************************************* */
 
-/* objectTraverserCheck
+/** objectTraverserCheck
 
 Returned Value: none
 
@@ -77,8 +77,8 @@ self.objectTraverserCheck in this file does not work.
 */
 
     objectTraverserCheck = function( /* ARGUMENTS                           */
-     federate,               /* (object) data in FederateInfos for federate */
-     object)                 /* (object) object to process                  */
+     federate,             /**< (object) data in FederateInfos for federate */
+     object)               /**< (object) object to process                  */
     {
       var objectPubSub;
       var parentPubSub;
@@ -114,9 +114,9 @@ self.objectTraverserCheck in this file does not work.
         }
     };
 
-/***********************************************************************/
+/* ******************************************************************* */
 
-/* interactionTraverserCheck (function-valued var of top-level function object)
+/** interactionTraverserCheck (function-valued var of top-level function object)
 
 Returned Value: none
 
@@ -146,8 +146,8 @@ requires figuring out where to put it and how to refererence it.
 
 */
     interactionTraverserCheck = function( /* ARGUMENTS                       */
-     federate,                /* (object) data in federateInfos for federate */
-     interaction)             /* (object) interaction to process             */
+     federate,              /**< (object) data in federateInfos for federate */
+     interaction)           /**< (object) interaction to process             */
     {
       interaction.children.forEach(function (child)
       {
@@ -165,9 +165,9 @@ requires figuring out where to put it and how to refererence it.
         }
     };
 
-/***********************************************************************/
+/* ******************************************************************* */
     
-/* JavaRTIFederateExporter
+/** JavaRTIFederateExporter
 
 Returned Value: none
 
@@ -177,9 +177,9 @@ Called By: Called automatically when JavaRTI is called (in MapperFederate.js)
     JavaRTIFederateExporter = function()
     {
 
-/***********************************************************************/
+/* ******************************************************************* */
 
-/* initJavaRTI
+/** initJavaRTI
 
 Returned Value: none
 
@@ -242,9 +242,9 @@ Called By: MapperFederateExporter (in MapperFederate.js)
                 ActionBase: {simname: corePackagePathStr}
                };
 
-/***********************************************************************/
+/* ******************************************************************* */
 
-/* renderToFile
+/** renderToFile
 
 Returned Value: none
 
@@ -264,12 +264,12 @@ should not be called for a model unless it is certain that addFile
 will be called; otherwise, the callback will not occur.
   
 */
-        renderToFile = function(
-         outFilePath,   // full file name of file to write
-         isInteraction, // true = interaction, false = object
-         model,         
-         artifact,      // array of file generating functions
-         callback)
+        renderToFile = function( /* ARGUMENTS                   */
+         outFilePath,   /**< full file name of file to write    */
+         isInteraction, /**< true = interaction, false = object */
+         model,         /**< object from which to draw data     */
+         artifact,      /**< array of file generating functions */
+         callback)      /**< function to call if error or done  */
         {
           var context;
           var packagePath;
@@ -406,9 +406,9 @@ will be called; otherwise, the callback will not occur.
             }
         }; // end renderToFile
         
-/***********************************************************************/
+/* ******************************************************************* */
 
-/* renderNotCoreObjectToFile
+/** renderNotCoreObjectToFile
 
 Returned Value: none
 
@@ -432,10 +432,10 @@ node in RTIVisitors.js. The model has the following properties:
   
 */
         renderNotCoreObjectToFile = function( /* ARGUMENTS                  */
-         outFilePath,             /* full file name of file to write        */
-         model,                   /* data model from which to generate code */
-         artifact,                /* array of file generating functions     */
-         callback)                /* function to call if error or done      */
+         outFilePath,           /**< full file name of file to write        */
+         model,                 /**< data model from which to generate code */
+         artifact,              /**< array of file generating functions     */
+         callback)              /**< function to call if error or done      */
         {
           var context;
           var packagePath;
@@ -538,9 +538,9 @@ node in RTIVisitors.js. The model has the following properties:
             }
         }; // end renderNotCoreObjectToFile
         
-/***********************************************************************/
+/* ******************************************************************* */
 
-/* renderNotCoreInteractionToFile
+/** renderNotCoreInteractionToFile
 
 Returned Value: none
 
@@ -551,11 +551,11 @@ This renders a not-core interaction to a java file for each federate
 that has a publish or subscribe connection to the interaction.
   
 */
-        renderNotCoreInteractionToFile = function(
-         outFilePath,   // full file name of file to write
-         model,         // data model from which to generate code
-         artifact,      // array of file generating functions
-         callback)      // function to call in case of error
+        renderNotCoreInteractionToFile = function( /* ARGUMENTS            */
+         outFilePath,          /**< full file name of file to write        */
+         model,                /**< data model from which to generate code */
+         artifact,             /**< array of file generating functions     */
+         callback)             /**< function to call in case of error      */
         {
           var context;
           var packagePath;
@@ -658,7 +658,7 @@ that has a publish or subscribe connection to the interaction.
             }
         }; // end renderNotCoreInteractionToFile
         
-/***********************************************************************/
+/* ******************************************************************* */
         
 /*
    
@@ -697,7 +697,7 @@ Begin FOUNDATION RTI
         self.java_core_rtiPOM.packaging = "jar";
         self.java_core_rtiPOM.dependencies.push(self.corePOM);
         
-/***********************************************************************/
+/* ******************************************************************* */
 
 /*
 
@@ -718,7 +718,7 @@ currently there are none.
         if (self.generateExportPackages)
           {
 
-/***********************************************************************/
+/* ******************************************************************* */
 
 /*
 
@@ -749,9 +749,9 @@ using the coreDirPath and self.corePOM.toJSON()
                                      callback();
                                    }
                                });
-            });
+            }); // end push function
 
-/***********************************************************************/
+/* ******************************************************************* */
 
 /*
 
@@ -783,9 +783,9 @@ using the eventsDirPath and self.java_core_rtiPOM.toJSON()
                                      callback();
                                    }
                                });
-            });
+            }); // end push function
 
-/***********************************************************************/
+/* ******************************************************************* */
 
 /*
 
@@ -844,9 +844,9 @@ the InteractionRoot.java file.
                                      return;
                                    }
                                });
-            });
+            }); // end push function
                 
-/***********************************************************************/
+/* ******************************************************************* */
 
 /*
 
@@ -875,7 +875,7 @@ ObjectRoot.java file.
                          corePackagePath.join("/") + "/" +
                          'ObjectRoot.java';
               template = TEMPLATES['java/classroot.java.ejs'];
-		xmlCode = ejs.render(template, {isinteraction: false});
+                xmlCode = ejs.render(template, {isinteraction: false});
               self.logger.info('calling addFile for ' + fullPath + ' in ' +
                                'initJavaRTI of JavaRTI.js');
               artifact.addFile(fullPath, xmlCode,
@@ -907,9 +907,9 @@ ObjectRoot.java file.
                                      return;
                                    }
                                });
-            });
+            }); // end push function
 
-/***********************************************************************/
+/* ******************************************************************* */
 
 /* 
 
@@ -972,9 +972,9 @@ other until all the selected objects are processed.
                     }
                 }
               renderNextObjectInCore();
-            });
+            }); // end push function
 
-/***********************************************************************/
+/* ******************************************************************* */
 
 /* 
 
@@ -1038,12 +1038,12 @@ other until all the selected interactions are processed.
                     }
                 }
               renderNextInteractionInCore();
-            });
+            }); // end push function
           } // end if (self.generateExportPackages)
 
 // end FOUNDATION RTI
 
-/***********************************************************************/
+/* ******************************************************************* */
 
 // begin SIM RTI
 
@@ -1062,7 +1062,7 @@ other until all the selected interactions are processed.
         self.java_rtiPOM.packaging = "jar";
         self.java_rtiPOM.dependencies.push(self.java_core_rtiPOM);
 
-/***********************************************************************/
+/* ******************************************************************* */
 
 /*
 
@@ -1094,9 +1094,9 @@ property in self.javaCorePackageOISpecs.
             }
           callback();
           return;
-        });
+        }); // end push function
         
-/***********************************************************************/
+/* ******************************************************************* */
 
 /*
 
@@ -1129,18 +1129,18 @@ a property in self.javaCorePackageOISpecs.
             }
           callback();
           return;
-        });
+        }); // end push function
         
 // end SIM RTI
 
-/***********************************************************************/
+/* ******************************************************************* */
 
         self.javaRTIInitDone = true;
       }; // end initJavaRTI
 
-/***********************************************************************/
+/* ******************************************************************* */
 
-/* createJavaRTICodeModel
+/** createJavaRTICodeModel
 
 Returned Value: A large object
 
@@ -1242,9 +1242,9 @@ code elsewhere may be looking for "default", so it has been left in.
             };
       }; // end createJavaRTICodeModel function
 
-/***********************************************************************/
+/* ******************************************************************* */
 
     }; // end JavaRTIFederateExporter function
 
     return JavaRTIFederateExporter;
-});
+}); // end define

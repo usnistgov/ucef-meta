@@ -9,10 +9,10 @@ define
  {
     'use strict';
     var GridLabDFederateExporter;
-   
-/***********************************************************************/
 
-/* GridLabFederateExporter (function-valued variable of
+/* ******************************************************************* */
+
+/** GridLabFederateExporter (function-valued variable of
    top-level function object)
 
 Returned Value: none
@@ -29,8 +29,8 @@ The top-level function returns this function.
       var gridlabdGroupId = "gov.nist.hla.gridlabd";
       var gridlabdVersion = "1.0.0-SNAPSHOT";
       var checkBack;
-      
-/***********************************************************************/
+
+/* ******************************************************************* */
       
       checkBack = function(err, callBack)
       {
@@ -45,11 +45,11 @@ The top-level function returns this function.
           }
       };
 
-/***********************************************************************/
+/* ******************************************************************* */
       
       this.federateTypes['GridLabDFederate'] = {includeInExport: false};
 
-/***********************************************************************/
+/* ******************************************************************* */
      
       this.visit_GridLabDFederate = function(node, parent, context)
       {
@@ -74,7 +74,7 @@ The top-level function returns this function.
         return {context: context};
       }; // end of visit_GridLabDFederate function
 
-/***********************************************************************/
+/* ******************************************************************* */
 
       this.post_visit_GridLabDFederate = function(node, context)
       {
@@ -184,7 +184,7 @@ The top-level function returns this function.
           fullPath = moduleName + '/RTI.rid';
           template = TEMPLATES['common/rti.rid.ejs'];
           code = ejs.render(template,
-			    {bindAddress: renderContext.bindAddress});
+                            {bindAddress: renderContext.bindAddress});
           self.logger.info('calling addFile for ' + fullPath + ' in post_' +
                            'visit_GridLabDFederate of GridLabDFederate.js');
           artifact.addFile(fullPath, code,
@@ -231,11 +231,11 @@ The top-level function returns this function.
         return {context: context};
       }; // end of post_visit_GridLabDFederate function
 
-/***********************************************************************/
+/* ******************************************************************* */
 
     }; // end of setting GridLabDFederateExporter function variable
-   
-/***********************************************************************/
+
+/* ******************************************************************* */
 
    return GridLabDFederateExporter;
  }); // end define

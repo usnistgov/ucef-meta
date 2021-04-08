@@ -11,9 +11,9 @@ define
 
     var LabVIEWFederateExporter;
 
-/***********************************************************************/
+/* ******************************************************************* */
 
-/* LabVIEWFederateExporter (function-valued variable of
+/** LabVIEWFederateExporter (function-valued variable of
    top-level function object)
 
 Returned Value: none
@@ -31,7 +31,7 @@ The top-level function returns this function.
       var labviewVersion = "1.0.0-SNAPSHOT";
       var checkBack;
 
-/***********************************************************************/
+/* ******************************************************************* */
       
       checkBack = function(err, callBack)
       {
@@ -46,11 +46,11 @@ The top-level function returns this function.
           }
       };
 
-/***********************************************************************/
+/* ******************************************************************* */
       
       this.federateTypes['LabVIEWFederate'] = {includeInExport: false};
 
-/***********************************************************************/
+/* ******************************************************************* */
 
       this.visit_LabVIEWFederate = function(node, parent, context)
       {
@@ -83,7 +83,7 @@ The top-level function returns this function.
         return {context: context};
       };
 
-/***********************************************************************/
+/* ******************************************************************* */
 
       this.post_visit_LabVIEWFederate = function(node, context)
       {
@@ -219,12 +219,12 @@ The top-level function returns this function.
         
         return {context: context};
       }; // end of post_visit_LabVIEWFederate function
-      
-/***********************************************************************/
+
+/* ******************************************************************* */
 
     }; // end of setting LabVIEWFederateExporter function variable
-    
-/***********************************************************************/
+
+/* ******************************************************************* */
 
     return LabVIEWFederateExporter;
 }); // end define

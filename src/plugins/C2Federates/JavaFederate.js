@@ -13,10 +13,10 @@ define
  {
     'use strict';
     var JavaFederateExporter; // function variable
-    
-/***********************************************************************/
 
-/* JavaFederateExporter (function-valued variable of top-level function object)
+/* ******************************************************************* */
+
+/** JavaFederateExporter (function-valued variable of top-level function object)
 
 Returned Value: none
 
@@ -34,7 +34,7 @@ The top-level function returns this function.
       JavaRTI.call(this);
       this.federateTypes = this.federateTypes || {};
 
-/***********************************************************************/
+/* ******************************************************************* */
 
       this.federateTypes.JavaFederate =
         {includeInExport: false,
@@ -53,27 +53,26 @@ The top-level function returns this function.
          }
         };
 
-/***********************************************************************/
+/* ******************************************************************* */
 
       JavaImplFederate.call(this);
       finalContext = {};
-       
-/***********************************************************************/
 
-/* visit_JavaFederate
+/* ******************************************************************* */
+
+/** visit_JavaFederate
 
 Returned Value: a "{context: context}" object returned by
                 visit_JavaImplFederate
 
-Called By: visit_MapperFederate in MapperFederate.js 
-           This may also be called by functions that call a function whose
-           name is made by concatentating 'visit_' with other strings.
-           The getVisitorFuncName function in FederatesExporter makes
-           function names that way.
+Called By:
+  visit_MapperFederate in MapperFederate.js
+  atModelNode in ModelTraverserMixin.js
 
-This does not appear to be called unless the node type name is JavaFederate.
-In visit_MapperFederate it is called only if it is defined. It is defined
-if JavaFederateExporter is called, which happens in FederatesExporter.js.
+This does not appear to be called unless the node metaType name is
+JavaFederate.  In visit_MapperFederate it is called only if it is
+defined. It is defined if JavaFederateExporter is called, which
+happens in FederatesExporter.js.
 
 */
 
@@ -123,21 +122,18 @@ if JavaFederateExporter is called, which happens in FederatesExporter.js.
         return this.visit_JavaImplFederate(node, parent, context);
       };
 
-/***********************************************************************/
+/* ******************************************************************* */
 
-/* post_visit_JavaFederate
+/** post_visit_JavaFederate
 
 Returned Value: a context object
 
-Called By: post_visit_Federate
+Called By: doneModelNode in ModelTraverserMixin.js
 
-This is called in post_visit_Federate (in GenericFederate.js) when the
-nodeType in that function is JavaFederate. The name of this function
-in that case is formed by concatenating 'post_visit_' and
-'JavaFederate' rather than by using 'post_visit_JavaFederate'.
+This is called in doneModelNode in ModelTraverserMixin.js when the
+nodeMetaTypeName in that function is JavaFederate.
 
 This adds information to the context by calling
-post_visit_JavaBaseFederate (in JavaBaseFederate.js) and
 post_visit_JavaImplFederate (in JavaImplFederate.js). The call to
 post_visit_JavaImplFederate also generates code for 6 files.
 
@@ -156,12 +152,11 @@ post_visit_JavaImplFederate also generates code for 6 files.
                       federateName.toLowerCase() + "/" + federateName +
                       "Base.java";
         context.javafedspec.outFileName = outFileName;
-
         finalContext = this.post_visit_JavaImplFederate(node, context);
         return finalContext;
       };
 
-/***********************************************************************/
+/* ******************************************************************* */
 
       this.createJavaFederateCodeModel = function()
       {
@@ -184,15 +179,15 @@ post_visit_JavaImplFederate also generates code for 6 files.
                 TEMPLATES:TEMPLATES};
       };
 
-/***********************************************************************/
+/* ******************************************************************* */
 
       this.javaCodeModel = this.createJavaFederateCodeModel();
 
-/***********************************************************************/
+/* ******************************************************************* */
 
     }; // end of setting JavaFederateExporter function variable
-    
-/***********************************************************************/
+
+/* ******************************************************************* */
 
     return JavaFederateExporter;
  });

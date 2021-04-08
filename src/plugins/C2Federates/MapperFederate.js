@@ -1,4 +1,4 @@
-/* 
+/** 
 
 MapperFederate.js is used only in FederatesExporter.js
 
@@ -79,8 +79,8 @@ define
                      self.java_federateBasePOM.version = self.cpswt_version;  
                    } 
                  self.java_mapperPOM = null; //will be set by model visitor
-                 
-/***********************************************************************/
+
+/* ******************************************************************* */
                  //Add base POM generator
                  self.fileGenerators.push(function(artifact, callback)
                  {
@@ -116,7 +116,7 @@ define
                } // end init function
         }; // end object
 
-/***********************************************************************/
+/* ******************************************************************* */
 
       this.visit_MapperFederate = function(node, parent, context)
       {
@@ -173,8 +173,17 @@ define
           }
       };
 
-/***********************************************************************/
+/* ******************************************************************* */
 
+/** unifiedMappingConnectionVisitor
+
+Returned Value: a context
+
+Called By: 
+  visit_SimpleMappingConnection
+  visit_ComplexMappingConnection
+
+*/
       unifiedMappingConnectionVisitor = function(self, node, parent, context)
       {  
         var parentMapper = context.mapperfedspec;
@@ -241,7 +250,7 @@ define
                 '[ERROR] Invalid dst pointer in MappingConnection!', 'error');
           }
 
-/***********************************************************************/
+/* ******************************************************************* */
 
         // Get LHS and RHS interaction classes
         mapping.handler = function(linteraction, rinteraction)
@@ -410,7 +419,7 @@ define
             }
         }; // end mapping.handler function
 
-/***********************************************************************/
+/* ******************************************************************* */
 
         if (context.mappings)
           {
@@ -419,7 +428,7 @@ define
         return {context:context};
       }; // end unifiedMappingConnectionVisitor function
 
-/***********************************************************************/
+/* ******************************************************************* */
 
       this.visit_SimpleMappingConnection = function(node, parent, context)
       {
@@ -427,15 +436,15 @@ define
         return unifiedMappingConnectionVisitor(self, node, parent, context);
       };
 
-/***********************************************************************/
+/* ******************************************************************* */
 
       this.visit_ComplexMappingConnection = function(node, parent, context)
       {
         var self = this;
         return unifiedMappingConnectionVisitor(self, node, parent, context);  
       };
-        
-/***********************************************************************/
+
+/* ******************************************************************* */
 
       this.post_visit_MapperFederate = function(node, context)
       {
@@ -449,8 +458,8 @@ define
         renderContext = context.mapperfedspec;
         outFileName = mapperOutFilePath + "/" + renderContext.simname + "/" +
                       self.core.getAttribute(node, 'name') + ".java";
-            
-/***********************************************************************/
+
+/* ******************************************************************* */
 
         for (i = 0; i < context.mappings.length; i++)
           {
@@ -478,7 +487,7 @@ define
               }
           }
 
-/***********************************************************************/
+/* ******************************************************************* */
 
         self.fileGenerators.push(function(artifact, callback)
         {
@@ -503,8 +512,8 @@ define
                                }
                            });
         });
-                    
-/***********************************************************************/
+
+/* ******************************************************************* */
 
         if (self.post_visit_JavaFederate)
           {
@@ -516,7 +525,7 @@ define
           }
       }; // end of post_visit_MapperFederate function
 
-/***********************************************************************/
+/* ******************************************************************* */
 
       this.createMappingConnectionsDataModel = function()
       {
@@ -536,7 +545,7 @@ define
                 guardConditionInvalid: true};
       }
 
-/***********************************************************************/
+/* ******************************************************************* */
 
     } // end MapperFederateExporter function
 

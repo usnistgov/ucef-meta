@@ -12,9 +12,9 @@ define
     'use strict';
     var OmnetFederateExporter; // function variable
 
-/***********************************************************************/
+/* ******************************************************************* */
 
-/* OmnetFederateExporter (function-valued variable of top-level function object)
+/** OmnetFederateExporter (function-valued variable of top-level function object)
 
 Returned Value: none
 
@@ -34,7 +34,7 @@ The top-level function returns this function.
 
       this.federateTypes = this.federateTypes || {};
 
-/***********************************************************************/
+/* ******************************************************************* */
 
       this.federateTypes['OmnetFederate'] =
         {
@@ -90,7 +90,7 @@ The top-level function returns this function.
           } // end of init function
         }; // end of federateTypes['OmnetFederate']
 
-/***********************************************************************/
+/* ******************************************************************* */
 
       this.visit_OmnetFederate = function(node, parent, context)
       {
@@ -135,7 +135,7 @@ The top-level function returns this function.
         return {context:context};
       }; // end of visit_OmnetFederate
 
-/***********************************************************************/
+/* ******************************************************************* */
 
       this.post_visit_OmnetFederate = function(node, context)
       {
@@ -211,7 +211,7 @@ The top-level function returns this function.
         return {context:context};
       }; // end of post_visit_OmnetFederate
 
-/***********************************************************************/
+/* ******************************************************************* */
 
       this.createOmnetFederateCodeModel = function()
       {
@@ -235,11 +235,12 @@ The top-level function returns this function.
                 TEMPLATES:TEMPLATES
                };
       }
-/***********************************************************************/
+
+/* ******************************************************************* */
 
     } // end of OmnetFederateExporter function
 
-/***********************************************************************/
+/* ******************************************************************* */
 
     return OmnetFederateExporter;
-});
+}); // end define

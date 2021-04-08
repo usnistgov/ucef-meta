@@ -10,9 +10,9 @@ define
     'use strict';
     var JavaImplFederateExporter;
 
-/***********************************************************************/
+/* ******************************************************************* */
 
-/* JavaImplFederateExporter (function-valued variable of top-level function obj)
+/** JavaImplFederateExporter (function-valued variable of top-level function obj)
 
 Returned Value: none
 
@@ -28,8 +28,8 @@ The top-level function returns this function.
       var checkBack;
 
       self = this;
-      
-/***********************************************************************/
+
+/* ******************************************************************* */
 
      checkBack = function(err, callBack)
       {
@@ -44,7 +44,7 @@ The top-level function returns this function.
           }
       };
 
-/***********************************************************************/
+/* ******************************************************************* */
 
       this.federateTypes = this.federateTypes || {};
       this.federateTypes.JavaImplFederate =
@@ -61,9 +61,9 @@ The top-level function returns this function.
              }
       };
 
-/***********************************************************************/
+/* ******************************************************************* */
 
-/* visit_JavaImplFederate
+/** visit_JavaImplFederate
 
 Returned Value: a "{context: context}" object
 
@@ -111,9 +111,9 @@ Called By: visit_JavaFederate (in JavaFederate.js)
          return {context: context};
        };
 
-/***********************************************************************/
+/* ******************************************************************* */
 
-/* post_visit_JavaImplFederate
+/** post_visit_JavaImplFederate
 
 Returned Value: an object with a context property whose value is the
 context argument.
@@ -153,7 +153,7 @@ generators is built using renderContext.
             renderContext.publishedinteractiondata.
                concat(renderContext.subscribedinteractiondata);
 
-/***********************************************************************/
+/* ******************************************************************* */
 
         //Add impl POM from template
         self.fileGenerators.push(function(artifact, callback)
@@ -171,9 +171,9 @@ generators is built using renderContext.
                            function(err) {checkBack(err, callback);});
         });
 
-/***********************************************************************/
+/* ******************************************************************* */
 
-/*
+/**
 
 This prints files with names of the form <federateName>Base.java
 
@@ -197,7 +197,7 @@ in the post_visit_JavaFederate function in JavaFederate.js.
                            function(err) {checkBack(err, callback);});
         });
 
-/***********************************************************************/
+/* ******************************************************************* */
 
         self.fileGenerators.push(function(artifact, callback)
         {
@@ -214,7 +214,7 @@ in the post_visit_JavaFederate function in JavaFederate.js.
                            function(err) {checkBack(err, callback);});
         });
 
-/***********************************************************************/
+/* ******************************************************************* */
 
         //Add federate build script
         self.fileGenerators.push(function(artifact, callback)
@@ -232,7 +232,7 @@ in the post_visit_JavaFederate function in JavaFederate.js.
                            function(err) {checkBack(err, callback);});
         });
 
-/***********************************************************************/
+/* ******************************************************************* */
 
         //Add federate run script
         self.fileGenerators.push(function(artifact, callback)
@@ -253,7 +253,7 @@ in the post_visit_JavaFederate function in JavaFederate.js.
                            function(err) {checkBack(err, callback);});
         });
 
-/***********************************************************************/
+/* ******************************************************************* */
 
         //Add federate RTI.rid file
         self.fileGenerators.push(function(artifact, callback)
@@ -272,7 +272,7 @@ in the post_visit_JavaFederate function in JavaFederate.js.
                            function(err) {checkBack(err, callback);});
         });
 
-/***********************************************************************/
+/* ******************************************************************* */
 
         //Add federate config file
         self.fileGenerators.push(function(artifact, callback)
@@ -295,7 +295,7 @@ in the post_visit_JavaFederate function in JavaFederate.js.
                            function(err) {checkBack(err, callback);});
         });
 
-/***********************************************************************/
+/* ******************************************************************* */
 
         //Add impl log config from template
         self.fileGenerators.push(function(artifact, callback)
@@ -313,12 +313,12 @@ in the post_visit_JavaFederate function in JavaFederate.js.
                            function(err) {checkBack(err, callback);});
         });
 
-/***********************************************************************/
+/* ******************************************************************* */
 
         return {context: context}; // context object does not appear used
       }; // end of post_visit_JavaImplFederate function
 
-/***********************************************************************/
+/* ******************************************************************* */
 
       this.createJavaImplFederateCodeModel = function()
       {
@@ -343,12 +343,12 @@ in the post_visit_JavaFederate function in JavaFederate.js.
                 TEMPLATES: TEMPLATES};
       }
 
-/***********************************************************************/
+/* ******************************************************************* */
 
       this.javaImplCodeModel = this.createJavaImplFederateCodeModel();
     } // end of JavaImplFederateExporter function
 
-/***********************************************************************/
+/* ******************************************************************* */
 
     return JavaImplFederateExporter;
  }); // end define

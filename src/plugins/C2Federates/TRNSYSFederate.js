@@ -11,9 +11,9 @@ define
 
     var TRNSYSFederateExporter;
 
-/***********************************************************************/
+/* ******************************************************************* */
 
-/* TRNSYSFederateExporter (function-valued variable of
+/** TRNSYSFederateExporter (function-valued variable of
    top-level function object)
 
 Returned Value: none
@@ -31,7 +31,7 @@ The top-level function returns this function.
       var trnsysVersion = "0.1.0-SNAPSHOT";
       var checkBack;
 
-/***********************************************************************/
+/* ******************************************************************* */
 
       checkBack = function(err, callBack)
       {
@@ -46,11 +46,11 @@ The top-level function returns this function.
           }
       };
 
-/***********************************************************************/
+/* ******************************************************************* */
 
       this.federateTypes['TRNSYSFederate'] = {includeInExport: false};
 
-/***********************************************************************/
+/* ******************************************************************* */
 
       this.visit_TRNSYSFederate = function(node, parent, context)
       {
@@ -75,7 +75,7 @@ The top-level function returns this function.
         return {context: context};
       }; // end of visit_TRNSYSFederate function
 
-/***********************************************************************/
+/* ******************************************************************* */
 
       this.makeTRNSYSVariables = function(node)
       {
@@ -89,7 +89,7 @@ The top-level function returns this function.
         return trnsysVariables;
       };
 
-/***********************************************************************/
+/* ******************************************************************* */
 
       this.post_visit_TRNSYSFederate = function(node, context)
       {
@@ -248,11 +248,11 @@ The top-level function returns this function.
       };
       // end of post_visit_TRNSYSFederate function
 
-/***********************************************************************/
+/* ******************************************************************* */
 
     } // end of TRNSYSFederateExporter function
-   
-/***********************************************************************/
+
+/* ******************************************************************* */
 
    return TRNSYSFederateExporter;
  }); // end define
