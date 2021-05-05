@@ -2,7 +2,7 @@
 
 File completed by unknown programmer (probably H. Neema)
 
-File modified extensively by T. Kramer 
+File modified extensively by T. Kramer
 
 File reformatted in C style, as far as possible.
 
@@ -12,8 +12,10 @@ by at least FederatesExporter.js and DeploymentExporter.js.
 
 */
 
-define([], function()
- {
+define(
+  [],
+  function(
+  ) {
     'use strict';
     var withModelTraverser;
 
@@ -31,7 +33,7 @@ DeploymentExporter.js).
 
     withModelTraverser = function()
     {
-        
+
 /***********************************************************************/
 
 /* this.getChildSorterFunc
@@ -66,7 +68,7 @@ arguments.
         {
           var aName = self.core.getAttribute(a,'name');
           var bName = self.core.getAttribute(b,'name');
-          
+
           if (aName < bName) return -1;
           if (aName > bName) return 1;
           return 0;
@@ -81,7 +83,7 @@ arguments.
 Returned Value: none
 
 Called By: visitAllChildrenRec
-  
+
 If this.excludeFromVisit is not already defined, it is defined to
 return false.
 
@@ -110,7 +112,7 @@ Called By:
 
 */
 
-      this.visitAllChildrenFromRootContainer = function(rootNode, callback)
+      this.visitAllChildrenFromRootContainer = function(rootNode, rootContainerCallback)
       {
         var self = this;
         var error = '';
@@ -130,27 +132,25 @@ Called By:
                 {
                   var ret = self['ROOT_post_visitor'](rootNode, context);
                 }
-              catch(err)
-                {
-                  
-                }
-              callback(error === '' ? undefined : error);
+              catch(err) { }
+
+              rootContainerCallback(error === '' ? undefined : error);
               return;
             }
           if (err)
             {
-              callback(error);
+              rootContainerCallback(error);
               return;
             }
         };
-        
+
 /***********************************************************************/
         try
           {
             var ret = self['ROOT_visitor'](rootNode, context);
             if (ret['error'])
               {
-                callback(error === '' ? undefined : error);
+                rootContainerCallback(error === '' ? undefined : error);
                 return;
               }
             else
@@ -160,11 +160,11 @@ Called By:
           }
         catch(err)
           {
-            
+
           }
         self.visitAllChildrenRec(rootNode, context, counter, counterCallback);
       }; // end of visitAllChildrenFromRootContainer function
-        
+
 /***********************************************************************/
 
 /* this.visitAllChildrenRec
@@ -173,7 +173,7 @@ Returned Value: none
 
 Called By:
   visitAllChildrenFromRootContainer
-  visitAllChildrenRec (recursively -- likely "Rec" in the name means recursive) 
+  visitAllChildrenRec (recursively -- likely "Rec" in the name means recursive)
 
 By calling atModelNodeCallback, which calls visitAllChildrenRec
 recursively, this processes the tree of children with the node
@@ -237,9 +237,9 @@ have a fixed definition have not succeeded.
               return;
             }
           counter.visits -= 1;
-          
+
 /***********************************************************************/
-          
+
           doneModelNodeCallback = function(err, ctx)
             {
               if (err)
@@ -252,9 +252,9 @@ have a fixed definition have not succeeded.
                 }
               return
             };
-        
+
 /***********************************************************************/
-          
+
           if (childrenToVisit === 0)
             {
               if (node !== self.rootNode)
@@ -266,7 +266,7 @@ have a fixed definition have not succeeded.
                 {
                   doneModelNodeCallback(null);
                 }
-              return;
+              return false;
             }
           counter.visits += children.length;
           if (node !== self.rootNode)
@@ -278,17 +278,17 @@ have a fixed definition have not succeeded.
             {
               children.sort(sorterFunc);
             }
-          
+
 /***********************************************************************/
-          
+
           doneVisitChildCallback = function(err)
           {
             if (err)
               {
                 callback(err);
-                return; 
+                return;
               }
-            
+
             childrenToVisit -= 1;
             if (childrenToVisit === 0)
               {
@@ -302,11 +302,11 @@ have a fixed definition have not succeeded.
                     doneModelNodeCallback(null);
                   }
                 return;
-              } 
+              }
           };
 
 /***********************************************************************/
-          
+
           atModelNodeCallback = function(childNode)
           {
             return function(err, ctx)
@@ -320,15 +320,14 @@ have a fixed definition have not succeeded.
                                        doneVisitChildCallback);
             };
           };
-          
+
 /***********************************************************************/
-          
+
           for (i = 0; i < children.length; i += 1)
             {
-              self.atModelNode(children[i], node, self.cloneCtx(context),
-                               atModelNodeCallback(children[i]));
+              self.atModelNode(children[i], node, self.cloneCtx(context), atModelNodeCallback(children[i]));
             }
-        }); // closes function, args, and call to self.core.loadChildren 
+        }); // closes function, args, and call to self.core.loadChildren
       }; // closes function and this.visitAllChildrenRec =
 
 /***********************************************************************/
@@ -410,7 +409,7 @@ the node type is in the federateTypes of the FederatesExporter, then
                 callback(null, ret['context']);
                 return;
               }
-            
+
           }
         catch(err)
           {
