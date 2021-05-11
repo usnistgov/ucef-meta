@@ -182,10 +182,20 @@ This modifies context.cppfedspec and builds three file generators.
         {
           var hppCode;
           var fullPath;
-          var template;
+	  var template;
+	  var model;
 
+	  model = {classname: renderContext.classname,
+		   interaction_data: renderContext.interaction_data,
+		   object_data: renderContext.object_data,
+		   publishedinteractiondata:
+		     renderContext.publishedinteractiondata,
+		   publishedobjectdata: renderContext.publishedobjectdata,
+		   subscribedinteractiondata:
+		     renderContext.subscribedinteractiondata,
+		   subscribedobjectdata: renderContext.subscribedobjectdata};
           template = TEMPLATES['cpp/federateimpl.hpp.ejs'];
-          hppCode = ejs.render(template, renderContext);
+          hppCode = ejs.render(template, model);
           fullPath = outFileNameStart + "include/" + fedPathDir + ".hpp";
           self.logger.info("calling addFile for " + fullPath + " in " +
                            "post_visit_CppImplFederate of CppImplFederate.js");
@@ -201,13 +211,21 @@ This modifies context.cppfedspec and builds three file generators.
         
         self.fileGenerators.push(function(artifact, callback)
         {
-          var classname;
           var cppCode;
           var fullPath;
           var template;
-          
+	  var model;
+
+	  model = {classname: renderContext.classname,
+		   publishedinteractiondata:
+		     renderContext.publishedinteractiondata,
+		   publishedobjectdata:
+		     renderContext.publishedobjectdata,
+		   subscribedinteractiondata:
+		     renderContext.subscribedinteractiondata,
+		   subscribedobjectdata: renderContext.subscribedobjectdata};
           template = TEMPLATES['cpp/federateimpl.cpp.ejs'];
-          cppCode = ejs.render(template, renderContext);
+          cppCode = ejs.render(template, model);
           fullPath = outFileNameStart + "c++/" + fedPathDir + ".cpp";
           self.logger.info("calling addFile for " + fullPath + " in " +
                            "post_visit_CppImplFederate of CppImplFederate.js");

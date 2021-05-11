@@ -1,22 +1,29 @@
-<% /* classrootinterface(isinteraction)*/ %>
+<% /*
+input properties
+----------------
+isinteraction boolean
+
+used in
+-------
+JavaRTI.js
+
+This also uses ejs, but apparently ejs is available without being passed in.
+*/ -%>
+<% var IntOb = isinteraction ? "Interaction" : "Object"; -%>
+<% var intob = isinteraction ? "interaction" : "object"; -%>
+<% var ParAtt = isinteraction ? "Parameter" : "Attribute"; -%>
+<% var paratt = isinteraction ? "parameter" : "attribute"; -%>
 package org.cpswt.hla;
 
 import java.util.*;
 import hla.rti.*;
 
-public interface <%=isinteraction?"Interaction":"Object"%>RootInterface
+public interface <%=IntOb%>RootInterface
 {
     public int getUniqueID();
 
-    <%-ejs.render(
-        TEMPLATES["java/interfacecommon.java.ejs"],{
-            isinteraction: isinteraction,
-            classname: isinteraction?"InteractionRoot":"ObjectRoot",
-            parentclassname: "",
-            hlaclassname: isinteraction?"InteractionRoot":"ObjectRoot",
-            datamembers: [],
-            alldatamembers: []
-    })%>
+    <%-ejs.render(TEMPLATES["java/interfacecommon.java.ejs"],
+	          {isinteraction: isinteraction,});%>
 
     
 <% if(isinteraction){ %><%}else{%>
@@ -38,83 +45,83 @@ public interface <%=isinteraction?"Interaction":"Object"%>RootInterface
 <%}%>
 
     /**
-    * Returns the timestamp for this <%=isinteraction?"interaction":"object"%>.  "receive order" <%=isinteraction?"interaction":"object"%>s
+    * Returns the timestamp for this <%=intob%>.  "receive order" <%=intob%>s
     * should have a timestamp of -1.
     *
-    * @return timestamp for this <%=isinteraction?"interaction":"object"%>
+    * @return timestamp for this <%=intob%>
     */
     public double getTime();
     
     /**
-    * Sets the timestamp of this <%=isinteraction?"interaction":"object"%> to "time".
+    * Sets the timestamp of this <%=intob%> to "time".
     *
-    * @param time new timestamp for this <%=isinteraction?"interaction":"object"%>
+    * @param time new timestamp for this <%=intob%>
     */
     public void setTime( double time );
 
     /**
-    * Sets the timestamp of this <%=isinteraction?"interaction":"object"%> to "logicalTime".
+    * Sets the timestamp of this <%=intob%> to "logicalTime".
     *
-    * @param logicalTime new timestamp for this <%=isinteraction?"interaction":"object"%>
+    * @param logicalTime new timestamp for this <%=intob%>
     */
     public void setTime( LogicalTime logicalTime );
 
     /**
-    * Returns the value of the <%=isinteraction?"parameter":"attribute"%> named "datamemberName" for this
-    * <%=isinteraction?"interaction":"object"%>.
+    * Returns the value of the <%=paratt%> named "datamemberName" for this
+    * <%=intob%>.
     *
-    * @param datamemberName name of <%=isinteraction?"parameter":"attribute"%> whose value to retrieve
-    * @return the value of the <%=isinteraction?"parameter":"attribute"%> whose name is "datamemberName"
+    * @param datamemberName name of <%=paratt%> whose value to retrieve
+    * @return the value of the <%=paratt%> whose name is "datamemberName"
     */
-    public Object get<%=isinteraction?"Parameter":"Attribute"%>( String datamemberName );
+    public Object get<%=ParAtt%>( String datamemberName );
 
     /**
-    * Returns the value of the <%=isinteraction?"parameter":"attribute"%> whose handle is "datamemberHandle"
-    * (RTI assigned) for this <%=isinteraction?"interaction":"object"%>.
+    * Returns the value of the <%=paratt%> whose handle is "datamemberHandle"
+    * (RTI assigned) for this <%=intob%>.
     *
-    * @param datamemberHandle handle (RTI assigned) of <%=isinteraction?"parameter":"attribute"%> whose
+    * @param datamemberHandle handle (RTI assigned) of <%=paratt%> whose
     * value to retrieve
-    * @return the value of the <%=isinteraction?"parameter":"attribute"%> whose handle is "datamemberHandle"
+    * @return the value of the <%=paratt%> whose handle is "datamemberHandle"
     */
-    public Object get<%=isinteraction?"Parameter":"Attribute"%>( int datamemberHandle );
+    public Object get<%=ParAtt%>( int datamemberHandle );
         
     /**
-    * Set the values of the <%=isinteraction?"parameter":"attribute"%>s in this <%=isinteraction?"interaction":"object"%> using
+    * Set the values of the <%=paratt%>s in this <%=intob%> using
     * "datamemberMap".  "datamemberMap" is usually acquired as an argument to
     * an RTI federate callback method such as "receiveInteraction".
     *
-    * @param datamemberMap  contains new values for the <%=isinteraction?"parameter":"attribute"%>s of
-    * this <%=isinteraction?"interaction":"object"%>
+    * @param datamemberMap  contains new values for the <%=paratt%>s of
+    * this <%=intob%>
     */
-    public void set<%=isinteraction?"Parameter":"Attribute"%>s( <%=isinteraction?"ReceivedInteraction":"ReflectedAttributes"%> datamemberMap );
+    public void set<%=ParAtt%>s( <%=isinteraction?"ReceivedInteraction":"ReflectedAttributes"%> datamemberMap );
 
     /**
-    * Sets the value of the <%=isinteraction?"parameter":"attribute"%> named "datamemberName" to "value"
-    * in this <%=isinteraction?"interaction":"object"%>.  "value" is converted to data type of "datamemberName"
+    * Sets the value of the <%=paratt%> named "datamemberName" to "value"
+    * in this <%=intob%>.  "value" is converted to data type of "datamemberName"
     * if needed.
     * This action can also be affected by calling the set_<datamemberName>( value )
-    * method on the <%=isinteraction?"interaction":"object"%> using a reference to the <%=isinteraction?"interaction":"object"%>'s actual
+    * method on the <%=intob%> using a reference to the <%=intob%>'s actual
     * class.
     *
-    * @param datamemberName name of <%=isinteraction?"parameter":"attribute"%> whose value is to be set
+    * @param datamemberName name of <%=paratt%> whose value is to be set
     * to "value"
-    * @param value new value of <%=isinteraction?"parameter":"attribute"%> called "datamemberName"
+    * @param value new value of <%=paratt%> called "datamemberName"
     */
-    public void set<%=isinteraction?"Parameter":"Attribute"%>( String datamemberName, String value );
+    public void set<%=ParAtt%>( String datamemberName, String value );
 
     /**
-    * Sets the value of the <%=isinteraction?"parameter":"attribute"%> named "datamemberName" to "value"
-    * in this <%=isinteraction?"interaction":"object"%>.  "value" should have the same data type as that of
-    * the "datamemberName" <%=isinteraction?"parameter":"attribute"%>.
+    * Sets the value of the <%=paratt%> named "datamemberName" to "value"
+    * in this <%=intob%>.  "value" should have the same data type as that of
+    * the "datamemberName" <%=paratt%>.
     * This action can also be affected by calling the set_<datamemberName>( value )
-    * method on the <%=isinteraction?"interaction":"object"%> using a reference to the <%=isinteraction?"interaction":"object"%>'s actual
+    * method on the <%=intob%> using a reference to the <%=intob%>'s actual
     * class.
     *
-    * @param datamemberName name of <%=isinteraction?"parameter":"attribute"%> whose value is to be set
+    * @param datamemberName name of <%=paratt%> whose value is to be set
     * to "value"
-    * @param value new value of <%=isinteraction?"parameter":"attribute"%> called "datamemberName"
+    * @param value new value of <%=paratt%> called "datamemberName"
     */
-    public void set<%=isinteraction?"Parameter":"Attribute"%>( String datamemberName, Object value );
+    public void set<%=ParAtt%>( String datamemberName, Object value );
 
 <% if(isinteraction){ %>
     /**

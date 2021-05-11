@@ -5,11 +5,19 @@ alldatamembers       array
 classname            string
 codeclassname        string
 datamembers          array
+ejs                  ejs
+helpers              object
 hlaclassname         string
 isc2winteractionroot boolean
 isinteraction        boolean
 parentclassname      string
 simname              string
+TEMPLATES            object
+
+used in
+-------
+JavaRTI.js
+
 */ -%>
 
 import java.util.HashSet;
@@ -53,7 +61,7 @@ public class <%=codeclassname%> extends <%=parentclassname%> {
     private static final Logger logger = LogManager.getLogger();
 
     /**
-    * Creates an instance of the <%=classname%> <%=isinteraction?"interaction":"object"%> class with default <%=isinteraction?"parameter":"attribute"%> values.
+    * Creates an instance of the <%=codeclassname%> <%=isinteraction?"interaction":"object"%> class with default <%=isinteraction?"parameter":"attribute"%> values.
     */
     public <%=codeclassname%>() {}
 <% if(alldatamembers && alldatamembers.length > 0){ -%>
@@ -66,13 +74,13 @@ public class <%=codeclassname%> extends <%=parentclassname%> {
 
 <% /*classcommon(...)*/ -%>
 <%- ejs.render(TEMPLATES["java/classcommon.java.ejs"],
-    {   isinteraction: isinteraction,
-        classname: classname,
-        codeclassname: codeclassname,
-        parentclassname: parentclassname,
-        hlaclassname: hlaclassname,
-        datamembers: datamembers,
-        alldatamembers: alldatamembers
+    {alldatamembers: alldatamembers,
+     classname: classname,
+     codeclassname: codeclassname,
+     datamembers: datamembers,
+     hlaclassname: hlaclassname,
+     isinteraction: isinteraction,
+     parentclassname: parentclassname
 }) -%>
 <% if(isc2winteractionroot){ -%>
 
