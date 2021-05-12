@@ -29,29 +29,27 @@
             <version><%= projectVersion %></version>
         </dependency>
 <% } -%>
-<% if(federatesByType['CppFederate'] || federatesByType['OmnetFederate']){ -%>
+<% if(federatesByType['CppFederate']){federatesByType['CppFederate'].forEach(function(fed){ -%>
+        <dependency><!-- The dependency for the user written code-->
+            <groupId><%= groupId + "." + fed.name.toLowerCase()  %></groupId>
+            <artifactId><%= fed.name %></artifactId>
+            <version><%= projectVersion %></version>
+            <type>nar</type>
+        </dependency>
+<% });} -%>
+<% if(federatesByType['OmnetFederate']){ -%>
         <dependency><!-- The dependency for the generated code-->
             <groupId><%= groupId %></groupId>
             <artifactId><%= projectName %>-base-cpp</artifactId>
             <version><%= projectVersion %></version>
             <type>nar</type>
         </dependency>
-<% if(federatesByType['OmnetFederate']){ -%>
         <dependency><!-- The dependency for the generated omnet codes-->
             <groupId><%= groupId %></groupId>
             <artifactId><%= projectName %>-omnet-cpp</artifactId>
             <version><%= projectVersion %></version>
             <type>nar</type>
         </dependency>
-<% } -%>
-<% if(federatesByType['CppFederate']){federatesByType['CppFederate'].forEach(function(fed){ -%>
-        <dependency><!-- The dependency for the user written code-->
-            <groupId><%= groupId %></groupId>
-            <artifactId><%= projectName %>-<%= fed.name %>-cpp</artifactId>
-            <version><%= projectVersion %></version>
-            <type>nar</type>
-        </dependency>
-<% });} -%>
 <% } -%>
         <dependency>
             <groupId>junit</groupId>
@@ -384,14 +382,14 @@
                         <version>1.4.0</version>
                         <configuration>
                             <workingDirectory>${project.basedir}/target/bin-exec</workingDirectory>
-                            <executable>./<%= projectName %>-${federate.name}-cpp</executable>
+                            <executable>./${federate.name}</executable>
                             <arguments>
                                  <argument>--configFile</argument>
                                 <argument>${project.basedir}/conf/${experiment.name}/${federate.config}</argument>
                             </arguments>
                             <environmentVariables>
                                 <EXEDIR>${project.basedir}/target/${federate.name}</EXEDIR>
-                                <LD_LIBRARY_PATH>${project.basedir}/target/nar/lib/amd64-Linux-gpp/shared/:${env.RTI_HOME}/lib/gcc4/:${env.RTI_HOME}/jre/lib/amd64/server</LD_LIBRARY_PATH>
+                                <LD_LIBRARY_PATH>${project.basedir}/target/nar/lib/amd64-Linux-gpp/shared/:${env.RTI_HOME}/lib/gcc4/:${env.RTI_HOME}/jre/lib/server</LD_LIBRARY_PATH>
                             </environmentVariables>
                         </configuration>
                     </plugin>

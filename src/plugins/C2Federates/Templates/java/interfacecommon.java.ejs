@@ -1,72 +1,85 @@
-<% /*interfacecommon(isinteraction,classname,parentclassname,hlaclassname,datamembers,alldatamembers) */ %>
+<% /*
+input properties
+----------------
+isinteraction  boolean
+
+used in
+-------
+interfaceroot.java.ejs
+
+*/ %>
+<% var IntOb = isinteraction ? "Interaction" : "Object"; -%>
+<% var intob = isinteraction ? "interaction" : "object"; -%>
+<% var ParAtt = isinteraction ? "Parameter" : "Attribute"; -%>
+<% var paratt = isinteraction ? "parameter" : "attribute"; -%>
 
 /**
-* Returns the handle (RTI assigned) of this instance's <%=isinteraction?"interaction":"object"%> class .
+* Returns the handle (RTI assigned) of this instance's <%=intob%> class .
 * 
-* @return the handle (RTI assigned) if this instance's <%=isinteraction?"interaction":"object"%> class
+* @return the handle (RTI assigned) if this instance's <%=intob%> class
 */
 public int getClassHandle();
 
 /**
-* Returns the fully-qualified (dot-delimited) name of this instance's <%=isinteraction?"interaction":"object"%> class.
+* Returns the fully-qualified (dot-delimited) name of this instance's <%=intob%> class.
 * 
-* @return the fully-qualified (dot-delimited) name of this instance's <%=isinteraction?"interaction":"object"%> class
+* @return the fully-qualified (dot-delimited) name of this instance's <%=intob%> class
 */
 public String getClassName();
 
 /**
 * Returns the simple name (last name in its fully-qualified dot-delimited name)
-* of this instance's <%=isinteraction?"interaction":"object"%> class.
+* of this instance's <%=intob%> class.
 * 
-* @return the simple name of this instance's <%=isinteraction?"interaction":"object"%> class 
+* @return the simple name of this instance's <%=intob%> class 
 */
 public String getSimpleClassName();
 
 /**
-* Returns a set containing the names of all of the non-hidden<%=isinteraction?"parameter":"attribute"%>s of an
-* <%=isinteraction?"interaction":"object"%> class instance.
+* Returns a set containing the names of all of the non-hidden<%=paratt%>s of an
+* <%=intob%> class instance.
 *
-* @return set containing the names of all of the <%=isinteraction?"parameter":"attribute"%>s of an
-* <%=isinteraction?"interaction":"object"%> class instance
+* @return set containing the names of all of the <%=paratt%>s of an
+* <%=intob%> class instance
 */
-public Set< String > get<%=isinteraction?"Parameter":"Attribute"%>Names();
+public Set< String > get<%ParAtt%>Names();
 
 /**
-* Returns a set containing the names of all of the <%=isinteraction?"parameter":"attribute"%>s of an
-* <%=isinteraction?"interaction":"object"%> class instance.
+* Returns a set containing the names of all of the <%=paratt%>s of an
+* <%=intob%> class instance.
 *
-* @return set containing the names of all of the <%=isinteraction?"parameter":"attribute"%>s of an
-* <%=isinteraction?"interaction":"object"%> class instance
+* @return set containing the names of all of the <%=paratt%>s of an
+* <%=intob%> class instance
 */
-public Set< String > getAll<%=isinteraction?"Parameter":"Attribute"%>Names();
+public Set< String > getAll<%ParAtt%>Names();
 
 /**
-* Publishes the <%=isinteraction?"interaction":"object"%> class of this instance of the class for a federate.
+* Publishes the <%=intob%> class of this instance of the class for a federate.
 *
 * @param rti handle to the Local RTI Component
 */
-public void publish<%=isinteraction?"Interaction":"Object"%>( RTIambassador rti );
+public void publish<%=IntOb%>( RTIambassador rti );
 
 /**
-* Unpublishes the <%=isinteraction?"interaction":"object"%> class of this instance of this class for a federate.
+* Unpublishes the <%=intob%> class of this instance of this class for a federate.
 *
 * @param rti handle to the Local RTI Component
 */
-public void unpublish<%=isinteraction?"Interaction":"Object"%>( RTIambassador rti );
+public void unpublish<%=IntOb%>( RTIambassador rti );
 
 /**
-* Subscribes a federate to the <%=isinteraction?"interaction":"object"%> class of this instance of this class.
+* Subscribes a federate to the <%=intob%> class of this instance of this class.
 *
 * @param rti handle to the Local RTI Component
 */
-public void subscribe<%=isinteraction?"Interaction":"Object"%>( RTIambassador rti );
+public void subscribe<%=IntOb%>( RTIambassador rti );
 
 /**
-* Unsubscribes a federate from the <%=isinteraction?"interaction":"object"%> class of this instance of this class.
+* Unsubscribes a federate from the <%=intob%> class of this instance of this class.
 *
 * @param rti handle to the Local RTI Component
 */
-public void unsubscribe<%=isinteraction?"Interaction":"Object"%>( RTIambassador rti );
+public void unsubscribe<%=IntOb%>( RTIambassador rti );
 
 <% if(isinteraction){ %><% }else{ %>
 /**

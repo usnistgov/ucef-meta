@@ -83,25 +83,24 @@ define
        var self = this;
        var ret = {context:context};
        var nodeType = self.core.getAttribute(self.getMetaType(node), 'name');
+       var functionName;
        
        self.federates[self.core.getPath(node)] = node;
-       if(nodeType != 'Federate')
+       if (nodeType != 'Federate')
          {
+           functionName = 'visit_' + nodeType;
            try
              {
-               ret = self['visit_' + nodeType](node, parent, context);
+               ret = self[functionName](node, parent, context);
              }
            catch(err)
              {
-               if (err.message ==
-                   'self[visit_' + nodeType + '] is not a function')
+               if (err.message == 'self[functionName] is not a function')
                  {
-                   self.logger.debug('No visitor function for ' + nodeType);
+                   err.message =
+                     'self[' + functionName + '] is not a function';
                  }
-               else
-                 {
-                   return {error: err};
-                 }
+               return {error: err};
              }
          }
        return ret;
@@ -134,26 +133,24 @@ FederatesExporter/FederatesExporter.js and ModelTraverserMixin.js
        var self = this;
        var ret = {context:context};
        var nodeType = self.core.getAttribute(self.getMetaType(node), 'name');
+       var functionName;
 
        if ((nodeType != 'Federate') && (nodeType in self.federateTypes) &&
            self.core.getAttribute(node, 'EnableCodeGeneration'))
          {
+           functionName = 'post_visit_' + nodeType;
            try
              {
-               ret = self['post_visit_' + nodeType](node, context);
+               ret = self[functionName](node, context);
              }
            catch(err)
              {
-               if (err.message ==
-                   'self[post_visit_' + nodeType + '] is not a function')
+               if (err.message == 'self[functionName] is not a function')
                  {
-                   self.logger.debug('No post-visitor function for ' +
-                                     nodeType);
+                   err.message =
+                     'self[' + functionName + '] is not a function';
                  }
-               else
-                 {
-                   return {error: err};
-                 }
+               return {error: err};
              }
          }  
        return ret;
@@ -166,4 +163,4 @@ FederatesExporter/FederatesExporter.js and ModelTraverserMixin.js
 /***********************************************************************/
    
    return GenericFederateExporter;
-});
+ });

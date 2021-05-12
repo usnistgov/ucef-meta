@@ -1,13 +1,9 @@
 <% /*
 
-The data structure passed to this is large and deeply nested. Here are the
-top level properties (built in PubSubVisitors.js) used in this file with
-some lower levels expanded. Unused top level properties are elided with ...
-   ...
+input properties
+----------------
    classname (string)
-   ...
    groupId (string)
-   ...
    publishedinteractiondata (array of JavaScript objects)
       [details omitted]
    publishedobjectdata (array of JavaScript objects)
@@ -19,7 +15,6 @@ some lower levels expanded. Unused top level properties are elided with ...
       publishedAttributeData (array JavaScript objects)
       publishedLogLevel (string)
       logPublishedAttributeData (array of JavaScript objects)
-   ...
    subscribedinteractiondata (array of JavaScript objects)
       name (string)
       codeNameOrName (string)
@@ -38,7 +33,11 @@ some lower levels expanded. Unused top level properties are elided with ...
       subscribedAttributeData (array JavaScript objects)
       subscribedLogLevel (string)
       logSubscribedAttributeData (array of JavaScript objects)
-   ...
+   (and others not used)
+
+used in
+-------
+JavaImplFederate.js
  
 */ -%>
 package <%= groupId %>.<%= classname.toLowerCase() %>;
