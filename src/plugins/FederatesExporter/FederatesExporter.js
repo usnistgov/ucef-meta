@@ -1058,7 +1058,7 @@ clear when to call the callback.
 
                   interactionTraverserCheck(feder, interactionRoot);
                   fomModelXml.interactionsXml.push(interactionTraverserXml(feder, interactionRoot, "    "));
-                }
+
               interactionTraverserCheck(feder, interactionRoot);
               fomModelXml.interactionsXml.push
                 (interactionTraverserXml(feder, interactionRoot, "    "));

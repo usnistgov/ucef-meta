@@ -133,7 +133,7 @@ that each child has its own version.
 
 */
 
-      this.visitAllChildrenFromRootContainer = function(rootNode, rootContainerCallback)
+      this.visitAllChildrenFromRootContainer = function(rootNode, callback)
       {
         var self = this;
         var error = '';
