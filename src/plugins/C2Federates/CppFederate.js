@@ -137,6 +137,9 @@ This adds information to the context itself and by calling
 post_visit_CppImplFederate (in CppImplFederate.js). The call to
 post_visit_CppImplFederate also generates code.
 
+The cppModel and hppModel contain only those properties that are used
+in cppTemplate and hppTemplate, respectively.
+
 */
       
       this.post_visit_CppFederate = function(node, context)
@@ -155,18 +158,36 @@ post_visit_CppImplFederate also generates code.
           var cppTemplate;
           var hppTemplate;
           var cppCode;
-          var hppCode;
-          
-          renderContext.allobjectdata =
-                renderContext.publishedobjectdata.
-                  concat(renderContext.subscribedobjectdata);
-          renderContext.allinteractiondata =
-                renderContext.publishedinteractiondata.
-                   concat(renderContext.subscribedinteractiondata);
+	  var hppCode;
+	  var cppModel;
+	  var hppModel;
+
+	  cppModel =
+	    {asynchronousdelivery: renderContext.asynchronousdelivery,
+	     classname : renderContext.classname,
+	     publishedinteractiondata : renderContext.publishedinteractiondata,
+	     subscribedinteractiondata :
+	       renderContext.subscribedinteractiondata,
+	     publishedobjectdata : renderContext.publishedobjectdata,
+	     subscribedobjectdata : renderContext.subscribedobjectdata,
+	     timeconstrained : renderContext.timeconstrained,
+	     timeregulating : renderContext.timeregulating
+	    };
+	  
+	  hppModel =
+	    {allinteractiondata : renderContext.publishedinteractiondata.
+	       concat(renderContext.subscribedinteractiondata),
+	     allobjectdata : renderContext.publishedobjectdata.
+	       concat(renderContext.subscribedobjectdata),
+	     classname : renderContext.classname,
+	     lookahead : renderContext.lookahead,
+	     publishedinteractiondata : renderContext.publishedinteractiondata
+	    };
+	  
           fullPath = federateName + "/src/main/c++/" + federateName +
             "Base.cpp";
           cppTemplate = TEMPLATES['cpp/federate.cpp.ejs'];
-          cppCode = ejs.render(cppTemplate, renderContext);
+          cppCode = ejs.render(cppTemplate, cppModel);
           self.logger.info("calling addFile for " + fullPath +
                            " in post_visit_CppFederate of CppFederate.js");
           artifact.addFile(fullPath, cppCode,
@@ -178,10 +199,11 @@ post_visit_CppImplFederate also generates code.
                                  return;
                                }
                            });
+	  
           fullPath = federateName + "/src/main/include/" + federateName +
             "Base.hpp";
           hppTemplate = TEMPLATES['cpp/federate.hpp.ejs'];
-          hppCode = ejs.render(hppTemplate, renderContext);
+          hppCode = ejs.render(hppTemplate, hppModel);
           self.logger.info("calling addFile for " + fullPath +
                            " in post_visit_CppFederate of CppFederate.js");
           artifact.addFile(fullPath, hppCode,
@@ -206,29 +228,21 @@ post_visit_CppImplFederate also generates code.
 
       this.createCppFederateCodeModel = function()
       {
-        return {simname: "",
-                melderpackagename: null,
+        return {allinteractiondata: [],
+                allobjectdata: [],
+                asynchronousdelivery: false,
                 classname: "",
-                isnonmapperfed: true,
+                lookahead: null,
+                publishedinteractiondata: [],
+                publishedobjectdata: [],
+                simname: "",
+                subscribedinteractiondata: [],
+                subscribedobjectdata: [],
                 timeconstrained: false,
                 timeregulating: false,
-                lookahead: null,
-                asynchronousdelivery: false,
-                publishedinteractiondata: [],
-                subscribedinteractiondata: [],
-                allinteractiondata: [],
-                publishedobjectdata: [],
-                subscribedobjectdata: [],
-                allobjectdata: [],
-                helpers:{},
-                ejs:ejs, 
-                TEMPLATES:TEMPLATES};
+                helpers:{}};
       };
       
-/***********************************************************************/
-
-      this.cppCodeModel = this.createCppFederateCodeModel();
-
 /***********************************************************************/
 
     }; // end of setting CppFederateExporter function variable

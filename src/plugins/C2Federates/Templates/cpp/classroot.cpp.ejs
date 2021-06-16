@@ -1,45 +1,37 @@
-<% /* THIS IS THE ROOT CLASS OF EITHER THE INTERACTION OR OBJECT-CLASS HEIRARCHY (I.E. "InteractionRoot" OR "ObjectRoot") */ %>
-<% /*classroot(isinteraction) ::= <<*/ %>
+<% /*
+THIS IS THE ROOT CLASS OF EITHER THE INTERACTION OR OBJECT-CLASS HEIRARCHY
+(i.e. "InteractionRoot" OR "ObjectRoot")
 
-/*
- * Copyright (c) 2008, Institute for Software Integrated Systems, Vanderbilt University
- * All rights reserved.
- *
- * Permission to use, copy, modify, and distribute this software and its
- * documentation for any purpose, without fee, and without written agreement is
- * hereby granted, provided that the above copyright notice, the following
- * two paragraphs and the author appear in all copies of this software.
- *
- * IN NO EVENT SHALL THE VANDERBILT UNIVERSITY BE LIABLE TO ANY PARTY FOR
- * DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES ARISING OUT
- * OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF THE VANDERBILT
- * UNIVERSITY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
- * THE VANDERBILT UNIVERSITY SPECIFICALLY DISCLAIMS ANY WARRANTIES,
- * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
- * AND FITNESS FOR A PARTICULAR PURPOSE.  THE SOFTWARE PROVIDED HEREUNDER IS
- * ON AN "AS IS" BASIS, AND THE VANDERBILT UNIVERSITY HAS NO OBLIGATION TO
- * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
- *
- */
+input properties
+----------------
+isinteraction boolean
 
+used in
+-------
+CppRTI.js
+
+This also uses ejs, but apparently ejs is available without being passed in.
+*/
+-%>
+<% var rootname = isinteraction ? "InteractionRoot" : "ObjectRoot"; -%>
+<% var create = isinteraction ? "create_interaction" : "create_object"; -%>
+<% var field = isinteraction ? "Parameter" : "Attribute"; -%>
 #include <boost/lexical_cast.hpp>
-#include "<%=isinteraction?"Interaction":"Object"%>Root.hpp"
+#include "<%=rootname%>.hpp"
 
-C2WLogger* <%=isinteraction?"Interaction":"Object"%>Root::_logger = &C2W_RTI_LOGGER_CLS::get_singleton();
+C2WLogger* <%=rootname%>::_logger = &C2W_RTI_LOGGER_CLS::get_singleton();
 
-<% /*classcommon(classname=apMap.classfirstupper+"Root",hlaclassname=apMap.classfirstupper+"Root",...)*/ %>
 <%- ejs.render(TEMPLATES["cpp/classcommon.cpp.ejs"],
-    {    isinteraction: isinteraction,
-        classname: isinteraction?"InteractionRoot":"ObjectRoot",
-        parentclassname: "",
-        hlaclassname: isinteraction?"InteractionRoot":"ObjectRoot",
-        datamembers: [],
-        alldatamembers: []
+    {isinteraction: isinteraction,
+     classname: rootname,
+     parentclassname: "",
+     hlaclassname: rootname,
+     datamembers: [],
+     alldatamembers: []
 }) %>
 
 <% if(!isinteraction){ %>
-void <%=isinteraction?"Interaction":"Object"%>Root::publish( const std::string &className, const std::string &attributeName ) {
+void ObjectRoot::publish( const std::string &className, const std::string &attributeName ) {
     NameStringVectorPtrMap::iterator camItr = getClassNamePublishAttributeNameVectorPtrMap().find( className );
     if ( camItr == getClassNamePublishAttributeNameVectorPtrMap().end() ) {
         std::cerr << "ERROR:  ObjectRoot.publish:  could not publish class \"" << className << "\" \"" << attributeName << "\" attribute." << std::endl;
@@ -57,7 +49,7 @@ void <%=isinteraction?"Interaction":"Object"%>Root::publish( const std::string &
     camItr->second->push_back( attributeName );
 }
 
-void <%=isinteraction?"Interaction":"Object"%>Root::subscribe( const std::string &className, const std::string &attributeName ) {
+void ObjectRoot::subscribe( const std::string &className, const std::string &attributeName ) {
     NameStringVectorPtrMap::iterator camItr = getClassNameSubscribeAttributeNameVectorPtrMap().find( className );
     if ( camItr == getClassNameSubscribeAttributeNameVectorPtrMap().end() ) {
         std::cerr << "ERROR:  ObjectRoot.subscribe:  could not subscribe class \"" << className << "\" \"" << attributeName << "\" attribute." << std::endl;
@@ -77,37 +69,37 @@ void <%=isinteraction?"Interaction":"Object"%>Root::subscribe( const std::string
 
 <%}%>
 
-<%=isinteraction?"Interaction":"Object"%>Root::SP <%=isinteraction?"Interaction":"Object"%>Root::create_<%=isinteraction?"interaction":"object"%>( int classHandle, const RTI::<%=isinteraction?"Parameter":"Attribute"%>HandleValuePairSet &datamemberMap ) {
+<%=rootname%>::SP <%=rootname>::<%=create%>( int classHandle, const RTI::<%=field%>HandleValuePairSet &datamemberMap ) {
     IntegerStringMap::iterator ismItr = getClassHandleNameMap().find( classHandle );
     if ( ismItr == getClassHandleNameMap().end() ) {
-        return SP( (<%=isinteraction?"Interaction":"Object"%>Root *)0 );
+        return SP( (<%=rootname%> *)0 );
     }
     ClassNameFactoryMap::iterator cfmItr = getClassNameFactoryMap().find( ismItr->second );
     if ( cfmItr == getClassNameFactoryMap().end() ) {
-        return SP( (<%=isinteraction?"Interaction":"Object"%>Root *)0 );
+        return SP( (<%=rootname%> *)0 );
     }
     SP sp = (*cfmItr->second)();
-    sp->set<%=isinteraction?"Parameter":"Attribute"%>s( datamemberMap );
+    sp->set<%=field%>s( datamemberMap );
     return sp;
 }
 
-<%=isinteraction?"Interaction":"Object"%>Root::SP <%=isinteraction?"Interaction":"Object"%>Root::create_<%=isinteraction?"interaction":"object"%>( int classHandle, const RTI::<%=isinteraction?"Parameter":"Attribute"%>HandleValuePairSet &datamemberMap, const RTIfedTime &dlc13FedTime ) {
+<%=rootname%>::SP <%=rootname%>::<%=create%>( int classHandle, const RTI::<%=field%>HandleValuePairSet &datamemberMap, const RTIfedTime &dlc13FedTime ) {
     IntegerStringMap::iterator ismItr = getClassHandleNameMap().find( classHandle );
     if ( ismItr == getClassHandleNameMap().end() ) {
-        return SP( (<%=isinteraction?"Interaction":"Object"%>Root *)0 );
+        return SP( (<%=rootname%> *)0 );
     }
     ClassNameFactoryMap::iterator cfmItr = getClassNameFactoryMap().find( ismItr->second );
     if ( cfmItr == getClassNameFactoryMap().end() ) {
-        return SP( (<%=isinteraction?"Interaction":"Object"%>Root *)0 );
+        return SP( (<%=rootname%> *)0 );
     }
     SP sp = (*cfmItr->second)();
-    sp->set<%=isinteraction?"Parameter":"Attribute"%>s( datamemberMap );
+    sp->set<%=field%>s( datamemberMap );
     sp->setTime( dlc13FedTime.getTime() );
     return sp;
 }
 
 <% if(!isinteraction){ %>
-void <%=isinteraction?"Interaction":"Object"%>Root::requestUpdate( RTI::RTIambassador *rti ) {
+void ObjectRoot::requestUpdate( RTI::RTIambassador *rti ) {
     bool requestNotSubmitted = true;
     while ( requestNotSubmitted ) {
         try {        
@@ -129,21 +121,21 @@ void <%=isinteraction?"Interaction":"Object"%>Root::requestUpdate( RTI::RTIambas
 }
 <%} -%>
 
-void <%=isinteraction?"Interaction":"Object"%>Root::set<%=isinteraction?"Parameter":"Attribute"%>s( const RTI::<%=isinteraction?"Parameter":"Attribute"%>HandleValuePairSet &datamemberMap ) {
+void <%=rootname%>::set<%=field%>s( const RTI::<%=field%>HandleValuePairSet &datamemberMap ) {
     int size = datamemberMap.size();
     for ( int ix = 0 ; ix < size ; ++ix ) {
         try {
             static RTI::ULong valueLength;
             char *value = datamemberMap.getValuePointer( ix, valueLength );
-            set<%=isinteraction?"Parameter":"Attribute"%>(  datamemberMap.getHandle( ix ), std::string( value, valueLength )  );
+            set<%=field%>(  datamemberMap.getHandle( ix ), std::string( value, valueLength )  );
         } catch ( ... ) {
-            std::cerr << "set<%=isinteraction?"Parameter":"Attribute"%>s: Exception caught!" << std::endl;
+            std::cerr << "set<%=field%>s: Exception caught!" << std::endl;
         }
     }
 }
 
 <% if(isinteraction){ %>
-void <%=isinteraction?"Interaction":"Object"%>Root::sendInteraction( RTI::RTIambassador *rti, double time ) {
+void InteractionRoot::sendInteraction( RTI::RTIambassador *rti, double time ) {
     bool interactionNotSent = true;
     while ( interactionNotSent ) {
         try {
@@ -180,7 +172,7 @@ void <%=isinteraction?"Interaction":"Object"%>Root::sendInteraction( RTI::RTIamb
     }
 }
 
-void <%=isinteraction?"Interaction":"Object"%>Root::sendInteraction( RTI::RTIambassador *rti ) {
+void InteractionRoot::sendInteraction( RTI::RTIambassador *rti ) {
     bool interactionNotSent = true;
     while ( interactionNotSent ) {
         try {
@@ -213,11 +205,11 @@ void <%=isinteraction?"Interaction":"Object"%>Root::sendInteraction( RTI::RTIamb
     }
 }
 
-std::string <%=isinteraction?"Interaction":"Object"%>Root::fedName = "";
-bool <%=isinteraction?"Interaction":"Object"%>Root::enablePubLog = false;
-bool <%=isinteraction?"Interaction":"Object"%>Root::enableSubLog = false;
-std::string <%=isinteraction?"Interaction":"Object"%>Root::pubLogLevel = "";
-std::string <%=isinteraction?"Interaction":"Object"%>Root::subLogLevel = "";
+std::string InteractionRoot::fedName = "";
+bool InteractionRoot::enablePubLog = false;
+bool InteractionRoot::enableSubLog = false;
+std::string InteractionRoot::pubLogLevel = "";
+std::string InteractionRoot::subLogLevel = "";
 
 void InteractionRoot::enablePublishLog( const std::string &interaction, const std::string &fed, const std::string &thislevel, const std::string &globallevel ) {
     if ( globallevel.empty() ) {
@@ -245,7 +237,7 @@ void InteractionRoot::enableSubscribeLog( const std::string &interaction, const 
     _logger->addLog( interaction, fedName, false );
 }
 
-void <%=isinteraction?"Interaction":"Object"%>Root::createLog( double time, bool isPub ) {
+void InteractionRoot::createLog( double time, bool isPub ) {
     if (  ( isPub && !enablePubLog ) || ( !isPub && !enableSubLog )  ) {
         return;
     }

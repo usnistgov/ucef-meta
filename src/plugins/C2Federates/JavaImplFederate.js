@@ -224,8 +224,8 @@ in the post_visit_JavaFederate function in JavaFederate.js.
           var template;
 
           fullPath = fedPathDir + '/build.sh';
-          template = TEMPLATES['java/mvn-install.sh.ejs'];
-          bashScript = ejs.render(template, renderContext);
+          template = TEMPLATES['common/mvn-install.sh.ejs'];
+          bashScript = ejs.render(template, {});
           self.logger.info('calling addFile for ' + fullPath + ' in post_' +
                            'visit_JavaImplFederate of JavaImplFederate.js');
           artifact.addFile(fullPath, bashScript,
@@ -240,10 +240,13 @@ in the post_visit_JavaFederate function in JavaFederate.js.
           var bashScript;
           var fullPath;
           var template;
+          var model;
 
+          model = {classname: renderContext.classname,
+                   jarfile: renderContext.jarfile};
           fullPath = fedPathDir + '/run.sh';
           template = TEMPLATES['java/java-run.sh.ejs'];
-          bashScript = ejs.render(template, renderContext);
+          bashScript = ejs.render(template, model);
           self.logger.info('calling addFile for ' + fullPath + ' in post_' +
                            'visit_JavaImplFederate of JavaImplFederate.js');
           artifact.addFile(fullPath, bashScript,
@@ -260,8 +263,9 @@ in the post_visit_JavaFederate function in JavaFederate.js.
           var template;
 
           fullPath = fedPathDir + '/RTI.rid';
-          template = TEMPLATES['java/rti.rid.ejs'];
-          rtiCode = ejs.render(template, renderContext);
+          template = TEMPLATES['common/rti.rid.ejs'];
+          rtiCode = ejs.render(template,
+                               {bindAddress: renderContext.bindAddress});
           self.logger.info('calling addFile for ' + fullPath + ' in post_' +
                            'visit_JavaImplFederate of JavaImplFederate.js');
           artifact.addFile(fullPath, rtiCode,
@@ -276,10 +280,15 @@ in the post_visit_JavaFederate function in JavaFederate.js.
           var jsonCode;
           var fullPath;
           var template;
-
+          var model;
+    
+          model = {classname: renderContext.classname,
+                   lookahead: renderContext.lookahead,
+                   projectName: renderContext.projectName,
+                   step: renderContext.step};
           fullPath = fedPathDir + '/conf/' + renderContext.configFile;
           template = TEMPLATES['java/federate-config.json.ejs'];
-          jsonCode = ejs.render(template, renderContext);
+          jsonCode = ejs.render(template, model);
           self.logger.info('calling addFile for ' + fullPath + ' in post_' +
                            'visit_JavaImplFederate of JavaImplFederate.js');
           artifact.addFile(fullPath, jsonCode,
@@ -296,8 +305,8 @@ in the post_visit_JavaFederate function in JavaFederate.js.
           var template;
 
           fullPath = fedPathDir + '/conf/log4j2.xml';
-          template = TEMPLATES['java/log4j2.xml.ejs']
-          xmlCode = ejs.render(template, self);
+          template = TEMPLATES['common/log4j2.xml.ejs']
+          xmlCode = ejs.render(template, {});
           self.logger.info('calling addFile for ' + fullPath + ' in post_' +
                            'visit_JavaImplFederate of JavaImplFederate.js');
           artifact.addFile(fullPath, xmlCode,

@@ -1,3 +1,16 @@
+<% /*
+input properties
+----------------
+classname  string
+jarfile    string
+
+used in
+-------
+GridLabFederate.js
+LabVIEWFederate.js
+TRNSYSFederate.js
+
+*/ -%>
 #!/bin/bash
 configFile=conf/<%=classname%>.json
 if [ $# -eq 1 ] && [ -f $1 ]; then

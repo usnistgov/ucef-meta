@@ -532,6 +532,8 @@ node in RTIVisitors.js. The model has the following properties:
             }
           else
             {
+              self.logger.info('calling addFile for ' + fullPath +
+                               ' in renderNotCoreObjectToFile of JavaRTI.js');
               artifact.addFile(fullPath, javaCode, callback);
             }
         }; // end renderNotCoreObjectToFile
@@ -650,6 +652,8 @@ that has a publish or subscribe connection to the interaction.
             }
           else
             {
+              self.logger.info('calling addFile for ' + fullPath + ' in ' +
+                               'renderNotCoreInteractionToFile of JavaRTI.js');
               artifact.addFile(fullPath, javaCode, callback);
             }
         }; // end renderNotCoreInteractionToFile
@@ -730,6 +734,8 @@ using the coreDirPath and self.corePOM.toJSON()
               fullPath = coreDirPath + '/pom.xml';
               xmlCode =
                 self._jsonToXml.convertToString(self.corePOM.toJSON());
+              self.logger.info('calling addFile for ' + fullPath + ' in ' +
+                               'initJavaRTI of JavaRTI.js');
               artifact.addFile(fullPath, xmlCode,
                                function (err)
                                {
@@ -762,6 +768,8 @@ using the eventsDirPath and self.java_core_rtiPOM.toJSON()
               fullPath = eventsDirPath + '/pom.xml';
               xmlCode =
                 self._jsonToXml.convertToString(self.java_core_rtiPOM.toJSON());
+              self.logger.info('calling addFile for ' + fullPath + ' in ' +
+                               'initJavaRTI of JavaRTI.js');
               artifact.addFile(fullPath, xmlCode,
                                function (err)
                                {
@@ -803,9 +811,10 @@ the InteractionRoot.java file.
                 }
               fullPath = coreOutFilePath + "/" + corePackagePath.join("/") +
                 "/" + 'InteractionRoot.java';
-              renderContext['isinteraction'] = true;
               template = TEMPLATES['java/classroot.java.ejs'];
-              xmlCode = ejs.render(template, renderContext);
+              xmlCode = ejs.render(template, {isinteraction: true});
+              self.logger.info('calling addFile for ' + fullPath + ' in ' +
+                               'initJavaRTI of JavaRTI.js');
               artifact.addFile(fullPath, xmlCode,
                                function (err)
                                {
@@ -818,7 +827,9 @@ the InteractionRoot.java file.
               fullPath = coreOutFilePath + "/" + corePackagePath.join("/") +
                          "/" + 'InteractionRootInterface.java';
               template = TEMPLATES['java/interfaceroot.java.ejs'];
-              xmlCode = ejs.render(template, renderContext);
+              xmlCode = ejs.render(template, {isinteraction: true});
+              self.logger.info('calling addFile for ' + fullPath + ' in ' +
+                               'initJavaRTI of JavaRTI.js');
               artifact.addFile(fullPath, xmlCode,
                                function (err)
                                {
@@ -863,9 +874,10 @@ ObjectRoot.java file.
               fullPath = coreOutFilePath + "/" +
                          corePackagePath.join("/") + "/" +
                          'ObjectRoot.java';
-              renderContext.isinteraction = false;
               template = TEMPLATES['java/classroot.java.ejs'];
-              xmlCode = ejs.render(template, renderContext);
+		xmlCode = ejs.render(template, {isinteraction: false});
+              self.logger.info('calling addFile for ' + fullPath + ' in ' +
+                               'initJavaRTI of JavaRTI.js');
               artifact.addFile(fullPath, xmlCode,
                                function (err)
                                {
@@ -877,8 +889,10 @@ ObjectRoot.java file.
                                });
               fullPath = coreOutFilePath + "/" + corePackagePath.join("/") +
                          "/" + 'ObjectRootInterface.java';
-              template = TEMPLATES['java/interfaceroot.java.ejs']
-              xmlCode = ejs.render(template, renderContext)
+              template = TEMPLATES['java/interfaceroot.java.ejs'];
+              xmlCode = ejs.render(template, {isinteraction: false});
+              self.logger.info('calling addFile for ' + fullPath + ' in ' +
+                               'initJavaRTI of JavaRTI.js');
               artifact.addFile(fullPath, xmlCode,
                                function (err)
                                {
@@ -1215,7 +1229,7 @@ code elsewhere may be looking for "default", so it has been left in.
                                  "long"    : "0",
                                  "short"   : "0",
                                  "byte"    : "0",
-                                 "char"    : "\\000",
+                                 "char"    : "'\\0'",
                                  "double"  : "0",
                                  "float"   : "0",
                                  "boolean" : "false",

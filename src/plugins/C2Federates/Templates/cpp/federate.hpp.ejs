@@ -1,20 +1,16 @@
-<%/* group cppfederate;
+<%/*
+input properties
+----------------
+allinteractiondata         array
+allobjectdata              array
+classname                  string
+lookahead                  double
+publishedinteractiondata   array
 
-federate(
-        simname,
-        classname,
-        isnonmapperfed,
-        timeconstrained,
-        timeregulating,
-        lookahead,
-        asynchronousdelivery,
-        allinteractiondata,
-        publishedinteractiondata,
-        subscribedinteractiondata,
-        allobjectdata,
-        publishedobjectdata,
-        subscribedobjectdata
-)
+used in
+-------
+CppFederate.js
+
 */ -%>
 #ifndef _<%=classname%>Base_
 #define _<%=classname%>Base_
@@ -25,10 +21,10 @@ federate(
 #include "SubscribedInteractionFilter.hpp"
 
 <% allinteractiondata.forEach(function(interactiondata){ -%>
-#include "rti/<%=interactiondata.name%>.hpp"
+#include "rti/<%=interactiondata.codeNameOrName%>.hpp"
 <%});-%>
 <% allobjectdata.forEach(function(objectdata){ -%>
-#include "rti/<%=objectdata.name%>.hpp"
+#include "rti/<%=objectdata.codeNameOrName%>.hpp"
 <%});-%>
 #include "C2WLogger.hpp"
 
@@ -60,7 +56,7 @@ public:
     <%=classname%>Base( FederateConfig *fedconfig );
 <% publishedinteractiondata.forEach(function(interactiondata){ -%>
 
-    <%=interactiondata.name%>SP create_<%=interactiondata.name%>( void );
+    <%=interactiondata.codeNameOrName%>SP create_<%=interactiondata.codeNameOrName%>( void );
 <%}); -%>
 
     virtual void receiveInteraction(

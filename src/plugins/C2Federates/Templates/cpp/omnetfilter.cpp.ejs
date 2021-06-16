@@ -1,4 +1,14 @@
-<% /*FilterInitSource( projectname, subscribedinteractiondata ) ::= << */ %>
+<% /*
+input properties used
+---------------------
+projectname
+subscribedinteractiondata
+
+used in
+-------
+OmnetFederate.js
+
+*/ -%>
 /*
  * Copyright (c) 2016, Institute for Software Integrated Systems, Vanderbilt University
  * All rights reserved.
@@ -25,6 +35,8 @@
 #include "<%=projectname%>FilterInit.h"
 #include "OmnetFOMInteractions.h"
 //#include "<%=projectname%>NonOmnetNonGenericSources.hpp"
+
+<% /* TK note: ".name" below may need to be ".codeNameOrName" */ -%>
 
 void <%=projectname%>FilterInit::execute( SubscribedInteractionFilter &subscribedInteractionFilter ) {
     <% /*subscribedinteractiondata:initInteractionFilter()*/ %>

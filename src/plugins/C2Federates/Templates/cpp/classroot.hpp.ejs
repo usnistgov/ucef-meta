@@ -1,6 +1,17 @@
+<% /*
+input properties used
+---------------------
+isinteraction
 
-<% /* THIS IS THE ROOT CLASS OF EITHER THE INTERACTION OR OBJECT-CLASS HEIRARCHY (I.E. "InteractionRoot" OR "ObjectRoot") */
-/*classroot(isinteraction) ::= <<*/ %>
+used in
+-------
+CppRTI.js
+
+This also uses ejs, but apparently ejs is available without being passed in.
+
+*/ -%>
+<%/* THIS IS THE ROOT CLASS OF EITHER THE INTERACTION OR OBJECT-CLASS HEIRARCHY
+(i.e. "InteractionRoot" OR "ObjectRoot") */
 /*
  * Copyright (c) 2008, Institute for Software Integrated Systems, Vanderbilt University
  * All rights reserved.
@@ -53,13 +64,19 @@
  *
  */
 
+<% var rootname = isinteraction ? "InteractionRoot" : "ObjectRoot"; -%>
+<% var IntOb = isinteraction ? "Interaction" : "Object"; -%>
+<% var Field = isinteraction ? "Parameter" : "Attribute"; -%>
+<% var intob = isinteraction ? "interaction" : "object"; -%>
+<% var field = isinteraction ? "parameter" : "attribute"; -%>
+<% var create = isinteraction ? "create_interaction" : "create_object"; -%>
 <% if(isinteraction){ %>
 #ifndef _INTERACTION_ROOT
 #define _INTERACTION_ROOT
-<% }else{ %>
+<% }else{ -%>
 #ifndef _OBJECT_ROOT
 #define _OBJECT_ROOT
-<%}%>
+<%} -%>
 
 #ifndef _CRT_SECURE_NO_DEPRECATE
 #define _CRT_SECURE_NO_DEPRECATE
@@ -100,17 +117,16 @@
 #define C2W_RTI_LOGGER_CLS C2WConsoleLogger
 #endif 
 
-#include "<%=isinteraction?"Interaction":"Object"%>If.hpp"
+#include "<%=IntOb%>If.hpp"
 
-class <%=isinteraction?"Interaction":"Object"%>Root : public <%=isinteraction?"Interaction":"Object"%>If{
+class <%= rootname %> : public <%=IntOb%>If{
 public:
     typedef std::map< std::string, StringSet * > NameStringSetPtrMap;
     typedef std::map< std::string, StringVector * > NameStringVectorPtrMap;
     typedef std::map< std::string, int > StringIntegerMap;
     typedef std::map< int, std::string > IntegerStringMap;
-
-    typedef boost::shared_ptr< <%=isinteraction?"Interaction":"Object"%>Root > SP;
-    typedef boost::shared_ptr< RTI::<%=isinteraction?"Parameter":"Attribute"%>HandleValuePairSet > <%=isinteraction?"Parameter":"Attribute"%>HandleValuePairSetSP;
+    typedef boost::shared_ptr< <%= rootname %> > SP;
+    typedef boost::shared_ptr< RTI::<%= Field %>HandleValuePairSet > <%= Field %>HandleValuePairSetSP;
     
     typedef SP (*FactoryFunctionPtr)( void );
     typedef std::map< std::string, FactoryFunctionPtr > ClassNameFactoryMap;
@@ -268,24 +284,22 @@ protected:
 
 <%}%>
 
-<% /*classcommon(classname=apMap.classfirstupper+"Root",hlaclassname=apMap.classfirstupper+"Root",...)*/ -%>
 <%- ejs.render(
     TEMPLATES["cpp/classcommon.hpp.ejs"],{
-        isinteraction: isinteraction,
-        classname: isinteraction?"InteractionRoot":"ObjectRoot",
-        parentclassname: "",
-        hlaclassname: isinteraction?"InteractionRoot":"ObjectRoot",
+        alldatamembers: [],
+        classname: rootname,
         datamembers: [],
-        alldatamembers: []
+        isinteraction: isinteraction,
+        parentclassname: ""
 }) %>
 public:
-    static StringSet get_<%=isinteraction?"interaction":"object"%>_names( void ) { return getClassNameSet(); }
-    static StringVector get_<%=isinteraction?"parameter":"attribute"%>_names( const std::string &className ) {
+    static StringSet get_<%=intob%>_names( void ) { return getClassNameSet(); }
+    static StringVector get_<%= field %>_names( const std::string &className ) {
         NameStringVectorPtrMap::iterator nssItr = getDatamemberClassNameVectorPtrMap().find( className );
         return nssItr == getDatamemberClassNameVectorPtrMap().end() ? StringVector() : *nssItr->second;
     }
 
-    static StringVector get_all_<%=isinteraction?"parameter":"attribute"%>_names( const std::string &className ) {
+    static StringVector get_all_<%= field %>_names( const std::string &className ) {
         NameStringVectorPtrMap::iterator nssItr = getAllDatamemberClassNameVectorPtrMap().find( className );
         return nssItr == getAllDatamemberClassNameVectorPtrMap().end() ? StringVector() : *nssItr->second;
     }
@@ -304,7 +318,7 @@ public:
         return simItr->second;
     }
 
-    static std::string get_<%=isinteraction?"parameter":"attribute"%>_name( int datamemberHandle ) {
+    static std::string get_<%= field %>_name( int datamemberHandle ) {
         IntegerStringMap::iterator ismItr = getDatamemberHandleNameMap().find( datamemberHandle );
         return ismItr == getDatamemberHandleNameMap().end() ? std::string() : ismItr->second;
     }
@@ -382,37 +396,37 @@ public:
 public:
     static SP create_<%=isinteraction?"interaction":"object"%>( const std::string &className ) {
         ClassNameFactoryMap::iterator cfmItr = getClassNameFactoryMap().find( className );
-        return cfmItr == getClassNameFactoryMap().end() ? SP( (<%=isinteraction?"Interaction":"Object"%>Root *)0 ) : (*cfmItr->second)();
+        return cfmItr == getClassNameFactoryMap().end() ? SP( (<%=rootname%> *)0 ) : (*cfmItr->second)();
     }
 
     static SP create_<%=isinteraction?"interaction":"object"%>( const std::string &className, const RTIfedTime &dlc13FedTime ) {
         ClassNameFactoryMap::iterator cfmItr = getClassNameFactoryMap().find( className );
         if ( cfmItr == getClassNameFactoryMap().end() ) {
-            return SP( (<%=isinteraction?"Interaction":"Object"%>Root *)0 );
+            return SP( (<%=rootname%> *)0 );
         }
         SP sp = (*cfmItr->second)();
         sp->setTime( dlc13FedTime.getTime() );
         return sp;
     }
 
-    static SP create_<%=isinteraction?"interaction":"object"%>( int classHandle ) {
+    static SP <%=create%>( int classHandle ) {
         IntegerStringMap::iterator ismItr = getClassHandleNameMap().find( classHandle );
-        return ismItr == getClassHandleNameMap().end() ? SP( (<%=isinteraction?"Interaction":"Object"%>Root *)0 ) : create_<%=isinteraction?"interaction":"object"%>( ismItr->second );
+        return ismItr == getClassHandleNameMap().end() ? SP( (<%=rootname%> *)0 ) : <%=create%>( ismItr->second );
     }
 
-    static SP create_<%=isinteraction?"interaction":"object"%>( int classHandle, const RTIfedTime &dlc13FedTime ) {
+    static SP <%=create%>( int classHandle, const RTIfedTime &dlc13FedTime ) {
         IntegerStringMap::iterator ismItr = getClassHandleNameMap().find( classHandle );
-        return ismItr == getClassHandleNameMap().end() ? SP( (<%=isinteraction?"Interaction":"Object"%>Root *)0 ) : create_<%=isinteraction?"interaction":"object"%>( ismItr->second, dlc13FedTime );
+        return ismItr == getClassHandleNameMap().end() ? SP( (<%=rootname%> *)0 ) : <%=create%>( ismItr->second, dlc13FedTime );
     }
 
-    static SP create_<%=isinteraction?"interaction":"object"%>( int classHandle, const RTI::<%=isinteraction?"Parameter":"Attribute"%>HandleValuePairSet &datamemberMap );
-    static SP create_<%=isinteraction?"interaction":"object"%>( int classHandle, const RTI::<%=isinteraction?"Parameter":"Attribute"%>HandleValuePairSet &datamemberMap, const RTIfedTime &dlc13FedTime );
+    static SP <%=create%>( int classHandle, const RTI::<%= Field %>HandleValuePairSet &datamemberMap );
+    static SP <%=create%>( int classHandle, const RTI::<%= Field %>HandleValuePairSet &datamemberMap, const RTIfedTime &dlc13FedTime );
 
-    static StringVector get_<%=isinteraction?"parameter":"attribute"%>_names() {
+    static StringVector get_<%= field %>_names() {
         return StringVector();
     }
 
-    static StringVector get_all_<%=isinteraction?"parameter":"attribute"%>_names() {
+    static StringVector get_all_<%= field %>_names() {
         return StringVector();
     }
 
@@ -493,66 +507,66 @@ public:
         setTime( dlc13FedTime.getTime() );
     }
 
-    <%=isinteraction?"Interaction":"Object"%>Root( void ) : _time( -1 )<% if(!isinteraction){%>, _isRegistered( false )<%}%> { }
+    <%=rootname%>( void ) : _time( -1 )<% if(!isinteraction){%>, _isRegistered( false )<%}%> { }
     
-    <%=isinteraction?"Interaction":"Object"%>Root( const RTI::<%=isinteraction?"Parameter":"Attribute"%>HandleValuePairSet &datamemberMap ) : _time( -1 )<% if(!isinteraction){%>, _isRegistered( false )<%}%> {
-        set<%=isinteraction?"Parameter":"Attribute"%>s( datamemberMap );
+    <%=rootname%>( const RTI::<%= Field %>HandleValuePairSet &datamemberMap ) : _time( -1 )<% if(!isinteraction){%>, _isRegistered( false )<%}%> {
+        set<%= Field %>s( datamemberMap );
     }
 
-    <%=isinteraction?"Interaction":"Object"%>Root( const RTI::<%=isinteraction?"Parameter":"Attribute"%>HandleValuePairSet &datamemberMap, const RTIfedTime &dlc13FedTime ) : _time( dlc13FedTime.getTime() )<% if(!isinteraction){%>, _isRegistered( false )<%}%> {
-        set<%=isinteraction?"Parameter":"Attribute"%>s( datamemberMap );
+    <%=rootname%>( const RTI::<%= Field %>HandleValuePairSet &datamemberMap, const RTIfedTime &dlc13FedTime ) : _time( dlc13FedTime.getTime() )<% if(!isinteraction){%>, _isRegistered( false )<%}%> {
+        set<%= Field %>s( datamemberMap );
     }
 
-    static SP create( void ) { return SP( new <%=isinteraction?"Interaction":"Object"%>Root ); }
-    static SP create( const RTI::<%=isinteraction?"Parameter":"Attribute"%>HandleValuePairSet &datamemberMap ) { return SP(  new <%=isinteraction?"Interaction":"Object"%>Root( datamemberMap )  ); }
-    static SP create( const RTI::<%=isinteraction?"Parameter":"Attribute"%>HandleValuePairSet &datamemberMap, const RTIfedTime &dlc13FedTime ) {
-        return SP(  new <%=isinteraction?"Interaction":"Object"%>Root( datamemberMap, dlc13FedTime )  );
+    static SP create( void ) { return SP( new <%=rootname%> ); }
+    static SP create( const RTI::<%= Field %>HandleValuePairSet &datamemberMap ) { return SP(  new <%=rootname%>( datamemberMap )  ); }
+    static SP create( const RTI::<%= Field %>HandleValuePairSet &datamemberMap, const RTIfedTime &dlc13FedTime ) {
+        return SP(  new <%=rootname%>( datamemberMap, dlc13FedTime )  );
     }
 
-    virtual TypeMedley get<%=isinteraction?"Parameter":"Attribute"%>( const std::string &datamemberName ) const {
-        throw std::invalid_argument( getClassName() + " class has no <%=isinteraction?"parameter":"attribute"%> named \"" + datamemberName + "\"" );
+    virtual TypeMedley get<%= Field %>( const std::string &datamemberName ) const {
+        throw std::invalid_argument( getClassName() + " class has no <%= field %> named \"" + datamemberName + "\"" );
     }
 
-    virtual TypeMedley get<%=isinteraction?"Parameter":"Attribute"%>( int datamemberHandle ) const {
+    virtual TypeMedley get<%= Field %>( int datamemberHandle ) const {
         throw std::invalid_argument(
-         getClassName() + " class has no <%=isinteraction?"parameter":"attribute"%> with handle (" + boost::lexical_cast< std::string >( datamemberHandle ) + ")"
+         getClassName() + " class has no <%= field %> with handle (" + boost::lexical_cast< std::string >( datamemberHandle ) + ")"
         );
     }
 
-    void set<%=isinteraction?"Parameter":"Attribute"%>s( const RTI::<%=isinteraction?"Parameter":"Attribute"%>HandleValuePairSet &datamemberMap );
+    void set<%= Field%>s( const RTI::<%= Field %>HandleValuePairSet &datamemberMap );
 
 private:
-    void set<%=isinteraction?"Parameter":"Attribute"%>( RTI::Handle handle, const std::string &val ) {
-        if (  !set<%=isinteraction?"Parameter":"Attribute"%>Aux( handle, val )  ) {
-            std::cerr << "set:  bad <%=isinteraction?"parameter":"attribute"%> handle in class \"" + getClassName() + "\"" << std::endl;
+    void set<%= Field %>( RTI::Handle handle, const std::string &val ) {
+        if (  !set<%= Field %>Aux( handle, val )  ) {
+            std::cerr << "set:  bad <%= field %> handle in class \"" + getClassName() + "\"" << std::endl;
         }
     }
 
 public:
-    void set<%=isinteraction?"Parameter":"Attribute"%>( const std::string &datamemberName, TypeMedley value ) {
-        if (  !set<%=isinteraction?"Parameter":"Attribute"%>Aux( datamemberName, value )  ) {
-            std::cerr << "Error:  class \"" << getClassName() << "\":  invalid <%=isinteraction?"parameter":"attribute"%> \"" + datamemberName + "\"" << std::endl;
+    void set<%= Field%>( const std::string &datamemberName, TypeMedley value ) {
+        if (  !set<%= Field %>Aux( datamemberName, value )  ) {
+            std::cerr << "Error:  class \"" << getClassName() << "\":  invalid <%= field %> \"" + datamemberName + "\"" << std::endl;
         }
     }
 
 protected:
-    virtual bool set<%=isinteraction?"Parameter":"Attribute"%>Aux( int param_handle, const std::string &val ) {
+    virtual bool set<%= Field %>Aux( int param_handle, const std::string &val ) {
         return false;
     }
 
-    virtual bool set<%=isinteraction?"Parameter":"Attribute"%>Aux( const std::string &datamemberName, const std::string &value ) {
+    virtual bool set<%= Field %>Aux( const std::string &datamemberName, const std::string &value ) {
         return false;
     }
 
-    virtual bool set<%=isinteraction?"Parameter":"Attribute"%>Aux( const std::string &datamemberName, TypeMedley value ) {
+    virtual bool set<%= Field %>Aux( const std::string &datamemberName, TypeMedley value ) {
         return false;
     }
 
-    virtual <%=isinteraction?"Parameter":"Attribute"%>HandleValuePairSetSP createDatamemberHandleValuePairSet( RTI::ULong count<% if(!isinteraction){%>, bool force<%}%> ) {
-        return <%=isinteraction?"Parameter":"Attribute"%>HandleValuePairSetSP(  RTI::<%=isinteraction?"Parameter":"Attribute"%>SetFactory::create( count )  );
+    virtual <%= Field %>HandleValuePairSetSP createDatamemberHandleValuePairSet( RTI::ULong count<% if(!isinteraction){%>, bool force<%}%> ) {
+        return <%= Field %>HandleValuePairSetSP(  RTI::<%= Field %>SetFactory::create( count )  );
     }
 
-    virtual <%=isinteraction?"Parameter":"Attribute"%>HandleValuePairSetSP createDatamemberHandleValuePairSet( <% if(!isinteraction){%>bool force<%}%> ) {
+    virtual <%= Field %>HandleValuePairSetSP createDatamemberHandleValuePairSet( <% if(!isinteraction){%>bool force<%}%> ) {
         return createDatamemberHandleValuePairSet( <% if(!isinteraction){%>force<%}%> );
     }
 
@@ -620,10 +634,10 @@ public:
 <%} -%>
 };
 
-typedef <%=isinteraction?"Interaction":"Object"%>Root::SP <%=isinteraction?"Interaction":"Object"%>RootSP;
+typedef <%=rootname%>::SP <%=rootname%>SP;
 
-static bool call_<%=isinteraction?"Interaction":"Object"%>Root_static_init = <%=isinteraction?"Interaction":"Object"%>Root::static_init();
+static bool call_<%=rootname%>_static_init = <%=rootname%>::static_init();
 
-std::ostream &operator<<( std::ostream &os, <%=isinteraction?"Interaction":"Object"%>Root::SP entitySP );
-std::ostream &operator<<( std::ostream &os, const <%=isinteraction?"Interaction":"Object"%>Root &entity );
+std::ostream &operator<<( std::ostream &os, <%=rootname%>::SP entitySP );
+std::ostream &operator<<( std::ostream &os, const <%=rootname%> &entity );
 #endif

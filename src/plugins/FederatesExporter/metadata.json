@@ -79,7 +79,7 @@
             "name": "includedFederateTypes",
             "displayName": "include",
             "description": "The Types of federates included in this export",
-            "value": "Federate JavaFederate MapperFederate CppFederate OmnetFederate CPNFederate GridLabDFederate LabVIEWFederate",
+            "value": "Federate JavaFederate MapperFederate CppFederate OmnetFederate CPNFederate GridLabDFederate TRNSYSFederate LabVIEWFederate",
             "valueType": "string",
             "readOnly": true
         },
