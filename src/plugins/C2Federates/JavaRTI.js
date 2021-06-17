@@ -812,7 +812,10 @@ the InteractionRoot.java file.
               fullPath = coreOutFilePath + "/" + corePackagePath.join("/") +
                 "/" + 'InteractionRoot.java';
               template = TEMPLATES['java/classroot.java.ejs'];
-              xmlCode = ejs.render(template, {isinteraction: true});
+              xmlCode = ejs.render(template, {
+                ejs: ejs,
+                isinteraction: true
+              });
               self.logger.info('calling addFile for ' + fullPath + ' in ' +
                                'initJavaRTI of JavaRTI.js');
               artifact.addFile(fullPath, xmlCode,
@@ -827,7 +830,10 @@ the InteractionRoot.java file.
               fullPath = coreOutFilePath + "/" + corePackagePath.join("/") +
                          "/" + 'InteractionRootInterface.java';
               template = TEMPLATES['java/interfaceroot.java.ejs'];
-              xmlCode = ejs.render(template, {isinteraction: true});
+              xmlCode = ejs.render(template, {
+                ejs: ejs,
+                isinteraction: true
+              });
               self.logger.info('calling addFile for ' + fullPath + ' in ' +
                                'initJavaRTI of JavaRTI.js');
               artifact.addFile(fullPath, xmlCode,
@@ -875,7 +881,10 @@ ObjectRoot.java file.
                          corePackagePath.join("/") + "/" +
                          'ObjectRoot.java';
               template = TEMPLATES['java/classroot.java.ejs'];
-		xmlCode = ejs.render(template, {isinteraction: false});
+		          xmlCode = ejs.render(template, {
+                ejs: ejs,
+                isinteraction: false
+              });
               self.logger.info('calling addFile for ' + fullPath + ' in ' +
                                'initJavaRTI of JavaRTI.js');
               artifact.addFile(fullPath, xmlCode,
@@ -890,7 +899,10 @@ ObjectRoot.java file.
               fullPath = coreOutFilePath + "/" + corePackagePath.join("/") +
                          "/" + 'ObjectRootInterface.java';
               template = TEMPLATES['java/interfaceroot.java.ejs'];
-              xmlCode = ejs.render(template, {isinteraction: false});
+              xmlCode = ejs.render(template, {
+                ejs: ejs,
+                isinteraction: false
+              });
               self.logger.info('calling addFile for ' + fullPath + ' in ' +
                                'initJavaRTI of JavaRTI.js');
               artifact.addFile(fullPath, xmlCode,
@@ -1153,93 +1165,93 @@ code elsewhere may be looking for "default", so it has been left in.
 */
       this.createJavaRTICodeModel = function()
       {
-        return {simname: "",
-                classname: "",
-                parentclassname: "",
-                hlaclassname: "",
-                isinteraction: false,
-                isc2winteractionroot: false,
-                datamembers: [],
-                alldatamembers: [],
-                
-                helpers:{
-                    primitive2object: function(type)
-                    {
-                      var typeMap;
-                      typeMap = {"String"  : "String",
-                                 "int"     : "Integer",
-                                 "long"    : "Long",
-                                 "short"   : "Short",
-                                 "byte"    : "Byte",
-                                 "char"    : "Character",
-                                 "double"  : "Double",
-                                 "float"   : "Float",
-                                 "boolean" : "Boolean"};
-                      return typeMap[type];
-                    },
-                    supplied: function(type, name)
-                    {
-                      var typeMap;
-                        typeMap = {
-                          "String"  : "get_" + name + "()",
-                          "int"     : "Integer.toString(get_" + name +"())",
-                          "long"    : "Long.toString(get_" + name +"())",
-                          "short"   : "Short.toString(get_" + name +"())",
-                          "byte"    : "Byte.toString(get_" + name +"())",
-                          "char"    : "Character.toString(get_" + name +"())",
-                          "double"  : "Double.toString(get_" + name +"())",
-                          "float"   : "Float.toString(get_" + name +"())",
-                          "boolean" : "Boolean.toString(get_" + name +"())"};
-                      return typeMap[type];
-                    },
-                    set: function(type)
-                    {
-                      var typeMap;
-                      typeMap = {"String"  : "val",
-                                 "int"     : "Integer.parseInt(val)",
-                                 "long"    : "Long.parseLong(val)",
-                                 "short"   : "Short.parseShort(val)",
-                                 "byte"    : "Byte.parseByte(val)",
-                                 "char"    : "val.charAt(0)",
-                                 "double"  : "Double.parseDouble(val)",
-                                 "float"   : "Float.parseFloat(val)",
-                                 "boolean" : "Boolean.parseBoolean(val)"};
-                      return typeMap[type];
-                    },
-                    get: function(type, name)
-                    {
-                      var typeMap;
-                      typeMap = {
-                        "String"  : "get_" + name + "()",
-                        "int"     : "new Integer(get_" + name +"())",
-                        "long"    : "new Long(get_" + name +"())",
-                        "short"   : "new Short(get_" + name +"())",
-                        "byte"    : "new Byte(get_" + name +"())",
-                        "char"    : "new Character(get_" + name +"())",
-                        "double"  : "new Double(get_" + name +"())",
-                        "float"   : "new Float(get_" + name +"())",
-                        "boolean" : "new Boolean(get_" + name +"())"};
-                      return typeMap[type];
-                    },
-                    initialvalue: function(type)
-                    {
-                      var typeMap;
-                      typeMap = {"String"  : '""',
-                                 "int"     : "0",
-                                 "long"    : "0",
-                                 "short"   : "0",
-                                 "byte"    : "0",
-                                 "char"    : "'\\0'",
-                                 "double"  : "0",
-                                 "float"   : "0",
-                                 "boolean" : "false",
-                                 default   : ""};
-                        return typeMap[type];
-                    }
-                },
-                ejs: ejs, 
-                TEMPLATES: TEMPLATES
-            };
+        return {
+          alldatamembers: [],
+          classname: "",
+          datamembers: [],
+          ejs: ejs, 
+          helpers:{
+              primitive2object: function(type)
+              {
+                var typeMap;
+                typeMap = {"String"  : "String",
+                            "int"     : "Integer",
+                            "long"    : "Long",
+                            "short"   : "Short",
+                            "byte"    : "Byte",
+                            "char"    : "Character",
+                            "double"  : "Double",
+                            "float"   : "Float",
+                            "boolean" : "Boolean"};
+                return typeMap[type];
+              },
+              supplied: function(type, name)
+              {
+                var typeMap;
+                  typeMap = {
+                    "String"  : "get_" + name + "()",
+                    "int"     : "Integer.toString(get_" + name +"())",
+                    "long"    : "Long.toString(get_" + name +"())",
+                    "short"   : "Short.toString(get_" + name +"())",
+                    "byte"    : "Byte.toString(get_" + name +"())",
+                    "char"    : "Character.toString(get_" + name +"())",
+                    "double"  : "Double.toString(get_" + name +"())",
+                    "float"   : "Float.toString(get_" + name +"())",
+                    "boolean" : "Boolean.toString(get_" + name +"())"};
+                return typeMap[type];
+              },
+              set: function(type)
+              {
+                var typeMap;
+                typeMap = {"String"  : "val",
+                            "int"     : "Integer.parseInt(val)",
+                            "long"    : "Long.parseLong(val)",
+                            "short"   : "Short.parseShort(val)",
+                            "byte"    : "Byte.parseByte(val)",
+                            "char"    : "val.charAt(0)",
+                            "double"  : "Double.parseDouble(val)",
+                            "float"   : "Float.parseFloat(val)",
+                            "boolean" : "Boolean.parseBoolean(val)"};
+                return typeMap[type];
+              },
+              get: function(type, name)
+              {
+                var typeMap;
+                typeMap = {
+                  "String"  : "get_" + name + "()",
+                  "int"     : "new Integer(get_" + name +"())",
+                  "long"    : "new Long(get_" + name +"())",
+                  "short"   : "new Short(get_" + name +"())",
+                  "byte"    : "new Byte(get_" + name +"())",
+                  "char"    : "new Character(get_" + name +"())",
+                  "double"  : "new Double(get_" + name +"())",
+                  "float"   : "new Float(get_" + name +"())",
+                  "boolean" : "new Boolean(get_" + name +"())"};
+                return typeMap[type];
+              },
+              initialvalue: function(type)
+              {
+                var typeMap;
+                typeMap = {"String"  : '""',
+                            "int"     : "0",
+                            "long"    : "0",
+                            "short"   : "0",
+                            "byte"    : "0",
+                            "char"    : "'\\0'",
+                            "double"  : "0",
+                            "float"   : "0",
+                            "boolean" : "false",
+                            default   : ""};
+                  return typeMap[type];
+              }
+          },
+          hlaclassname: "",
+          isc2winteractionroot: false,
+          isinteraction: false,
+          parentclassname: "",
+          simname: "",
+          TEMPLATES: TEMPLATES
+        };
       }; // end createJavaRTICodeModel function
 
 /***********************************************************************/

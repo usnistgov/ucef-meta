@@ -300,6 +300,7 @@ will be called; otherwise, the callback will not occur.
            cppjavaArgumentTypeMap : cjArgumentTypeMap,
            cppjavaTypeMap : cjTypeMap,
            datamembers : [],
+           ejs: ejs,
            hlaclassname : model.fullName,
            isc2winteractionroot : model.isroot && isInteraction,
            isinteraction : isInteraction,
@@ -514,7 +515,10 @@ using the coreDirPath and self.corePOM.toJSON()
 
               fullPath = coreOutSrcFilePath + '/InteractionRoot.cpp';
               template = TEMPLATES['cpp/classroot.cpp.ejs'];
-              xmlCode = ejs.render(template, {isinteraction: true});
+              xmlCode = ejs.render(template, {
+                ejs: ejs,
+                isinteraction: true
+              });
               artifact.addFile(fullPath, xmlCode,
                                function (err)
                                {
@@ -526,7 +530,10 @@ using the coreDirPath and self.corePOM.toJSON()
                                });
               fullPath = coreOutIncFilePath + '/InteractionRoot.hpp';
               template = TEMPLATES['cpp/classroot.hpp.ejs'];
-              xmlCode = ejs.render(template, {isinteraction: true});
+              xmlCode = ejs.render(template, {
+                ejs: ejs,
+                isinteraction: true
+              });
               artifact.addFile(fullPath, template,
                                function (err)
                                {
@@ -565,7 +572,10 @@ ObjectRoot.cpp file.
 
               fullPath = coreOutSrcFilePath + '/ObjectRoot.cpp';
               template = TEMPLATES['cpp/classroot.cpp.ejs'];
-              xmlCode = ejs.render(template, {isinteraction: false});
+              xmlCode = ejs.render(template, {
+                ejs: ejs,
+                isinteraction: false
+              });
               artifact.addFile(fullPath, xmlCode,
                                function (err)
                                {
@@ -577,7 +587,10 @@ ObjectRoot.cpp file.
                                });
               fullPath = coreOutIncFilePath + '/ObjectRoot.hpp';
               template = TEMPLATES['cpp/classroot.hpp.ejs'];
-              xmlCode = ejs.render(template, {isinteraction: false});
+              xmlCode = ejs.render(template, {
+                ejs: ejs,
+                isinteraction: false
+              });
               artifact.addFile(fullPath, xmlCode,
                                function (err)
                                {

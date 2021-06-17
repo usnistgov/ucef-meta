@@ -24,7 +24,7 @@ define
        var nodeType;
        var cpn;
        var cpn_doc;
-       
+
        self = this;
        nodeType = self.core.getAttribute(self.getMetaType(node), 'name');
        cpn = {'@_cpnfile': self.core.getAttribute(node, 'CPNFile'),
@@ -51,11 +51,11 @@ define
        var self;
        var nodeType;
        var place;
-       
+
        self = this,
        nodeType = self.core.getAttribute( self.getMetaType( node ), 'name' ),
        place = {'@name': self.core.getAttribute(node, 'name')};
-       context['parent'].push(place);  
+       context['parent'].push(place);
        self.cpnPlaces[self.core.getPath(node)] = place;
        return {context:context};
      };
@@ -68,7 +68,7 @@ define
      {
        var self;
        var outFileName;
-       
+
        self = this;
        outFileName = "CPN/" + self.core.getAttribute(node, 'name') + ".xml"
        self.fileGenerators.push(function(
@@ -83,7 +83,7 @@ define
                           {if (err) {callback(err); return;}
                            else {callback();}}
                          );
-       });          
+       });
        return {context:context};
      };
 
@@ -98,7 +98,7 @@ define
        var publication;
        var nodeAttrNames;
        var i;
-       
+
        self = this;
        publication =
          {type: 'output',
@@ -113,7 +113,7 @@ define
            publication[nodeAttrNames[i]] =
              self.core.getAttribute( node, nodeAttrNames[i]);
          }
-       
+
        publication['handler'] = function(
          federate,
          interaction)
@@ -146,7 +146,7 @@ define
        var subscription;
        var nodeAttrNames;
        var i;
-       
+
        self = this;
        subscription = {type: 'input',
                        interaction: self.core.getPointerPath(node,'src'),
@@ -179,7 +179,7 @@ define
          }
        return {context:context};
      };
-     
+
 /***********************************************************************/
 
    };

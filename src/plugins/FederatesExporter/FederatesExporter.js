@@ -1022,7 +1022,7 @@ clear when to call the callback.
 
         fedEx.fileGenerators.push(
 
-          function(artifact, fileGeneratorsCallback) {
+          function(artifact, callback) {
 
             for (federId in fedEx.federateInfos) {
 
