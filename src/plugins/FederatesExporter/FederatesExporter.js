@@ -149,47 +149,49 @@ endJoinResigns are set in the addEndJoinResign function.
 
 */
 
-define
-([
-  'text!./metadata.json',
-  'plugin/PluginBase',
-  'ejs',
-  'C2Core/ModelTraverserMixin',
-  'C2Core/xmljsonconverter',
-  'C2Core/MavenPOM',
-  'FederatesExporter/PubSubVisitors',
-  'FederatesExporter/RTIVisitors',
-  'FederatesExporter/Templates/Templates',
-  'C2Federates/GenericFederate',
-  'C2Federates/JavaFederate',
-  'C2Federates/MapperFederate',
-  'C2Federates/CppFederate',
-  'C2Federates/OmnetFederate',
-  'C2Federates/CPNFederate',
-  'C2Federates/GridLabDFederate',
-  'C2Federates/TRNSYSFederate',
-  'C2Federates/LabVIEWFederate'],
- function (pluginMetadata,
-           PluginBase,
-           ejs,
-           ModelTraverserMixin,
-           JSON2XMLConverter,
-           MavenPOM,
-           PubSubVisitors,
-           RTIVisitors,
-           TEMPLATES,
-           GenericFederate,
-           JavaFederate,
-           MapperFederate,
-           CppFederate,
-           OmnetFederate,
-           CPNFederate,
-           GridLabDFederate,
-           TRNSYSFederate,
-           LabVIEWFederate)
- {
+define(
+  [
+    'text!./metadata.json',
+    'plugin/PluginBase',
+    'ejs',
+    'C2Core/ModelTraverserMixin',
+    'C2Core/xmljsonconverter',
+    'C2Core/MavenPOM',
+    'FederatesExporter/PubSubVisitors',
+    'FederatesExporter/RTIVisitors',
+    'FederatesExporter/Templates/Templates',
+    'C2Federates/GenericFederate',
+    'C2Federates/JavaFederate',
+    'C2Federates/MapperFederate',
+    'C2Federates/CppFederate',
+    'C2Federates/OmnetFederate',
+    'C2Federates/CPNFederate',
+    'C2Federates/GridLabDFederate',
+    'C2Federates/TRNSYSFederate',
+    'C2Federates/LabVIEWFederate'
+  ],
+  function (
+    pluginMetadata,
+    PluginBase,
+    ejs,
+    ModelTraverserMixin,
+    JSON2XMLConverter,
+    MavenPOM,
+    PubSubVisitors,
+    RTIVisitors,
+    TEMPLATES,
+    GenericFederate,
+    JavaFederate,
+    MapperFederate,
+    CppFederate,
+    OmnetFederate,
+    CPNFederate,
+    GridLabDFederate,
+    TRNSYSFederate,
+    LabVIEWFederate
+  ) {
     'use strict';
-    var FederatesExporter;          // function variable
+
     var addEndJoinResign;           // function variable
     var objectTraverserCheck;       // function variable
     var objectTraverserXml;         // function variable
@@ -202,18 +204,20 @@ define
 
     pluginMetadata = JSON.parse(pluginMetadata);
 
-/***********************************************************************/
+    /***********************************************************************/
 
-/* FederatesExporter (function-valued variable of top-level function object)
+    /* FederatesExporter (function-valued variable of top-level function object)
 
-*/
+    */
 
-    FederatesExporter = function() {
+    function FederatesExporter() {
+
       this.federateTypes = this.federateTypes || {};
       this.federateInfos = {}; // see documentation above
       this.endJoinResigns = {};  // see documentation above
       this.callObjectTraverser = true;
       this.callInteractionTraverser = true;
+
       PluginBase.call(this);
       ModelTraverserMixin.call(this);
       PubSubVisitors.call(this);
@@ -226,33 +230,34 @@ define
       CPNFederate.call(this);
       GridLabDFederate.call(this);
       TRNSYSFederate.call(this);
-      LabVIEWFederate.call(this);      
-      
+      LabVIEWFederate.call(this);
+
       this.mainPom = new MavenPOM();
       this._jsonToXml = new JSON2XMLConverter.Json2xml();
       this._xmlToJson = new JSON2XMLConverter.Xml2json();
       this.pluginMetadata = pluginMetadata;
     };
 
-/***********************************************************************/
+    /***********************************************************************/
 
     // Prototypal inheritance from PluginBase.
     FederatesExporter.prototype = Object.create(PluginBase.prototype);
     FederatesExporter.prototype.constructor = FederatesExporter;
     FederatesExporter.metadata = pluginMetadata;
 
-/***********************************************************************/
+    /***********************************************************************/
 
-/*  addEndJoinResign (function-valued variable of top-level function object)
+    /*  addEndJoinResign (function-valued variable of top-level function object)
 
-Returned Value: none
+    Returned Value: none
 
-Called By: fomGenerator
+    Called By: fomGenerator
 
-This adds an entry to the pubSubInteractions for any interaction named
-SimEnd, FederateResignInteraction, or FederateJoinInteraction.
+    This adds an entry to the pubSubInteractions for any interaction named
+    SimEnd, FederateResignInteraction, or FederateJoinInteraction.
 
-*/
+    */
+
     /* ARGUMENTS                               */
     /* (string) name of the interaction to add */
     /* (object) interaction data to add to     */
@@ -271,6 +276,7 @@ SimEnd, FederateResignInteraction, or FederateJoinInteraction.
             publish: 0,
             subscribe: 1
           };
+
         }
 
       } else if ((name == 'FederateResignInteraction') || (name == 'FederateJoinInteraction')) {
@@ -290,57 +296,57 @@ SimEnd, FederateResignInteraction, or FederateJoinInteraction.
       }
     };
 
-/***********************************************************************/
+    /***********************************************************************/
 
-/* objectTraverserCheck (function-valued variable of top-level function object)
+    /* objectTraverserCheck (function-valued variable of top-level function object)
 
-Returned Value: none
+    Returned Value: none
 
-Called By:
-  anonyomous fom generator in FederatesExporter.prototype.main
-  objectTraverserCheck (recursively)
+    Called By:
+      anonyomous fom generator in FederatesExporter.prototype.main
+      objectTraverserCheck (recursively)
 
-In this documentation, "object" means object in the WebGME sense, not
-object in the JavaScript sense.
+    In this documentation, "object" means object in the WebGME sense, not
+    object in the JavaScript sense.
 
-This adds entries to the pubSubObjects of a federate for all ancestors
-of objects that already have entries.
+    This adds entries to the pubSubObjects of a federate for all ancestors
+    of objects that already have entries.
 
-First, this calls itself recursively on the children of the
-object. Since this is transmitting information from children to
-parents, the children have to be processed first.By calling itself
-recursively, this goes through the object tree (from top down) but
-builds the pubSubObjects of the federate from bottom up.
+    First, this calls itself recursively on the children of the
+    object. Since this is transmitting information from children to
+    parents, the children have to be processed first.By calling itself
+    recursively, this goes through the object tree (from top down) but
+    builds the pubSubObjects of the federate from bottom up.
 
-Then, if the object is not objectRoot and the object.id is in the
-pubSubObjects of the given federate, the object is selected for
-further processing.
+    Then, if the object is not objectRoot and the object.id is in the
+    pubSubObjects of the given federate, the object is selected for
+    further processing.
 
-For each selected object:
+    For each selected object:
 
-A. If the parent publishes or subscribes to the federate, an entry in
-federate.pubSubObjects for the parent will have been made previously
-in PubSubVisitors, and in that case:
+    A. If the parent publishes or subscribes to the federate, an entry in
+    federate.pubSubObjects for the parent will have been made previously
+    in PubSubVisitors, and in that case:
 
-A1. If the object's mayPublish of its entry is not zero, the parent's
-mayPublish of its entry is set to 1, and
-A2. If the object's maySubscribe of its entry is not zero, the parent's
-maySubscribe of its entry is set to 1.
+    A1. If the object's mayPublish of its entry is not zero, the parent's
+    mayPublish of its entry is set to 1, and
+    A2. If the object's maySubscribe of its entry is not zero, the parent's
+    maySubscribe of its entry is set to 1.
 
-B. Otherwise, a new entry in the federate.pubSubObjects is created for the
-parent in which the parent's publish and subscribe are set to 0 and the
-parent's mayPublish and maySubscribe are set to the object's values.
+    B. Otherwise, a new entry in the federate.pubSubObjects is created for the
+    parent in which the parent's publish and subscribe are set to 0 and the
+    parent's mayPublish and maySubscribe are set to the object's values.
 
-The final effect is that any object that is an ancestor of any object
-originally put on the federate.pubSubObjects in PubSubVisitors is also
-on federate.pubSubObjects, with its publish, subscribe, mayPublish, and
-maySubscribe values set appropriately.
+    The final effect is that any object that is an ancestor of any object
+    originally put on the federate.pubSubObjects in PubSubVisitors is also
+    on federate.pubSubObjects, with its publish, subscribe, mayPublish, and
+    maySubscribe values set appropriately.
 
-This function is identical to objectTraverserCheck in
-JavaRTI.js. It would be nice to have only one, but that requires
-figuring out where to put it and how to refererence it.
+    This function is identical to objectTraverserCheck in
+    JavaRTI.js. It would be nice to have only one, but that requires
+    figuring out where to put it and how to refererence it.
 
-*/
+    */
 
     /* ARGUMENTS                                   */
     /* (object) data in FederateInfos for federate */
@@ -385,55 +391,55 @@ figuring out where to put it and how to refererence it.
 
     };
 
-/***********************************************************************/
+    /***********************************************************************/
 
-/* objectTraverserXml (function-valued variable of top-level function object)
+    /* objectTraverserXml (function-valued variable of top-level function object)
 
-Returned Value: a string of XML representing the object and its descendants
+    Returned Value: a string of XML representing the object and its descendants
 
-Called By:
-  anonyomous fom generator in FederatesExporter.prototype.main
-  objectTraverserXml (recursively)
+    Called By:
+      anonyomous fom generator in FederatesExporter.prototype.main
+      objectTraverserXml (recursively)
 
-objectTraverserXml is a recursive function that builds the XML for
-objects in a federate.
+    objectTraverserXml is a recursive function that builds the XML for
+    objects in a federate.
 
-The function takes (1) information about a federate, (2) an object
-that may have children (which are also objects), and (3) a string of
-blank space to use for indenting.
+    The function takes (1) information about a federate, (2) an object
+    that may have children (which are also objects), and (3) a string of
+    blank space to use for indenting.
 
-The function begins by creating an objModel. The objModel is given the
-same name and attributes as the object and is given children that are
-XML code built by a recursive call to the function on the children of
-the object.  Information for printing XML is added to the data for
-each attribute of the object. Data regarding "sharing" for the XML is
-derived from the federate information and the attribute data.
+    The function begins by creating an objModel. The objModel is given the
+    same name and attributes as the object and is given children that are
+    XML code built by a recursive call to the function on the children of
+    the object.  Information for printing XML is added to the data for
+    each attribute of the object. Data regarding "sharing" for the XML is
+    derived from the federate information and the attribute data.
 
-Then XML for the objModel is generated from the objModel (and saved)
-by calling ejs.render using the fedfile_simobject_xml XML Template.
+    Then XML for the objModel is generated from the objModel (and saved)
+    by calling ejs.render using the fedfile_simobject_xml XML Template.
 
-Crosscuts are Publish or Subscribe links from a federate directly to
-an attribute of an object. Crosscuts are handled by putting entries
-for crosscuts (only) into the attribs property of the object data for
-a federate. The code for crosscuts is mostly in the great big "else"
-near the end of the function, but there is also code dealing with
-crosscuts in two places before that. Setting the printFor property of
-an attribute allows it to be printed (by fedfile_simobject_xml.ejs)
-even when the attribute is an inherited property. The printFor
-property is set back to 0 there so the attribute won't necessarily be
-printed for the same object in the XML file for some other federate.
+    Crosscuts are Publish or Subscribe links from a federate directly to
+    an attribute of an object. Crosscuts are handled by putting entries
+    for crosscuts (only) into the attribs property of the object data for
+    a federate. The code for crosscuts is mostly in the great big "else"
+    near the end of the function, but there is also code dealing with
+    crosscuts in two places before that. Setting the printFor property of
+    an attribute allows it to be printed (by fedfile_simobject_xml.ejs)
+    even when the attribute is an inherited property. The printFor
+    property is set back to 0 there so the attribute won't necessarily be
+    printed for the same object in the XML file for some other federate.
 
-NOTE: An alternative to using the printFor attribute would be to
-create a deferredPubSubs property of the federate. When a crosscut hit
-an inherited attribute A of an object D, an entry would be made in the
-deferredPubSubs recording the id of A and the type of sharing. When an
-object C is deciding how to set sharing for an own attribute B, a
-check of the deferredPubSubs would be made to see if an attribute with
-the id of B is recorded. If so, B is A, and the sharing of B would be
-set taking into account the sharing given in the deferredPubSubs
-entry.
+    NOTE: An alternative to using the printFor attribute would be to
+    create a deferredPubSubs property of the federate. When a crosscut hit
+    an inherited attribute A of an object D, an entry would be made in the
+    deferredPubSubs recording the id of A and the type of sharing. When an
+    object C is deciding how to set sharing for an own attribute B, a
+    check of the deferredPubSubs would be made to see if an attribute with
+    the id of B is recorded. If so, B is A, and the sharing of B would be
+    set taking into account the sharing given in the deferredPubSubs
+    entry.
 
-*/
+    */
 
     /* ARGUMENTS                                   */
     /* (object) data in federateInfos for federate */
@@ -460,20 +466,17 @@ entry.
       // modified, but properties of attributes related to XML generation
       // are assigned as follows.
       objModel.attributes.forEach(
-
         function(attr) {
 
           if (!attr.inherited) {
-
             attr.deliveryXml = ((attr.delivery === "reliable") ? "HLAreliable" : "HLAbestEffort");
             attr.orderXml = ((attr.order === "timestamp") ? "TimeStamp" : "Receive");
             hasOwn = 1;
-
           }
 
         }
-
       );
+
       // An object should publish if: (1) the data for it in the
       // federate information says publish or (2) the data says maybe
       // publish and one or more of the object's attributes is an own
@@ -499,7 +502,6 @@ entry.
 
           objModel.sharingXml = "Publish";
           objModel.attributes.forEach(
-
             function(attr) { // also set sharing for own attributes
 
               if (objPubSub.attribs && (attr.id in objPubSub.attribs)) { // if crosscut subscribes, upgrade to PublishSubscribe
@@ -516,7 +518,6 @@ entry.
               }
 
             }
-
           );
 
         }
@@ -527,7 +528,6 @@ entry.
         objModel.sharingXml = "Subscribe";
 
         objModel.attributes.forEach(
-
           function(attr) { // also set sharing for own attributes
 
             // if crosscut publishes, upgrade to PublishSubscribe
@@ -548,7 +548,6 @@ entry.
             }
 
           }
-
         );
 
       } else { // object neither publishes nor subscribes; deal with crosscuts
@@ -556,7 +555,6 @@ entry.
         objModel.sharingXml = "Neither";
 
         objModel.attributes.forEach(
-
           function(attr) {
 
             if (objPubSub.attribs && (attr.id in objPubSub.attribs)) { // attribute is involved in a crosscut
@@ -602,7 +600,6 @@ entry.
             }
 
           } // end of function body
-
         ); // end of forEach
 
       } // end of else
@@ -612,58 +609,53 @@ entry.
       // XML for the parent.
       // We do not want to include the FederateObject.
       object.children.forEach(
-
         function(child) {
 
           if ((child.name != "FederateObject") && (child.id in federate.pubSubObjects)) {
-
             objModel.children.push(objectTraverserXml(federate, child, space + "    "));
-
           }
-        }
 
+        }
       );
 
       // now generate XML for the parent if on pubSubObjects
       if (object.id in federate.pubSubObjects) {
-
         return ejs.render(TEMPLATES["fedfile_simobject_xml.ejs"], objModel);
-
       }
 
     };
 
-/***********************************************************************/
+    /***********************************************************************/
 
-/* interactionTraverserCheck (function-valued var of top-level function object)
+    /* interactionTraverserCheck (function-valued var of top-level function object)
 
-Returned Value: none
+    Returned Value: none
 
-Called By:
-  anonyomous fom generator in FederatesExporter.prototype.main
-  interactionTraverserCheck (recursively)
+    Called By:
+      anonyomous fom generator in FederatesExporter.prototype.main
+      interactionTraverserCheck (recursively)
 
-This adds entries to the pubSubInteractions of a federate for all ancestors
-of interactions that already have entries.
+    This adds entries to the pubSubInteractions of a federate for all ancestors
+    of interactions that already have entries.
 
-By calling itself recursively, this goes through the interaction tree
-(from top down) but builds the pubSubInteractions from bottom up.
+    By calling itself recursively, this goes through the interaction tree
+    (from top down) but builds the pubSubInteractions from bottom up.
 
-If an interaction is on the pubSubInteractions of the federate but its
-parent is not, an entry for the parent of the interaction is added to
-the pubSubInteractions; the entry represents that the parent neither
-publishes or subscribes. If the parent publishes or subscribes, an
-entry for the parent will have been made previously in PubSubVisitors.
+    If an interaction is on the pubSubInteractions of the federate but its
+    parent is not, an entry for the parent of the interaction is added to
+    the pubSubInteractions; the entry represents that the parent neither
+    publishes or subscribes. If the parent publishes or subscribes, an
+    entry for the parent will have been made previously in PubSubVisitors.
 
-The final effect is that any interaction that is an ancestor of any
-interaction originally put on the pubSubInteractions in PubSubVisitors
-is also on pubSubInteractions.
+    The final effect is that any interaction that is an ancestor of any
+    interaction originally put on the pubSubInteractions in PubSubVisitors
+    is also on pubSubInteractions.
 
-This function is identical to interactionTraverserCheck in
-JavaRTI.js. It would be nice to have only one, but that requires
-figuring out where to put it and how to refererence it.
+    This function is identical to interactionTraverserCheck in
+    JavaRTI.js. It would be nice to have only one, but that requires
+    figuring out where to put it and how to refererence it.
 
-*/
+    */
 
     /* ARGUMENTS                                   */
     /* (object) data in federateInfos for federate */
@@ -671,11 +663,11 @@ figuring out where to put it and how to refererence it.
     interactionTraverserCheck = function(federate, interaction) {
 
       interaction.children.forEach(
-
         function (child) {
-          interactionTraverserCheck(federate, child);
-        }
 
+          interactionTraverserCheck(federate, child);
+
+        }
       );
 
       if (interaction.name != 'InteractionRoot') {
@@ -693,33 +685,33 @@ figuring out where to put it and how to refererence it.
 
     };
 
-/***********************************************************************/
+    /***********************************************************************/
 
-/* interactionTraverserXml (function-valued var of top-level function object)
+    /* interactionTraverserXml (function-valued var of top-level function object)
 
-Returned Value: a string of XML representing the interaction and its
-                descendants
+    Returned Value: a string of XML representing the interaction and its
+                    descendants
 
-Called By:
-  anonyomous fom generator in FederatesExporter.prototype.main
-  interactionTraverserXml (recursively)
+    Called By:
+      anonyomous fom generator in FederatesExporter.prototype.main
+      interactionTraverserXml (recursively)
 
-interactionTraverserXml is a recursive function that builds the XML
-for interactions in a federate.
+    interactionTraverserXml is a recursive function that builds the XML
+    for interactions in a federate.
 
-The function takes information about a federate and takes an interaction
-that may have children (which are also interactions).
+    The function takes information about a federate and takes an interaction
+    that may have children (which are also interactions).
 
-The function begins by creating an intModel. The intModel is given the
-same name and parameters as the interaction and is given children that are
-XML code built by a recursive call to the function on the children of
-the interaction.  The intModel is also given other properties needed for
-generating XML.
+    The function begins by creating an intModel. The intModel is given the
+    same name and parameters as the interaction and is given children that are
+    XML code built by a recursive call to the function on the children of
+    the interaction.  The intModel is also given other properties needed for
+    generating XML.
 
-Then XML for the intModel is generated from the intModel (and saved)
-by calling ejs.render using the fedfile_siminteraction_xml XML Template.
+    Then XML for the intModel is generated from the intModel (and saved)
+    by calling ejs.render using the fedfile_siminteraction_xml XML Template.
 
-*/
+    */
 
     /* ARGUMENTS                                   */
     /* (object) data in federateInfos for federate */
@@ -754,7 +746,6 @@ by calling ejs.render using the fedfile_siminteraction_xml XML Template.
       // generate XML for the children before generating
       // XML for the parent
       interaction.children.forEach(
-
         function (child) {
 
           if (child.id in federate.pubSubInteractions) {
@@ -762,7 +753,6 @@ by calling ejs.render using the fedfile_siminteraction_xml XML Template.
           }
 
         }
-
       );
 
       // now generate XML for the parent if on pubSubInteractions
@@ -772,67 +762,83 @@ by calling ejs.render using the fedfile_siminteraction_xml XML Template.
 
     };
 
-/***********************************************************************/
+    /***********************************************************************/
 
-/* buildScriptGenerator
+    /* buildScriptGenerator
 
-Returned Value: none
+    Returned Value: none
 
-Called By: finishExport
+    Called By: finishExport
 
-This builds a file generator for a top-level build script that compiles
-all of the individual generated federates.
+    This builds a file generator for a top-level build script that compiles
+    all of the individual generated federates.
 
-*/
+    */
     buildScriptGenerator = function( /* ARGUMENTS                             */
-     fedEx)                          /* the FederatesExporter function object */
-    {
-      fedEx.fileGenerators.push(function (artifact, callback)
-      {
-        var template = TEMPLATES['build-all.sh.ejs'];
-        var fullPath = 'build-all.sh';
+      fedEx                          /* the FederatesExporter function object */
+    ) {
+
+      fedEx.fileGenerators.push(
+        function (artifact, callback) {
+
+          var template = TEMPLATES['build-all.sh.ejs'];
+          var fullPath = 'build-all.sh';
           var bashScript = ejs.render(template, {dummy: 0});
-        fedEx.logger.info('calling addFile for ' + fullPath +
-                          ' in buildScriptGenerator of FederatesExporter.js');
-        artifact.addFile(fullPath, bashScript,
-                         function (err)
-                         {if (err) {callback(err); return;}
-                          else {callback();}}
-                        );
-      });
+
+          fedEx.logger.info('calling addFile for ' + fullPath + ' in buildScriptGenerator of FederatesExporter.js');
+
+          artifact.addFile(
+            fullPath,
+            bashScript,
+            function (err) {
+
+              if (err) {
+                callback(err);
+                return;
+              } else {
+                callback();
+              }
+
+            }
+          );
+
+        }
+      );
+
     };
 
-/***********************************************************************/
+    /***********************************************************************/
 
-/* processInteraction
+    /* processInteraction
 
-Returned Value: none
+    Returned Value: none
 
-Called By: 
-  makeVariablesModel
-  processInteraction (recursively)
+    Called By:
+      makeVariablesModel
+      processInteraction (recursively)
 
-When _xmlToJson.convertFromString runs:
-- If an element with a given name occurs twice or more in a row,
-   the json model has an array of objects for the occurrences.
-- If the element occurs only once, the json model has a single object.
-Below, for an element that might or might not occur multiple times, a
-check is made of whether it is represented by an array. If the element
-exists but is not an array, it is put into an array for further
-processing.
+    When _xmlToJson.convertFromString runs:
+    - If an element with a given name occurs twice or more in a row,
+      the json model has an array of objects for the occurrences.
+    - If the element occurs only once, the json model has a single object.
+    Below, for an element that might or might not occur multiple times, a
+    check is made of whether it is represented by an array. If the element
+    exists but is not an array, it is put into an array for further
+    processing.
 
-When this is called by makeVariablesModel, the longName is
-"InteractionRoot.C2WInteractionRoot", and the parentameters is an
-empty array.
+    When this is called by makeVariablesModel, the longName is
+    "InteractionRoot.C2WInteractionRoot", and the parentameters is an
+    empty array.
 
-*/
+    */
 
     processInteraction = function( /* ARGUMENTS                         */
       interact,                    /* an interaction                    */
       variablesModel,              /* model of variables, enhanced here */
       longName,                    /* inheritance hierarchy in string   */
-      parentameters)               /* usually all parameters of parent  */
-    {
+      parentameters                /* usually all parameters of parent  */
+    ) {
+
       var n;
       var inters;
       var parameters;
@@ -841,157 +847,183 @@ empty array.
       var out;
       var thisLongName;
       var typeName;
-      
-      if ((interact.name['#text'] == "FederateJoinInteraction") ||
-          (interact.name['#text'] == "FederateResignInteraction") ||
-          (interact.name['#text'] == "SimulationControl"))
+
+      if (
+        (interact.name['#text'] == "FederateJoinInteraction") ||
+        (interact.name['#text'] == "FederateResignInteraction") ||
+        (interact.name['#text'] == "SimulationControl")
+      ) {
         return;
+      }
+
       thisLongName = longName + '.' + interact.name['#text'];
-      if (interact.parameter)
-        {
-          if (Array.isArray(interact.parameter))
-            {
-              parameters = interact.parameter.concat(parentameters);
-            }
-          else
-            {
-              parameters = [];
-              parameters.push(interact.parameter);
-              parameters = parameters.concat(parentameters);
-            }
+
+      if (interact.parameter) {
+
+        if (Array.isArray(interact.parameter)) {
+          parameters = interact.parameter.concat(parentameters);
+        } else {
+          parameters = [];
+          parameters.push(interact.parameter);
+          parameters = parameters.concat(parentameters);
         }
-      else
-        {
-          parameters = parentameters;
+
+      } else {
+
+        parameters = parentameters;
+
+      }
+
+      if (interact.interactionClass) {
+
+        if (Array.isArray(interact.interactionClass)) {
+          inters = interact.interactionClass;
+        } else {
+          inters = [];
+          inters.push(interact.interactionClass);
         }
-      if (interact.interactionClass)
-        {
-          if (Array.isArray(interact.interactionClass))
-            {
-              inters = interact.interactionClass;
-            }
-          else
-            {
-              inters = [];
-              inters.push(interact.interactionClass);
-            }
-          inters.forEach(function(inter)
-            {
-              processInteraction(inter, variablesModel,
-                                 thisLongName, parameters);
-            });
-        }
-      out = ((interact.sharing['#text'] == "Publish") ||
-             (interact.sharing['#text'] == "PublishSubscribe"));
-      inn  = ((interact.sharing['#text'] == "Subscribe") ||
-              (interact.sharing['#text'] == "PublishSubscribe"));
-      if (!inn && !out)
+
+        inters.forEach(
+          function(inter) {
+
+            processInteraction(inter, variablesModel, thisLongName, parameters);
+
+          }
+        );
+      }
+
+      out = ((interact.sharing['#text'] == "Publish") || (interact.sharing['#text'] == "PublishSubscribe"));
+      inn = ((interact.sharing['#text'] == "Subscribe") || (interact.sharing['#text'] == "PublishSubscribe"));
+      if (!inn && !out) {
         return;
-      for (n = 0; n < parameters.length; n++)
-        {
-          parameter = parameters[n];
-          typeName = parameter.dataType['#text'];
-          if ((typeName != "double") &&
-              (typeName != "long") &&
-              (typeName != "short") &&
-              (typeName != "int") &&
-              (typeName != "float") &&
-              (typeName != "boolean"))
-            continue;
-          if (inn)
-            {
-              variablesModel.inputs.push({name: parameter.name['#text'],
-                    hlaClass: thisLongName});
-            }
-          if (out)
-            {
-              variablesModel.outputs.push({name: parameter.name['#text'],
-                    hlaClass: thisLongName});
-            }
+      }
+
+      for (n = 0; n < parameters.length; n++) {
+
+        parameter = parameters[n];
+        typeName = parameter.dataType['#text'];
+
+        if (
+          (typeName != "double") &&
+          (typeName != "long") &&
+          (typeName != "short") &&
+          (typeName != "int") &&
+          (typeName != "float") &&
+          (typeName != "boolean")
+        ) {
+          continue;
         }
+
+        if (inn) {
+          variablesModel.inputs.push(
+            {
+              name: parameter.name['#text'],
+              hlaClass: thisLongName
+            }
+          );
+        }
+
+        if (out) {
+          variablesModel.outputs.push(
+            {
+              name: parameter.name['#text'],
+              hlaClass: thisLongName
+            }
+          );
+        }
+
+      }
+
     };
 
-/***********************************************************************/
+    /***********************************************************************/
 
-/* makeVariablesModel
+    /* makeVariablesModel
 
-Returned Value: none
+    Returned Value: none
 
-Called By: fomGenerator
+    Called By: fomGenerator
 
-This makes the variables model from the json model of interactions.
+    This makes the variables model from the json model of interactions.
 
-See documentation of processInteraction regarding making sure inters
-is an array.
+    See documentation of processInteraction regarding making sure inters
+    is an array.
 
-*/
+    */
 
     makeVariablesModel = function( /* ARGUMENTS                  */
       variablesModel,              /* model to build             */
-      interactions)                /* json model of interactions */
-    {
+      interactions                 /* json model of interactions */
+    ) {
+
       var c2w;      // C2WInteractionRoot
       var longName; // "InteractionRoot.C2WInteractionRoot"
       var inters;   // interactions derived from C2WInteractionRoot
-      
+
       variablesModel.inputs = [];
       variablesModel.outputs = [];
+
       longName = "InteractionRoot.C2WInteractionRoot";
+
       c2w = interactions.interactionClass.interactionClass;
-      if (!c2w || (c2w.name['#text'] != "C2WInteractionRoot"))
-        {
-          callback("C2WInteractionRoot missing from interactions");
-          return;
+
+      if (!c2w || (c2w.name['#text'] != "C2WInteractionRoot")) {
+        callback("C2WInteractionRoot missing from interactions");
+        return;
+      }
+
+      if (c2w.interactionClass) {
+
+        if (Array.isArray(c2w.interactionClass)) {
+          inters = c2w.interactionClass;
+        } else {
+          inters = [];
+          inters.push(c2w.interactionClass);
         }
-      if (c2w.interactionClass)
-        {
-          if (Array.isArray(c2w.interactionClass))
-            {
-              inters = c2w.interactionClass;
-            }
-          else
-            {
-              inters = [];
-              inters.push(c2w.interactionClass);
-            }
-          inters.forEach (function(inter)
-            {
-              processInteraction(inter, variablesModel, longName, []);
-            });
-        }
+
+        inters.forEach(
+          function(inter) {
+
+            processInteraction(inter, variablesModel, longName, []);
+
+          }
+        );
+
+      }
+
       variablesModel.inputs.sort();
       variablesModel.outputs.sort();
     };
-    
-/***********************************************************************/
 
-/* fomGenerator (function-valued variable of top-level function object)
+    /***********************************************************************/
 
-Returned Value: none
+    /* fomGenerator (function-valued variable of top-level function object)
 
-Called By: finishExport
+    Returned Value: none
 
-This builds a file generator that generates a separate fom file for each
-federate in a project and generates a Variables.json file for each
-federate of type TRNSYS. Both the fom file and the variables file are
-generated from data in the federate's fomModelXml, which is built first.
+    Called By: finishExport
 
-Where fedEx.objectRoots.forEach is called, objectTraverserXml will
-return undefined if there is no XML for objects. In that case,
-objectsXml will have length 1, but objectsXml[0] will be undefined.
+    This builds a file generator that generates a separate fom file for each
+    federate in a project and generates a Variables.json file for each
+    federate of type TRNSYS. Both the fom file and the variables file are
+    generated from data in the federate's fomModelXml, which is built first.
 
-The call to the callback function with no argument evidently triggers
-printing all the files that have been put into the artifact. If callback
-is called each time around the loop below, a zip file is generated each
-time containing one more fom file than the preceding zip file. Hence
-that call can be made only once. In addition, webGME complains if
-callback is called more than once. 
+    Where fedEx.objectRoots.forEach is called, objectTraverserXml will
+    return undefined if there is no XML for objects. In that case,
+    objectsXml will have length 1, but objectsXml[0] will be undefined.
 
-The "remaining" variable keeps track of the number of federates in
-fedEx.federateInfos that have not yet been processed so that it will be
-clear when to call the callback. 
+    The call to the callback function with no argument evidently triggers
+    printing all the files that have been put into the artifact. If callback
+    is called each time around the loop below, a zip file is generated each
+    time containing one more fom file than the preceding zip file. Hence
+    that call can be made only once. In addition, webGME complains if
+    callback is called more than once.
 
-*/
+    The "remaining" variable keeps track of the number of federates in
+    fedEx.federateInfos that have not yet been processed so that it will be
+    clear when to call the callback.
+
+    */
     fomGenerator = function(fedEx) { // ARGUMENTS: the FederatesExporter function object
 
       var today = new Date();
@@ -1015,120 +1047,160 @@ clear when to call the callback.
       remaining = 0;
 
       for (federId in fedEx.federateInfos) {
+
         feder = fedEx.federateInfos[federId];
-        if (feder.generateCode)
+        if (feder.generateCode) {
           remaining++;
         }
 
-        fedEx.fileGenerators.push(
+      }
 
-          function(artifact, callback) {
+      fedEx.fileGenerators.push(
+        function(artifact, callback) {
 
-            for (federId in fedEx.federateInfos) {
+          for (federId in fedEx.federateInfos) {
 
-              feder = fedEx.federateInfos[federId];
+            feder = fedEx.federateInfos[federId];
 
-              if (!feder.generateCode) {
-                continue;
+            if (!feder.generateCode) {
+              continue;
+            }
+
+            --remaining;
+
+            directory = feder.directory || 'som/';
+
+            fomModelXml = {
+              federateName: feder.name,
+              projectName: fedEx.projectName,
+              version: fedEx.getCurrentConfig().exportVersion.trim(),
+              pocOrg: fedEx.mainPom.groupId,
+              dateString: dateString,
+              objectsXml: [],
+              interactionsXml: []
+            };
+
+            fedEx.interactionRoots.forEach(
+              function (interactionRoot) {
+
+                for (endJoinResignId in fedEx.endJoinResigns) {
+                  endJoinResign = fedEx.endJoinResigns[endJoinResignId];
+                  addEndJoinResign(endJoinResign.name, feder.pubSubInteractions, endJoinResignId);
+                }
+
+                interactionTraverserCheck(feder, interactionRoot);
+                fomModelXml.interactionsXml.push(interactionTraverserXml(feder, interactionRoot, "    "));
+
+                interactionTraverserCheck(feder, interactionRoot);
+                fomModelXml.interactionsXml.push(interactionTraverserXml(feder, interactionRoot, "    "));
+
               }
+            );
 
-              --remaining;
+            fedEx.objectRoots.forEach(
+              function(objectRoot) {
 
-              directory = feder.directory || 'som/';
+                //objectTraverserCheck(feder, objectRoot);
+                fomModelXml.objectsXml.push(objectTraverserXml(feder, objectRoot, "    "));
 
-              fomModelXml = {
-                federateName: feder.name,
-                projectName: fedEx.projectName,
-                version: fedEx.getCurrentConfig().exportVersion.trim(),
-                pocOrg: fedEx.mainPom.groupId,
-                dateString: dateString,
-                objectsXml: [],
-                interactionsXml: []
-              };
+              }
+            );
 
-              fedEx.interactionRoots.forEach(
+            if (feder.metaType == "TRNSYSFederate") { // add Variables.json
 
-                function (interactionRoot) {
-                  for (endJoinResignId in fedEx.endJoinResigns) {
+              interactionsJson = fedEx._xmlToJson.convertFromString(fomModelXml.interactionsXml[0]);
 
-                    endJoinResign = fedEx.endJoinResigns[endJoinResignId];
-                    addEndJoinResign(endJoinResign.name, feder.pubSubInteractions, endJoinResignId);
+              variablesModel = {};
 
+              makeVariablesModel(variablesModel, interactionsJson);
+
+              fullPath = directory + 'Variables.json';
+
+              template = TEMPLATES['variables.ejs'];
+
+              code = ejs.render(template, variablesModel);
+
+              fedEx.logger.info('calling addFile for ' + fullPath + ' in fomGenerator of FederatesExporter.js');
+
+              artifact.addFile(
+                fullPath,
+                code,
+                function (err) {
+
+                  if (err) {
+                    callback(err);
+                    return;
                   }
+                }
+              );
 
-                  interactionTraverserCheck(feder, interactionRoot);
-                  fomModelXml.interactionsXml.push(interactionTraverserXml(feder, interactionRoot, "    "));
+            }
 
-              interactionTraverserCheck(feder, interactionRoot);
-              fomModelXml.interactionsXml.push
-                (interactionTraverserXml(feder, interactionRoot, "    "));
-            });
-            fedEx.objectRoots.forEach(function(objectRoot)
-            {
-              //objectTraverserCheck(feder, objectRoot);
-              fomModelXml.objectsXml.push
-                (objectTraverserXml(feder, objectRoot, "    "));
-            });
-            if (feder.metaType == "TRNSYSFederate")
-              { // add Variables.json
-                interactionsJson =
-                  fedEx._xmlToJson.convertFromString(fomModelXml.
-                                                     interactionsXml[0]);
-                variablesModel = {};
-                makeVariablesModel(variablesModel, interactionsJson);
-                fullPath = directory + 'Variables.json';
-                template = TEMPLATES['variables.ejs'];
-                code = ejs.render(template, variablesModel);
-                fedEx.logger.info('calling addFile for ' + fullPath +
-                                  ' in fomGenerator of FederatesExporter.js');
-                artifact.addFile(fullPath, code,
-                                 function (err)
-                                 {if (err) {callback(err); return;}}
-                                 );
-              }
             // add fom XML files to artifact
             fullPath = directory + feder.name + '.xml';
+
             template = TEMPLATES['fedfile.xml.ejs'];
+
             code = ejs.render(template, fomModelXml);
-            fedEx.logger.info('calling addFile for ' + fullPath +
-                              ' in fomGenerator of FederatesExporter.js');
-            artifact.addFile(fullPath, code,
-                             (remaining ?
-                              function (err) // there are more
-                              {if (err) {callback(err); return;}} :
-                              function (err) // last one
-                              {if (err) {callback(err); return;}
-                                else {callback();}}
-                              )
-                            );
-          } 
-      });
+
+            fedEx.logger.info('calling addFile for ' + fullPath + ' in fomGenerator of FederatesExporter.js');
+
+            artifact.addFile(
+              fullPath,
+              code,
+              (remaining ?
+                function (err) { // there are more
+
+                  if (err) {
+                    callback(err);
+                    return;
+                  }
+
+                } :
+                function (err) { // last one
+
+                  if (err) {
+                    callback(err);
+                    return;
+                  } else {
+                    callback();
+                  }
+
+                }
+              )
+            );
+
+          }
+
+        }
+      );
+
     };
 
-/***********************************************************************/
+    /***********************************************************************/
 
-/* FederatesExporter.prototype.main
+    /* FederatesExporter.prototype.main
 
-Returned Value: none
+    Returned Value: none
 
-Called By: ?
+    Called By: ?
 
-Notes autogenerated or from previous coder:
--------------------------------------------
+    Notes autogenerated or from previous coder:
+    -------------------------------------------
 
-    This is the main function for the plugin to execute. This will perform
-    the execution.
+        This is the main function for the plugin to execute. This will perform
+        the execution.
 
-    Use self to access core, project, result, etc from PluginBase;
-    these are all instantiated at this point.
+        Use self to access core, project, result, etc from PluginBase;
+        these are all instantiated at this point.
 
-    callback always has to be called even if error happened.
+        callback always has to be called even if error happened.
 
-    @param {function(string, plugin.PluginResult)} callback -
-    the result callback
----------------------------------------
+        @param {function(string, plugin.PluginResult)} callback -
+        the result callback
+    ---------------------------------------
 
-*/
+    */
     FederatesExporter.prototype.main = function(mainCallback) { /* ARGUMENTS: callback function */
 
       var self = this;            // federates exporter function
@@ -1179,8 +1251,8 @@ Notes autogenerated or from previous coder:
       });
 
       self.getCurrentConfig().includedFederateTypes.trim().split(" ").forEach(
-
         function(e) {
+
           if (self.federateTypes.hasOwnProperty(e)) {
 
             self.federateTypes[e].includeInExport = true;
@@ -1189,24 +1261,24 @@ Notes autogenerated or from previous coder:
               self.federateTypes[e].init.call(self);
             }
           }
-        }
 
+        }
       );
 
-/***********************************************************************/
+      /***********************************************************************/
 
-/* generateFiles (function-valued variable of FederatesExporter.prototype.main)
+      /* generateFiles (function-valued variable of FederatesExporter.prototype.main)
 
-Returned Value: none
+      Returned Value: none
 
-Called By:
-  finishExport
-  generateFiles (recursively)
+      Called By:
+        finishExport
+        generateFiles (recursively)
 
-This generates the text of files to be included in the output. It executes
-one file generating function on each recursive call.
+      This generates the text of files to be included in the output. It executes
+      one file generating function on each recursive call.
 
-*/
+      */
       /* ARGUMENTS                                */
       /* (object) holding the text of files       */
       /* (array) of functions that generate files */
@@ -1245,18 +1317,18 @@ one file generating function on each recursive call.
         }
       };
 
-/***********************************************************************/
+      /***********************************************************************/
 
-/* saveAndReturn (function-valued variable of FederatesExporter.prototype.main)
+      /* saveAndReturn (function-valued variable of FederatesExporter.prototype.main)
 
-Returned Value: none
+      Returned Value: none
 
-Called By: finishExport
+      Called By: finishExport
 
-This function is defined as a variable of FederatesExporter.prototype.main.
-It uses the self variable.
+      This function is defined as a variable of FederatesExporter.prototype.main.
+      It uses the self variable.
 
-*/
+      */
 
       saveAndReturn = function(err) { /* ARGUMENTS (string) an error string or null (?) */
 
@@ -1279,7 +1351,6 @@ It uses the self variable.
         if (!errorRaised) {
 
           self.blobClient.saveAllArtifacts(
-
             function (err, hashes) {
 
               if (err) {
@@ -1299,7 +1370,6 @@ It uses the self variable.
               mainCallback(null, self.result);
               return;
             }
-
           );
 
         } else {
@@ -1312,20 +1382,19 @@ It uses the self variable.
 
       };
 
-/***********************************************************************/
+      /***********************************************************************/
 
-/* finishExport (function-valued variable of FederatesExporter.prototype.main)
+      /* finishExport (function-valued variable of FederatesExporter.prototype.main)
 
-Returned Value: none
+      Returned Value: none
 
-Called By: anonymous function used as an argument to
-  visitAllChildrenFromRootContainer
+      Called By: anonymous function used as an argument to
+        visitAllChildrenFromRootContainer
 
-This function is defined as a variable of FederatesExporter.prototype.main.
-It uses the self variable.
+      This function is defined as a variable of FederatesExporter.prototype.main.
+      It uses the self variable.
 
-*/
-
+      */
       finishExport = function(err) { /* ARGUMENTS (string) an error string or null (?) */
 
         var artifact;
@@ -1347,7 +1416,6 @@ It uses the self variable.
           generateFiles(
             artifact,
             self.fileGenerators,
-
             function(err) {
 
               if (err) {
@@ -1379,6 +1447,7 @@ It uses the self variable.
                 return;
 
               }
+
             }
           );
 
@@ -1391,19 +1460,17 @@ It uses the self variable.
 
       };
 
-/***********************************************************************/
+      /***********************************************************************/
 
-/*
+      /*
 
-This is a call to the visitAllChildrenFromRootContainer function, which
-is defined in ModelTraverserMixin.js. The anonymous function is the second
-argument.
+      This is a call to the visitAllChildrenFromRootContainer function, which
+      is defined in ModelTraverserMixin.js. The anonymous function is the second
+      argument.
 
-*/
-
+      */
       self.visitAllChildrenFromRootContainer(
         self.rootNode,
-
         function(err) {
 
           if (err) {
@@ -1419,29 +1486,26 @@ argument.
           }
 
         }
-
       );
 
-      // process.exit(0);
-/***********************************************************************/
+      /***********************************************************************/
 
     }; // end of FederatesExporter.prototype.main
 
-/***********************************************************************/
+    /***********************************************************************/
 
-/* excludeFromVisit (function property of FederatesExporter.prototype)
+    /* excludeFromVisit (function property of FederatesExporter.prototype)
 
-Returned Value: true or false
+    Returned Value: true or false
 
-Called By: visitAllChildrenRec (in ModelTraverserMixin.js)
+    Called By: visitAllChildrenRec (in ModelTraverserMixin.js)
 
-In C2Core/ModelTraverserMixin.js, this.excludeFromVisit is set to the
-function defined here.
+    In C2Core/ModelTraverserMixin.js, this.excludeFromVisit is set to the
+    function defined here.
 
 
 
-*/
-
+    */
     FederatesExporter.prototype.excludeFromVisit = function(node) { /* ARGUMENTS: a webGME node to test for being excluded */
 
       var self;
@@ -1451,93 +1515,88 @@ function defined here.
 
       self = this,
       exclude = false;
-      
-      if (self.rootNode != node)
-        {
-          nodeName = self.core.getAttribute(node, 'name');
-          nodeTypeName = ((nodeName === 'CPSWT') ? 'CPSWT' :
-                          (nodeName === 'CPSWTMeta') ? 'CPSWTMeta' :
-                self.core.getAttribute(self.getMetaType(node),'name'));
-          exclude = exclude 
-            || self.isMetaTypeOf(node, self.META['Language [C2WT]'])
-            || self.isMetaTypeOf(node,
-                        self.META['CPSWT.CPSWTMeta.Language [CPSWT]'])
-            || (self.federateTypes.hasOwnProperty(nodeTypeName) &&
-                !self.federateTypes[nodeTypeName].includeInExport)
-            || ((nodeTypeName in self.federateTypes) &&
-                !self.core.getAttribute(node, 'EnableCodeGeneration'));
-        }
+
+      if (self.rootNode != node) {
+
+        nodeName = self.core.getAttribute(node, 'name');
+        nodeTypeName = (
+          (nodeName === 'CPSWT') ? 'CPSWT' :
+            (nodeName === 'CPSWTMeta') ? 'CPSWTMeta' :
+              self.core.getAttribute(self.getMetaType(node),'name')
+        );
+
+        exclude = exclude
+          || self.isMetaTypeOf(node, self.META['Language [C2WT]'])
+          || self.isMetaTypeOf(node, self.META['CPSWT.CPSWTMeta.Language [CPSWT]'])
+          || (self.federateTypes.hasOwnProperty(nodeTypeName) && !self.federateTypes[nodeTypeName].includeInExport)
+          || ((nodeTypeName in self.federateTypes) && !self.core.getAttribute(node, 'EnableCodeGeneration'));
+
+      }
+
       return exclude;
+
     };
 
-/***********************************************************************/
+    /***********************************************************************/
 
-/* getVisitorFuncName (function property of FederatesExporter.prototype)
+    /* getVisitorFuncName (function property of FederatesExporter.prototype)
 
-Returned Value: a visitor function name
-For any nodeType (a string) that ends with 'Federate', such as
-'JavaFederate' or 'GridLabDFederate', this returns
-'visit_Federate'. For all other node types XXX, this returns
-'visit_XXX'. If the nodeType argument is null, this returns
-'generalVisitor'
+    Returned Value: a visitor function name
+    For any nodeType (a string) that ends with 'Federate', such as
+    'JavaFederate' or 'GridLabDFederate', this returns
+    'visit_Federate'. For all other node types XXX, this returns
+    'visit_XXX'. If the nodeType argument is null, this returns
+    'generalVisitor'
 
-Called By: atModelNode in C2Core/ModelTraverserMixin.js
+    Called By: atModelNode in C2Core/ModelTraverserMixin.js
 
-This is defining the getVisitorFuncName function as a property of the
-prototype of FederatesExporter.
+    This is defining the getVisitorFuncName function as a property of the
+    prototype of FederatesExporter.
 
-*/
-
+    */
     FederatesExporter.prototype.getVisitorFuncName = function(nodeType) { // (string) the name of a type of node or null
 
-      return (
-        nodeType
-        ? (nodeType.endsWith('Federate') ? 'visit_Federate' : 'visit_'+ nodeType)
-        : 'generalVisitor'
-      );
+      return (nodeType ? (nodeType.endsWith('Federate') ? 'visit_Federate' : 'visit_'+ nodeType) : 'generalVisitor');
+
     };
 
-/***********************************************************************/
+    /***********************************************************************/
 
-/* getPostVisitorFuncName (function property of FederatesExporter.prototype)
+    /* getPostVisitorFuncName (function property of FederatesExporter.prototype)
 
-Returned Value: a post visitor function name
-For any nodeType (a string) that ends with 'Federate', such as
-'JavaFederate' or 'GridLabDFederate', this returns
-'post_visit_Federate'. For all other node types XXX, this returns
-'post_visit_XXX'. If the nodeType argument is null, this returns
-'generalPostVisitor'
+    Returned Value: a post visitor function name
+    For any nodeType (a string) that ends with 'Federate', such as
+    'JavaFederate' or 'GridLabDFederate', this returns
+    'post_visit_Federate'. For all other node types XXX, this returns
+    'post_visit_XXX'. If the nodeType argument is null, this returns
+    'generalPostVisitor'
 
-Called By: atModelNode in C2Core/ModelTraverserMixin.js
+    Called By: atModelNode in C2Core/ModelTraverserMixin.js
 
-This is defining the getPostVisitorFuncName function as a property of the
-prototype of FederatesExporter.
+    This is defining the getPostVisitorFuncName function as a property of the
+    prototype of FederatesExporter.
 
-*/
+    */
 
     /* ARGUMENTS *(string) the name of a type of node or null */
     FederatesExporter.prototype.getPostVisitorFuncName = function(nodeType) {
 
-      return (
-        nodeType
-        ? (nodeType.endsWith('Federate') ? 'post_visit_Federate' : 'post_visit_' + nodeType)
-        : 'generalPostVisitor'
-      );
+      return (nodeType ? (nodeType.endsWith('Federate') ? 'post_visit_Federate' : 'post_visit_' + nodeType) : 'generalPostVisitor');
 
     };
 
-/***********************************************************************/
+    /***********************************************************************/
 
-/* ROOT_Visitor (function property of FederatesExporter.prototype)
+    /* ROOT_Visitor (function property of FederatesExporter.prototype)
 
-Returned Value:  a context object as shown in the function
+    Returned Value:  a context object as shown in the function
 
-Called By: C2Core/ModelTraverserMixin.js (for the ROOT node)
+    Called By: C2Core/ModelTraverserMixin.js (for the ROOT node)
 
-This seems to be the starting point for the context object used in many
-functions. The function does not use any information from the node.
+    This seems to be the starting point for the context object used in many
+    functions. The function does not use any information from the node.
 
-*/
+    */
 
     FederatesExporter.prototype.ROOT_visitor = function(node) { /* ARGUMENTS a webGME ROOT node */
 
@@ -1556,17 +1615,17 @@ functions. The function does not use any information from the node.
       };
     };
 
-/***********************************************************************/
+    /***********************************************************************/
 
-/* calculateParentPath (function property of FederatesExporter.prototype)
+    /* calculateParentPath (function property of FederatesExporter.prototype)
 
-Returned Value:  the path with the last entry removed
+    Returned Value:  the path with the last entry removed
 
-Called By: C2Core/ModelTraverserMixin.js
+    Called By: C2Core/ModelTraverserMixin.js
 
-For example, if path is '/a/b/c', this returns '/a/b'.
+    For example, if path is '/a/b/c', this returns '/a/b'.
 
-*/
+    */
     /* ARGUMENTS (string) path to a file or directory e.g., '/a/b/c' */
     FederatesExporter.prototype.calculateParentPath = function(path) {
 
@@ -1578,7 +1637,9 @@ For example, if path is '/a/b/c', this returns '/a/b'.
 
       pathElements = path.split('/');
       pathElements.pop();
+
       return pathElements.join('/');
+
     };
 
 /***********************************************************************/
