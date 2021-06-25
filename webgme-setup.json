@@ -41,6 +41,12 @@
     "decorators": {
       "RegistryDecorator": {
         "src": "src/decorators/RegistryDecorator"
+      },
+      "HLADecorator": {
+        "src": "src/decorators/HLADecorator"
+      },
+      "SimpleModelDecorator": {
+        "src": "src/decorators/SimpleModelDecorator"
       }
     },
     "seeds": {},

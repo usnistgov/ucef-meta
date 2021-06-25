@@ -68,8 +68,7 @@ define([
 
     HLADecoratorPartBrowserWidget.prototype._renderContent = function () {
         var client = this._control._client,
-            nodeObj = client.getNode(this._metaInfo[CONSTANTS.GME_ID]),
-            typeObj = client.getNode(nodeObj.getBaseId());
+            nodeObj = client.getNode(this._metaInfo[CONSTANTS.GME_ID]);
 
         //render GME-ID in the DOM, for debugging
         if (DEBUG) {

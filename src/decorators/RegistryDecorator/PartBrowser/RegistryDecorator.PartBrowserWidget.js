@@ -9,41 +9,71 @@
  * @author pmeijer / https://github.com/pmeijer
  */
 
-define([
-    'decorators/ModelDecorator/PartBrowser/ModelDecorator.PartBrowserWidget',
-    'jquery',
-    'underscore'
-], function (ModelDecoratorPartBrowserWidget) {
+define(
+    [
+        'js/Constants',
+        'js/NodePropertyNames',
+        'decorators/ModelDecorator/PartBrowser/ModelDecorator.PartBrowserWidget',
+        'jquery',
+        'underscore'
+    ],
+    function (
+        CONSTANTS,
+        nodePropertyNames,
+        ModelDecoratorPartBrowserWidget
+    ) {
 
-    'use strict';
+        'use strict';
 
-    var RegistryDecoratorPartBrowserWidget,
-        DECORATOR_ID = 'RegistryDecoratorPartBrowserWidget';
+        var RegistryDecoratorPartBrowserWidget,
+            DECORATOR_ID = 'RegistryDecoratorPartBrowserWidget';
 
-    RegistryDecoratorPartBrowserWidget = function (options) {
-        var opts = _.extend({}, options);
+        RegistryDecoratorPartBrowserWidget = function (options) {
+            var opts = _.extend({}, options);
 
-        ModelDecoratorPartBrowserWidget.apply(this, [opts]);
+            ModelDecoratorPartBrowserWidget.apply(this, [opts]);
 
-        this.logger.debug('RegistryDecoratorPartBrowserWidget ctor');
-    };
+            this.logger.debug('RegistryDecoratorPartBrowserWidget ctor');
+        };
 
-    _.extend(RegistryDecoratorPartBrowserWidget.prototype, ModelDecoratorPartBrowserWidget.prototype);
-    RegistryDecoratorPartBrowserWidget.prototype.DECORATORID = DECORATOR_ID;
+        _.extend(RegistryDecoratorPartBrowserWidget.prototype, ModelDecoratorPartBrowserWidget.prototype);
+        RegistryDecoratorPartBrowserWidget.prototype.DECORATORID = DECORATOR_ID;
 
-    /*********************** OVERRIDE DiagramDesignerWidgetDecoratorBase MEMBERS **************************/
+        /*********************** OVERRIDE DiagramDesignerWidgetDecoratorBase MEMBERS **************************/
 
-    RegistryDecoratorPartBrowserWidget.prototype.beforeAppend = function () {
-        ModelDecoratorPartBrowserWidget.prototype.beforeAppend.apply(this, arguments);
-    };
+        RegistryDecoratorPartBrowserWidget.prototype.beforeAppend = function () {
+            this.$el = this.$DOMBase.clone();
 
-    RegistryDecoratorPartBrowserWidget.prototype.afterAppend = function () {
-        ModelDecoratorPartBrowserWidget.prototype.afterAppend.apply(this, arguments);
-    };
+            //find name placeholder
+            this.skinParts.$name = this.$el.find('.name');
+            this._renderContent();
+        };
 
-    RegistryDecoratorPartBrowserWidget.prototype.update = function () {
-        ModelDecoratorPartBrowserWidget.prototype.update.apply(this, arguments);
-    };
+        RegistryDecoratorPartBrowserWidget.prototype.afterAppend = function () {
+            ModelDecoratorPartBrowserWidget.prototype.afterAppend.apply(this, arguments);
+        };
 
-    return RegistryDecoratorPartBrowserWidget;
-});
+        RegistryDecoratorPartBrowserWidget.prototype.update = function () {
+            this._renderContent();
+        };
+
+        RegistryDecoratorPartBrowserWidget.prototype._renderContent = function () {
+            var client = this._control._client,
+                nodeObj = client.getNode(this._metaInfo[CONSTANTS.GME_ID]);
+
+            //render GME-ID in the DOM, for debugging
+            if (DEBUG) {
+                this.$el.attr({'data-id': this._metaInfo[CONSTANTS.GME_ID]});
+            }
+
+            if (nodeObj) {
+                this.name = nodeObj.getAttribute(nodePropertyNames.Attributes.name);
+                this.skinParts.$name.text(this.name || '');
+            }
+
+            this._updateColors();
+        };
+
+        return RegistryDecoratorPartBrowserWidget;
+    }
+);

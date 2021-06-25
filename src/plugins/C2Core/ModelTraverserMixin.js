@@ -2,7 +2,7 @@
 
 File completed by unknown programmer (probably H. Neema)
 
-File modified extensively by T. Kramer 
+File modified extensively by T. Kramer
 
 File reformatted in C style, as far as possible.
 
@@ -10,7 +10,7 @@ This "define" appears to be intended to be used by any other "define"
 that needs to go through all the nodes in a webgme model. It is used
 by at least FederatesExporter.js and DeploymentExporter.js.
 
-The atModelNode function gets called for all nodes except those that 
+The atModelNode function gets called for all nodes except those that
 are explicitly excluded. It is specific to the job of the caller and
 will need to be modified if called by other than FederatesExporter.js.
 
@@ -22,8 +22,10 @@ The doneModelNode function
 
 */
 
-define([], function()
- {
+define(
+  [],
+  function(
+  ) {
     'use strict';
     var withModelTraverser;
 
@@ -41,7 +43,7 @@ DeploymentExporter.js).
 
     withModelTraverser = function()
     {
-        
+
 /***********************************************************************/
 
 /* this.getChildSorterFunc
@@ -83,7 +85,7 @@ not a sorter.
         {
           var aName = self.core.getAttribute(a,'name');
           var bName = self.core.getAttribute(b,'name');
-          
+
           if (aName < bName) return -1;
           if (aName > bName) return 1;
           return 0;
@@ -98,7 +100,7 @@ not a sorter.
 Returned Value: none
 
 Called By: this.visitAllChildrenRec
-  
+
 If this.excludeFromVisit is not already defined, it is defined to
 return false.
 
@@ -136,8 +138,8 @@ that each child has its own version.
         var self = this;
         var error = '';
         var context = {};          // initialization of model used extensively
-        var counter = {visits: 1}; 
-        var counterCallback;       // function 
+        var counter = {visits: 1};
+        var counterCallback;       // function
 
 /***********************************************************************/
 
@@ -190,14 +192,14 @@ have been visited (possibly involving the rootNode), but no need arose.
               return;
             }
         }; // end of counterCallback function
-        
+
 /***********************************************************************/
         try
           {
             var ret = self['ROOT_visitor'](rootNode, context);
             if (ret['error'])
               {
-                callback(error === '' ? undefined : error);
+                rootContainerCallback(error === '' ? undefined : error);
                 return;
               }
             else
@@ -207,11 +209,11 @@ have been visited (possibly involving the rootNode), but no need arose.
           }
         catch(err)
           {
-            
+
           }
         self.visitAllChildrenRec(rootNode, context, counter, counterCallback);
       }; // end of visitAllChildrenFromRootContainer function
-        
+
 /***********************************************************************/
 
 /* this.visitAllChildrenRec
@@ -220,7 +222,7 @@ Returned Value: none
 
 Called By:
   visitAllChildrenFromRootContainer
-  visitAllChildrenRec (recursively in atModelNodeChildCallback) 
+  visitAllChildrenRec (recursively in atModelNodeChildCallback)
 
 Likely "Rec" in the name means recursive.
 
@@ -276,7 +278,7 @@ of the queue and executes it.
 
 Called By: not called directly, passed as callback to core.loadChildren
 
-*/        
+*/
         passedToLoad = function(err, children)
         { // Presumably, loadChildren provides the children argument
           // by getting the children of the node, and executes passedToLoad.
@@ -296,7 +298,7 @@ Called By: not called directly, passed as callback to core.loadChildren
               return;
             }
           counter.visits -= 1;
-          
+
 /***********************************************************************/
 
 /* doneModelNodeCallback (function defined within passedToLoad)
@@ -314,7 +316,7 @@ Called By:
             {
               if (err)
                 {
-                  callback(err); 
+                  callback(err);
                 }
               else
                 {
@@ -322,9 +324,9 @@ Called By:
                 }
               return
             }; // closes doneModelNodeCallback
-        
+
 /***********************************************************************/
-          
+
           if (childrenToVisit === 0)
             { // node has no children
               if (node !== self.rootNode)
@@ -336,7 +338,7 @@ Called By:
                 {
                   doneModelNodeCallback(null);
                 }
-              return;
+              return false;
             }
           counter.visits += children.length;
           if (node !== self.rootNode)
@@ -351,22 +353,22 @@ Called By:
             {
               children.sort(comparisonFunc);
             }
-          
+
 /***********************************************************************/
 
 /* doneVisitChildCallback (function defined within passedToLoad)
 
 Called By: not called directly, passed as callback to visitAllChildrenRec
 
-*/          
+*/
           doneVisitChildCallback = function(err)
           {
             if (err)
               {
                 callback(err);
-                return; 
+                return;
               }
-            
+
             childrenToVisit -= 1;
             if (childrenToVisit === 0)
               {
@@ -380,11 +382,11 @@ Called By: not called directly, passed as callback to visitAllChildrenRec
                     doneModelNodeCallback(null);
                   }
                 return;
-              } 
+              }
           }; // closes doneVisitChildCallback
 
 /***********************************************************************/
-          
+
           for (i = 0; i < children.length; i += 1)
             {
               atModelNodeChildCallback = function(err, ctx)
@@ -398,14 +400,14 @@ Called By: not called directly, passed as callback to visitAllChildrenRec
                 self.visitAllChildrenRec(children[i], ctx, counter,
                                          doneVisitChildCallback);
               };
-              
+
               self.atModelNode(children[i], node, self.cloneCtx(context),
                                atModelNodeChildCallback);
             }
         }; // closes passedToLoad =
 
 /***********************************************************************/
-        
+
         nodeName = self.core.getAttribute(node, 'name');
         if (self.excludeFromVisit(node))
           {
