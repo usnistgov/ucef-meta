@@ -16,20 +16,26 @@ define
 
 /* ******************************************************************* */
 
-/** JavaFederateExporter (function-valued variable of top-level function object)
+/* JavaFederateExporter */
+/** (function-valued variable of top-level function object)<br><br>
 
-Returned Value: none
+Returned Value: none<br><br>
 
-Called By: FederatesExporter in FederatesExporter.js
+Called By: FederatesExporter in FederatesExporter.js<br><br>
 
-The top-level function returns this function.
+This is the primary function for a Java federate.<br><br>
+
+The top-level function returns this function.<br>
 
 */
-    
+
     JavaFederateExporter = function()
     {
       var self = this;
       var finalContext;
+      var createJavaFederateCodeModel; // function
+      var visit_JavaFederate;          // function
+      var post_visit_JavaFederate;     // function
 
       JavaRTI.call(this);
       this.federateTypes = this.federateTypes || {};
@@ -60,27 +66,28 @@ The top-level function returns this function.
 
 /* ******************************************************************* */
 
-/** visit_JavaFederate
+/* visit_JavaFederate */
+/** (function-valued variable of JavaFederateExporter)<br><br>
 
 Returned Value: a "{context: context}" object returned by
-                visit_JavaImplFederate
+                visit_JavaImplFederate<br><br>
 
-Called By:
-  visit_MapperFederate in MapperFederate.js
-  atModelNode in ModelTraverserMixin.js
+Called By:<br>
+  visit_MapperFederate in MapperFederate.js<br>
+  atModelNode in ModelTraverserMixin.js<br><br>
 
-This does not appear to be called unless the node metaType name is
-JavaFederate.  In visit_MapperFederate it is called only if it is
-defined. It is defined if JavaFederateExporter is called, which
-happens in FederatesExporter.js.
+This is the visitor function for a Java federate.<br>
 
 */
 
-      this.visit_JavaFederate = function(node, parent, context)
+      visit_JavaFederate = function(            /* ARGUMENTS */
+       /** node to be processed                */ node,
+       /** parent of node                      */ parent,
+       /** context object that may be modified */ context)
       {
         var self;
         var fedspec;
-        
+
         self = this;
 
         //Set up project POM files on visiting the first Java Federate
@@ -106,7 +113,7 @@ happens in FederatesExporter.js.
             self.porticoPOM.scope = "provided";
           }
 
-        fedspec = self.createJavaFederateCodeModel();
+        fedspec = createJavaFederateCodeModel();
         context.javafedspec = fedspec;
         fedspec.classname = self.core.getAttribute(node, 'name');
         fedspec.simname = self.projectName;
@@ -121,25 +128,31 @@ happens in FederatesExporter.js.
 
         return this.visit_JavaImplFederate(node, parent, context);
       };
+      this.visit_JavaFederate = visit_JavaFederate;
 
 /* ******************************************************************* */
 
-/** post_visit_JavaFederate
+/* post_visit_JavaFederate */
+/** (function-valued variable of JavaFederateExporter)<br><br>
 
-Returned Value: a context object
+Returned Value: a context object<br><br>
 
-Called By: doneModelNode in ModelTraverserMixin.js
+Called By: doneModelNode in ModelTraverserMixin.js<br><br>
+
+This is the post visitor function for a Java federate node.<br><br>
 
 This is called in doneModelNode in ModelTraverserMixin.js when the
-nodeMetaTypeName in that function is JavaFederate.
+nodeMetaTypeName in that function is JavaFederate.<br><br>
 
 This adds information to the context by calling
 post_visit_JavaImplFederate (in JavaImplFederate.js). The call to
-post_visit_JavaImplFederate also generates code for 6 files.
+post_visit_JavaImplFederate also generates code for 6 files.<br>
 
 */
-      
-      this.post_visit_JavaFederate = function(node, context)
+
+      post_visit_JavaFederate = function(             /* ARGUMENTS */
+       /** a java federate node                      */ node,
+       /** a data object from which to generate code */ context)
       {
         var outFileName;
         var federateName;
@@ -155,10 +168,21 @@ post_visit_JavaImplFederate also generates code for 6 files.
         finalContext = this.post_visit_JavaImplFederate(node, context);
         return finalContext;
       };
+      this.post_visit_JavaFederate = post_visit_JavaFederate;
 
 /* ******************************************************************* */
 
-      this.createJavaFederateCodeModel = function()
+/* createJavaFederateCodeModel */
+/** (function-valued variable of JavaFederateExporter)<br><br>
+
+Returned Value: an object with dummy values<br><br>
+
+Called By: visit_JavaFederate<br><br>
+
+This creates the initial version of the fedspec in the context model.<br>
+
+*/
+      createJavaFederateCodeModel = function()
       {
          return {simname: "",
                 melderpackagename: null,
@@ -181,11 +205,7 @@ post_visit_JavaImplFederate also generates code for 6 files.
 
 /* ******************************************************************* */
 
-      this.javaCodeModel = this.createJavaFederateCodeModel();
-
-/* ******************************************************************* */
-
-    }; // end of setting JavaFederateExporter function variable
+    }; // end JavaFederateExporter
 
 /* ******************************************************************* */
 

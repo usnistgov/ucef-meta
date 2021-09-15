@@ -12,27 +12,49 @@ define
 
 /* ******************************************************************* */
 
-/** CppImplFederateExporter (function-valued variable of top-level function obj)
+/* CppImplFederateExporter */
+/** (function-valued variable of top-level function object)<br><br>
 
-Returned Value: none
+Returned Value: none<br><br>
 
-Called By: CppFederateExporter in CppFederate.js
+Called By: CppFederateExporter in CppFederate.js<br><br>
 
-The top-level function returns this function.
+This is the C++ implementation federate exporter.<br><br>
+
+The top-level function returns this function.<br><br>
+
+implDirectoryPath is set in initCppImplFederate, but it does not
+appear to be used anywhere.<br>
 
 */
-    
+
     CppImplFederateExporter = function()
     {
       var self;
-      var implDirectoryPath;
-      var checkBack;
+      var cppCheckBack;               // function
+      var initCppImplFederate;        // function
+      var visit_CppImplFederate;      // function
+      var post_visit_CppImplFederate; // function
 
       self = this;
 
 /* ******************************************************************* */
 
-     checkBack = function(err, callBack)
+/* cppCheckBack */
+/** (function-valued variable of CppImplFederateExporter)<br><br>
+
+Returned Value: none<br><br>
+
+Called By: the five generator functions in post_visit_CppImplFederate<br><br>
+
+If there is an error, this calls the callback with the error message
+as an argument; otherwise, this calls the callback with no arguments.<br>
+
+*/
+
+      cppCheckBack = function(               /* ARGUMENTS */
+       /** an error message or nullish       */ err,
+       /** function to call if error or done */ callBack)
       {
         if (err)
           {
@@ -47,79 +69,87 @@ The top-level function returns this function.
 
 /* ******************************************************************* */
 
-/** initCppImplFederate
+/* initCppImplFederate */
+/** (function-valued variable of CppImplFederateExporter)<br><br>
 
-Returned Value: none
+Returned Value: none<br><br>
 
-Called By: ?
+Called By: ?<br><br>
+
+This initializes the cpp_federateImplPOM.
 
 In CppFederateExporter in CppFederate.js, this.federateTypes.CppFederate
-is set to an object one whose properties is init. The value of init is an
-anonymous function that includes a call to self.initCppImplFederate.
+is set to an object one of whose properties is init. The value of init is an
+anonymous function that includes a call to self.initCppImplFederate.<br>
 
 */
-      
-      this.initCppImplFederate = function()
+
+      initCppImplFederate = function()
       {
         var self;
-        var baseDirectoryPath;
-        var implDirectorySpec;
-        
+
         self = this;
         if (self.cppImplFederateInitDone)
           {
             return;
           }
-            
-        baseDirectoryPath = 'cpp-federates/';
-        implDirectorySpec = {federation_name: self.projectName,
-                             artifact_name: "impl",
-                             language: "cpp"};
-        implDirectoryPath = baseDirectoryPath +
-                            ejs.render(self.directoryNameTemplate,
-                                       implDirectorySpec);
         self.cpp_federateImplPOM = new MavenPOM();
         self.cpp_federateImplPOM.groupId = self.mainPom.groupId.trim();
         self.cpp_federateImplPOM.artifactId = self.projectName + "-impl-cpp";
         self.cpp_federateImplPOM.version = self.project_version;
         self.cpp_federateImplPOM.packaging = "nar";
         self.cpp_federateImplPOM.addNarPlugin("executable");
-
-/* ******************************************************************* */
-
         self.cppImplFederateInitDone = true;
       }; // end initCppImplFederate
 
 /* ******************************************************************* */
 
-/** visit_CppImplFederate
-
-Returned Value: a "{context: context}" object
-
-Called By: visit_CppFederate (in CppFederate.js)
-
-*/
-
-      this.visit_CppImplFederate = function(node, parent, context)
-      {
-        var outFileName;
-        
-        return {context:context};
-      };
+      this.initCppImplFederate = initCppImplFederate;
 
 /* ******************************************************************* */
 
-/** post_visit_CppImplFederate
+/* visit_CppImplFederate */
+/** (function-valued variable of CppImplFederateExporter)<br><br>
 
-Returned Value: an object with a context property whose value is the
-context argument.
+Returned Value: a "{context: context}" object<br><br>
 
-Called By: post_visit_CppFederate (in CppFederate.js)
+Called By: visit_CppFederate (in CppFederate.js)<br><br>
 
-This modifies context.cppfedspec and builds three file generators.
+This just embeds the context argument in an object by itself as the
+value of the "context" property.<br>
 
 */
-      this.post_visit_CppImplFederate = function(node, context)
+
+      visit_CppImplFederate = function(              /* ARGUMENTS */
+       /** a C++ federate node                       */ node,
+       /** the parent of the node                    */ parent,
+       /** a data object from which to generate code */ context)
+      {
+         return {context:context};
+      };
+      this.visit_CppImplFederate = visit_CppImplFederate;
+
+/* ******************************************************************* */
+
+/* post_visit_CppImplFederate */
+/** (function-valued variable of CppImplFederateExporter)<br><br>
+
+Returned Value: an object with a context property whose value is the
+context argument<br><br>
+
+Called By: post_visit_CppFederate (in CppFederate.js)<br><br>
+
+This modifies context.cppfedspec and builds five file generators.<br>
+ - federate pom generator<br>
+ - federate C++ header file generator<br>
+ - federate C++ code file generator<br>
+ - federate build file generator<br>
+ - federate version cpp file generator<br>
+
+*/
+      post_visit_CppImplFederate = function(         /* ARGUMENTS */
+       /** a C++ federate node                       */ node,
+       /** a data object from which to generate code */ context)
       {
         var self;
         var renderContext;
@@ -128,7 +158,7 @@ This modifies context.cppfedspec and builds three file generators.
         var outFileNameStart;
         var feder;
         var groupPath;
-        
+
         self = this;
         groupPath = self.getCurrentConfig().groupId.trim().replace(/[.]/g, "/");
         renderContext = context.cppfedspec;
@@ -170,7 +200,7 @@ This modifies context.cppfedspec and builds three file generators.
           self.logger.info("calling addFile for " + fullPath + " in " +
                            "post_visit_CppImplFederate of CppImplFederate.js");
           artifact.addFile(fullPath, xmlPOM,
-                           function(err) {checkBack(err, callback);});
+                           function(err) {cppCheckBack(err, callback);});
         });
 
 /* ******************************************************************* */
@@ -200,7 +230,7 @@ This modifies context.cppfedspec and builds three file generators.
           self.logger.info("calling addFile for " + fullPath + " in " +
                            "post_visit_CppImplFederate of CppImplFederate.js");
           artifact.addFile(fullPath, hppCode,
-                           function(err) {checkBack(err, callback);});
+                           function(err) {cppCheckBack(err, callback);});
         });
 
 /* ******************************************************************* */
@@ -208,7 +238,7 @@ This modifies context.cppfedspec and builds three file generators.
 // Add federate cpp file generator
 // For the SOMGenerationWithCpp project, this is writing the file
 // CppFederate1/src/main/c++/CppFederate1.cpp
-        
+
         self.fileGenerators.push(function(artifact, callback)
         {
           var cppCode;
@@ -230,7 +260,7 @@ This modifies context.cppfedspec and builds three file generators.
           self.logger.info("calling addFile for " + fullPath + " in " +
                            "post_visit_CppImplFederate of CppImplFederate.js");
           artifact.addFile(fullPath, cppCode,
-                           function(err) {checkBack(err, callback);});
+                           function(err) {cppCheckBack(err, callback);});
         });
 
 /* ******************************************************************* */
@@ -248,12 +278,12 @@ This modifies context.cppfedspec and builds three file generators.
           self.logger.info("calling addFile for " + fullPath + " in " +
                            "post_visit_CppImplFederate of CppImplFederate.js");
           artifact.addFile(fullPath, scriptCode,
-                           function(err) {checkBack(err, callback);});
+                           function(err) {cppCheckBack(err, callback);});
         });
 
 /* ******************************************************************* */
-        
-// Add federate version cpp file
+
+// Add federate version cpp file generator
 
         self.fileGenerators.push(function(artifact, callback)
         {
@@ -270,18 +300,21 @@ This modifies context.cppfedspec and builds three file generators.
           self.logger.info("calling addFile for " + fullPath + " in " +
                            "post_visit_CppImplFederate of CppImplFederate.js");
           artifact.addFile(fullPath, cppCode,
-                           function(err) {checkBack(err, callback);});
+                           function(err) {cppCheckBack(err, callback);});
         });
 
 /* ******************************************************************* */
-        
-        return {context:context};
-      }; // end of post_visit_CppImplFederate function
 
-    }; // end of CppImplFederateExporter function
+        return {context:context};
+      }; // end post_visit_CppImplFederate
+
+/* ******************************************************************* */
+
+      this.post_visit_CppImplFederate = post_visit_CppImplFederate;
+
+    }; // end CppImplFederateExporter
 
 /* ******************************************************************* */
 
     return CppImplFederateExporter;
 }); // end define
-

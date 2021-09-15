@@ -13,14 +13,16 @@ define
 
 /* ******************************************************************* */
 
-/** TRNSYSFederateExporter (function-valued variable of
-   top-level function object)
+/* TRNSYSFederateExporter */
+/** (function-valued variable of top-level function object)<br><br>
 
-Returned Value: none
+Returned Value: none<br><br>
 
-Called By: FederatesExporter in FederatesExporter.js
+Called By: FederatesExporter in FederatesExporter.js<br><br>
 
-The top-level function returns this function.
+This is the primary function for a TRNSYS federate.<br><br>
+
+The top-level function returns this function.<br>
 
 */
 
@@ -29,11 +31,27 @@ The top-level function returns this function.
       var trnsysArtifactId = "trnsys-wrapper";
       var trnsysGroupId = "gov.nist.hla.trnsys";
       var trnsysVersion = "0.1.0-SNAPSHOT";
-      var checkBack;
+      var TRNSYSCheckBack;           // function
+      var visit_TRNSYSFederate;      // function
+      var post_visit_TRNSYSFederate; // function
 
 /* ******************************************************************* */
 
-      checkBack = function(err, callBack)
+/* TRNSYSCheckBack */
+/** (function-valued variable of TRNSYSFederateExporter)<br><br>
+
+Returned Value: none<br><br>
+
+Called By: the six generator functions in post_visit_TRNSYSFederate<br><br>
+
+If there is an error, this calls the callback with the error message
+as an argument; otherwise, this calls the callback with no arguments.<br>
+
+*/
+
+      TRNSYSCheckBack = function(            /* ARGUMENTS */
+       /** an error message or nullish       */ err,
+       /** function to call if error or done */ callBack)
       {
         if (err)
           {
@@ -52,7 +70,22 @@ The top-level function returns this function.
 
 /* ******************************************************************* */
 
-      this.visit_TRNSYSFederate = function(node, parent, context)
+/* visit_TRNSYSFederate */
+/** (function-valued variable of TRNSYSFederateExporter)<br><br>
+
+Returned Value: a "{context: context}" object<br><br>
+
+Called By: atModelNode in modelTraverserMixin.js in C2Core<br><br>
+
+This is the visitor function for a TRNSYS federate. It builds
+the context object.<br>
+
+*/
+
+      visit_TRNSYSFederate = function(               /* ARGUMENTS */
+       /** a TRNSYS federate node                    */ node,
+       /** the parent of the node                    */ parent,
+       /** a data object from which to generate code */ context)
       {
         var self;
         var nodeType;
@@ -73,25 +106,35 @@ The top-level function returns this function.
           trnsysArtifactId + "-" + trnsysVersion + ".jar";
         self.federates[self.core.getPath(node)] = context['trnsysfedspec'];
         return {context: context};
-      }; // end of visit_TRNSYSFederate function
+      }; // end visit_TRNSYSFederate
+      this.visit_TRNSYSFederate = visit_TRNSYSFederate;
 
 /* ******************************************************************* */
 
-      this.makeTRNSYSVariables = function(node)
-      {
-        var self;
-        var feder;
-        var trnsysVariables;
+/* post_visit_TRNSYSFederate */
+/** (function-valued variable of TRNSYSFederateExporter)<br><br>
 
-        self = this;
-        feder = self.federateInfos[self.core.getPath(node)];
-        trnsysVariables = {};
-        return trnsysVariables;
-      };
+Returned Value: a context object<br><br>
 
-/* ******************************************************************* */
+Called By: doneModelNode in ModelTraverserMixin.js<br><br>
 
-      this.post_visit_TRNSYSFederate = function(node, context)
+This is the post visitor function for a TRNSYS federate node.
+It adds file generators for:<br>
+ - the pom.xml that fetches the TRNSYS federate code and resources<br>
+ - the script that builds the TRNSYS federate<br>
+ - the script that runs the TRNSYS federate<br>
+ - the Portico configuration file<br>
+ - the TRNSYS federate configuration file<br>
+ - the log4j2 configuration file<br><br>
+
+This is called in doneModelNode in ModelTraverserMixin.js when the
+nodeMetaTypeName in that function is TRNSYSFederate.<br>
+
+*/
+
+      post_visit_TRNSYSFederate = function(    /* ARGUMENTS */
+       /** node to be processed                */ node,
+       /** context object that may be modified */ context)
       {
         var self = this;
         var renderContext = context['trnsysfedspec'];
@@ -100,7 +143,7 @@ The top-level function returns this function.
         var feder;
         var trnsysPOM = new MavenPOM();
         var trnsysHelperPOM = new MavenPOM();
-        var trnsysVariables = self.makeTRNSYSVariables(node);
+        var trnsysVariables = {};
 
         // set the SOM.xml output directory
         feder = self.federateInfos[self.core.getPath(node)];
@@ -153,7 +196,7 @@ The top-level function returns this function.
           self.logger.info('calling addFile for ' + fullPath + ' in post_' +
                            'visit_TRNSYSFederate of TRNSYSFederate.js');
            artifact.addFile(fullPath, code,
-                           function(err) {checkBack(err, callback);});
+                           function(err) {TRNSYSCheckBack(err, callback);});
         });
 
         // generate the script that builds the TRNSYS federate
@@ -169,7 +212,7 @@ The top-level function returns this function.
           self.logger.info('calling addFile for ' + fullPath + ' in post_' +
                            'visit_TRNSYSFederate of TRNSYSFederate.js');
           artifact.addFile(fullPath, code,
-                           function(err) {checkBack(err, callback);});
+                           function(err) {TRNSYSCheckBack(err, callback);});
         });
 
         // generate the script that runs the TRNSYS federate
@@ -188,7 +231,7 @@ The top-level function returns this function.
           self.logger.info('calling addFile for ' + fullPath + ' in post_' +
                            'visit_TRNSYSFederate of TRNSYSFederate.js');
           artifact.addFile(fullPath, code,
-                           function(err) {checkBack(err, callback);});
+                           function(err) {TRNSYSCheckBack(err, callback);});
         });
 
         // generate the Portico configuration file
@@ -205,7 +248,7 @@ The top-level function returns this function.
           self.logger.info('calling addFile for ' + fullPath + ' in post_' +
                            'visit_TRNSYSFederate of TRNSYSFederate.js');
           artifact.addFile(fullPath, code,
-                           function(err) {checkBack(err, callback);});
+                           function(err) {TRNSYSCheckBack(err, callback);});
         });
 
         // generate the TRNSYS federate configuration file
@@ -226,7 +269,7 @@ The top-level function returns this function.
           self.logger.info('calling addFile for ' + fullPath + ' in post_' +
                            'visit_TRNSYSFederate of TRNSYSFederate.js');
           artifact.addFile(fullPath, code,
-                           function(err) {checkBack(err, callback);});
+                           function(err) {TRNSYSCheckBack(err, callback);});
         });
 
         // generate the log4j2 configuration file
@@ -242,15 +285,15 @@ The top-level function returns this function.
           self.logger.info('calling addFile for ' + fullPath + ' in post_' +
                            'visit_TRNSYSFederate of TRNSYSFederate.js');
           artifact.addFile(fullPath, code,
-                           function(err) {checkBack(err, callback);});
+                           function(err) {TRNSYSCheckBack(err, callback);});
         });
         return {context: context};
-      };
-      // end of post_visit_TRNSYSFederate function
+      }; // end post_visit_TRNSYSFederate
+      this.post_visit_TRNSYSFederate = post_visit_TRNSYSFederate;
 
 /* ******************************************************************* */
 
-    } // end of TRNSYSFederateExporter function
+    } // end TRNSYSFederateExporter
 
 /* ******************************************************************* */
 

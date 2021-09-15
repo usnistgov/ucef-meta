@@ -16,75 +16,73 @@ define
            TEMPLATES)
  {
     'use strict';
-    var CppRTIFederateExporter;
-    var objectTraverserCheck;      // function variable
-    var interactionTraverserCheck; // function variable
+    var CppRTIFederateExporter;       // function variable
+    var cppObjectTraverserCheck;      // function variable
 
 /* ******************************************************************* */
-    
-/** objectTraverserCheck
 
-Returned Value: none
+/* cppObjectTraverserCheck */
+/** (function-valued variable of top-level function object)<br><br>
 
-Called By:
-  renderToFile (object is objectRoot)
-  objectTraverserCheck (recursively)
+Returned Value: none<br><br>
 
-In this documentation, "object" means object in the WebGME sense, not
-object in the JavaScript sense.
+Called By:<br>
+  cppRenderToFile (object is objectRoot)<br>
+  cppObjectTraverserCheck (recursively)<br><br>
 
 This adds entries to the pubSubObjects of a federate for all ancestors
-of objects that already have entries.
+of objects that already have entries.<br><br>
 
-For each object, object.basePath is the id of the parent of the object.
+In this documentation, "object" means object in the WebGME sense, not
+object in the JavaScript sense.<br><br>
+
+For each object, object.basePath is the id of the parent of the object.<br><br>
 
 First, this calls itself recursively on the children of the
 object. Since this is transmitting information from children to
 parents, the children have to be processed first. By calling itself
 recursively, this goes through the object tree (from top down) but
-builds the pubSubObjects of the federate from bottom up.
+builds the pubSubObjects of the federate from bottom up.<br><br>
 
 Then, if the object is not objectRoot and the object.id is in the
 pubSubObjects of the given federate, the object is selected for
-further processing.
+further processing.<br><br>
 
-For each selected object:
+For each selected object:<br><br>
 
 A. If the parent publishes or subscribes to the federate, an entry in
 federate.pubSubObjects for the parent will have been made previously
-in PubSubVisitors, and in that case:
+in PubSubVisitors, and in that case:<br><br>
 
 A1. If the object's mayPublish of its entry is not zero, the parent's
-mayPublish of its entry is set to 1, and
+mayPublish of its entry is set to 1, and<br>
 A2. If the object's maySubscribe of its entry is not zero, the parent's
-maySubscribe of its entry is set to 1.
+maySubscribe of its entry is set to 1.<br><br>
 
 B. Otherwise, a new entry in the federate.pubSubObjects is created for the
 parent in which the parent's publish and subscribe are set to 0 and the
-parent's mayPublish and maySubscribe are set to the object's values.
+parent's mayPublish and maySubscribe are set to the object's values.<br><br>
 
 The final effect is that any object that is an ancestor of any object
 originally put on the federate.pubSubObjects in PubSubVisitors is also
 on federate.pubSubObjects, with its publish, subscribe, mayPublish, and
-maySubscribe values set appropriately.
+maySubscribe values set appropriately.<br><br>
 
 This function is identical to objectTraverserCheck in
-FederatesExporter.js. It would be nice to have only one, but that requires
-figuring out where to put it and how to refererence it. Using
-self.objectTraverserCheck in this file does not work.
+FederatesExporter.js.<br>
 
 */
 
-    objectTraverserCheck = function( /* ARGUMENTS                           */
-     federate,             /**< (object) data in FederateInfos for federate */
-     object)               /**< (object) object to process                  */
+    cppObjectTraverserCheck = function(              /* ARGUMENTS */
+     /** (object) data in FederateInfos for federate */ federate, 
+     /** (object) object to process                  */ object)
     {
       var objectPubSub;
       var parentPubSub;
 
       object.children.forEach(function(child)
       {
-        objectTraverserCheck(federate, child);
+        cppObjectTraverserCheck(federate, child);
       });
       if (object.name != 'ObjectRoot' &&
           (object.id in federate.pubSubObjects))
@@ -111,96 +109,62 @@ self.objectTraverserCheck in this file does not work.
                  maySubscribe: objectPubSub.maySubscribe};
             }
         }
-    }; // end objectTraverserCheck
+    }; // end cppObjectTraverserCheck
 
 /* ******************************************************************* */
 
-/** interactionTraverserCheck (function-valued var of top-level function object)
+/* CppRTIFederateExporter */
+/** (function-valued variable of top-level function object)<br><br>
 
-Returned Value: none
+Returned Value: none<br><br>
 
-Called By:
-  interactionTraverserCheck (recursively)
+Called By: Called automatically when CppRTI is called (in CppFederate.js)<br><br>
 
-This adds entries to the pubSubInteractions of a federate for all ancestors
-of interactions that already have entries.
-
-By calling itself recursively, this goes through the interaction tree
-(from top down) but builds the pubSubInteractions from bottom up.
-
-If an interaction is on the pubSubInteractions of the federate but its
-parent is not, an entry for the parent of the interaction is added to
-the pubSubInteractions; the entry represents that the parent neither
-publishes or subscribes. If the parent publishes or subscribes, an
-entry for the parent will have been made previously in PubSubVisitors.
-
-The final effect is that any interaction that is an ancestor of any
-interaction originally put on the pubSubInteractions in PubSubVisitors
-is also on pubSubInteractions.
-
-This function is identical to interactionTraverserCheck in JavaRTI.js
-and FederatesExporter.js. It would be nice to have only one, but that
-requires figuring out where to put it and how to refererence it.
-
-*/
-    interactionTraverserCheck = function( /* ARGUMENTS                       */
-     federate,              /**< (object) data in federateInfos for federate */
-     interaction)           /**< (object) interaction to process             */
-    {
-      interaction.children.forEach(function (child)
-      {
-        interactionTraverserCheck(federate, child);
-      });
-      if (interaction.name != 'InteractionRoot')
-        {
-          if ((interaction.id in federate.pubSubInteractions) &&
-              !(interaction.basePath in federate.pubSubInteractions))
-            {
-              federate.pubSubInteractions[interaction.basePath] =
-                {publish: 0,
-                 subscribe: 0};
-            }
-        }
-    }; // end interactionTraverserCheck
-
-/* ******************************************************************* */
-
-/** CppRTIFederateExporter
-
-Returned Value: none
-
-Called By: Called automatically when CppRTI is called (in CppFederate.js)
+This is the primary function for C++ RTI (Real Time Interface).<br>
 
 */
     CppRTIFederateExporter = function()
     {
+      var initCppRTI; // function variable
 
 /* ******************************************************************* */
 
-/** initCppRTI
+/* initCppRTI */
+/** (function-valued variable of CppRTIFederateExporter)<br><br>
 
-Returned Value: none
+Returned Value: none<br><br>
 
-Called By: OmnetFederateExporter (in OmnetFederate.js)
+Called By:<br>
+  CppFederateExporter (in CppFederate.js)<br>
+  OmnetFederateExporter (in OmnetFederate.js)<br><br>
+
+This defines the functions that generate C++ code.<br>
 
 */
 
-      this.initCppRTI = function()
+      initCppRTI = function()
       {
-        var coreDirPath;                    // string
-        var coreDirSpec;                    // object
-        var coreOutIncFilePath;             // string
-        var coreNamespace;                  // string
-        var coreOutSrcFilePath;             // string
-        var C2WLoggingPOM;                  // object
-        var foundationDirBasePath;          // string
-        var porticoPOM;                     // object
-        var renderContext;                  // object
-        var renderToFile;                   // function
-        var self;                           // the caller of CppRTI
-        var simDirBasePath;                 // string
-        var simDirPath;                     // string
-        var simDirSpec;                     // object
+        var coreDirPath;                       // string
+        var coreDirSpec;                       // object
+        var coreOutIncFilePath;                // string
+        var coreNamespace;                     // string
+        var coreOutSrcFilePath;                // string
+        var cppInteractionRootGenerator;       // function
+        var cppMoreOtherInteractionsGenerator; // function
+        var cppMoreOtherObjectsGenerator;      // function
+        var cppOtherInteractionsGenerator;     // function
+        var cppOtherObjectsGenerator;          // function
+        var cppObjectRootGenerator;            // function
+        var cppPomGenerator;                   // function
+        var cppRenderToFile;                   // function
+        var C2WLoggingPOM;                     // object
+        var foundationDirBasePath;             // string
+        var porticoPOM;                        // object
+        var renderContext;                     // object
+        var self;                              // the caller of CppRTI
+        var simDirBasePath;                    // string
+        var simDirPath;                        // string
+        var simDirSpec;                        // object
 
         self = this;
         coreNamespace = "c2w_hla";
@@ -235,32 +199,35 @@ Called By: OmnetFederateExporter (in OmnetFederate.js)
 
 /* ******************************************************************* */
 
-/** renderToFile
+/* cppRenderToFile */
+/** (function-valued variable of initCppRTI)<br><br>
 
-Returned Value: none
+Returned Value: none<br><br>
 
-Called By:
-  renderNextObject (which is also the callback argument)
-  renderNextInteraction (which is also the callback argument)
+Called By:<br>
+  renderNextObject<br>
+  renderNextMoreObject<br>
+  renderNextInteraction<br>
+  renderNextMoreInteraction<br><br>
 
-This function generates a code string for a single object or interaction
-that is represented by the "model" argument. The code string is put into
-a file-like thingy for each federate that has generateCode set to true
-and uses the object or interaction.
+This generates a code string for a single object or interaction that
+is represented by the "model" argument. The code string is put into a
+file-like thingy for each federate that has generateCode set to true
+and uses the object or interaction.<br><br>
 
 This function calls its caller when the function that is the last
 argument to addFile executes. Thus, this function and the caller call
 each other until the caller runs out of models. This function
 should not be called for a model unless it is certain that addFile
-will be called; otherwise, the callback will not occur.
-  
+will be called; otherwise, the callback will not occur.<br>
+
 */
-        renderToFile = function( /*   ARGUMENTS                              */
-         outFilePath,            /**< full file name of file to write        */
-         isInteraction,          /**< true = interaction, false = object     */
-         model,                  /**< data model from which to generate code */
-         artifact,               /**< array of file generating functions     */
-         callback)               /**< function to call if error or done      */
+        cppRenderToFile = function(                 /* ARGUMENTS */
+         /** full file name of file to write        */ outFilePath,
+         /** true = interaction, false = object     */ isInteraction,
+         /** data model from which to generate code */ model,
+         /** array of generated files               */ artifact,
+         /** function to call if error or done      */ callback)
         {
           var context;
           var fullPath;
@@ -275,7 +242,7 @@ will be called; otherwise, the callback will not occur.
           var groupId;
           var cjTypeMap;
           var cjArgumentTypeMap;
-          
+
           cjTypeMap = {"String"  : "std::string",
                        "int"     : "int",
                        "long"    : "long",
@@ -322,7 +289,7 @@ will be called; otherwise, the callback will not occur.
                 context.datamembers.push(paratt);
               }
           });
-          
+
           cppTemplate = TEMPLATES['cpp/class.cpp.ejs'];
           cppCode = ejs.render(cppTemplate, context);
           hppTemplate = TEMPLATES['cpp/class.hpp.ejs'];
@@ -339,7 +306,7 @@ will be called; otherwise, the callback will not occur.
                       feder = self.federateInfos[federId];
                       self.objectRoots.forEach(function(objectRoot)
                       {
-                        objectTraverserCheck(feder, objectRoot);
+                        cppObjectTraverserCheck(feder, objectRoot);
                       });
                     }
                 }
@@ -378,14 +345,14 @@ will be called; otherwise, the callback will not occur.
                       fullPath = feder.name + "/src/main/c++/rti/" +
                             (model.codeName || model.name) + ".cpp";
                       self.logger.info("calling addFile for " + fullPath +
-                                       " in renderToFile of CppRTI.js");
+                                       " in cppRenderToFile of CppRTI.js");
                       artifact.addFile(fullPath, cppCode,
                                        function (err)
                                        {if (err) {callback(err); return;}});
                       fullPath = feder.name + "/src/main/include/rti/" +
                                  (model.codeName || model.name) + ".hpp";
                       self.logger.info("calling addFile for " + fullPath +
-                                       " in renderToFile of CppRTI.js");
+                                       " in cppRenderToFile of CppRTI.js");
                       artifact.addFile(fullPath, hppCode,
                                        (remaining ?
                                         function (err) // there are more
@@ -408,16 +375,16 @@ will be called; otherwise, the callback will not occur.
                          model.name +'.hpp';
               artifact.addFile(fullPath, hppCode, callback);
             }
-        }; // end renderToFile
+        }; // end cppRenderToFile
 
 /* ******************************************************************* */
-        
+
 /*
-   
+
 Begin FOUNDATION RTI
 
 */        
-            
+
         foundationDirBasePath = 'cpp/';
         coreDirSpec = {federation_name: "rti-base",
                        artifact_name: "", language:""};
@@ -425,19 +392,19 @@ Begin FOUNDATION RTI
                       ejs.render(self.directoryNameTemplate, coreDirSpec);
         coreOutSrcFilePath = coreDirPath + MavenPOM.mavenCppPath;
         coreOutIncFilePath = coreDirPath + MavenPOM.mavenIncludePath;
-        
+
         porticoPOM = new MavenPOM();
         porticoPOM.artifactId = "portico-hla13-cpp";
         porticoPOM.groupId = "org.cpswt";
         porticoPOM.version = "1.0.0";
         porticoPOM.packaging = "nar";
-          
+
         C2WLoggingPOM = new MavenPOM();
         C2WLoggingPOM.artifactId = "C2WConsoleLogger";
         C2WLoggingPOM.groupId = "org.cpswt";
         C2WLoggingPOM.version = self.cpswt_version;
         C2WLoggingPOM.packaging = "nar";
-        
+
         self.cpp_corePOM = new MavenPOM();
         self.cpp_corePOM.groupId = "org.cpswt";
         self.cpp_corePOM.artifactId = "rti-base-cpp";
@@ -469,17 +436,24 @@ currently there are none.
 
 /* ******************************************************************* */
 
-/*
+/* cppPomGenerator */
+/** (function-valued variable of initCppRTI)<br><br>
 
-If generating export packages, add to corefileGenerators a POM generator
-using the coreDirPath and self.corePOM.toJSON()
+Returned Value: none<br><br>
+
+Called By: ?<br><br>
+
+If generating export packages, this adds to corefileGenerators a POM
+generator using the coreDirPath and self.corePOM.toJSON().<br>
 
 */
-            self.corefileGenerators.push(function(artifact, callback)
+            cppPomGenerator = function(            /* ARGUMENTS */
+             /** array of generated files          */ artifact,
+             /** function to call if error or done */ callback)
             {
               var xmlCode;
               var fullPath;
-              
+
               fullPath = coreDirPath + '/pom.xml';
               xmlCode =
                 self._jsonToXml.convertToString(self.cpp_corePOM.toJSON());
@@ -496,17 +470,28 @@ using the coreDirPath and self.corePOM.toJSON()
                                      callback();
                                    }
                                });
-            }); // end push function
+            }; // end cppPomGenerator
+            self.corefileGenerators.push(cppPomGenerator);
 
 /* ******************************************************************* */
 
-/*
+/* cppInteractionRootGenerator */
+/** (function-valued variable of initCppRTI)<br><br>
 
-If generating export packages, add to corefileGenerators a POM generator
-using the coreDirPath and self.corePOM.toJSON()
+Returned Value: none<br><br>
+
+Called By: ?<br><br>
+
+If generating export packages, this adds to corefileGenerators<br>
+- an interaction root C++ code file generator using the
+  coreOutSrcFilePath, and<br>
+- an interaction root C++ header file generator using the
+  coreOutIncFilePath.<br>
 
 */
-            self.corefileGenerators.push(function(artifact, callback)
+            cppInteractionRootGenerator = function( /* ARGUMENTS */
+             /** array of generated files           */ artifact,
+             /** function to call if error or done  */ callback)
             {
               var fullPath;
               var xmlCode;
@@ -541,22 +526,33 @@ using the coreDirPath and self.corePOM.toJSON()
                                      return;
                                    }
                                });
-            }); // end push function
+            }; // end cppInteractionRootGenerator
+            self.corefileGenerators.push(cppInteractionRootGenerator);
 
 /* ******************************************************************* */
 
-/*
+/* cppObjectRootGenerator */
+/** (function-valued variable of initCppRTI)<br><br>
 
-If generating export packages, add to the corefileGenerators a
-function that generates an ObjectRoot.cpp file and an ObjectRoot.hpp file.
+Returned Value: none<br><br>
+
+Called By: ?<br><br>
+
+If generating export packages, this adds to corefileGenerators<br>
+- an object root C++ code file generator using the
+  coreOutSrcFilePath, and<br>
+- an object root C++ header file generator using the
+  coreOutIncFilePath.<br><br>
 
 When the added function executes, the second artifact.addFile adds the
 ObjectRoot.hpp file only if there is no error generating the
-ObjectRoot.cpp file.
+ObjectRoot.cpp file.<br>
 
 */
 
-            self.corefileGenerators.push(function(artifact, callback)
+            cppObjectRootGenerator = function(     /* ARGUMENTS */
+             /** array of generated files          */ artifact,
+             /** function to call if error or done */ callback)
             {
               var fullPath;
               var xmlCode;
@@ -591,23 +587,31 @@ ObjectRoot.cpp file.
                                      return;
                                    }
                                });
-            }); // end push function
+            }; // end cppObjectRootGenerator
+            self.corefileGenerators.push(cppObjectRootGenerator);
 
 /* ******************************************************************* */
 
-/* 
+/* cppOtherObjectsGenerator */
+/** (function-valued variable of initCppRTI)<br><br>
 
-If generating export packages, add to the core file generators a
+Returned Value: none<br><br>
+
+Called By: ?<br><br>
+
+If generating export packages, this adds to the core file generators a
 function that prints a C++ file for each object in self.objects whose
-name is a property in cppCorePackageOISpecs. 
+name is a property in cppCorePackageOISpecs.<br><br>
 
-When the added function executes, the renderToFile function defined
-above and the renderNextObject function defined here call each
-other until all the selected objects are processed.
+When the added function executes, the cppRenderToFile function and the
+renderNextObject function call each other until all the selected
+objects are processed.<br>
 
 */
 
-            self.corefileGenerators.push(function(artifact, callback)
+            cppOtherObjectsGenerator = function(   /* ARGUMENTS */
+             /** array of generated files          */ artifact,
+             /** function to call if error or done */ callback)
             {
               var objToRender;
               var renderNextObject;
@@ -619,12 +623,25 @@ other until all the selected objects are processed.
                   return;
                 }
                 objToRender = [];
-                
-              // start define renderNextObject function
-              renderNextObject = function(err)
+
+/* ******************************************************************* */
+
+/* renderNextObject */
+/** (function-valued variable of cppOtherObjectsGenerator)<br><br>
+
+Returned Value: none<br><br>
+
+Called By: cppOtherObjectsGenerator<br><br>
+
+This renders one Object to a file.<br>
+
+*/
+
+              renderNextObject = function(  /* ARGUMENTS */
+               /** error message or nullish */ err)
               {
                 var nextObj;
-                
+
                 if (err)
                   {
                     callback(err);
@@ -634,8 +651,8 @@ other until all the selected objects are processed.
                     nextObj = objToRender.pop();
                     if (nextObj)
                       {
-                        renderToFile(coreDirPath, false, nextObj,
-                                     artifact, renderNextObject);
+                        cppRenderToFile(coreDirPath, false, nextObj,
+                                        artifact, renderNextObject);
                       }
                     else
                       {
@@ -643,8 +660,10 @@ other until all the selected objects are processed.
                         return;
                       }
                   }
-              }; // end define renderNextObject function
-              
+              }; // end renderNextObject
+
+/* ******************************************************************* */
+
               for (oid in self.objects)
                 {
                   if (self.objects[oid].name != "ObjectRoot" &&
@@ -655,40 +674,61 @@ other until all the selected objects are processed.
                     }
                 }
               renderNextObject();
-            }); //end push function
+            }; // end cppOtherObjectsGenerator
+            self.corefileGenerators.push(cppOtherObjectsGenerator);
 
 /* ******************************************************************* */
 
-/* 
+/* cppOtherInteractionsGenerator */
+/** (function-valued variable of initCppRTI)<br><br>
 
-If generating export packages, add to the core file generators a
+Returned Value: none<br><br>
+
+Called By: ?<br><br>
+
+If generating export packages, this adds to the core file generators a
 function that prints a C++ file for each interaction in self.interactions
-whose name is a property in self.cppCorePackageOISpecs.
+whose name is a property in self.cppCorePackageOISpecs.<br><br>
 
-When the added function executes, the renderToFile function defined
-above and the renderNextInteraction function defined here call each
-other until all the selected interactions are processed.
+When the added function executes, the cppRenderToFile function and the
+renderNextInteraction function call each other until all the selected
+interactions are processed.<br>
 
 */
-        
-            self.corefileGenerators.push(function(artifact, callback)
+
+            cppOtherInteractionsGenerator = function( /* ARGUMENTS */
+             /** array of generated files             */ artifact,
+             /** function to call if error or done    */ callback)
             {
               var intToRender;
               var renderNextInteraction;
               var iid;
-              
+
               if (!self.cppPOM)
                 {
                   callback();
                   return;
                 }
                 intToRender = [];
-                
-              // start define renderNextInteraction function
-              renderNextInteraction = function(err)
+
+/* ******************************************************************* */
+
+/* renderNextInteraction */
+/** (function-valued variable of cppOtherInteractionsGenerator)<br><br>
+
+Returned Value: none<br><br>
+
+Called By: cppOtherInteractionsGenerator<br><br>
+
+This renders one Interaction to a file.<br>
+
+*/
+
+              renderNextInteraction = function( /* ARGUMENTS */
+               /** error message or nullish     */ err)
               {
                 var nextInteraction;
-                
+
                 if (err)
                   {
                     callback(err);
@@ -696,10 +736,10 @@ other until all the selected interactions are processed.
                 else
                   {
                     nextInteraction = intToRender.pop();
-                    if(nextInteraction)
+                    if (nextInteraction)
                       {
-                        renderToFile(coreDirPath, true, nextInteraction,
-                                     artifact, renderNextInteraction);
+                        cppRenderToFile(coreDirPath, true, nextInteraction,
+                                        artifact, renderNextInteraction);
                       }
                     else
                       {
@@ -707,7 +747,9 @@ other until all the selected interactions are processed.
                         return;
                       }
                   }
-              }; // end define renderNextInteraction function
+              }; // end renderNextInteraction
+
+/* ******************************************************************* */
 
               for (iid in self.interactions)
                 {
@@ -719,8 +761,11 @@ other until all the selected interactions are processed.
                     }
                 }
               renderNextInteraction();
-            }); // end push function
-          } // end if (self.generateExportPackages)
+
+
+            }; // end cppOtherInteractionsGenerator
+            self.corefileGenerators.push(cppOtherInteractionsGenerator);
+          } // closes if (self.generateExportPackages)
 // end FOUNDATION RTI
 
 /* ******************************************************************* */
@@ -742,35 +787,56 @@ other until all the selected interactions are processed.
 
 /* ******************************************************************* */
 
-/* 
+/* cppMoreOtherObjectsGenerator */
+/** (function-valued variable of initCppRTI)<br><br>
 
-Add to the file generators a function that prints a C++ file for each
-object in self.objects whose name is not a property in
-cppCorePackageOISpecs.
+Returned Value: none<br><br>
 
-When the added function executes, the renderToFile function defined
-above and the renderNextObject function defined here call each other
-until all the selected objects are processed.
+Called By: ?<br><br>
+
+This adds to the file generators a function that prints a C++ file for
+each object in self.objects whose name is not a property in
+cppCorePackageOISpecs.<br><br>
+
+When the added function executes, the cppRenderToFile function and the
+renderNextMoreObject function call each other until all the selected
+objects are processed.<br>
 
 */
 
-        self.fileGenerators.push(function(artifact, callback)
+        cppMoreOtherObjectsGenerator = function( /* ARGUMENTS */
+         /** array of generated files            */ artifact,
+         /** function to call if error or done   */ callback)
         {
           var objToRender;
-          var renderNextObject;
+          var renderNextMoreObject;
           var oid;
-          
+
           if (!self.cppPOM)
             {
               callback();
               return;
             }
           objToRender = [];
-          // start renderNextObject function
-          renderNextObject = function(err)
+
+/* ******************************************************************* */
+
+/* renderNextMoreObject */
+/** (function-valued variable of cppMoreOtherObjectsGenerator)<br><br>
+
+Returned Value: none<br><br>
+
+Called By: cppMoreOtherObjectsGenerator<br><br>
+
+This renders one Object to a file.<br>
+
+*/
+
+          renderNextMoreObject = function( /* ARGUMENTS */
+           /** error message or nullish    */ err)
           {
             var nextObj;
-            
+
             if (err)
               {
                 callback(err);
@@ -780,8 +846,8 @@ until all the selected objects are processed.
                 nextObj = objToRender.pop();
                 if (nextObj)
                   {
-                    renderToFile(simDirPath, false, nextObj, artifact,
-                                 renderNextObject);
+                    cppRenderToFile(simDirPath, false, nextObj, artifact,
+                                    renderNextMoreObject);
                   }
                 else
                   {
@@ -789,8 +855,10 @@ until all the selected objects are processed.
                     return;
                   }
               }
-          };// end renderNextObject function
-          
+          }; // end renderNextMoreObject
+
+/* ******************************************************************* */
+
           for (oid in self.objects)
             {
               if(self.objects[oid].name != "ObjectRoot" &&
@@ -800,40 +868,62 @@ until all the selected objects are processed.
                   objToRender.push(self.objects[oid]);
                 }
             }
-          renderNextObject();
-        }); // end push function
+          renderNextMoreObject();
+        }; // end cppMoreOtherObjectsGenerator
+        self.fileGenerators.push(cppMoreOtherObjectsGenerator);
 
 /* ******************************************************************* */
 
-/* 
+/* cppMoreOtherInteractionsGenerator */
+/** (function-valued variable of initCppRTI)<br><br>
 
-Add to the file generators a function that prints a cpp file for each
-interaction in self.interactions whose name is not a property in
-self.cppCorePackageOISpecs.
+Returned Value: none<br><br>
 
-When the added function executes, the renderToFile function defined
-above and the renderNextInteraction function defined here call each
-other until all the selected interactions are processed.
+Called By: ?<br><br>
+
+This adds to the file generators a function that prints a cpp file for
+each interaction in self.interactions whose name is not a property in
+self.cppCorePackageOISpecs.<br><br>
+
+When the added function executes, the cppRenderToFile function and the
+renderNextMoreInteraction function call each other until all the
+selected interactions are processed.<br>
 
 */
-        
-        self.fileGenerators.push(function(artifact, callback)
+
+        cppMoreOtherInteractionsGenerator = function( /* ARGUMENTS */
+         /** array of generated files                 */ artifact,
+         /** function to call if error or done        */ callback)
         {
           var intToRender;
-          var renderNextInteraction;
+          var renderNextMoreInteraction;
           var iid;
-          
+
           if (!self.cppPOM)
             {
               callback();
               return;
             }
           intToRender = [];
-          // start renderNextInteraction function
-          renderNextInteraction = function(err)
+
+/* ******************************************************************* */
+
+/* renderNextMoreInteraction */
+/** (function-valued variable of cppMoreOtherInteractionsGenerator)<br><br>
+
+Returned Value: none<br><br>
+
+Called By: cppMoreOtherInteractionsGenerator<br><br>
+
+This renders one Interaction to a file.<br>
+
+*/
+
+          renderNextMoreInteraction = function( /* ARGUMENTS */
+           /** error message or nullish         */ err)
             {
               var nextInteraction;
-              
+
               if (err)
                 {
                   callback(err);
@@ -843,8 +933,8 @@ other until all the selected interactions are processed.
                   nextInteraction = intToRender.pop();
                   if (nextInteraction)
                     {
-                      renderToFile(simDirPath, true, nextInteraction,
-                                   artifact, renderNextInteraction);
+                      cppRenderToFile(simDirPath, true, nextInteraction,
+                                      artifact, renderNextMoreInteraction);
                     }
                   else
                     {
@@ -852,7 +942,9 @@ other until all the selected interactions are processed.
                       return;
                     }
                 }
-            }; // end renderNextInteraction function
+            }; // end renderNextMoreInteraction
+
+/* ******************************************************************* */
 
           for (iid in self.interactions)
             {
@@ -863,18 +955,20 @@ other until all the selected interactions are processed.
                   intToRender.push(self.interactions[iid]);
                 }
             }
-          renderNextInteraction();
-        }); //end push function
+          renderNextMoreInteraction();
+        }; // end cppMoreOtherInteractionsGenerator
+        self.fileGenerators.push(cppMoreOtherInteractionsGenerator);
   // end SIM RTI
 
 /* ******************************************************************* */
 
         self.cppRTIInitDone = true;
       }; // end initCppRTI
+      this.initCppRTI = initCppRTI;
 
 /* ******************************************************************* */
 
-    }; // end CppRTIFederateExporter function
+    }; // end CppRTIFederateExporter
 
     return CppRTIFederateExporter;
  }); // end define

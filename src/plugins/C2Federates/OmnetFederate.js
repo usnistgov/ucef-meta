@@ -14,22 +14,28 @@ define
 
 /* ******************************************************************* */
 
-/** OmnetFederateExporter (function-valued variable of top-level function object)
+/* OmnetFederateExporter */
+/** (function-valued variable of top-level function object)<br><br>
 
-Returned Value: none
+Returned Value: none<br><br>
 
-Called By: FederatesExporter in FederatesExporter.js
+Called By: FederatesExporter in FederatesExporter.js<br><br>
 
-The top-level function returns this function.
+This is the primary function for an omnet federate.<br><br>
+
+The top-level function returns this function.<br>
 
 */
-    
+
     OmnetFederateExporter = function()
     {
       var self = this;
       var omnetOutFilePath;
       var omnetDirSpec;
-       
+      var createOmnetFederateCodeModel; // function
+      var visit_OmnetFederate;          // function
+      var post_visit_OmnetFederate;     // function
+
       CppRTI.call(this);
 
       this.federateTypes = this.federateTypes || {};
@@ -45,7 +51,7 @@ The top-level function returns this function.
             var omnetDirBasePath;
             var omnetDirPath;
             var fullPath;
-            
+
             self.initCppRTI();
             omnetDirBasePath = 'cpp-federates/';
             omnetDirSpec = {federation_name: self.projectName,
@@ -86,13 +92,27 @@ The top-level function returns this function.
                                 else {callback(); return;}}
                               );
             });
-            
-          } // end of init function
-        }; // end of federateTypes['OmnetFederate']
+
+          } // end init
+        }; // end federateTypes['OmnetFederate']
 
 /* ******************************************************************* */
 
-      this.visit_OmnetFederate = function(node, parent, context)
+/* visit_OmnetFederate */
+/** (function-valued variable of OmnetFederateExporter)<br><br>
+
+Returned Value: a modified context object<br><br>
+
+Called By: atModelNode in ModelTraverserMixin.js in C2Core<br><br>
+
+This is the visitor function for an Omnet federate.<br>
+
+*/
+
+      visit_OmnetFederate = function(                /* ARGUMENTS */
+       /** an omnet federate node                    */ node,
+       /** the parent of the node                    */ parent,
+       /** a data object from which to generate code */ context)
       {
         var self = this;
         var nodeType = self.core.getAttribute(self.getMetaType(node), 'name');
@@ -118,7 +138,7 @@ The top-level function returns this function.
             self.omnet_basePOM.dependencies.push(self.omnet_federateBasePOM);
             self.omnet_basePOM.dependencies.push(self.cpp_federateBasePOM);
           }  
-        context['omnetfedspec'] = self.createOmnetFederateCodeModel();
+        context['omnetfedspec'] = createOmnetFederateCodeModel();
         context['omnetfedspec']['classname'] =
           self.core.getAttribute(node, 'name');
         context['omnetfedspec']['simname'] = self.projectName;
@@ -133,11 +153,25 @@ The top-level function returns this function.
           self.core.getAttribute(node, 'EnableROAsynchronousDelivery');
         self.federates[self.core.getPath(node)] = context['omnetfedspec'];
         return {context:context};
-      }; // end of visit_OmnetFederate
+      }; // end visit_OmnetFederate
+      this.visit_OmnetFederate = visit_OmnetFederate;
 
 /* ******************************************************************* */
 
-      this.post_visit_OmnetFederate = function(node, context)
+/* post_visit_OmnetFederate */
+/** (function-valued variable of OmnetFederateExporter)<br><br>
+
+Returned Value: a modified context object<br><br>
+
+Called By: ModelTraverserMixin.js in C2Core<br><br>
+
+This is the post visitor function for an Omnet federate.<br>
+
+*/
+
+      post_visit_OmnetFederate = function(           /* ARGUMENTS */
+       /** an omnet federate node                    */ node,
+       /** a data object from which to generate code */ context)
       {
         var self = this;
         var renderContext = context['omnetfedspec'];
@@ -150,7 +184,7 @@ The top-level function returns this function.
         self.fileGenerators.push(function(artifact, callback)
         {
           var cppModel;
-            
+
           if (self.omnet_filterGenerated)
             {
               callback();
@@ -207,13 +241,25 @@ The top-level function returns this function.
                                }
                            });
         });
-                    
+
         return {context:context};
-      }; // end of post_visit_OmnetFederate
+      }; // end post_visit_OmnetFederate
+      this.post_visit_OmnetFederate = post_visit_OmnetFederate;
 
 /* ******************************************************************* */
 
-      this.createOmnetFederateCodeModel = function()
+/* createOmnetFederateCodeModel */
+/** (function-valued variable of OmnetFederateExporter)<br><br>
+
+Returned Value: an object with dummy values<br><br>
+
+Called By: visit_OmnetFederate<br><br>
+
+This creates the initial version of the omnetfedspec in the context model.<br>
+
+*/
+
+      createOmnetFederateCodeModel = function()
       {
         return {simname: "",
                 projectname: "",
@@ -238,7 +284,7 @@ The top-level function returns this function.
 
 /* ******************************************************************* */
 
-    } // end of OmnetFederateExporter function
+    } // end OmnetFederateExporter
 
 /* ******************************************************************* */
 

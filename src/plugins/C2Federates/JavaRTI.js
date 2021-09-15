@@ -17,75 +17,71 @@ define
  {
     'use strict';
     var JavaRTIFederateExporter;   // function variable
-    var objectTraverserCheck;      // function variable
-    var interactionTraverserCheck; // function variable
+    var javaObjectTraverserCheck;      // function variable
+    var javaInteractionTraverserCheck; // function variable
 
 /* ******************************************************************* */
 
-/** objectTraverserCheck
+/* javaObjectTraverserCheck */
+/** (function-valued variable of top-level function object)<br><br>
 
-Returned Value: none
+Returned Value: none<br><br>
 
-Called By:
-  renderToFile (object is objectRoot)
-  renderNotCoreObjectToFile (object is objectRoot)
-  objectTraverserCheck (recursively)
-
-In this documentation, "object" means object in the WebGME sense, not
-object in the JavaScript sense.
+Called By:<br>
+  javaRenderToFile (object is objectRoot)<br>
+  renderNotCoreObjectToFile (object is objectRoot)<br>
+  javaObjectTraverserCheck (recursively)<br><br>
 
 This adds entries to the pubSubObjects of a federate for all ancestors
-of objects that already have entries.
+of objects that already have entries.<br><br>
 
-For each object, object.basePath is the id of the parent of the object.
+In this documentation, "object" means object in the WebGME sense, not
+object in the JavaScript sense.<br><br>
+
+For each object, object.basePath is the id of the parent of the object.<br><br>
 
 First, this calls itself recursively on the children of the
 object. Since this is transmitting information from children to
 parents, the children have to be processed first. By calling itself
 recursively, this goes through the object tree (from top down) but
-builds the pubSubObjects of the federate from bottom up.
+builds the pubSubObjects of the federate from bottom up.<br><br>
 
 Then, if the object is not objectRoot and the object.id is in the
 pubSubObjects of the given federate, the object is selected for
-further processing.
+further processing.<br><br>
 
-For each selected object:
+For each selected object:<br><br>
 
 A. If the parent publishes or subscribes to the federate, an entry in
 federate.pubSubObjects for the parent will have been made previously
-in PubSubVisitors, and in that case:
+in PubSubVisitors, and in that case:<br><br>
 
 A1. If the object's mayPublish of its entry is not zero, the parent's
-mayPublish of its entry is set to 1, and
+mayPublish of its entry is set to 1, and<br>
 A2. If the object's maySubscribe of its entry is not zero, the parent's
-maySubscribe of its entry is set to 1.
+maySubscribe of its entry is set to 1.<br><br>
 
 B. Otherwise, a new entry in the federate.pubSubObjects is created for the
 parent in which the parent's publish and subscribe are set to 0 and the
-parent's mayPublish and maySubscribe are set to the object's values.
+parent's mayPublish and maySubscribe are set to the object's values.<br><br>
 
 The final effect is that any object that is an ancestor of any object
 originally put on the federate.pubSubObjects in PubSubVisitors is also
 on federate.pubSubObjects, with its publish, subscribe, mayPublish, and
-maySubscribe values set appropriately.
-
-This function is identical to objectTraverserCheck in
-FederatesExporter.js. It would be nice to have only one, but that requires
-figuring out where to put it and how to refererence it. Using
-self.objectTraverserCheck in this file does not work.
+maySubscribe values set appropriately.<br>
 
 */
 
-    objectTraverserCheck = function( /* ARGUMENTS                           */
-     federate,             /**< (object) data in FederateInfos for federate */
-     object)               /**< (object) object to process                  */
+    javaObjectTraverserCheck = function(             /* ARGUMENTS */
+     /** (object) data in FederateInfos for federate */ federate,
+     /** (object) object to process                  */ object)
     {
       var objectPubSub;
       var parentPubSub;
 
       object.children.forEach(function(child)
       {
-        objectTraverserCheck(federate, child);
+        javaObjectTraverserCheck(federate, child);
       });
       if (object.name != 'ObjectRoot' &&
           (object.id in federate.pubSubObjects))
@@ -116,42 +112,39 @@ self.objectTraverserCheck in this file does not work.
 
 /* ******************************************************************* */
 
-/** interactionTraverserCheck (function-valued var of top-level function object)
+/* javaInteractionTraverserCheck */
+/** (function-valued variable of top-level function object)<br><br>
 
-Returned Value: none
+Returned Value: none<br><br>
 
-Called By:
-  renderNotCoreInteractionToFile
-  interactionTraverserCheck (recursively)
+Called By:<br>
+  renderNotCoreInteractionToFile<br>
+  javaInteractionTraverserCheck (recursively)<br><br>
 
 This adds entries to the pubSubInteractions of a federate for all ancestors
-of interactions that already have entries.
+of interactions that already have entries.<br><br>
 
 By calling itself recursively, this goes through the interaction tree
-(from top down) but builds the pubSubInteractions from bottom up.
+(from top down) but builds the pubSubInteractions from bottom up.<br><br>
 
 If an interaction is on the pubSubInteractions of the federate but its
 parent is not, an entry for the parent of the interaction is added to
 the pubSubInteractions; the entry represents that the parent neither
 publishes or subscribes. If the parent publishes or subscribes, an
-entry for the parent will have been made previously in PubSubVisitors.
+entry for the parent will have been made previously in PubSubVisitors.<br><br>
 
 The final effect is that any interaction that is an ancestor of any
 interaction originally put on the pubSubInteractions in PubSubVisitors
-is also on pubSubInteractions.
-
-This function is identical to interactionTraverserCheck in
-FederatesExporter.js. It would be nice to have only one, but that
-requires figuring out where to put it and how to refererence it.
+is also on pubSubInteractions.<br>
 
 */
-    interactionTraverserCheck = function( /* ARGUMENTS                       */
-     federate,              /**< (object) data in federateInfos for federate */
-     interaction)           /**< (object) interaction to process             */
+    javaInteractionTraverserCheck = function(        /* ARGUMENTS */
+     /** (object) data in federateInfos for federate */ federate,
+     /** (object) interaction to process             */ interaction)
     {
       interaction.children.forEach(function (child)
       {
-        interactionTraverserCheck(federate, child);
+        javaInteractionTraverserCheck(federate, child);
       });
       if (interaction.name != 'InteractionRoot')
         {
@@ -166,47 +159,67 @@ requires figuring out where to put it and how to refererence it.
     };
 
 /* ******************************************************************* */
-    
-/** JavaRTIFederateExporter
 
-Returned Value: none
+/* JavaRTIFederateExporter */
+/** (function-valued variable of top-level function object)<br><br>
 
-Called By: Called automatically when JavaRTI is called (in MapperFederate.js)
+Returned Value: none<br><br>
+
+Called By: Called automatically when JavaRTI is called
+(in JavaFederate.js and MapperFederate.js)<br><br>
+
+This is the primary function for Java RTI (Real Time Interface).<br>
+
 
 */
     JavaRTIFederateExporter = function()
     {
+      var createJavaRTICodeModel; // function
+      var initJavaRTI;            // function
 
 /* ******************************************************************* */
 
-/** initJavaRTI
+/* initJavaRTI */
+/** (function-valued variable of JavaRTIFederateExporter)<br><br>
 
-Returned Value: none
+Returned Value: none<br><br>
 
-Called By: MapperFederateExporter (in MapperFederate.js)
+Called By:<br>
+  JavaFederateExporter (in JavaFederate.js)<br>
+  MapperFederateExporter (in MapperFederate.js)<br><br>
+
+This defines the functions that generate Java code.<br><br>
 
 */
-      this.initJavaRTI = function()
+      initJavaRTI = function()
       {
-        var coreDirPath;                    // string
-        var coreDirSpec;                    // object
-        var coreOutFilePath;                // string
-        var corePackagePath;                // array
-        var corePackagePathStr;             // string
-        var foundationDirBasePath;          // string
-        var eventsDirPath;                  // string
-        var eventsDirSpec;                  // object
-        var eventsOutFilePath;              // string
-        var foundationPOM;                  // object
-        var renderContext;                  // object
-        var renderNotCoreInteractionToFile; // function
-        var renderNotCoreObjectToFile;      // function
-        var renderToFile;                   // function
-        var self;                           // the caller of JavaRTI
-        var simDirBasePath;                 // string
-        var simDirPath;                     // string
-        var simDirSpec;                     // object
-        var simOutFilePath;                 // string
+        var coreDirPath;                        // string
+        var coreDirSpec;                        // object
+        var coreOutFilePath;                    // string
+        var corePackagePath;                    // array
+        var corePackagePathStr;                 // string
+        var foundationDirBasePath;              // string
+        var eventsDirPath;                      // string
+        var eventsDirSpec;                      // object
+        var eventsOutFilePath;                  // string
+        var foundationPOM;                      // object
+        var javaEventsPomGenerator;             // function
+        var javaInteractionRootGenerator;       // function
+        var javaMoreOtherInteractionsGenerator; // function
+        var javaMoreOtherObjectsGenerator;      // function
+        var javaObjectRootGenerator;            // function
+        var javaOtherInteractionsGenerator;     // function
+        var javaOtherObjectsGenerator;          // function
+        var javaPomGenerator;                   // function
+        var javaRenderToFile;                   // function
+        var renderContext;                      // object
+        var renderNotCoreInteractionToFile;     // function
+        var renderNotCoreObjectToFile;          // function
+        var self;                               // the caller of JavaRTI
+        var simDirBasePath;                     // string
+        var simDirPath;                         // string
+        var simDirSpec;                         // object
+        var simOutFilePath;                     // string
 
         self = this;
         corePackagePath = ["org", "cpswt", "hla"];
@@ -244,32 +257,33 @@ Called By: MapperFederateExporter (in MapperFederate.js)
 
 /* ******************************************************************* */
 
-/** renderToFile
+/* javaRenderToFile */
+/** (function-valued variable of initJavaRTI)<br><br>
 
-Returned Value: none
+Returned Value: none<br><br>
 
-Called By:
-  renderNextObjectInCore (which is also the callback argument)
-  renderNextInteractionInCore (which is also the callback argument)
+Called By:<br>
+  renderNextObjectInCore (which is also the callback argument)<br>
+  renderNextInteractionInCore (which is also the callback argument)<br><br>
 
-This function generates a code string for a single object or interaction
-that is represented by the "model" argument. The code string is put into
-a file-like thingy for each federate that has generateCode set to true
-and uses the object or interaction.
+This generates a code string for a single object or interaction that
+is represented by the "model" argument. The code string is put into a
+file-like thingy for each federate that has generateCode set to true
+and uses the object or interaction.<br><br>
 
 This function calls its caller when the function that is the last
 argument to addFile executes. Thus, this function and the caller call
 each other until the caller runs out of models. This function
 should not be called for a model unless it is certain that addFile
-will be called; otherwise, the callback will not occur.
-  
+will be called; otherwise, the callback will not occur.<br>
+
 */
-        renderToFile = function( /* ARGUMENTS                   */
-         outFilePath,   /**< full file name of file to write    */
-         isInteraction, /**< true = interaction, false = object */
-         model,         /**< object from which to draw data     */
-         artifact,      /**< array of file generating functions */
-         callback)      /**< function to call if error or done  */
+        javaRenderToFile = function(            /* ARGUMENTS */
+         /** full file name of file to write    */ outFilePath,
+         /** true = interaction, false = object */ isInteraction,
+         /** object from which to draw data     */ model,
+         /** array of file generating functions */ artifact,
+         /** function to call if error or done  */ callback)
         {
           var context;
           var packagePath;
@@ -283,7 +297,7 @@ will be called; otherwise, the callback will not occur.
           var feder;
           var federJavaCode;
           var groupId;
-          
+
           context = self.createJavaRTICodeModel();
           packagePath = outFilePath + "/" +
             (self.javaCorePackageOISpecs.hasOwnProperty(model.name) ?
@@ -329,7 +343,7 @@ will be called; otherwise, the callback will not occur.
                 context.datamembers.push(paratt);
               }
           });
-          
+
           template = TEMPLATES['java/class.java.ejs'];
           javaCode = ejs.render(template, context);
           if (self.federateInfos)
@@ -344,7 +358,7 @@ will be called; otherwise, the callback will not occur.
                       feder = self.federateInfos[federId];
                       self.objectRoots.forEach(function(objectRoot)
                       {
-                        objectTraverserCheck(feder, objectRoot);
+                        javaObjectTraverserCheck(feder, objectRoot);
                       });
                     }
                 }
@@ -385,7 +399,7 @@ will be called; otherwise, the callback will not occur.
                         feder.name.toLowerCase() + "/rti/" +
                         (model.codeName || model.name) + ".java";
                       self.logger.info('calling addFile for ' + fullPath +
-                                       ' in renderToFile of JavaRTI.js');
+                                       ' in javaRenderToFile of JavaRTI.js');
                       artifact.addFile(fullPath, federJavaCode,
                                        (remaining ?
                                         function (err) // there are more
@@ -401,41 +415,42 @@ will be called; otherwise, the callback will not occur.
           else
             { // caller is not the FederatesExporter
               self.logger.info('calling addFile for ' + fullPath +
-                               ' in renderToFile of JavaRTI.js');
+                               ' in javaRenderToFile of JavaRTI.js');
               artifact.addFile(fullPath, javaCode, callback);
             }
-        }; // end renderToFile
-        
+        }; // end javaRenderToFile
+
 /* ******************************************************************* */
 
-/** renderNotCoreObjectToFile
+/* renderNotCoreObjectToFile */
+/** (function-valued variable of initJavaRTI)<br><br>
 
-Returned Value: none
+Returned Value: none<br><br>
 
-Called By:
-  anonymous function pushed onto the fileGenerators in initJavaRTI
+Called By:<br>
+  javaMoreOtherObjectsGenerator<br><br>
 
 This renders a not-core object to a java file for each federate that
-has a publish or subscribe connection to the object.
+has a publish or subscribe connection to the object.<br><br>
 
 The "model" argument is the model originally constructed from a webgme
-node in RTIVisitors.js. The model has the following properties:
- attributes
- basePath
- basename
- children
- codeName (CodeGeneratedName, may be undefined)
- id
- isroot
- name
- parameters
-  
+node in RTIVisitors.js. The model has the following properties:<br>
+ attributes<br>
+ basePath<br>
+ basename<br>
+ children<br>
+ codeName (CodeGeneratedName, may be undefined)<br>
+ id<br>
+ isroot<br>
+ name<br>
+ parameters<br>
+
 */
-        renderNotCoreObjectToFile = function( /* ARGUMENTS                  */
-         outFilePath,           /**< full file name of file to write        */
-         model,                 /**< data model from which to generate code */
-         artifact,              /**< array of file generating functions     */
-         callback)              /**< function to call if error or done      */
+        renderNotCoreObjectToFile = function(       /* ARGUMENTS */
+         /** full file name of file to write        */ outFilePath,
+         /** data model from which to generate code */ model,
+         /** array of file generating functions     */ artifact,
+         /** function to call if error or done      */ callback)
         {
           var context;
           var packagePath;
@@ -479,7 +494,7 @@ node in RTIVisitors.js. The model has the following properties:
                 context.datamembers.push(att);
               }
           });
-          
+
           template = TEMPLATES['java/class.java.ejs'];
           javaCode = ejs.render(template, context);
           if (self.federateInfos)
@@ -497,7 +512,7 @@ node in RTIVisitors.js. The model has the following properties:
                       feder = self.federateInfos[federId];
                       self.objectRoots.forEach(function(objectRoot)
                       {
-                        objectTraverserCheck(feder, objectRoot);
+                        javaObjectTraverserCheck(feder, objectRoot);
                       });
                     }
                 }
@@ -537,25 +552,26 @@ node in RTIVisitors.js. The model has the following properties:
               artifact.addFile(fullPath, javaCode, callback);
             }
         }; // end renderNotCoreObjectToFile
-        
+
 /* ******************************************************************* */
 
-/** renderNotCoreInteractionToFile
+/* renderNotCoreInteractionToFile */
+/** (function-valued variable of initJavaRTI)<br><br>
 
-Returned Value: none
+Returned Value: none<br><br>
 
-Called By:
-  anonymous function pushed onto the fileGenerators in initJavaRTI
+Called By:<br>
+  javaMoreOtherInteractionsGenerator<br><br>
 
 This renders a not-core interaction to a java file for each federate
-that has a publish or subscribe connection to the interaction.
-  
+that has a publish or subscribe connection to the interaction.<br>
+
 */
-        renderNotCoreInteractionToFile = function( /* ARGUMENTS            */
-         outFilePath,          /**< full file name of file to write        */
-         model,                /**< data model from which to generate code */
-         artifact,             /**< array of file generating functions     */
-         callback)             /**< function to call in case of error      */
+        renderNotCoreInteractionToFile = function(  /* ARGUMENTS */
+         /** full file name of file to write        */ outFilePath,
+         /** data model from which to generate code */ model,
+         /** array of file generating functions     */ artifact,
+         /** function to call in case of error      */ callback)
         {
           var context;
           var packagePath;
@@ -568,7 +584,7 @@ that has a publish or subscribe connection to the interaction.
           var feder;
           var federJavaCode;
           var groupId;
-          
+
           context = self.createJavaRTICodeModel();
           packagePath = outFilePath + "/" +
             (self.javaCorePackageOISpecs.hasOwnProperty(model.name) ?
@@ -604,7 +620,7 @@ that has a publish or subscribe connection to the interaction.
                 context.datamembers.push(param);
               }
           });
-          
+
           template = TEMPLATES['java/class.java.ejs'];
           javaCode = ejs.render(template, context);
           if (self.federateInfos)
@@ -617,7 +633,7 @@ that has a publish or subscribe connection to the interaction.
                       feder = self.federateInfos[federId];
                       self.interactionRoots.forEach(function(intRoot)
                       {
-                        interactionTraverserCheck(feder, intRoot);
+                        javaInteractionTraverserCheck(feder, intRoot);
                       });
                     }
                 }
@@ -657,15 +673,15 @@ that has a publish or subscribe connection to the interaction.
               artifact.addFile(fullPath, javaCode, callback);
             }
         }; // end renderNotCoreInteractionToFile
-        
+
 /* ******************************************************************* */
-        
+
 /*
-   
+
 Begin FOUNDATION RTI
 
 */        
-            
+
         foundationDirBasePath = 'java/';
         coreDirSpec = {federation_name: "root",
                        artifact_name: "",
@@ -696,7 +712,7 @@ Begin FOUNDATION RTI
         self.java_core_rtiPOM.version = self.cpswt_version;
         self.java_core_rtiPOM.packaging = "jar";
         self.java_core_rtiPOM.dependencies.push(self.corePOM);
-        
+
 /* ******************************************************************* */
 
 /*
@@ -720,13 +736,20 @@ currently there are none.
 
 /* ******************************************************************* */
 
-/*
+/* javaPomGenerator */
+/** (function-valued variable of initJavaRTI)<br><br>
 
-If generating export packages, add to corefileGenerators a POM generator
-using the coreDirPath and self.corePOM.toJSON()
+Returned Value: none<br><br>
+
+Called By: ?<br><br>
+
+If generating export packages, this adds to corefileGenerators a POM
+generator using the coreDirPath and self.corePOM.toJSON().<br>
 
 */
-            self.corefileGenerators.push(function(artifact, callback)
+            javaPomGenerator = function(           /* ARGUMENTS */
+             /** array of generated files          */ artifact,
+             /** function to call if error or done */ callback)
             {
               var xmlCode;
               var fullPath;
@@ -749,18 +772,26 @@ using the coreDirPath and self.corePOM.toJSON()
                                      callback();
                                    }
                                });
-            }); // end push function
+            }; // end javaPomGenerator
+            self.corefileGenerators.push(javaPomGenerator);
 
 /* ******************************************************************* */
 
-/*
+/* javaEventsPomGenerator */
+/** (function-valued variable of initJavaRTI)<br><br>
 
-If generating export packages, add to corefileGenerators a POM generator
-using the eventsDirPath and self.java_core_rtiPOM.toJSON()
+Returned Value: none<br><br>
+
+Called By: ?<br><br>
+
+If generating export packages, this adds to corefileGenerators a POM
+generator using the eventsDirPath and self.java_core_rtiPOM.toJSON().<br>
 
 */
 
-            self.corefileGenerators.push(function(artifact, callback)
+            javaEventsPomGenerator = function(     /* ARGUMENTS */
+             /** array of generated files          */ artifact,
+             /** function to call if error or done */ callback)
             {
               var xmlCode;
               var fullPath;
@@ -783,27 +814,35 @@ using the eventsDirPath and self.java_core_rtiPOM.toJSON()
                                      callback();
                                    }
                                });
-            }); // end push function
+            }; // end javaEventsPomGenerator
+            self.corefileGenerators.push(javaEventsPomGenerator);
 
 /* ******************************************************************* */
 
-/*
+/* javaInteractionRootGenerator */
+/** (function-valued variable of initJavaRTI)<br><br>
 
-If generating export packages, add to the corefileGenerators a function
-that generates an InteractionRoot.java file and an
-InteractionRootInterface.java file.
+Returned Value: none<br><br>
+
+Called By: ?<br><br>
+
+If generating export packages, this adds to the corefileGenerators a
+function that generates an InteractionRoot.java file and an
+InteractionRootInterface.java file.<br><br>
 
 When the added function executes, the second artifact.addFile adds the
 InteractionRootInterface.java file only if there is no error generating
-the InteractionRoot.java file.
+the InteractionRoot.java file.<br>
 
 */
-            self.corefileGenerators.push(function(artifact, callback)
+            javaInteractionRootGenerator = function( /* ARGUMENTS */
+             /** array of generated files            */ artifact,
+             /** function to call if error or done   */ callback)
             {
               var fullPath;
               var xmlCode;
               var template;
-              
+
               if (!self.javaPOM)
                 {
                   callback();
@@ -844,28 +883,36 @@ the InteractionRoot.java file.
                                      return;
                                    }
                                });
-            }); // end push function
-                
+            }; // end javaInteractionRootGenerator
+            self.corefileGenerators.push(javaInteractionRootGenerator);
+
 /* ******************************************************************* */
 
-/*
+/* javaObjectRootGenerator */
+/** (function-valued variable of initJavaRTI)<br><br>
 
-If generating export packages, add to the corefileGenerators a
+Returned Value: none<br><br>
+
+Called By: ?<br><br>
+
+If generating export packages, this adds to the corefileGenerators a
 function that generates an ObjectRoot.java file and an
-ObjectRootInterface.java file.
+ObjectRootInterface.java file.<br><br>
 
 When the added function executes, the second artifact.addFile adds the
 ObjectRootInterface.java file only if there is no error generating the
-ObjectRoot.java file.
+ObjectRoot.java file.<br>
 
 */
 
-            self.corefileGenerators.push(function(artifact, callback)
+            javaObjectRootGenerator = function(    /* ARGUMENTS */
+             /** array of generated files          */ artifact,
+             /** function to call if error or done */ callback)
             {
               var fullPath;
               var xmlCode;
               var template;
-              
+
               if (!self.javaPOM)
                 {
                   callback();
@@ -907,24 +954,32 @@ ObjectRoot.java file.
                                      return;
                                    }
                                });
-            }); // end push function
+            }; // end javaObjectRootGenerator
+            self.corefileGenerators.push(javaObjectRootGenerator);
 
 /* ******************************************************************* */
 
-/* 
+/* javaOtherObjectsGenerator */
+/** (function-valued variable of initJavaRTI)<br><br>
 
-If generating export packages, add to the core file generators a
+Returned Value: none<br><br>
+
+Called By: ?<br><br>
+
+If generating export packages, this adds to the core file generators a
 function that prints a java file for each object in self.objects
 whose name is a property in self.javaCorePackageOISpecs. Those are the
-objects in the BasePackage in the webGME model.
+objects in the BasePackage in the webGME model.<br><br>
 
-When the added function executes, the renderToFile function defined
-above and the renderNextObjectInCore function defined here call each
-other until all the selected objects are processed.
+When the added function executes, the javaRenderToFile function and
+the renderNextObjectInCore function call each other until all the
+selected objects are processed.<br>
 
 */
 
-            self.corefileGenerators.push(function(artifact, callback)
+            javaOtherObjectsGenerator = function(  /* ARGUMENTS */
+             /** array of generated files          */ artifact,
+             /** function to call if error or done */ callback)
             {
               var objToRender;
               var renderNextObjectInCore;
@@ -950,8 +1005,8 @@ other until all the selected objects are processed.
                     nextObj = objToRender.pop();
                     if (nextObj)
                       {
-                        renderToFile(eventsOutFilePath, false, nextObj,
-                                     artifact, renderNextObjectInCore);
+                        javaRenderToFile(eventsOutFilePath, false, nextObj,
+                                         artifact, renderNextObjectInCore);
                       }
                     else
                       {
@@ -972,40 +1027,48 @@ other until all the selected objects are processed.
                     }
                 }
               renderNextObjectInCore();
-            }); // end push function
+            }; // end push function
+            self.corefileGenerators.push(javaOtherObjectsGenerator);
 
 /* ******************************************************************* */
 
-/* 
+/* javaOtherInteractionsGenerator */
+/** (function-valued variable of initJavaRTI)<br><br>
 
-If generating export packages, add to the core file generators a
+Returned Value: none<br><br>
+
+Called By: ?<br><br>
+
+If generating export packages, this adds to the core file generators a
 function that prints a java file for each interaction in self.interactions
-whose name is a property in self.javaCorePackageOISpecs.
+whose name is a property in self.javaCorePackageOISpecs.<br><br>
 
-When the added function executes, the renderToFile function defined
-above and the renderNextInteractionInCore function defined here call each
-other until all the selected interactions are processed.
+When the added function executes, the javaRenderToFile function and
+the renderNextInteractionInCore function call each other until all the
+selected interactions are processed.<br>
 
 */
-        
-            self.corefileGenerators.push(function(artifact, callback)
+
+            javaOtherInteractionsGenerator = function( /* ARGUMENTS */
+             /** array of generated files              */ artifact,
+             /** function to call if error or done     */ callback)
             {
               var intToRender;
               var renderNextInteractionInCore;
               var iid;
-              
+
               if (!self.javaPOM)
                 {
                   callback();
                   return;
                 }
               intToRender = [];
-              
+
               /* start define renderNextInteractionInCore function */
               renderNextInteractionInCore = function(err)
               {
                 var nextInteraction;
-                  
+
                 if (err)
                   {
                     callback(err);
@@ -1015,9 +1078,9 @@ other until all the selected interactions are processed.
                     nextInteraction = intToRender.pop();
                     if (nextInteraction)
                       {
-                        renderToFile(eventsOutFilePath, true,
-                                     nextInteraction, artifact,
-                                     renderNextInteractionInCore);
+                        javaRenderToFile(eventsOutFilePath, true,
+                                         nextInteraction, artifact,
+                                         renderNextInteractionInCore);
                       }
                     else
                       {
@@ -1038,8 +1101,9 @@ other until all the selected interactions are processed.
                     }
                 }
               renderNextInteractionInCore();
-            }); // end push function
-          } // end if (self.generateExportPackages)
+            }; // end javaOtherInteractionsGenerator
+            self.corefileGenerators.push(javaOtherInteractionsGenerator);
+          } // closes if (self.generateExportPackages)
 
 // end FOUNDATION RTI
 
@@ -1064,18 +1128,25 @@ other until all the selected interactions are processed.
 
 /* ******************************************************************* */
 
-/*
+/* javaMoreOtherObjectsGenerator
+/** (function-valued variable of initJavaRTI)<br><br>
 
-this adds to the file generators a function that prints zero to many
+Returned Value: none<br><br>
+
+Called By: ?<br><br>
+
+This adds to the file generators a function that prints zero to many
 java files for each object in self.objects whose name is not a
-property in self.javaCorePackageOISpecs.
+property in self.javaCorePackageOISpecs.<br>
 
 */
-        self.fileGenerators.push(function(artifact, callback)
+        javaMoreOtherObjectsGenerator = function( /* ARGUMENTS */
+         /** array of generated files             */ artifact,
+         /** function to call if error or done    */ callback)
         {
           var objToRender;
           var objId;
-          
+
           if (!self.javaPOM)
             {
               callback();
@@ -1094,23 +1165,31 @@ property in self.javaCorePackageOISpecs.
             }
           callback();
           return;
-        }); // end push function
-        
+        }; // end javaMoreOtherObjectsGenerator
+        self.fileGenerators.push(javaMoreOtherObjectsGenerator);
+
 /* ******************************************************************* */
 
-/*
+/* javaMoreOtherInteractionsGenerator
+/** (function-valued variable of initJavaRTI)<br><br>
+
+Returned Value: none<br><br>
+
+Called By: ?<br><br>
 
 This adds to the file generators a function that prints zero to many
 java files for each interaction in self.interactions whose name is not
-a property in self.javaCorePackageOISpecs.
+a property in self.javaCorePackageOISpecs.<br>
 
 */
 
-        self.fileGenerators.push(function(artifact, callback)
+        javaMoreOtherInteractionsGenerator = function( /* ARGUMENTS */
+         /** array of generated files                  */ artifact,
+         /** function to call if error or done         */ callback)
         {
           var intToRender;
           var intId;
-          
+
           if (!self.javaPOM)
             {
               callback();
@@ -1129,29 +1208,34 @@ a property in self.javaCorePackageOISpecs.
             }
           callback();
           return;
-        }); // end push function
-        
+        }; // end javaMoreOtherInteractionsGenerator
+        self.fileGenerators.push(javaMoreOtherInteractionsGenerator);
+
 // end SIM RTI
 
 /* ******************************************************************* */
 
         self.javaRTIInitDone = true;
       }; // end initJavaRTI
+      this.initJavaRTI = initJavaRTI;
 
 /* ******************************************************************* */
 
-/** createJavaRTICodeModel
+/* createJavaRTICodeModel */
+/** (function-valued variable of JavaRTIFederateExporter)<br><br>
 
-Returned Value: A large object
+Returned Value: A large object<br><br>
 
-Called By: renderToFile
+Called By: javaRenderToFile<br><br>
+
+This initializes the java code model.<br><br>
 
 The use of "default" as a property name near the end of this function
 may be a problem because "default" is a JavaScript reserved word. However,
-code elsewhere may be looking for "default", so it has been left in.
+code elsewhere may be looking for "default", so it has been left in.<br>
 
 */
-      this.createJavaRTICodeModel = function()
+      createJavaRTICodeModel = function()
       {
         return {simname: "",
                 classname: "",
@@ -1161,7 +1245,7 @@ code elsewhere may be looking for "default", so it has been left in.
                 isc2winteractionroot: false,
                 datamembers: [],
                 alldatamembers: [],
-                
+
                 helpers:{
                     primitive2object: function(type)
                     {
@@ -1240,11 +1324,12 @@ code elsewhere may be looking for "default", so it has been left in.
                 ejs: ejs, 
                 TEMPLATES: TEMPLATES
             };
-      }; // end createJavaRTICodeModel function
+      }; // end createJavaRTICodeModel
+      this.createJavaRTICodeModel = createJavaRTICodeModel;
 
 /* ******************************************************************* */
 
-    }; // end JavaRTIFederateExporter function
+    }; // end JavaRTIFederateExporter
 
     return JavaRTIFederateExporter;
 }); // end define

@@ -1,33 +1,32 @@
 /**
 
-Modified by T. Kramer
+Modified by T. Kramer<br><br>
 
-Reformatted in C style, as far as possible.
+Reformatted in C style, as far as possible.<br><br>
 
 This is executed automatically at the beginning of FederatesExporter.js
 and DeploymentExporter.js in the first stages of running the "define"
 at the top level of that file. The result of the execution is that the
 RTIVisitors argument in the function of the "define" is defined as a
-function.
+function.<br><br>
 
 The RTIVisitors function is then called at the
 "RTIVisitors.call(this);" lines of FederatesExporter.js and
 DeploymentExporter.js when the FederatesExporter or DeploymentExporter
-function starts to execute.
+function starts to execute.<br><br>
 
 The result of calling the RTIVisitors function is that four
 functions are defined as properties of the FederatesExporter or
 DeploymentExporter function (which is also an object). The lines of
-this function that begin the definitions of the four functions are:
+this function that begin the definitions of the four functions are:<br>
+visit_Interaction = function(node, parent, context)<br>
+visit_Object = function(node, parent, context)<br>
+visit_Parameter = function(node, parent, context)<br>
+visit_Attribute = function(node, parent, context)<br><br>
 
-this.visit_Interaction = function(node, parent, context)
-this.visit_Object = function(node, parent, context)
-this.visit_Parameter = function(node, parent, context)
-this.visit_Attribute = function(node, parent, context)
-
-The "this" above is either the FederatesExporter function in
-FederatesExporter.js or the DeploymentExporter function in
-DeploymentExporter.js.
+The functions are then assigned as properties of "this", which is
+either the FederatesExporter function in FederatesExporter.js or the
+DeploymentExporter function in DeploymentExporter.js.<br><br>
 
 These functions are called in the atModelNode function of
 ModelTraverserMixin.js (at ret = ...).  The "parent" argument is not
@@ -35,7 +34,7 @@ used in any of the functions, but is needed to be a placeholder in the
 arguments. All of the visit_XXX functions (many of which are defined
 elsewhere but are called from atModelNode) take the arguments (node,
 parent, context). They are called by using the this.visitorNames map to
-select the function for the metaType of the object being processed.
+select the function for the metaType of the object being processed.<br><br>
 
 */
 
@@ -45,26 +44,48 @@ define
  {
    'use strict';
 
-    var RTIVisitors;
+    var RTIVisitors;       // function variable
 
 /* ******************************************************************* */
 
-    RTIVisitors = function()
-    {
+/* RTIVisitors */
+/** (function-valued variable of top-level function object)<br><br>
 
-/* ******************************************************************* */
+Returned Value: none<br><br>
 
-/** this.visit_Interaction
+Called By:<br>
+  FederatesExporter<br>
+  DeploymentExporter in DeploymentExporter.js<br><br>
 
-Returned Value: a context object whose context property is the context
-  argument, possibly with data added.
-
-Called By: See notes at top.
-
-This processes data for an Interaction. 
+This defines visitor functions for interactions, objects, parameters
+and attributes.<br>
 
 */
-      this.visit_Interaction = function(node, parent, context)
+
+     RTIVisitors = function()
+    {
+      var visit_Interaction; // function variable
+      var visit_Object;      // function variable
+      var visit_Parameter;   // function variable
+      var visit_Attribute;   // function variable
+
+/* ******************************************************************* */
+
+/* visit_Interaction */
+/** (function-valued variable of RTIVisitors)<br><br>
+
+Returned Value: a context object whose context property is the context
+  argument, possibly with data added<br><br>
+
+Called By: atModelNode in ModelTraverserMixin.js<br><br>
+
+This processes data for an Interaction.<br>
+
+*/
+      visit_Interaction = function(
+       /** tree node representing an interaction */ node,
+       /** parent of node (not used)             */ parent,
+       /** data object enhanced by the function  */ context)
       {
         var self = this;
         var nodeType = self.core.getAttribute(self.getMetaType(node), 'name');
@@ -181,21 +202,27 @@ This processes data for an Interaction.
           }
         context['parentInteraction'] = interaction;
         return {context:context};
-      } // end visit_Interaction function
+      } // end visit_Interaction
+
+      this.visit_Interaction = visit_Interaction;
 
 /* ******************************************************************* */
 
-/** this.visit_Parameter
+/* visit_Parameter */
+/** (function-valued variable of RTIVisitors)<br><br>
 
 Returned Value: a context object whose context property is the context
-  argument, possibly with data added.
+  argument, possibly with data added<br><br>
 
-Called By: See notes at top.
+Called By:  atModelNode in ModelTraverserMixin.js<br><br>
 
-This processes data for a Parameter.
+This processes data for a Parameter.<br>
 
 */
-      this.visit_Parameter = function(node, parent, context)
+      visit_Parameter = function(
+       /** tree node representing a parameter   */ node,
+       /** parent of node (not used)            */ parent,
+       /** data object enhanced by the function */ context)
       {
         var self = this;
         if (context.hasOwnProperty('parentInteraction'))
@@ -213,25 +240,30 @@ This processes data for a Parameter.
         return {context:context};
       }
 
+      this.visit_Parameter = visit_Parameter;
+
 /* ******************************************************************* */
 
-/** this.visit_Object
+/* visit_Object */
+/** (function-valued variable of RTIVisitors)<br><br>
 
 Returned Value: a context object whose context property is the context
-  argument, possibly with data added.
+  argument, possibly with data added<br><br>
 
-Called By: See notes at top.
+Called By:  atModelNode in ModelTraverserMixin.js<br><br>
 
-This is called when a node being processed represents a webgme object. It
-processes data for the object.
+This processes data for an Object.<br><br>
 
 Among other activities, this makes the primary model of a webgme
 object used in the federates exporter as shown a few lines
 below. Elsewhere in the JavaScript code, information in models used
-for code generation is extracted from the primary model.
+for code generation is extracted from the primary model.<br>
 
 */
-      this.visit_Object = function(node, parent, context)
+      visit_Object = function(
+       /** tree node representing an object     */ node,
+       /** parent of node (not used)            */ parent,
+       /** data object enhanced by the function */ context)
       {
         var self = this;
         var object = {};
@@ -293,19 +325,25 @@ for code generation is extracted from the primary model.
         return {context:context};
       }
 
+      this.visit_Object = visit_Object;
+
 /* ******************************************************************* */
-      
-/** this.visit_Attribute
+
+/* visit_Attribute */
+/** (function-valued variable of RTIVisitors)<br><br>
 
 Returned Value: a context object whose context property is the context
-  argument, possibly with data added.
+  argument, possibly with data added<br><br>
 
-Called By: See notes at top.
+Called By:  atModelNode in ModelTraverserMixin.js<br><br>
 
-This processes data for an Attribute.
+This processes data for an Attribute.<br>
 
 */
-      this.visit_Attribute = function(node, parent, context)
+      visit_Attribute = function(
+       /** tree node representing an attribute  */ node,
+       /** parent of node (not used)            */ parent,
+       /** data object enhanced by the function */ context)
       {
         var self = this;
         var attribute;
@@ -328,11 +366,13 @@ This processes data for an Attribute.
           }
         self.attributes[self.core.getPath(node)] = attribute;
         return {context:context};
-      }; // end visit_Attribute function
-      
+      }; // end visit_Attribute
+
+      this.visit_Attribute = visit_Attribute;
+
 /* ******************************************************************* */
 
-    }; // end of RTIVisitors function
+    }; // end RTIVisitors
 
     return RTIVisitors;   
  }); // end define

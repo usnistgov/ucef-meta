@@ -5,7 +5,7 @@ Reformatted in C style, as far as possible.
 A single XML file is generated for a project.
 
 The pubSubObjects and pubSubInteractions of the deployment exporter
-have the same structure as those of a federate in FederatesExporter.js
+have the same structure as those of a federate in FederatesExporter.js.
 
 */
 
@@ -35,23 +35,56 @@ define
           superagent)
 {
     'use strict';
-    var objectTraverser;            // function variable
-    var objectTraverserCheck;       // function variable
-    var objectTraverserXml;         // function variable
-    var interactionTraverser;       // function variable
-    var interactionTraverserCheck;  // function variable
-    var interactionTraverserXml;    // function variable
-    var DeploymentExporter;         // function variable
-    
+    var addCoaEdge;                   // function variable
+    var addCoaNode;                   // function variable
+    var calculateParentPath;          // function variable
+    var DeploymentExporter;           // function variable
+    var excludeFromVisit;             // function variable
+    var getDockerDetails;             // function variable
+    var interactionTraverser;         // function variable
+    var interactionTraverserCheck;    // function variable
+    var interactionTraverserXml;      // function variable
+    var objectTraverser;              // function variable
+    var objectTraverserCheck;         // function variable
+    var objectTraverserXml;           // function variable
+    var prototypeMain;                // function variable
+    var ROOT_visitor;                 // function variable
+    var visit_Action;                 // function variable
+    var visit_AwaitN;                 // function variable
+    var visit_COA;                    // function variable
+    var visit_COAException;           // function variable
+    var visit_COAFlow;                // function variable
+    var visit_COAFlowWithProbability; // function variable
+    var visit_COARef;                 // function variable
+    var visit_COASequencesGroup;      // function variable
+    var visit_Dur;                    // function variable
+    var visit_Federate;               // function variable
+    var visit_FederateExecution;      // function variable
+    var visit_Filter2COAElement;      // function variable
+    var visit_Fork;                   // function variable
+    var visit_Outcome;                // function variable
+    var visit_OutcomeFilter;          // function variable
+    var visit_Outcome2Filter;         // function variable
+    var visit_ProbabilisticChoice;    // function variable
+    var visit_RandomDur;              // function variable
+    var visit_SyncPoint;              // function variable
+    var visit_TerminateCOA;           // function variable
+
     pluginMetadata = JSON.parse(pluginMetadata);
 
 /* ******************************************************************* */
 
-/** DeploymentExporter
+/* DeploymentExporter */
+/** (function-valued var of top-level function object)<br><br>
 
-Returned Value: none
+Returned Value: none<br><br>
 
-Called By: ?
+Called By: ?<br><br>
+
+This is the top-level function for the deployment exporter.<br><br>
+
+The visitorNames object is a map from a node type to the name of the
+visitor function to call for that node type.<br>
 
 */
 
@@ -114,7 +147,7 @@ Called By: ?
 
       this._jsonToXml = new JSON2XMLConverter.Json2xml();
       this.pluginMetadata = pluginMetadata;
-    }; // end DeploymentExporter function
+    }; // end DeploymentExporter
 
 /* ******************************************************************* */
 
@@ -125,22 +158,26 @@ Called By: ?
 
 /* ******************************************************************* */
 
-/** objectTraverser
+/* objectTraverser */
+/** (function-valued var of top-level function object)<br><br>
 
-Returned Value: fed file text for the object and its descendants
+Returned Value: fed file text for the object and its descendants<br><br>
 
 Called By:
-  anonyomous fed fom generator in DeploymentExporter.prototype.main
-  objectTraverser (recursively)
+  anonymous fed fom generator in DeploymentExporter.prototype.main<br>
+  objectTraverser (recursively)<br><br>
+
+This is a recursive function that generates fed fom text for the object
+and its children.<br>
 
 */
-    objectTraverser = function( /*   ARGUMENTS                  */
-     object)                    /**< (object) object to process */
+    objectTraverser = function(     /* ARGUMENTS */
+     /** (object) object to process */ object)
     {
       var objModel = {name: object.name,
                       attributes: object.attributes,
                       children: []};
-      
+
       object.children.forEach(function(child)
       {
         objModel.children.push(objectTraverser(child));
@@ -150,42 +187,45 @@ Called By:
 
 /* ******************************************************************* */
 
-/** objectTraverserCheck (function-valued var of top-level function object)
+/* objectTraverserCheck */
+/** (function-valued var of top-level function object)<br><br>
 
-Returned Value: none
+Returned Value: none<br><br>
 
-Called By:
-  anonyomous fom generator in DeploymentExporter.prototype.main
-  objectTraverserCheck (recursively)
+Called By:<br>
+  fomGenerator<br>
+  objectTraverserCheck (recursively)<br><br>
 
 This adds entries to pubSubObjects for all ancestors of objects that
-already have entries.
+already have entries.<br><br>
 
 By calling itself recursively, this goes through the object tree (from
-top down) but builds the pubSubObjectss from bottom up.
+top down) but builds the pubSubObjectss from bottom up.<br><br>
 
-For each object that has an entry in the federate.pubSubObjects:
+For each object that has an entry in the federate.pubSubObjects:<br><br>
 
-  If the parent already has an entry in the federate.pubSubObjects:
-    If object has non-zero mayPublish, the parent's mayPublish is set to 1.
-    If object has non-zero maySubscribe, the parent's maySubscribe is set to 1.
+  If the parent already has an entry in the federate.pubSubObjects:<br>
+    If object has non-zero mayPublish, the parent's mayPublish is
+      set to 1.<br>
+    If object has non-zero maySubscribe,
+      the parent's maySubscribe is set to 1.<br><br>
 
   Otherwise, a new entry for parent is put into the federate.pubSubObjects
   with publish set to 0, subscribe set to 0, mayPublish set to the object's
-  mayPublish and maySubscribe set to the object's maySubscribe.
+  mayPublish and maySubscribe set to the object's maySubscribe.<br><br>
 
 If the parent publishes or subscribes, an entry for the parent will
-have been made previously in PubSubVisitors.
+have been made previously in PubSubVisitors.<br><br>
 
 The final effect is that any object that is an ancestor of any object
 originally put on the pubSubObjects in PubSubVisitors is also on
 pubSubObjects, with its publish, subscribe, mayPublish, and
-maySubscribe values set appropriately.
+maySubscribe values set appropriately.<br>
 
 */
-    objectTraverserCheck = function( /*   ARGUMENTS                  */
-     depEx,                          /**< the deployment exporter    */
-     object)                         /**< (object) object to process */
+    objectTraverserCheck = function( /* ARGUMENTS */
+     /** the deployment exporter     */ depEx,
+     /** (object) object to process  */ object)
     {
       var objectPubSub;
       var parentPubSub;
@@ -219,34 +259,37 @@ maySubscribe values set appropriately.
                  maySubscribe: objectPubSub.maySubscribe};
             }
         }
-    }; // end objectTraverserCheck function
+    }; // end objectTraverserCheck
 
 /* ******************************************************************* */
 
-/** objectTraverserXml (function-valued var of top-level function object)
+/* objectTraverserXml */
+/** (function-valued var of top-level function object)<br><br>
 
-Returned Value: a string of XML representing the object and its descendants
+Returned Value: a string of XML representing the object
+                and its descendants<br><br>
 
-Called By:
-  anonyomous fom generator in DeploymentExporter.prototype.main
-  objectTraverserXml (recursively)
+Called By:<br>
+  fomGenerator<br>
+  objectTraverserXml (recursively)<br><br>
 
-objectTraverserXml is a recursive function that builds the XML for the
-objects in the deployment exporter.
+This is a recursive function that builds the XML for the objects in
+the deployment exporter.<br><br>
 
 The function takes (1) a pointer to the deployment exporter, (2) an object
 that may have children (which are also objects), and (3) a string of
-blank space to use for indenting.
+blank space to use for indenting.<br><br>
 
 The function begins by creating an objModel. The objModel is given the
 same name and attributes as the object and is given children that are
 XML code built by a recursive call to the function on the children of
 the object.  Information for printing XML is added to the data for
 each attribute of the object. Data regarding "sharing" for the XML is
-derived from the deployment exporter information and the attribute data.
+derived from the deployment exporter information and the attribute
+data.<br><br>
 
 Then XML for the objModel is generated from the objModel (and saved)
-by calling ejs.render using the fedfile_simobject_xml XML Template.
+by calling ejs.render using the fedfile_simobject_xml XML Template.<br><br>
 
 Crosscuts are Publish or Subscribe links from a federate directly to
 an attribute of an object. Crosscuts are handled by putting entries
@@ -255,14 +298,14 @@ the deployment exporter. The code for crosscuts is mostly in the great
 big "else" near the end of the function, but there is also code dealing
 with crosscuts in two places before that. Setting the printIt property
 of an attribute allows it to be printed (by fedfile_simobject_xml.ejs)
-even when the attribute is an inherited property.
+even when the attribute is an inherited property.<br>
 
 */
 
-    objectTraverserXml = function( /*   ARGUMENTS                        */
-     depEx,                        /**< (object) the deployment exporter */
-     object,                       /**< (object) object to process       */
-     space)                        /**< (string) indentation space       */
+    objectTraverserXml = function(        /* ARGUMENTS */
+     /** (object) the deployment exporter */ depEx,
+     /** (object) object to process       */ object,
+     /** (string) indentation space       */ space)
     {
       var objModel;
       var objPuBSub;
@@ -277,7 +320,7 @@ even when the attribute is an inherited property.
       objPuBSub = depEx.pubSubObjects[object.id];
       hasOwn = 0;
       // The attributes in the objModel are the attributes of the object.
-      // Properites of attributes not related to XML generation are not
+      // Properties of attributes not related to XML generation are not
       // modified, but properties of attributes related to XML generation
       // are assigned as follows.
       objModel.attributes.forEach(function(attr)
@@ -416,21 +459,25 @@ even when the attribute is an inherited property.
           return ejs.render(TEMPLATES["fedfile_simobject_xml.ejs"],
                             objModel);
         }
-    }; // end objectTraverserXml function
+    }; // end objectTraverserXml
 
 /* ******************************************************************* */
 
-/** interactionTraverser (function-valued var of top-level function object)
+/* interactionTraverser */
+/** (function-valued var of top-level function object)<br><br>
 
-Returned Value: fed file text for the interaction and its descendants
+Returned Value: fed file text for the interaction and its descendants<br><br>
 
-Called By:
-  anonyomous fed fom generator in DeploymentExporter.prototype.main
-  interactionTraverser (recursively)
+Called By:<br>
+  fomProjectFedGenerator<br>
+  interactionTraverser (recursively)<br><br>
+
+This calls itself recursively to generate fed file text for the interaction
+and its children.<br>
 
 */
-    interactionTraverser = function( /*   ARGUMENTS                       */
-     interaction)                    /**< (object) interaction to process */
+    interactionTraverser = function(     /* ARGUMENTS */
+     /** (object) interaction to process */ interaction)
     {
       var intModel = {interaction: interaction,
                       parameters: interaction.parameters,
@@ -444,34 +491,36 @@ Called By:
 
 /* ******************************************************************* */
 
-/** interactionTraverserCheck (function-valued var of top-level function obj)
+/* interactionTraverserCheck */
+/** (function-valued var of top-level function object)<br><br>
 
-Returned Value: none
+Returned Value: none<br><br>
 
-Called By:
-  anonyomous fom generator in DeploymentExporter.prototype.main
-  interactionTraverserCheck (recursively)
+Called By:<br>
+  fomGenerator<br>
+  interactionTraverserCheck (recursively)<br><br>
 
 This adds entries to pubSubInteractions for all ancestors of interactions
-that already have entries.
+that already have entries.<br><br>
 
 By calling itself recursively, this goes through the interaction tree
-(from top down) but builds the pubSubInteractions from bottom up.
+(from top down) but builds the pubSubInteractions from bottom up.<br><br>
 
 If an interaction is on the pubSubInteractions but its parent is not,
 an entry for the parent of the interaction is added to the
 pubSubInteractions; the entry represents that the parent neither
 publishes or subscribes. If the parent publishes or subscribes, an
-entry for the parent will have been made previously in PubSubVisitors.
+entry for the parent will have been made previously in
+PubSubVisitors.<br><br>
 
 The final effect is that any interaction that is an ancestor of any
 interaction originally put on the pubSubInteractions in PubSubVisitors
-is also on pubSubInteractions.
+is also on pubSubInteractions.<br>
 
 */
-    interactionTraverserCheck = function( /*   ARGUMENTS                    */
-     depEx,                           /**< (object) the deployment exporter */
-     interaction)                     /**< (object) interaction to process  */
+    interactionTraverserCheck = function( /* ARGUMENTS */
+     /** (object) the deployment exporter */ depEx,
+     /** (object) interaction to process  */ interaction)
     {
       interaction.children.forEach(function (child)
       {
@@ -491,35 +540,36 @@ is also on pubSubInteractions.
 
 /* ******************************************************************* */
 
-/** interactionTraverserXml (function-valued var of top-level function object)
+/* interactionTraverserXml */
+/** (function-valued var of top-level function object)<br><br>
 
 Returned Value: a string of XML representing the interaction and its
-                descendants
+                descendants<br><br>
 
-Called By:
-  anonyomous fom generator in DeploymentExporter.prototype.main
-  interactionTraverserXml (recursively)
+Called By:<br>
+  fomGenerator<br>
+  interactionTraverserXml (recursively)<br><br>
 
-interactionTraverserXml is a recursive function that builds the XML
-for interactions in a federate.
+This is a recursive function that builds the XML for interactions in a
+federate.<br><br>
 
 The function takes information about the deployment exporter and takes
-an interaction that may have children (which are also interactions).
+an interaction that may have children (which are also interactions).<br><br>
 
 The function begins by creating an intModel. The intModel is given the
 same name and parameters as the interaction and is given children that are
 XML code built by a recursive call to the function on the children of
 the interaction.  The intModel is also given other properties needed for
-generating XML.
+generating XML.<br><br>
 
 Then XML for the intModel is generated from the intModel (and saved)
-by calling ejs.render using the fedfile_siminteraction_xml XML Template.
+by calling ejs.render using the fedfile_siminteraction_xml XML Template.<br>
 
 */
-    interactionTraverserXml = function( /*   ARGUMENTS                      */
-     depEx,                           /**< (object) the deployment exporter */
-     interaction,                     /**< (object) interaction to process  */
-     space)                           /**< (string) indentation space       */
+    interactionTraverserXml = function(   /* ARGUMENTS */
+     /** (object) the deployment exporter */ depEx,
+     /** (object) interaction to process  */ interaction,
+     /** (string) indentation space       */ space)
     {
       var intModel;
       var intPubSub;
@@ -578,48 +628,61 @@ by calling ejs.render using the fedfile_siminteraction_xml XML Template.
               (interactionTraverserXml(depEx, child, space + "    "));
           }
       });
-      
+
       // now generate XML for the parent if on pubSubInteractions
       if (interaction.id in depEx.pubSubInteractions)
         {
           return ejs.render(TEMPLATES["fedfile_siminteraction_xml.ejs"],
                             intModel);
         }
-    }; // end interactionTraverserXml function
+    }; // end interactionTraverserXml
 
 /* ******************************************************************* */
 
-/** DeploymentExporter.prototype.main
+/* prototypeMain */
+/** (function-valued var of top-level function object)<br><br>
 
-Returned Value: none
+Returned Value: none<br><br>
 
-Called By: ?
+Called By: ? This is called by an unknown function when executing the
+deployment exporter is triggered<br><br>
 
-Notes autogenerated or from previous coder:
--------------------------------------------
-    This is the main function for the plugin to execute. This will perform
-    the execution.
+This is the main function for the plugin to execute; it will perform
+the execution.<br><br>
 
-    Use self to access core, project, result, logger etc from PluginBase.
-    These are all instantiated at this point.
+Use self to access core, project, result, logger etc from PluginBase.
+These are all instantiated at this point.<br><br>
 
-    callback always has to be called even if error happened.
-
-    @param {function(string, plugin.PluginResult)} callback -
-    the result callback
----------------------------------------
+The callback always has to be called even if an error happened.<br>
 
 */
 
-    DeploymentExporter.prototype.main = function( /*   ARGUMENTS           */
-     callback)                        /**< (function) to call when exiting */
+    prototypeMain = function(                                  /* ARGUMENTS */
+     /** {function(string, plugin.PluginResult)} callback function */ callback)
     {
-      var self = this;             // deployment exporter function
-      var generateFiles;           // function
+      var buildCppShGenerator;     // function variable
+      var expConfigJsonGenerator;  // function variable
+      var expListJsonGenerator;    // function variable
+      var expModelJsonGenerator;   // function variable
+      var expModelMiscGenerator;   // function variable
+      var fedJsonGenerator;        // function variable
+      var fedJsonTypeGenerator;    // function variable
+      var fedmgrGenerator;         // function variable
+      var finishExport;            // function variable
+      var fomGenerator;            // function variable
+      var fomProjectFedGenerator;  // function variable
+      var generateFiles;           // function variable
+      var log4j2XmlGenerator;      // function variable
+      var NewcoaConfigJsonGenerator; // function variable
       var numberOfFileGenerators;  // counter used in generateFiles function
-      var finishExport;            // function
-      var pomModel = {};
+      var pomGenerator;            // function variable
+      var pomModel = {};           // object
+      var RTIridGenerator;         // function variable
+      var runDefaultGenerator;     // function variable
+      var runManagerGenerator;     // function variable
+      var self;                    // deployment exporter function
 
+      self = this;
       self.workingDir="/home/ubuntu/file-server";
 
       self.fileGenerators = [];
@@ -676,13 +739,20 @@ Notes autogenerated or from previous coder:
 
 /* ******************************************************************* */
 
-/* add a generator to the file generators.
+/* pomGenerator */
+/** (function-valued var of prototypeMain)<br><br>
 
-This adds the generator of the pom.xml file to the file generators.
+Returned Value: none<br><br>
+
+Called By: ?<br><br>
+
+This generates the pom.xml file.<br>
 
 */
 
-      self.fileGenerators.push(function(artifact, callback)
+      pomGenerator = function(                              /* ARGUMENTS */
+       /** (object) set of files to add to                  */ artifact,
+       /** {function(string, plugin.PluginResult)} callback */ callback)
       {
         pomModel['federatesByType'] = {};
         pomModel.federates.forEach(function(fed)
@@ -709,20 +779,31 @@ This adds the generator of the pom.xml file to the file generators.
                                callback();
                              }
                          });
-      }); // end push function
+      }; // end pomGenerator
+
+      // Add the pomGenerator function to the file generators.
+      self.fileGenerators.push(pomGenerator);
 
 /* ******************************************************************* */
 
-/* add a generator to the file generators.
+/* fomProjectFedGenerator */
+/** (function-valued var of prototypeMain)<br><br>
 
-This adds the fed FOM generator to the file generators.  Processing
-the objectRoot(s) and the interactionRoot(s) processes all objects and
-interactions.  There is normally only one objectRoot and one
-interactionRoot.
+Returned Value: none<br><br>
+
+Called By: ?<br><br>
+
+This generates the fomProject.fed file.<br><br>
+
+Processing the objectRoot(s) and the interactionRoot(s) processes all
+objects and interactions.  There is normally only one objectRoot and
+one interactionRoot.<br>
 
 */
-      
-      self.fileGenerators.push(function(artifact, callback)
+
+      fomProjectFedGenerator = function(                    /* ARGUMENTS */
+       /** (object) set of files to add to                  */ artifact,
+       /** {function(string, plugin.PluginResult)} callback */ callback)
       {
         var fomModelFed =
           {federationname: self.projectName,
@@ -754,20 +835,28 @@ interactionRoot.
                                callback();
                              }
                          });
-      }); // end push function
+      }; // end fomProjectFedGenerator
+
+      // Add the fomProjectFedGenerator function to the file generators.
+      self.fileGenerators.push(fomProjectFedGenerator);
 
 /* ******************************************************************* */
 
-/* add a generator to the file generators.
+/* fomGenerator */
+/** (function-valued var of prototypeMain)<br><br>
 
-This adds the XML FOM generator to the file generators.  Processing
-the objectRoot(s) and the interactionRoot(s) processes all objects and
-interactions.  There is normally only one objectRoot and one
-interactionRoot.
+Returned Value: none<br><br>
+
+Called By: ?<br><br>
+
+This generates the XML FOM file.  Processing the objectRoot(s) and the
+interactionRoot(s) processes all objects and interactions.  There is
+normally only one objectRoot and one interactionRoot.<br>
 
 */
-
-      self.fileGenerators.push(function(artifact, callback)
+      fomGenerator = function(                              /* ARGUMENTS */
+       /** (object) set of files to add to                  */ artifact,
+       /** {function(string, plugin.PluginResult)} callback */ callback)
       {
         var today = new Date();
         var year = today.getFullYear();
@@ -810,21 +899,30 @@ interactionRoot.
                                callback();
                              }
                          });
-           
-      }); // end push function
+      }; // end fomGenerator
+
+      // Add the fomGenerator function to the file generators.
+      self.fileGenerators.push(fomGenerator);
 
 /* ******************************************************************* */
 
-/* add a generator to the file generators.
+/* NewcoaConfigJsonGenerator */
+/** (function-valued var of prototypeMain)<br><br>
 
-This adds the conf/NewcoaConfig.json generator to the file generators.  
+Returned Value: none<br><br>
+
+Called By: ?<br><br>
+
+This adds the conf/NewcoaConfig.json generator to the file generators.<br>  
 
 */
 
-      self.fileGenerators.push(function(artifact, callback)
+      NewcoaConfigJsonGenerator = function(                 /* ARGUMENTS */
+       /** (object) set of files to add to                  */ artifact,
+       /** {function(string, plugin.PluginResult)} callback */ callback)
       {
         var saveObj = {COAs: {}};
-        
+
         self.coasPath.forEach(function(obj)
         {
           if (!saveObj.COAs.hasOwnProperty(obj))
@@ -871,21 +969,31 @@ This adds the conf/NewcoaConfig.json generator to the file generators.
                                callback();
                              }
                          });
-      }); // closes self.fileGenerators.push(function(artifact, callback)
+      }; // end NewcoaConfigJsonGenerator
+
+      // Add the NewcoaConfigJsonGenerator function to the file generators.
+      self.fileGenerators.push(NewcoaConfigJsonGenerator);
 
 /* ******************************************************************* */
 
-/* add a generator to the file generators.
+/* expModelJsonGenerator */
+/** (function-valued var of prototypeMain)<br><br>
 
-This adds a generator to the file generators. For each path in
-self.experimentPaths, the generator adds two files. One is named
-coaSelection_<experimentmodel.name>.json. The other is named
-<experimentmodel.name>.json. They are put in a directory named
-<experimentmodel.name>.
+Returned Value: none<br><br>
+
+Called By: ?<br><br>
+
+This adds a generator of json files to the file generators. For each
+path in self.experimentPaths, the generator adds two files. One is
+named coaSelection_[experimentmodel.name].json. The other is named
+[experimentmodel.name].json. They are put in a directory named
+[experimentmodel.name].<br>
 
 */
 
-      self.fileGenerators.push(function(artifact, callback)
+      expModelJsonGenerator = function(                     /* ARGUMENTS */
+       /** (object) set of files to add to                  */ artifact,
+       /** {function(string, plugin.PluginResult)} callback */ callback)
       {
         var response = [];
 
@@ -922,7 +1030,7 @@ coaSelection_<experimentmodel.name>.json. The other is named
                     var cmb;
                     var  a;
                     var estr;
-                    
+
                     coa_selection_name = [];
                     self.coaGroupNodes[coagroup.guid].forEach(function(coanode)
                     {
@@ -971,7 +1079,7 @@ coaSelection_<experimentmodel.name>.json. The other is named
                     });
                   });
                 } //closes if (self.experimentsGuid.hasOwnProperty(objPath))
-              
+
               self.experimentModelConfig[objPath].forEach(function(expSet)
               {
                 var reference_name =
@@ -993,7 +1101,7 @@ coaSelection_<experimentmodel.name>.json. The other is named
                            "count": self.core.getAttribute(expSet, "count")});
                   }
               });
-              
+
               experimentmodel.exptConfig.coaSelection =
                 'conf/' + experimentmodel.name.toLowerCase() +
                 '/coaSelection_' + experimentmodel.name.toLowerCase() +
@@ -1050,25 +1158,37 @@ coaSelection_<experimentmodel.name>.json. The other is named
           {
             callback();
           }
-      }); // closes self.fileGenerators.push(function(artifact, callback)
+      }; // end expModelJsonGenerator
+
+      // Add the expModelJsonGenerator function to the file generators.
+      self.fileGenerators.push(expModelJsonGenerator);
 
 /* ******************************************************************* */
 
-/* add a generator to the file generators.
+/* expModelMiscGenerator */
+/** (function-valued var of prototypeMain)<br><br>
 
-This adds a generator to the file generators. For each path in
-self.experimentPaths, the generator adds three files. The files are
-put in a directory named <experimentmodel.name>. The files are named:
- docker-compose.yml
- start.sh
- federatelist.txt
+Returned Value: none<br><br>
+
+Called By: ?<br><br>
+
+For each path in self.experimentPaths, this generator adds three files.
+The files are put in a directory named [experimentmodel.name]. The files
+are named:<br>
+ docker-compose.yml<br>
+ start.sh<br>
+ federatelist.txt<br><br>
+
+The anonymous function passed to getDockerDetails accesses variables
+that are in scope at the time expModelGenerator is executed.<br>
 
 */
 
-      self.fileGenerators.push(function(artifact, callback)
+      expModelMiscGenerator = function(                     /* ARGUMENTS */
+       /** (object) set of files to add to                  */ artifact,
+       /** {function(string, plugin.PluginResult)} callback */ callback)
       {
-        var timestamp = (new Date()).getTime();
-
+        // call getDockerDetails using anonymous function as argument
         self.getDockerDetails(function(err, DockerDetails)
         {
           var response = [];
@@ -1151,7 +1271,7 @@ put in a directory named <experimentmodel.name>. The files are named:
                                          }
                                      }
                                  });
-                
+
                 artifact.addFile('conf/' +
                                  experimentmodel.name.toLowerCase() +
                                  "/"+ "start.sh",
@@ -1172,7 +1292,7 @@ put in a directory named <experimentmodel.name>. The files are named:
                                          }
                                      }
                                  });
-                
+
                 artifact.addFile('conf/' +
                                  experimentmodel.name.toLowerCase() +
                                  "/"+ "federatelist.txt",
@@ -1209,19 +1329,29 @@ put in a directory named <experimentmodel.name>. The files are named:
             {
               callback();
             }
-        }); // closes self.getDockerDetails(function(err, DockerDetails)
-      }); // closes self.fileGenerators.push(function(artifact, callback)
+        }); // closes call to self.getDockerDetails
+      }; // end expModelMiscGenerator
+
+      // Add the expModelMiscGenerator function to the file generators.
+      self.fileGenerators.push(expModelMiscGenerator);
 
 /* ******************************************************************* */
 
-/* add a generator to the file generators.
+/* expListJsonGenerator */
+/** (function-valued var of prototypeMain)<br><br>
 
-This adds a file generator to the file generators. The generator generates
-a file named experimentlist.json. It is put in the conf directory.
+Returned Value: none<br><br>
+
+Called By: ?<br><br>
+
+This generates a file named experimentlist.json. It is put in the conf
+directory.<br>
 
 */
 
-      self.fileGenerators.push(function(artifact, callback)
+      expListJsonGenerator = function(                      /* ARGUMENTS */
+       /** (object) set of files to add to                  */ artifact,
+       /** {function(string, plugin.PluginResult)} callback */ callback)
       {
         var experimentlist = [];
         if (self.experimentPaths.length != 0)
@@ -1254,18 +1384,27 @@ a file named experimentlist.json. It is put in the conf directory.
                                callback();
                              }
                          });
-      }); // end push function
+      }; // end expListJsonGenerator
+
+      // Add the expListJsonGenerator function to the file generators.
+      self.fileGenerators.push(expListJsonGenerator);
 
 /* ******************************************************************* */
 
-/* add a file to the file generators.
+/* RTIridGenerator */
+/** (function-valued var of prototypeMain)<br><br>
 
-This adds a file generator to the file generators.
-The file is named RTI.rid.
+Returned Value: none<br><br>
+
+Called By: ?<br><br>
+
+This generates a file named RTI.rid.<br>
 
 */
 
-      self.fileGenerators.push(function(artifact, callback)
+      RTIridGenerator = function(                           /* ARGUMENTS */
+       /** (object) set of files to add to                  */ artifact,
+       /** {function(string, plugin.PluginResult)} callback */ callback)
       {
         artifact.addFile('RTI.rid',
                          ejs.render(TEMPLATES['rti.rid.ejs'], self),
@@ -1281,18 +1420,27 @@ The file is named RTI.rid.
                                callback();
                              }
                          });
-      }); // end push function
+      }; // end RTIridGenerator
+
+      // Add the RTIridGenerator function to the file generators.
+      self.fileGenerators.push(RTIridGenerator);
 
 /* ******************************************************************* */
 
-/* add a generator to the file generators.
+/* log4j2XmlGenerator */
+/** (function-valued var of prototypeMain)<br><br>
 
-This adds a file generator to the file generators. The generator
-generates a file named log4j2.xml. It is put in the conf directory.
+Returned Value: none<br><br>
+
+Called By: ?<br><br>
+
+This generates a file named log4j2.xml. It is put in the conf directory.<br>
 
 */
 
-      self.fileGenerators.push(function(artifact, callback)
+      log4j2XmlGenerator = function(                        /* ARGUMENTS */
+       /** (object) set of files to add to                  */ artifact,
+       /** {function(string, plugin.PluginResult)} callback */ callback)
       {
         var java_implLog = {};
         java_implLog.projectName = self.projectName;
@@ -1311,27 +1459,36 @@ generates a file named log4j2.xml. It is put in the conf directory.
                                callback();
                              }
                          });
-      }); // end push function
+      }; // end log4j2XmlGenerator
+
+      // Add the log4j2XmlGenerator function to the file generators.
+      self.fileGenerators.push(log4j2XmlGenerator);
 
 /* ******************************************************************* */
-      
+
 /* initialize self.experimentModel */
-      
+
       self.experimentModel = {'script': {'federateTypesAllowed': [],
                                          'expectedFederates': [],
                                          'lateJoinerFederates': []}};
-      
+
 /* ******************************************************************* */
 
-/* add a generator to the file generators.
+/* expConfigJsonGenerator */
+/** (function-valued var of prototypeMain)<br><br>
 
-This populates self.experimentModel and adds a file generator to the
-file generators.  The generator generates a file named
-experimentConfig.json. It is put in the conf/default directory.
+Returned Value: none<br><br>
+
+Called By: ?<br><br>
+
+This generates a file named experimentConfig.json. It is put in the
+conf/default directory.<br>
 
 */
 
-      self.fileGenerators.push(function(artifact, callback)
+      expConfigJsonGenerator = function(                    /* ARGUMENTS */
+       /** (object) set of files to add to                  */ artifact,
+       /** {function(string, plugin.PluginResult)} callback */ callback)
       {
         self.federates.forEach(function(fed)
         {
@@ -1357,18 +1514,27 @@ experimentConfig.json. It is put in the conf/default directory.
                                callback();
                              }
                          });
-      }); // end push function
+      }; // end expConfigJsonGenerator
+
+      // Add the expConfigJsonGenerator function to the file generators.
+      self.fileGenerators.push(expConfigJsonGenerator);
 
 /* ******************************************************************* */
 
-/* add a generator to the fileGenerators
+/* runDefaultGenerator */
+/** (function-valued var of prototypeMain)<br><br>
 
-This adds a generator to the file generators. The generator generates
-a file named run-default.sh.
+Returned Value: none<br><br>
+
+Called By: ?<br><br>
+
+This generates a file named run-default.sh.<br>
 
 */
 
-      self.fileGenerators.push(function(artifact, callback)
+      runDefaultGenerator = function(                       /* ARGUMENTS */
+       /** (object) set of files to add to                  */ artifact,
+       /** {function(string, plugin.PluginResult)} callback */ callback)
       {
         var renderContext = {federates: self.federates};
 
@@ -1387,19 +1553,28 @@ a file named run-default.sh.
                                callback();
                              }
                          });
-      }); // end push function
+      }; // end runDefaultGenerator
+
+      // Add the runDefaultGenerator function to the file generators.
+      self.fileGenerators.push(runDefaultGenerator);
 
 /* ******************************************************************* */
 
-/* add a generator to the fileGenerators
+/* runManagerGenerator */
+/** (function-valued var of prototypeMain)<br><br>
 
-This adds a file generator to the file generators.  The generator
-generates a file named run-manager.sh. It is a script to run just the
-federation manager.
+Returned Value: none<br><br>
+
+Called By: ?<br><br>
+
+This generates a file named run-manager.sh; that file is a script to
+run just the federation manager.<br>
 
 */
 
-      self.fileGenerators.push(function(artifact, callback)
+      runManagerGenerator = function(                       /* ARGUMENTS */
+       /** (object) set of files to add to                  */ artifact,
+       /** {function(string, plugin.PluginResult)} callback */ callback)
       {
         artifact.addFile('run-manager.sh',
                          ejs.render(TEMPLATES['run-manager.sh.ejs'],
@@ -1416,19 +1591,28 @@ federation manager.
                                callback();
                              }
                          });
-      }); // end push function
+      }; // end runManagerGenerator
+
+      // Add the runManagerGenerator function to the file generators.
+      self.fileGenerators.push(runManagerGenerator);
 
 /* ******************************************************************* */
 
-/* add a generator to the fileGenerators
+/* buildCppShGenerator */
+/** (function-valued var of prototypeMain)<br><br>
 
-This adds a file generator to the file generators.  The generator
-generates a file named build-cpp.sh. It is a script to prepare C++
-federates for execution.
+Returned Value: none<br><br>
+
+Called By: ?<br><br>
+
+This generates a file named build-cpp.sh; that file is a script to
+prepare C++ federates for execution.<br>
 
 */
 
-      self.fileGenerators.push(function(artifact, callback)
+      buildCppShGenerator = function(                       /* ARGUMENTS */
+       /** (object) set of files to add to                  */ artifact,
+       /** {function(string, plugin.PluginResult)} callback */ callback)
       {
         artifact.addFile('build-cpp.sh',
                          ejs.render(TEMPLATES['build-cpp.sh.ejs'],
@@ -1445,34 +1629,45 @@ federates for execution.
                                callback();
                              }
                          });
-      }); // end push function
+      }; // end buildCppShGenerator
+
+      // Add the buildCppShGenerator function to the file generators.
+      self.fileGenerators.push(buildCppShGenerator);
 
 /* ******************************************************************* */
 
-/* add a generator to the fileGenerators
+/* fedJsonTypeGenerator */
+/** (function-valued var of prototypeMain)<br><br>
 
-This adds a file generator to the file generators.  First, the
-generator builds a federateConfigurations array containing an entry
-for each path in self.experimentPaths. Then, for each entry in
-federateConfigurations, the generator generates a file named
-<federateType>.json; the file is put in the conf/<experimentName>
-directory.
+Returned Value: none<br><br>
 
-Comments from another programmer (validity unknown)
+Called By: ?<br><br>
+
+This generates a json file for each path in self.experimentPaths.<br><br>
+
+First, the generator builds a federateConfigurations array containing
+an entry for each path in self.experimentPaths. Then, for each entry
+in federateConfigurations, the generator generates a file named
+[federateType].json; the file is put in the conf/<experimentName>
+directory.<br><br>
+
+Comments from another programmer (validity unknown)<br><br>
 
 1. Regarding setting the experimentName:
     This is wrong (and also how it's been done everywhere) because a user
     can change the name field. This should use self.core.getPointerPath
     on 'ref' to get the pointer to the federate node. However, I have no
-    idea how to get the WebGME node from its string path.
+    idea how to get the WebGME node from its string path.<br><br>
 
 2. Regarding the filePath in federateConfiguration
      filePath needs work because if an experiment is
-     called 'default' I assume it breaks terribly.
+     called 'default' I assume it breaks terribly.<br>
 
 */
 
-      self.fileGenerators.push(function(artifact, callback)
+      fedJsonTypeGenerator = function(                      /* ARGUMENTS */
+       /** (object) set of files to add to                  */ artifact,
+       /** {function(string, plugin.PluginResult)} callback */ callback)
       {
         if (self.experimentPaths.length != 0)
           {
@@ -1482,7 +1677,7 @@ Comments from another programmer (validity unknown)
 
             var federateLookup = {};
             // to speed up access to federate attributes
-            
+
             self.federates.forEach(function(federate)
             {
               federateLookup[federate.name] = federate;
@@ -1497,7 +1692,7 @@ Comments from another programmer (validity unknown)
                     var federateType;
                     var federateJsonObject;
                     var federateConfiguration;
-                    
+
                     experimentName =
                       self.core.getAttribute(self.core.
                                              getParent(federateReference),
@@ -1549,19 +1744,29 @@ Comments from another programmer (validity unknown)
           {
             callback();
           }
-      }); // closes self.fileGenerators.push(function(artifact, callback)
+      }; // end fedJsonTypeGenerator
+
+      // Add the fedJsonTypeGenerator function to the file generators.
+      self.fileGenerators.push(fedJsonTypeGenerator);
 
 /* ******************************************************************* */
 
-/* add a generator to the fileGenerators
+/* fedJsonGenerator */
+/** (function-valued var of prototypeMain)<br><br>
 
-This adds a file generator to the file generators.  For each federate,
-fed, in self.federates, the generator generates a configuration file named
-<fed.name>.json; the file is put in the conf/default directory.
+Returned Value: none<br><br>
+
+Called By: ?<br><br>
+
+For each federate, fed, in self.federates, this generates a
+configuration file named [fed.name].json; the file is put in the
+conf/default directory.<br>
 
 */
 
-      self.fileGenerators.push(function(artifact, callback)
+      fedJsonGenerator = function(                          /* ARGUMENTS */
+       /** (object) set of files to add to                  */ artifact,
+       /** {function(string, plugin.PluginResult)} callback */ callback)
       {
         var FederateJsonModel = {"federateRTIInitWaitTimeMs": 200,
                                  "federateType": "",
@@ -1593,19 +1798,28 @@ fed, in self.federates, the generator generates a configuration file named
                                }
                            });
         });
-      }); // end push function
+      }; // end fedJsonGenerator
+
+      // Add the fedJsonGenerator function to the file generators.
+      self.fileGenerators.push(fedJsonGenerator);
 
 /* ******************************************************************* */
 
-/* add a generator to the fileGenerators
+/* fedmgrGenerator */
+/** (function-valued var of prototypeMain)<br><br>
 
-This adds a file generator to the file generators. The generator
-generates a configuration file named fedmgrconfig.json; the file is
-put in the conf directory.
+Returned Value: none<br><br>
+
+Called By: ?<br><br>
+
+This generates a configuration file named fedmgrconfig.json; the file is
+put in the conf directory.<br>
 
 */
 
-      self.fileGenerators.push(function(artifact, callback)
+      fedmgrGenerator = function(                           /* ARGUMENTS */
+       /** (object) set of files to add to                  */ artifact,
+       /** {function(string, plugin.PluginResult)} callback */ callback)
       {
         var fedmgrConfig =
           {'script': {"federateRTIInitWaitTimeMs": 200,
@@ -1638,70 +1852,80 @@ put in the conf directory.
                                callback();
                              }
                          });
-      }); // end push function
+      }; // end fedmgrGenerator
+
+      // Add the fedmgrGenerator function to the file generators.
+      self.fileGenerators.push(fedmgrGenerator);
 
 /* ******************************************************************* */
 
-/** generateFiles (function-valued var of DeploymentExporter.prototype.main)
+/* generateFiles */
+/** (function-valued var of prototypeMain)<br><br>
 
-Returned Value: none
+Returned Value: none<br><br>
 
-Called By:
-  finishExport
-  generateFiles (recursively)
+Called By:<br>
+  finishExport<br>
+  generateFiles (recursively)<br><br>
 
-This generates the text of files to be included in the output. It executes
-one file generating function on each recursive call.
+This generates the text of files to be included in the output; it executes
+one file generating function on each recursive call.<br>
 
 */
-      generateFiles = function( /*   ARGUMENTS                       */
-       artifact,                /**< (object) set of files to add to */
-       doneBack)                /**< (function)                      */
+
+      generateFiles = function(                              /* ARGUMENTS */
+       /** (object) set of files to add to                   */ artifact,
+       /** (array) of functions that generate files          */ fileGenerators,
+       /** (function) to call when done with file generators */ doneBack)
       {
         if (numberOfFileGenerators > 0)
           {
-            self.fileGenerators[self.fileGenerators.length -
-                                numberOfFileGenerators](artifact,
-                                                         function(err)
-                                {
-                                  if (err)
-                                    {
-                                      callback(err, self.result);
-                                      return;
-                                    }
-                                  numberOfFileGenerators--;
-                                  if (numberOfFileGenerators > 0)
-                                    {
-                                      generateFiles(artifact, doneBack);
-                                    }
-                                  else
-                                    {
-                                      doneBack();
-                                    }
-                                });
+            fileGenerators[fileGenerators.length -
+                           numberOfFileGenerators](artifact, function(err)
+              {
+                if (err)
+                  {
+                    callback(err, self.result);
+                    return;
+                  }
+                numberOfFileGenerators--;
+                if (numberOfFileGenerators > 0)
+                  {
+                    generateFiles(artifact, fileGenerators, doneBack);
+                  }
+                else
+                  {
+                    doneBack();
+                  }
+              });
           }
         else
           {
             doneBack();
           }
-      };
+      }; // end generateFiles
 
 /* ******************************************************************* */
 
-/** finishExport (function-valued var of DeploymentExporter.prototype.main)
+/* finishExport */
+/** (function-valued var of prototypeMain)<br><br>
 
-Returned Value: none unless there is an error
+Returned Value: none unless there is an error<br><br>
 
-Called By: DeploymentExporter.Prototype.main (near the end)
+Called By: anonymous function used as an argument to
+  visitAllChildrenFromRootContainer<br><br>
+
+After all nodes have been visited, this function uses the data structures
+that have been built to generate and export files.<br>
 
 */
-      finishExport = function( /*   ARGUMENTS                            */
-       err)                    /**< (string) an error string or null (?) */
+      finishExport = function(                  /* ARGUMENTS */
+       /** (string) an error string or null (?) */ err)
       {
         var artifact;
         var idx;
         var artifactMsg;
-                
+
         if (err)
           {
             return callback(err, self.result);
@@ -1712,7 +1936,7 @@ Called By: DeploymentExporter.Prototype.main (near the end)
         numberOfFileGenerators = self.fileGenerators.length;
         if (numberOfFileGenerators > 0)
           {
-            generateFiles(artifact, function(err)
+            generateFiles(artifact, self.fileGenerators, function(err)
             {
               if (err)
                 {
@@ -1739,13 +1963,13 @@ Called By: DeploymentExporter.Prototype.main (near the end)
                 callback(null, self.result);
               }); //closes self.blobClient.saveAllArtifacts(...)
             }); // closes generateFiles(...)
-          }//closes if (numberOfFileGenerators > 0)
+          }// closes if (numberOfFileGenerators > 0)
         else
           {
             self.result.setSuccess(true);
             callback(null, self.result);
           }
-      }; // closes finishExport = function(...)
+      }; // end finishExport
 
 /* ******************************************************************* */
 
@@ -1773,22 +1997,28 @@ but does not return it.
 
 /* ******************************************************************* */
 
-    } // end of DeploymentExporter.Prototype.main
+    }; // end prototypeMain
 
 /* ******************************************************************* */
 
-/** getDockerDetails (function-valued property of DeploymentExporter.prototype)
+    DeploymentExporter.prototype.main = prototypeMain;
 
-Returned Value: whatever deferred.promise.nodeify(callback) returns
+/* ******************************************************************* */
 
-Called By: anonymous function that generates files named docker-compose.yml
+/* getDockerDetails */
+/** (function-valued var of top-level function object)<br><br>
+
+Returned Value: whatever deferred.promise.nodeify(callback) returns<br><br>
+
+Called By: expModelMiscGenerator<br><br>
 
 Where this is called, the callback function adds a file generator to the
-file generators.
+file generators.<br>
 
 */
 
-    DeploymentExporter.prototype.getDockerDetails = function(callback)
+    getDockerDetails = function(                      /* ARGUMENTS */
+     /** {function(string, object)} callback function */ callback)
     {
       var deferred;
       var req;
@@ -1818,23 +2048,28 @@ file generators.
           }
       });
       return deferred.promise.nodeify(callback);
-    };
+    }; // end getDockerDetails
+
+    DeploymentExporter.prototype.getDockerDetails = getDockerDetails;
 
 /* ******************************************************************* */
 
-/** visit_FederateExecution (function property of DeploymentExporter.prototype)
+/* visit_FederateExecution */
+/** (function-valued var of top-level function object)<br><br>
 
-Returned Value: the context argument padded and possibly changed
+Returned Value: the context argument padded and possibly changed<br><br>
 
-Called By: ? (console.log message never seen)
+Called By: atModelNode in ModelTraverserMixin.js if the node being
+processed is a FederateExecution node<br><br>
+
+This is the visitor function for a FederateExecution node.<br>
 
 */
 
-    DeploymentExporter.prototype.visit_FederateExecution =
-      function( /*   ARGUMENTS                                  */
-       node,    /**< (webgme node) a FederateExecution node     */
-       parent,  /**< (webgme node) parent of node               */
-       context) /**< (object) a context object, may be modified */
+    visit_FederateExecution = function(             /* ARGUMENTS */
+     /** (webgme node) a FederateExecution node     */ node,
+     /** (webgme node) parent of node               */ parent,
+     /** (object) a context object, may be modified */ context)
     {
       var self = this;
 
@@ -1849,31 +2084,35 @@ Called By: ? (console.log message never seen)
       return {context: context};
     };
 
+    DeploymentExporter.prototype.visit_FederateExecution =
+      visit_FederateExecution;
+
 /* ******************************************************************* */
 
-/** addCoaNode (function property of DeploymentExporter.prototype)
+/* addCoaNode */
+/** (function-valued var of top-level function object)<br><br>
 
-Returned Value: none
+Returned Value: none<br><br>
 
-Called By:
-  DeploymentExporter.prototype.visit_Action
-  DeploymentExporter.prototype.visit_Fork
-  DeploymentExporter.prototype.visit_ProbabilisticChoice
-  DeploymentExporter.prototype.visit_SyncPoint
-  DeploymentExporter.prototype.visit_Dur
-  DeploymentExporter.prototype.visit_RandomDur
-  DeploymentExporter.prototype.visit_AwaitN
-  DeploymentExporter.prototype.visit_Outcome
-  DeploymentExporter.prototype.visit_OutcomeFilter
-  DeploymentExporter.prototype.visit_TerminateCOA
+Called By:<br>
+  DeploymentExporter.prototype.visit_Action<br>
+  DeploymentExporter.prototype.visit_Fork<br>
+  DeploymentExporter.prototype.visit_ProbabilisticChoice<br>
+  DeploymentExporter.prototype.visit_SyncPoint<br>
+  DeploymentExporter.prototype.visit_Dur<br>
+  DeploymentExporter.prototype.visit_RandomDur<br>
+  DeploymentExporter.prototype.visit_AwaitN<br>
+  DeploymentExporter.prototype.visit_Outcome<br>
+  DeploymentExporter.prototype.visit_OutcomeFilter<br>
+  DeploymentExporter.prototype.visit_TerminateCOA<br><br>
 
-The adds properties to the obj argument and to self.
+This adds properties to the obj argument and to self.<br>
 
 */
 
-    DeploymentExporter.prototype.addCoaNode = function( /*   ARGUMENTS     */
-     node,                                              /**< a webGME node */
-     obj)                                               /**< an object     */
+    addCoaNode = function( /* ARGUMENTS */
+     /** a webGME node     */ node,
+     /** an object         */ obj)
     {
       var self = this;
 
@@ -1887,21 +2126,26 @@ The adds properties to the obj argument and to self.
       self.coaPathNode[self.core.getPath(node)] = obj;
     };
 
+    DeploymentExporter.prototype.addCoaNode = addCoaNode;
+
 /* ******************************************************************* */
 
-/** visit_Action (function property of DeploymentExporter.prototype)
+/* visit_Action */
+/** (function-valued var of top-level function object)<br><br>
 
-Returned Value: the context argument padded and possibly changed
+Returned Value: the context argument padded and possibly changed<br><br>
 
-Called By: ? (console.log message never seen)
+Called By: atModelNode in ModelTraverserMixin.js if the node being
+processed is an Action node<br><br>
+
+This is the visitor function for an action node.<br>
 
 */
 
-    DeploymentExporter.prototype.visit_Action =
-      function( /*   ARGUMENTS                                  */
-       node,    /**< (webgme node) a Fork node                  */
-       parent,  /**< (webgme node)? not used                    */
-       context) /**< (object) a context object, may be modified */
+    visit_Action = function(                        /* ARGUMENTS */
+     /** (webgme node) an Action node               */ node,
+     /** (webgme node)? not used                    */ parent,
+     /** (object) a context object, may be modified */ context)
     {
       var self = this;
       var obj = {interactionName: self.core.getPointerPath(node, "ref")};
@@ -1921,21 +2165,26 @@ Called By: ? (console.log message never seen)
       return {context: context};
     };
 
+    DeploymentExporter.prototype.visit_Action = visit_Action;
+
 /* ******************************************************************* */
 
-/** visit_COARef (function property of DeploymentExporter.prototype)
+/* visit_COARef */
+/** (function-valued var of top-level function object)<br><br>
 
-Returned Value: the context argument padded and possibly changed
+Returned Value: the context argument padded and possibly changed<br><br>
 
-Called By: ? (console.log message never seen)
+Called By: atModelNode in ModelTraverserMixin.js if the node being
+processed is a COARef node<br><br>
+
+This is the visitor function for a COARef node.<br>
 
 */
 
-    DeploymentExporter.prototype.visit_COARef =
-      function( /*   ARGUMENTS                                  */
-       node,    /**< (webgme node) a COARef node                */
-       parent,  /**< (webgme node) parent of node               */
-       context) /**< (object) a context object, may be modified */
+    visit_COARef = function(                        /* ARGUMENTS */
+     /** (webgme node) a COARef node                */ node,
+     /** (webgme node) parent of node               */ parent,
+     /** (object) a context object, may be modified */ context)
     {
       var self = this;
       var obj = {};
@@ -1958,21 +2207,26 @@ Called By: ? (console.log message never seen)
       return {context: context};
     };
 
+    DeploymentExporter.prototype.visit_COARef = visit_COARef;
+
 /* ******************************************************************* */
 
-/** visit_COASequencesGroup (function property of DeploymentExporter.prototype)
+/* visit_COASequencesGroup */
+/** (function-valued var of top-level function object)<br><br>
 
-Returned Value: the context argument padded and possibly changed
+Returned Value: the context argument padded and possibly changed<br><br>
 
-Called By: ? (console.log message never seen)
+Called By: atModelNode in ModelTraverserMixin.js if the node being
+processed is a COASequencesGroup node<br><br>
+
+This is the visitor function for a COASequencesGroup node.<br>
 
 */
 
-    DeploymentExporter.prototype.visit_COASequencesGroup =
-      function( /*   ARGUMENTS                                  */
-       node,    /**< (webgme node) a COASequencesGroup node     */
-       parent,  /**< (webgme node) parent of node               */
-       context) /**< (object) a context object, may be modified */
+    visit_COASequencesGroup = function(             /* ARGUMENTS */
+     /** (webgme node) a COASequencesGroup node     */ node,
+     /** (webgme node) parent of node               */ parent,
+     /** (object) a context object, may be modified */ context)
     {
       var self = this;
       var obj = {};
@@ -1992,21 +2246,27 @@ Called By: ? (console.log message never seen)
       return {context: context};
     };
 
+    DeploymentExporter.prototype.visit_COASequencesGroup =
+      visit_COASequencesGroup;
+
 /* ******************************************************************* */
-    
-/** visit_COA (function property of DeploymentExporter.prototype)
 
-Returned Value: the context argument padded and possibly changed
+/* visit_COA */
+/** (function-valued var of top-level function object)<br><br>
 
-Called By: ? (console.log message never seen)
+Returned Value: the context argument padded and possibly changed<br><br>
+
+Called By: atModelNode in ModelTraverserMixin.js if the node being
+processed is a COA node<br><br>
+
+This is the visitor function for a COA node.<br>
 
 */
 
-    DeploymentExporter.prototype.visit_COA =
-      function( /*   ARGUMENTS                                  */
-       node,    /**< (webgme node) a COA node                   */
-       parent,  /**< (webgme node)? not used                    */
-       context) /**< (object) a context object, may be modified */
+    visit_COA = function(                           /* ARGUMENTS */
+     /** (webgme node) a COA node                   */ node,
+     /** (webgme node)? not used                    */ parent,
+     /** (object) a context object, may be modified */ context)
     {
       var self = this;
       var obj = {};
@@ -2022,23 +2282,28 @@ Called By: ? (console.log message never seen)
         self.coasPath.push(self.core.getAttribute(node, "name"))
 
     return {context: context};
-};
+    };
+
+    DeploymentExporter.prototype.visit_COA = visit_COA;
 
 /* ******************************************************************* */
 
-/** visit_Fork (function property of DeploymentExporter.prototype)
+/* visit_Fork */
+/** (function-valued var of top-level function object)<br><br>
 
-Returned Value: the context argument padded and possibly changed
+Returned Value: the context argument padded and possibly changed<br><br>
 
-Called By: ? (console.log message never seen)
+Called By : atModelNode in ModelTraverserMixin.js if the node being
+processed is a Fork node<br><br>
+
+This is the visitor function for a Fork node.<br>
 
 */
 
-    DeploymentExporter.prototype.visit_Fork =
-      function( /*   ARGUMENTS                                  */
-       node,    /**< (webgme node) a Fork node                  */
-       parent,  /**< (webgme node)? not used                    */
-       context) /**< (object) a context object, may be modified */
+    visit_Fork = function(                          /* ARGUMENTS */
+     /** (webgme node) a Fork node                  */ node,
+     /** (webgme node)? not used                    */ parent,
+     /** (object) a context object, may be modified */ context)
     {
       var self = this;
       var obj = {isDecisionPoint:
@@ -2049,21 +2314,26 @@ Called By: ? (console.log message never seen)
       return {context: context};
     };
 
+    DeploymentExporter.prototype.visit_Fork = visit_Fork;
+
 /* ******************************************************************* */
 
-/** visit_ProbabilisticChoice (function prop of DeploymentExporter.prototype)
+/* visit_ProbabilisticChoice */
+/** (function-valued var of top-level function object)<br><br>
 
-Returned Value: the context argument padded and possibly changed
+Returned Value: the context argument padded and possibly changed<br><br>
 
-Called By: ? (console.log message never seen)
+Called By: atModelNode in ModelTraverserMixin.js if the node being
+processed is a ProbabilisticChoice node<br><br>
+
+This is the visitor function for a ProbabilisticChoice node.<br>
 
 */
 
-    DeploymentExporter.prototype.visit_ProbabilisticChoice =
-      function( /*   ARGUMENTS                                  */
-       node,    /**< (webgme node) a ProbabilisticChoice node   */
-       parent,  /**< (webgme node)? not used                    */
-       context) /**< (object) a context object, may be modified */
+    visit_ProbabilisticChoice = function(              /* ARGUMENTS */
+     /** (webgme node) a ProbabilisticChoice node      */ node,
+     /** (webgme node)? not used                       */ parent,
+     /** (object) a context object, may be modified    */ context)
     {
       var self = this;
       var obj = {isDecisionPoint:
@@ -2074,21 +2344,27 @@ Called By: ? (console.log message never seen)
       return {context: context};
     };
 
+    DeploymentExporter.prototype.visit_ProbabilisticChoice =
+      visit_ProbabilisticChoice;
+
 /* ******************************************************************* */
 
-/** visit_SyncPoint (function property of DeploymentExporter.prototype)
+/* visit_SyncPoint */
+/** (function-valued var of top-level function object)<br><br>
 
-Returned Value: the context argument padded and possibly changed
+Returned Value: the context argument padded and possibly changed<br><br>
 
-Called By:  ? (console.log message never seen)
+Called By:  atModelNode in ModelTraverserMixin.js if the node being
+processed is a SyncPoint node<br><br>
+
+This is the visitor function for a SyncPoint node.<br>
 
 */
 
-    DeploymentExporter.prototype.visit_SyncPoint =
-      function( /*   ARGUMENTS                                  */
-       node,    /**< (webgme node) a SyncPoint node             */
-       parent,  /**< (webgme node)? not used                    */
-       context) /**< (object) a context object, may be modified */
+    visit_SyncPoint = function(                     /* ARGUMENTS */
+     /** (webgme node) a SyncPoint node             */ node,
+     /** (webgme node)? not used                    */ parent,
+     /** (object) a context object, may be modified */ context)
     {
       var self = this;
       var obj = {time: self.core.getAttribute(node, 'time'),
@@ -2100,21 +2376,26 @@ Called By:  ? (console.log message never seen)
       return {context: context};
     };
 
+    DeploymentExporter.prototype.visit_SyncPoint = visit_SyncPoint;
+
 /* ******************************************************************* */
 
-/** visit_Dur (function property of DeploymentExporter.prototype)
+/* visit_Dur */
+/** (function-valued var of top-level function object)<br><br>
 
-Returned Value: the context argument padded and possibly changed
+Returned Value: the context argument padded and possibly changed<br><br>
 
-Called By:  ? (console.log message never seen)
+Called By: atModelNode in ModelTraverserMixin.js if the node being
+processed is a Dur node<br><br>
+
+This is the visitor function for a Dur node.<br>
 
 */
 
-    DeploymentExporter.prototype.visit_Dur =
-      function( /*   ARGUMENTS                                  */
-       node,    /**< (webgme node) a Dur node                   */
-       parent,  /**< (webgme node)? not used                    */
-       context) /**< (object) a context object, may be modified */
+    visit_Dur = function(                           /* ARGUMENTS */
+     /** (webgme node) a Dur node                   */ node,
+     /** (webgme node)? not used                    */ parent,
+     /** (object) a context object, may be modified */ context)
     {
       var self = this;
       var obj = {time: self.core.getAttribute(node, 'time')};
@@ -2124,21 +2405,26 @@ Called By:  ? (console.log message never seen)
       return {context: context};
     };
 
+    DeploymentExporter.prototype.visit_Dur = visit_Dur;
+
 /* ******************************************************************* */
 
-/** visit_RandomDur (function property of DeploymentExporter.prototype)
+/* visit_RandomDur */
+/** (function-valued var of top-level function object)<br><br>
 
-Returned Value: the context argument padded and possibly changed
+Returned Value: the context argument padded and possibly changed<br><br>
 
-Called By:  ? (console.log message never seen)
+Called By: atModelNode in ModelTraverserMixin.js if the node being
+processed is a RandomDur node<br><br>
+
+This is the visitor function for a RandomDur node.<br>
 
 */
 
-    DeploymentExporter.prototype.visit_RandomDur =
-      function( /*   ARGUMENTS                                  */
-       node,    /**< (webgme node) a RandomDur node             */
-       parent,  /**< (webgme node)? not used                    */
-       context) /**< (object) a context object, may be modified */
+    visit_RandomDur = function(                     /* ARGUMENTS */
+     /** (webgme node) a RandomDur node             */ node,
+     /** (webgme node)? not used                    */ parent,
+     /** (object) a context object, may be modified */ context)
     {
       var self = this;
       var obj = {lowerBound: self.core.getAttribute(node, 'lowerBound'),
@@ -2149,21 +2435,26 @@ Called By:  ? (console.log message never seen)
       return {context: context};
     };
 
+    DeploymentExporter.prototype.visit_RandomDur = visit_RandomDur;
+
 /* ******************************************************************* */
 
-/** visit_AwaitN (function property of DeploymentExporter.prototype)
+/* visit_AwaitN */
+/** (function-valued var of top-level function object)<br><br>
 
-Returned Value: the context argument padded and possibly changed
+Returned Value: the context argument padded and possibly changed<br><br>
 
-Called By:  ? (console.log message never seen)
+Called By:  atModelNode in ModelTraverserMixin.js if the node being
+processed is a AwaitN node<br><br>
+
+This is the visitor function for an AwaitN node.<br>
 
 */
 
-    DeploymentExporter.prototype.visit_AwaitN =
-      function( /*   ARGUMENTS                                  */
-       node,    /**< (webgme node) an AwaitN node               */
-       parent,  /**< (webgme node)? not used                    */
-       context) /**< (object) a context object, may be modified */
+    visit_AwaitN = function(                        /* ARGUMENTS */
+     /** (webgme node) an AwaitN node               */ node,
+     /** (webgme node)? not used                    */ parent,
+     /** (object) a context object, may be modified */ context)
     {
       var self = this;
       var obj = {minBranchesToAwait:
@@ -2174,21 +2465,26 @@ Called By:  ? (console.log message never seen)
       return {context: context};
     };
 
+    DeploymentExporter.prototype.visit_AwaitN = visit_AwaitN;
+
 /* ******************************************************************* */
 
-/** visit_Outcome (function property of DeploymentExporter.prototype)
+/* visit_Outcome */
+/** (function-valued var of top-level function object)<br><br>
 
-Returned Value: the context argument padded and possibly changed
+Returned Value: the context argument padded and possibly changed<br><br>
 
-Called By:  ? (console.log message never seen)
+Called By: atModelNode in ModelTraverserMixin.js if the node being
+processed is an Outcome node<br><br>
+
+This is the visitor function for an Outcome node.<br>
 
 */
 
-    DeploymentExporter.prototype.visit_Outcome =
-      function( /*   ARGUMENTS                                  */
-       node,    /**< (webgme node) an Outcome node              */
-       parent,  /**< (webgme node)? not used                    */
-       context) /**< (object) a context object, may be modified */
+    visit_Outcome = function(                       /* ARGUMENTS */
+     /** (webgme node) an Outcome node              */ node,
+     /** (webgme node)? not used                    */ parent,
+     /** (object) a context object, may be modified */ context)
     {
       var self = this;
       var obj = {interactionName: self.core.getPointerPath(node, "ref")};
@@ -2198,21 +2494,26 @@ Called By:  ? (console.log message never seen)
       return {context: context};
     };
 
+    DeploymentExporter.prototype.visit_Outcome = visit_Outcome;
+
 /* ******************************************************************* */
 
-/** visit_OutcomeFilter (function property of DeploymentExporter.prototype)
+/* visit_OutcomeFilter */
+/** (function-valued var of top-level function object)<br><br>
 
-Returned Value: the context argument padded and possibly changed
+Returned Value: the context argument padded and possibly changed<br><br>
 
-Called By:  ? (console.log message never seen)
+Called By: atModelNode in ModelTraverserMixin.js if the node being
+processed is an OutcomeFilter node<br><br>
+
+This is the visitor function for an OutcomeFilter node.<br>
 
 */
 
-    DeploymentExporter.prototype.visit_OutcomeFilter =
-      function( /*   ARGUMENTS                                  */
-       node,    /**< (webgme node) an OutcomeFilter node        */
-       parent,  /**< (webgme node)? not used                    */
-       context) /**< (object) a context object, may be modified */
+    visit_OutcomeFilter = function(                 /* ARGUMENTS */
+     /** (webgme node) an OutcomeFilter node        */ node,
+     /** (webgme node)? not used                    */ parent,
+     /** (object) a context object, may be modified */ context)
     {
       var self = this;
 
@@ -2221,21 +2522,26 @@ Called By:  ? (console.log message never seen)
       return {context: context};
     };
 
+    DeploymentExporter.prototype.visit_OutcomeFilter = visit_OutcomeFilter;
+
 /* ******************************************************************* */
 
-/** visit_TerminateCOA (function property of DeploymentExporter.prototype)
+/* visit_TerminateCOA */
+/** (function-valued var of top-level function object)<br><br>
 
-Returned Value: the context argument, padded and possibly changed
+Returned Value: the context argument, padded and possibly changed<br><br>
 
-Called By:  ? (console.log message never seen)
+Called By: atModelNode in ModelTraverserMixin.js if the node being
+processed is a TerminateCOA node<br><br>
+
+This is the visitor function for a TerminateCOA node.<br>
 
 */
 
-    DeploymentExporter.prototype.visit_TerminateCOA =
-      function( /*   ARGUMENTS                                  */
-       node,    /**< (webgme node) a TerminateCOA node          */
-       parent,  /**< (webgme node)? not used                    */
-       context) /**< (object) a context object, may be modified */
+    visit_TerminateCOA = function(                  /* ARGUMENTS */
+     /** (webgme node) a TerminateCOA node          */ node,
+     /** (webgme node)? not used                    */ parent,
+     /** (object) a context object, may be modified */ context)
     {
       var self = this;
 
@@ -2244,30 +2550,34 @@ Called By:  ? (console.log message never seen)
       return {context: context};
     };
 
+    DeploymentExporter.prototype.visit_TerminateCOA = visit_TerminateCOA;
+
 /* ******************************************************************* */
 
-/** addCoaEdge (function property of DeploymentExporter.prototype)
+/* addCoaEdge */
+/** (function-valued var of top-level function object)<br><br>
 
-Returned Value: the context argument padded and possibly changed
+Returned Value: the context argument padded and possibly changed<br><br>
 
-Called By:
-  visit_COAException
-  visit_COAFlow
-  visit_COAFlowWithProbability
-  visit_Filter2COAElement
-  visit_Outcome2Filter
+Called By:<br>
+  visit_COAException<br>
+  visit_COAFlow<br>
+  visit_COAFlowWithProbability<br>
+  visit_Filter2COAElement<br>
+  visit_Outcome2Filter<br><br>
+
+This adds data an empty or small object and adds the object to coaEdges.<br>
 
 */
 
-    DeploymentExporter.prototype.addCoaEdge =
-      function( /*   ARGUMENTS                                           */
-       node,    /**< (webgme node) a node of the type in the caller name */
-       obj)     /**< an empty or small object, built more here           */
+    addCoaEdge = function(                                   /* ARGUMENTS */
+     /** (webgme node) a node of the type in the caller name */ node,
+     /** an empty or small object, built more here           */ obj)
     {
       var self = this;
 
       obj.name = self.core.getAttribute(node, 'name');
-      
+
       obj.type = ((obj.name === 'CPSWT') ? 'CPSWT' :
                   (obj.name === 'CPSWTMeta') ? 'CPSWTMeta' :
                   self.core.getAttribute(self.getMetaType(node), 'name'));
@@ -2279,21 +2589,26 @@ Called By:
       self.coaPathEdge[self.core.getPath(node)] = obj;
     };
 
+    DeploymentExporter.prototype.addCoaEdge = addCoaEdge;
+
 /* ******************************************************************* */
 
-/** visit_COAFlow (function property of DeploymentExporter.prototype)
+/* visit_COAFlow */
+/** (function-valued var of top-level function object)<br><br>
 
-Returned Value: the context argument padded and possibly changed
+Returned Value: the context argument padded and possibly changed<br><br>
 
-Called By:  ? (console.log message never seen)
+Called By: atModelNode in ModelTraverserMixin.js if the node being
+processed is a COAFlow node<br><br>
+
+This is the visitor function for a COAFlow node.<br>
 
 */
 
-    DeploymentExporter.prototype.visit_COAFlow =
-      function( /*   ARGUMENTS                                  */
-       node,    /**< (webgme node) a COAFlow node               */
-       parent,  /**< (webgme node)? not used                    */
-       context) /**< (object) a context object, may be modified */
+    visit_COAFlow = function(                       /* ARGUMENTS */
+     /** (webgme node) a COAFlow node               */ node,
+     /** (webgme node)? not used                    */ parent,
+     /** (object) a context object, may be modified */ context)
     {
       var self = this;
 
@@ -2302,21 +2617,26 @@ Called By:  ? (console.log message never seen)
       return {context: context};
     };
 
+    DeploymentExporter.prototype.visit_COAFlow = visit_COAFlow;
+
 /* ******************************************************************* */
 
-/** visit_COAFlowWithProbability (func property of DeploymentExporter.prototype)
+/* visit_COAFlowWithProbability */
+/** (function-valued var of top-level function object)<br><br>
 
-Returned Value: the context argument padded and possibly changed
+Returned Value: the context argument padded and possibly changed<br><br>
 
-Called By:  ? (console.log message never seen)
+Called By: atModelNode in ModelTraverserMixin.js if the node being
+processed is a COAFlowWithProbability node<br><br>
+
+This is the visitor function for a COAFlowWithProbability node.<br>
 
 */
 
-    DeploymentExporter.prototype.visit_COAFlowWithProbability =
-      function( /*   ARGUMENTS                                   */
-       node,    /**< (webgme node) a COAFlowWithProbability node */
-       parent,  /**< (webgme node)? not used                     */
-       context) /**< (object) a context object, may be modified  */
+    visit_COAFlowWithProbability = function(         /* ARGUMENTS */
+     /** (webgme node) a COAFlowWithProbability node */ node,
+     /** (webgme node)? not used                     */ parent,
+     /** (object) a context object, may be modified  */ context)
     {
       var self = this,
       obj = {probability: self.core.getAttribute(node, 'probability')};
@@ -2326,21 +2646,27 @@ Called By:  ? (console.log message never seen)
       return {context: context};
     };
 
+    DeploymentExporter.prototype.visit_COAFlowWithProbability =
+      visit_COAFlowWithProbability;
+
 /* ******************************************************************* */
 
-/** visit_Outcome2Filter (function property of DeploymentExporter.prototype)
+/* visit_Outcome2Filter */
+/** (function property of DeploymentExporter.prototype)<br><br>
 
-Returned Value: the context argument padded and possibly changed
+Returned Value: the context argument padded and possibly changed<br><br>
 
-Called By:  ? (console.log message never seen)
+Called By: atModelNode in ModelTraverserMixin.js if the node being
+processed is an Outcome2Filter node<br><br>
+
+This is the visitor function for a Outcome2Filter node.<br>
 
 */
 
-    DeploymentExporter.prototype.visit_Outcome2Filter =
-      function( /*   ARGUMENTS                                  */
-       node,    /**< (webgme node) an Outcome2Filter node       */
-       parent,  /**< (webgme node)? not used                    */
-       context) /**< (object) a context object, may be modified */
+    visit_Outcome2Filter = function(                /* ARGUMENTS */
+     /** (webgme node) an Outcome2Filter node       */ node,
+     /** (webgme node)? not used                    */ parent,
+     /** (object) a context object, may be modified */ context)
     {
       var self = this;
 
@@ -2349,21 +2675,26 @@ Called By:  ? (console.log message never seen)
       return {context: context};
     };
 
+    DeploymentExporter.prototype.visit_Outcome2Filter = visit_Outcome2Filter;
+
 /* ******************************************************************* */
 
-/** visit_Filter2COAElement (function property of DeploymentExporter.prototype)
+/* visit_Filter2COAElement */
+/** (function-valued var of top-level function object)<br><br>
 
-Returned Value: the context argument padded and possibly changed
+Returned Value: the context argument padded and possibly changed<br><br>
 
-Called By:  ? (console.log message never seen)
+Called By: atModelNode in ModelTraverserMixin.js if the node being
+processed is a Filter2COAElement node<br><br>
+
+This is the visitor function for a Filter2COAElement node.<br>
 
 */
 
-    DeploymentExporter.prototype.visit_Filter2COAElement =
-      function( /*   ARGUMENTS                                  */
-       node,    /**< (webgme node) a Filter2COAElement node     */
-       parent,  /**< (webgme node)? not used                    */
-       context) /**< (object) a context object, may be modified */
+    visit_Filter2COAElement = function(             /* ARGUMENTS */
+     /** (webgme node) a Filter2COAElement node     */ node,
+     /** (webgme node)? not used                    */ parent,
+     /** (object) a context object, may be modified */ context)
     {
       var self = this;
 
@@ -2372,44 +2703,55 @@ Called By:  ? (console.log message never seen)
       return {context: context};
     };
 
-/* ******************************************************************* */
+    DeploymentExporter.prototype.visit_Filter2COAElement =
+      visit_Filter2COAElement;
 
-/** visit_COAException (function property of DeploymentExporter.prototype)
+    /* ******************************************************************* */
 
-Returned Value: the context argument padded and possibly changed
+/* visit_COAException */
+/** (function-valued var of top-level function object)<br><br>
 
-Called By: ? (console.log message never seen)
+Returned Value: the context argument padded and possibly changed<br><br>
+
+Called By: atModelNode in ModelTraverserMixin.js if the node being
+processed is a COAException node<br><br>
+
+This is the visitor function for a COAException node.<br>
 
 */
 
-    DeploymentExporter.prototype.visit_COAException =
-      function( /*   ARGUMENTS                                  */
-       node,    /**< (webgme node) a COAException node          */
-       parent,  /**< (webgme node)? not used                    */
-       context) /**< (object) a context object, may be modified */
+    visit_COAException = function(                  /* ARGUMENTS */
+     /** (webgme node) a COAException node          */ node,
+     /** (webgme node)? not used                    */ parent,
+     /** (object) a context object, may be modified */ context)
     {
       var self = this;
-      
+
       console.log('in visit_COAException');
       self.addCoaEdge(node, {});
       return {context: context};
     };
 
+    DeploymentExporter.prototype.visit_COAException = visit_COAException;
+
 /* ******************************************************************* */
 
-/** visit_Federate (function property of DeploymentExporter.prototype)
+/* visit_Federate */
+/** (function-valued var of top-level function object)<br><br>
 
-Returned Value: the context argument padded and possibly changed
+Returned Value: the context argument padded and possibly changed<br><br>
 
-Called By: atModelNode (in ModelTraverserMixin.js)
+Called By: atModelNode in ModelTraverserMixin.js if the node being
+processed is a Federate node<br><br>
+
+This is the visitor function for a Federate node.<br>
 
 */
 
-    DeploymentExporter.prototype.visit_Federate =
-      function( /*   ARGUMENTS                                      */
-       node,    /**< (webgme node) a Federate node                  */
-       parent,  /**< (webgme node)parent node of the Federate node  */
-       context) /**< (object) a context object, may be modified     */
+    visit_Federate = function(                         /* ARGUMENTS */
+     /** (webgme node) a Federate node                 */ node,
+     /** (webgme node)parent node of the Federate node */ parent,
+     /** (object) a context object, may be modified    */ context)
     {
       var self = this;
       var nodeName;
@@ -2433,33 +2775,30 @@ Called By: atModelNode (in ModelTraverserMixin.js)
       fed.FederateType = nodeMetaTypeName;
       fed.configFilename = fed.name.toLowerCase() + ".json";
       self.federates.push(fed);
-      if (nodeMetaTypeName != 'Federate')
-        {
-          try {ret = self['visit_' + nodeMetaTypeName](node, parent, context);}
-          catch (err)
-            {
-
-            }
-        }
       return ret;
     };
 
+    DeploymentExporter.prototype.visit_Federate = visit_Federate;
+
 /* ******************************************************************* */
 
-/** excludeFromVisit (function property of DeploymentExporter.prototype)
+/* excludeFromVisit */
+/** (function-valued var of top-level function object)<br><br>
 
-Returned Value: true or false
+Returned Value: true or false<br><br>
 
-Called By: visitAllChildrenRec (in ModelTraverserMixin.js)
+Called By: visitAllChildrenRec (in ModelTraverserMixin.js)<br><br>
+
+This returns true if the node is to be excluded and false if the node is not
+to be excluded (i.e., the node is to be included).<br><br>
 
 A function named excludeFromVisit is also defined (and called) in
-C2Core/ModelTraverserMixin.js.
+C2Core/ModelTraverserMixin.js.<br>
 
 */
 
-    DeploymentExporter.prototype.excludeFromVisit =
-      function( /*   ARGUMENTS                                */
-       node)    /**< a webGME node to test for being excluded */
+    excludeFromVisit = function(                  /* ARGUMENTS */
+     /** a webGME node to test for being excluded */ node)
     {
       var self = this;
 
@@ -2469,22 +2808,24 @@ C2Core/ModelTraverserMixin.js.
                                 self.META['CPSWT.CPSWTMeta.Language [CPSWT]']));
     }
 
+    DeploymentExporter.prototype.excludeFromVisit = excludeFromVisit;
+
 /* ******************************************************************* */
 
-/** ROOT_Visitor (function property of DeploymentExporter.prototype)
+/* ROOT_Visitor */
+/** (function-valued var of top-level function object)<br><br>
 
-Returned Value: a context object as shown in the function
+Returned Value: a context object as shown in the function<br><br>
 
-Called By: C2Core/ModelTraverserMixin.js (for the ROOT node)
+Called By: C2Core/ModelTraverserMixin.js (for the ROOT node)<br><br>
 
-This seems to be the starting point for the context object used in many
-functions. The function does not use any information from the node.
+This builds the context object used in many functions.
+The function does not use any information from the node.<br>
 
 */
 
-    DeploymentExporter.prototype.ROOT_visitor =
-      function( /*   ARGUMENTS          */
-       node)    /**< a webGME ROOT node */
+    ROOT_visitor = function( /* ARGUMENTS */
+     /** a webGME ROOT node  */ node)
     {
       var self = this;
       var root = {"@id": 'model:' + '/root',
@@ -2492,25 +2833,31 @@ functions. The function does not use any information from the node.
                   "model:name": self.projectName,
                   "gme:children": []};
       return {context: {parent: root}};
-    }
+    };
+
+    DeploymentExporter.prototype.ROOT_visitor = ROOT_visitor;
+
 
 /* ******************************************************************* */
 
-/** calculateParentPath (function property of DeploymentExporter.prototype)
+/* calculateParentPath */
+/** (function-valued var of top-level function object)<br><br>
 
-Returned Value:  the path with the last entry removed
+Returned Value: the path with the last entry removed<br><br>
 
-Called By: C2Core/ModelTraverserMixin.js
+Called By: C2Core/ModelTraverserMixin.js<br><br>
 
-For example, if path is '/a/b/c', this returns '/a/b'. 
+This calculates the path to the parent of a thing with a path, such
+as a file or directory.
+
+For example, if path is '/a/b/c', this returns '/a/b'.<br>
 
 */
-    DeploymentExporter.prototype.calculateParentPath =
-      function( /* ARGUMENTS                                             */
-       path)    /**< (string) path to a file or directory e.g., '/a/b/c' */
+    calculateParentPath = function(                            /* ARGUMENTS */
+       /** (string) path to a file or directory e.g., '/a/b/c' */ path)
     {
       var pathElements;
-      
+
       if (!path)
         {
           return null;
@@ -2519,6 +2866,8 @@ For example, if path is '/a/b/c', this returns '/a/b'.
       pathElements.pop();
       return pathElements.join('/');
     }
+
+    DeploymentExporter.prototype.calculateParentPath = calculateParentPath;
 
 /* ******************************************************************* */
 
