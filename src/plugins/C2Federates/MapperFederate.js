@@ -1,6 +1,8 @@
-/* 
+/** 
 
 MapperFederate.js is used only in FederatesExporter.js
+
+This code does not run without error.
 
 */
 
@@ -20,14 +22,33 @@ define
     'use strict';
 
     var MapperFederateExporter;
-    
+
+/* ******************************************************************* */
+
+/* MapperFederateExporter */
+/** (function-valued variable of top-level function object)<br><br>
+
+Returned Value: none<br><br>
+
+Called By: FederatesExporter in FederatesExporter.js<br><br>
+
+This is the primary function for a mapper federate.<br><br>
+
+The top-level function returns this function.<br>
+
+*/
+
     MapperFederateExporter = function()
     {
       var self;
       var mapperOutFilePath;
       var mapperDirSpec;
       var unifiedMappingConnectionVisitor; // function variable
-      
+      var visit_MapperFederate;            // function variable
+      var post_visit_MapperFederate;       // function variable
+      var visit_SimpleMappingConnection;   // function variable
+      var visit_ComplexMappingConnection;  // function variable
+
       self = this;
       JavaRTI.call(this);
       JavaFederate.call(this); 
@@ -42,7 +63,7 @@ define
                  var mapperDirPath;
                  var fullPath;
                  var xmlCode;
-                  
+
                  if (this.federateTypes.JavaFederate)
                    {
                      this.federateTypes.JavaFederate.init();
@@ -79,8 +100,8 @@ define
                      self.java_federateBasePOM.version = self.cpswt_version;  
                    } 
                  self.java_mapperPOM = null; //will be set by model visitor
-                 
-/***********************************************************************/
+
+/* ******************************************************************* */
                  //Add base POM generator
                  self.fileGenerators.push(function(artifact, callback)
                  {
@@ -113,16 +134,31 @@ define
                                         }
                                     });
                  });
-               } // end init function
+               } // end init
         }; // end object
 
-/***********************************************************************/
+/* ******************************************************************* */
 
-      this.visit_MapperFederate = function(node, parent, context)
+/* visit_MapperFederate */
+/** (function-valued variable of MapperFederateExporter)<br><br>
+
+Returned Value: a "{context: context}" object<br><br>
+
+Called By: atModelNode in modelTraverserMixin.js in C2Core<br><br>
+
+This is the visitor function for a Mapper federate. It builds
+the context object.<br>
+
+*/
+
+      visit_MapperFederate = function(               /* ARGUMENTS */
+       /** a Mapper federate node                    */ node,
+       /** the parent of the node                    */ parent,
+       /** a data object from which to generate code */ context)
       {
         var self;
         var nodeType;
-        
+
         self = this;
         nodeType = self.core.getAttribute(self.getMetaType(node), 'name');
         //Set up project POM files on visiting the first Mapper Federate
@@ -172,10 +208,28 @@ define
             return {context:context};
           }
       };
+      this.visit_MapperFederate = visit_MapperFederate;
 
-/***********************************************************************/
+/* ******************************************************************* */
 
-      unifiedMappingConnectionVisitor = function(self, node, parent, context)
+/* unifiedMappingConnectionVisitor */
+/** (function-valued variable of MapperFederateExporter)<br><br>
+
+Returned Value: a context<br><br>
+
+Called By:<br>
+  visit_SimpleMappingConnection<br>
+  visit_ComplexMappingConnection<br><br>
+
+This is effectively the visitor function for both SimpleMappingConnection
+and ComplexMappingConnection.<br>
+
+*/
+      unifiedMappingConnectionVisitor = function(    /* ARGUMENTS */
+       /** the "this" function                       */ self,  
+       /** a LabVIEW federate node                   */ node,
+       /** the parent of the node                    */ parent,
+       /** a data object from which to generate code */ context)
       {  
         var parentMapper = context.mapperfedspec;
         var parentMapperBase = context.javafedspec;
@@ -217,7 +271,7 @@ define
           {
             mapping.isMappingSpecsNotEmpty = false;
           }
-        
+
         if (mapping.guardCondition)
           {
             mapping.guardCondition = mapping.guardCondition.trim();
@@ -241,7 +295,7 @@ define
                 '[ERROR] Invalid dst pointer in MappingConnection!', 'error');
           }
 
-/***********************************************************************/
+/* ******************************************************************* */
 
         // Get LHS and RHS interaction classes
         mapping.handler = function(linteraction, rinteraction)
@@ -262,13 +316,13 @@ define
           var patternExp;
           var replacementString;
           var newSpec;
-          
+
           rhsIntr.isMapperPublished = true;
           mapping.lHSInteractionName = lhsIntr.name;
           mapping.rHSInteractionName = rhsIntr.name;
           mapping.lHSInteractionParamSize = lhsIntr.parameters.length;
           mapping.rHSInteractionParamSize = rhsIntr.parameters.length;
-          
+
           if (!parentMapperBase.publishedinteractiondata.
               find(function(element)
                    {
@@ -279,7 +333,7 @@ define
                         {name: rhsIntr.name,
                          publishedLoglevel: rhsIntr.LogLevel});
             }
-          
+
           if (!parentMapperBase.subscribedinteractiondata.
               find(function(element)
                    {
@@ -403,54 +457,101 @@ define
                   mapping.mappingSpecs.replace(/;(?:\s*[\n])*/g, ";\n"); 
                 }
             }   
-          
+
           if (parentMapper.mappingconnsdata)
             {
               parentMapper.mappingconnsdata.push(mapping);
             }
-        }; // end mapping.handler function
+        }; // end mapping.handler
 
-/***********************************************************************/
+/* ******************************************************************* */
 
         if (context.mappings)
           {
             context.mappings.push(mapping);
           }
         return {context:context};
-      }; // end unifiedMappingConnectionVisitor function
+      }; // end unifiedMappingConnectionVisitor
 
-/***********************************************************************/
+/* ******************************************************************* */
 
-      this.visit_SimpleMappingConnection = function(node, parent, context)
+/* visit_SimpleMappingConnection */
+/** (function-valued variable of MapperFederateExporter)<br><br>
+
+Returned Value:  whatever the call to unifiedMappingConnectionVisitor
+returns<br><br>
+
+Called By: atModelNode in modelTraverserMixin.js in C2Core<br><br>
+
+This is the visitor function for a SimpleMappingConnection.<br>
+
+*/
+
+      visit_SimpleMappingConnection = function(      /* ARGUMENTS */
+       /** a LabVIEW federate node                   */ node,
+       /** the parent of the node                    */ parent,
+       /** a data object from which to generate code */ context)
       {
         var self = this;
         return unifiedMappingConnectionVisitor(self, node, parent, context);
       };
+      this.visit_SimpleMappingConnection = visit_SimpleMappingConnection;
 
-/***********************************************************************/
+/* ******************************************************************* */
 
-      this.visit_ComplexMappingConnection = function(node, parent, context)
+/* visit_ComplexMappingConnection */
+/** (function-valued variable of MapperFederateExporter)<br><br>
+
+Returned Value: whatever the call to unifiedMappingConnectionVisitor
+returns<br><br>
+
+Called By: atModelNode in modelTraverserMixin.js in C2Core<br><br>
+
+This is the visitor function for a ComplexMappingConnection.<br>
+
+*/
+
+      visit_ComplexMappingConnection = function(     /* ARGUMENTS */
+       /** a LabVIEW federate node                   */ node,
+       /** the parent of the node                    */ parent,
+       /** a data object from which to generate code */ context)
       {
         var self = this;
         return unifiedMappingConnectionVisitor(self, node, parent, context);  
       };
-        
-/***********************************************************************/
+      this.visit_ComplexMappingConnection = visit_ComplexMappingConnection;
 
-      this.post_visit_MapperFederate = function(node, context)
+/* ******************************************************************* */
+
+/* post_visit_mapperFederate */
+/** (function-valued variable of MapperFederateExporter)<br><br>
+
+Returned Value: a context object<br><br>
+
+Called By: doneModelNode in ModelTraverserMixin.js<br><br>
+
+This is the post visitor function for a Mapper federate node.<br><br>
+
+This is called in doneModelNode in ModelTraverserMixin.js when the
+nodeMetaTypeName in that function is MapperFederate.<br>
+
+*/
+      post_visit_MapperFederate = function(          /* ARGUMENTS */
+       /** a Mapper federate node                    */ node,
+       /** a data object from which to generate code */ context)
       {
         var self;
         var renderContext;
         var outFileName;
         var i;
         var mapping;
-        
+
         self = this;
         renderContext = context.mapperfedspec;
         outFileName = mapperOutFilePath + "/" + renderContext.simname + "/" +
                       self.core.getAttribute(node, 'name') + ".java";
-            
-/***********************************************************************/
+
+/* ******************************************************************* */
 
         for (i = 0; i < context.mappings.length; i++)
           {
@@ -478,7 +579,7 @@ define
               }
           }
 
-/***********************************************************************/
+/* ******************************************************************* */
 
         self.fileGenerators.push(function(artifact, callback)
         {
@@ -503,8 +604,8 @@ define
                                }
                            });
         });
-                    
-/***********************************************************************/
+
+/* ******************************************************************* */
 
         if (self.post_visit_JavaFederate)
           {
@@ -514,9 +615,10 @@ define
           {
             return {context:context};
           }
-      }; // end of post_visit_MapperFederate function
+      }; // end post_visit_MapperFederate
+      this.post_visit_MapperFederate = post_visit_MapperFederate;
 
-/***********************************************************************/
+/* ******************************************************************* */
 
       this.createMappingConnectionsDataModel = function()
       {
@@ -536,9 +638,9 @@ define
                 guardConditionInvalid: true};
       }
 
-/***********************************************************************/
+/* ******************************************************************* */
 
-    } // end MapperFederateExporter function
+    } // end MapperFederateExporter
 
     return MapperFederateExporter;
  }); // end define

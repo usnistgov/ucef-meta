@@ -1,4 +1,4 @@
-/*
+/**
 
 Modified by T. Kramer
 
@@ -42,7 +42,7 @@ the name by concatenating 'visit_' with the name of the type of node.
 
 The last two functions are called in (at least) the deployment exporter
 if there are crosscuts.
-
+FederatesExporter.js
 The createMessage function is defined in cpswt-meta/node_modules/webgme/
 node_modules/webgme-engine/src/plugin/PluginBase.js . When createMessage
 runs it packages the message (its second argument) inside a larger
@@ -57,72 +57,102 @@ define
  function()
  {
     'use strict';
-    var PubSubVisitors;  //function variable
-    var lowerNamer;      //function variable
+    var PubSubVisitors;                       // function variable
+    var lowerNamer;                           // function variable
 
-/***********************************************************************/
+/* ******************************************************************* */
 
-/* lowerNamer
+/* lowerNamer */
+/** (function-valued variable of top-level function object)<br><br>
 
-Returned Value: string
+Returned Value: string<br><br>
 
-Called By:
-  visit_StaticInteractionPublish
-  visit_StaticInteractionSubscribe
-  visit_StaticObjectPublish
-  visit_StaticObjectSubscribe
-  visit_StaticObjectAttributePublish
-  visit_StaticObjectAttributeSubscribe
+Called By:<br>
+  visit_StaticInteractionPublish<br>
+  visit_StaticInteractionSubscribe<br>
+  visit_StaticObjectPublish<br>
+  visit_StaticObjectSubscribe<br>
+  visit_StaticObjectAttributePublish<br>
+  visit_StaticObjectAttributeSubscribe<br><br>
+
+This finds finds coname (an appropriate name for the obint) and returns coname
+with the first character changed to lower case.<br><br>
 
 The coname var is the codeName (CodeGeneratedName) of the obint
-(object or interaction) if there is one or the name if not. The
-returned value is the coname with the first character changed to lower
-case.
+(object or interaction) if there is one or the name if not.<br>
 
 */
 
-    lowerNamer = function(obint)
+    lowerNamer = function( /* ARGUMENTS */
+     /** an object or interaction       */ obint)
     {
       var coname;
       coname = (obint.codeName || obint.name);
       return (coname.charAt(0).toLowerCase() + coname.slice(1));
     };
-    
-/***********************************************************************/
+
+/* ******************************************************************* */
+
+/* PubSubVisitors */
+/** (function-valued variable of top-level function object)<br><br>
+
+Called By:<br>
+   FederatesExporter (in FederatesExporter.js)<br>
+   DeploymentExporter (in DeploymentExporter.js)<br><br>
+
+Returned Value: none<br><br>
+
+This defines visitor functions and makes them properties of the
+FederatesExporter<br>
+  visit_StaticInteractionPublish<br>
+  visit_StaticInteractionSubscribe<br>
+  visit_StaticObjectPublish<br>
+  visit_StaticObjectSubscribe<br>
+  visit_StaticObjectAttributePublish<br>
+  visit_StaticObjectAttributeSubscribe<br>
+
+*/
 
     PubSubVisitors = function()
     {
+      var visit_StaticInteractionPublish;       // function variable
+      var visit_StaticInteractionSubscribe;     // function variable
+      var visit_StaticObjectPublish;            // function variable
+      var visit_StaticObjectSubscribe;          // function variable
+      var visit_StaticObjectAttributePublish;   // function variable
+      var visit_StaticObjectAttributeSubscribe; // function variable
 
-/***********************************************************************/
+/* ******************************************************************* */
 
-/* this.visit_StaticInteractionPublish
+/* visit_StaticInteractionPublish */
+/** (function-valued variable of PubSubVisitors function)<br><br>
 
 Returned Value: a context object whose context property is the context
-  argument, possibly with data added.
+  argument, possibly with data added<br><br>
 
-Called By: See notes at top.
+Called By: atModelNode in ModelTraverserMixin.js<br><br>
 
-This processes data for a StaticInteractionPublish.
+This processes data for a StaticInteractionPublish.<br><br>
 
 Where the entry for the interaction is made in pubSubInts, a check is
 made whether there is already an entry, because it may have been
-created in visit_StaticInteractionSubscribe.
+created in visit_StaticInteractionSubscribe.<br>
 
 */
-      this.visit_StaticInteractionPublish =
-      function( /* ARGUMENTS                                      */
-       node,    /* (webgme node) a StaticInteractionPublish node  */
-       parent,  /* (webgme node)? not used                        */
-       context) /* (object)                                       */
+      visit_StaticInteractionPublish = function( /* ARGUMENTS */
+       /** (webgme node) a StaticInteractionPublish node      */ node,
+       /** (webgme node)? not used                            */ parent,
+       /** (object)                                           */ context)
       {
         var self = this;
         var publication = {interaction: self.core.getPointerPath(node,'dst'),
                            federate: self.core.getPointerPath(node,'src')};
+        var interactionPubHandler; // function variable
         var nodeAttrNames = self.core.getAttributeNames(node);
         var pubSubInts = 0;
         var federateInfo;
         var i;
-        
+
         if (!publication.interaction)
           {
             self.createMessage(node,
@@ -139,7 +169,7 @@ created in visit_StaticInteractionSubscribe.
           { // only DeploymentExporter has pubSubInteractions
             pubSubInts = self.pubSubInteractions;
           }
-        
+
         else if (self.federateInfos)
           { // only FederatesExporter has federateInfos
             federateInfo = self.federateInfos[publication.federate];
@@ -173,7 +203,27 @@ created in visit_StaticInteractionSubscribe.
             publication[nodeAttrNames[i]] =
               self.core.getAttribute(node, nodeAttrNames[i]);
           }
-        publication.handler = function(federate, interaction)
+
+/* ******************************************************************* */
+
+/* interactionPubHandler */
+/** (function-valued variable of visit_StaticInteractionPublish function)<br><br>
+
+Returned Value: none<br><br>
+
+Called By: ?<br><br>
+
+This adds interaction data to the publishedinteractiondata of
+the federate.<br>
+
+publication is defined in the enclosing function without any LogLevel,
+so it is unclear where publication.LogLevel in the interactiondata
+below comes from. Perhaps it is always undefined.
+
+*/
+        interactionPubHandler = function( /* ARGUMENTS */
+         /** federate to which data is added           */ federate,
+         /** interaction from which data is drawn      */ interaction)
         {
           var interactiondata =
             {name: interaction.name,
@@ -187,44 +237,51 @@ created in visit_StaticInteractionSubscribe.
             {
               federate.publishedinteractiondata.push(interactiondata);
             }
-        };
+        }; // end interactionPubHandler
+
+/* ******************************************************************* */
+
+        publication.handler = interactionPubHandler;
         if (context.pubsubs)
           {
             context.pubsubs.push(publication);
           }
         return {context:context};
-      };
+      }; // end visit_StaticInteractionPublish
 
-/***********************************************************************/
+      this.visit_StaticInteractionPublish = visit_StaticInteractionPublish;
 
-/* this.visit_StaticInteractionSubscribe
+/* ******************************************************************* */
+
+/* visit_StaticInteractionSubscribe */
+/** (function-valued variable of PubSubVisitors function)<br><br>
 
 Returned Value: a context object whose context property is the context
-  argument, possibly with data added.
+  argument, possibly with data added<br><br>
 
-Called By: See notes at top.
+Called By: atModelNode in ModelTraverserMixin.js<br><br>
 
-This processes data for a StaticInteractionSubscribe.
+This processes data for a StaticInteractionSubscribe.<br><br>
 
 Where the entry for the interaction is made in pubSubInteractions, a
 check is made whether there is already an entry, because it may have
-been created in another visit_XXX function
+been created in another visit_XXX function.<br>
 
 */
-      this.visit_StaticInteractionSubscribe =
-      function( /* ARGUMENTS                                       */
-       node,    /* (webgme node) a StaticInteractionSubscribe node */
-       parent,  /* (webgme node)? not used                         */
-       context) /* (object)                                        */
+      visit_StaticInteractionSubscribe = function( /* ARGUMENTS */
+       /** (webgme node) a StaticInteractionSubscribe node      */ node,
+       /** (webgme node)? not used                              */ parent,
+       /** (object)                                             */ context)
       {
         var self = this;
         var subscription = {interaction: self.core.getPointerPath(node,'src'),
                             federate: self.core.getPointerPath(node,'dst')};
         var nodeAttrNames = self.core.getAttributeNames(node);
+        var interactionSubHandler; // function variable
         var pubSubInts = 0;
         var federateInfo;
         var i;
-        
+
         if (!subscription.interaction)
           {
             self.createMessage(node,
@@ -274,7 +331,27 @@ been created in another visit_XXX function
             subscription[nodeAttrNames[i]] =
             self.core.getAttribute(node, nodeAttrNames[i]);
           }
-        subscription.handler = function(federate, interaction)
+
+/* ******************************************************************* */
+
+/* interactionSubHandler */
+/** (function-valued variable of visit_StaticInteractionSubscribe function)<br><br>
+
+Returned Value: none<br><br>
+
+Called By: ?<br><br>
+
+This adds interaction data to the subscribedinteractiondata of
+the federate.<br>
+
+subscription is defined in the enclosing function without any LogLevel,
+so it is unclear where subscription.LogLevel in the interactiondata
+below comes from. Perhaps it is always undefined.
+
+*/
+        interactionSubHandler = function( /* ARGUMENTS */
+         /** federate to which data is added           */ federate,
+         /** interaction from which data is drawn      */ interaction)
         { // Interaction might get connected to a Mapper on a
           // different FOMSheet. Resolve correct filter at render time.
           var interactiondata =
@@ -300,35 +377,42 @@ been created in another visit_XXX function
             {
               federate.subscribedinteractiondata.push(interactiondata);
             }
-        }
+        }; // end interactionSubHandler
+
+/* ******************************************************************* */
+
+        subscription.handler = interactionSubHandler;
+
         if (context.pubsubs)
           {
             context.pubsubs.push(subscription);
           }
         return {context:context};
-      };
+      }; // end visit_StaticInteractionSubscribe
 
-/***********************************************************************/
+      this.visit_StaticInteractionSubscribe = visit_StaticInteractionSubscribe;
 
-/* this.visit_StaticObjectPublish
+/* ******************************************************************* */
+
+/* visit_StaticObjectPublish */
+/** (function-valued variable of PubSubVisitors function)<br><br>
 
 Returned Value: a context object whose context property is the context
-  argument, possibly with data added.
+  argument, possibly with data added<br><br>
 
-Called By: See notes at top.
+Called By: atModelNode in ModelTraverserMixin.js<br><br>
 
-This processes data for a StaticObjectPublish.
+This processes data for a StaticObjectPublish.<br><br>
 
 Where the entry for the object is made in pubSubObjects, a check is
 made whether there is already an entry, because it may have been
-created in another visit_XXX function.
+created in another visit_XXX function.<br>
 
 */
-      this.visit_StaticObjectPublish =
-      function( /* ARGUMENTS                                */
-       node,    /* (webgme node) a StaticObjectPublish node */
-       parent,  /* (webgme node)? not used                  */
-       context) /* (object)                                 */
+      visit_StaticObjectPublish = function( /* ARGUMENTS */
+       /** (webgme node) a StaticObjectPublish node      */ node,
+       /** (webgme node)? not used                       */ parent,
+       /** (object)                                      */ context)
       {
         var self = this;
         var objId = self.core.getPointerPath(node,'dst');
@@ -336,10 +420,11 @@ created in another visit_XXX function.
         var publication = {object: objId,
                            federate: fedId};
         var nodeAttrNames = self.core.getAttributeNames(node);
+        var objectPubHandler; // function variable
         var pubSubObjs = 0;
         var federateInfo;
         var i;
-        
+
         if (!objId)
           {
             self.createMessage(node,
@@ -393,7 +478,26 @@ created in another visit_XXX function.
             publication[nodeAttrNames[i]] =
             self.core.getAttribute(node, nodeAttrNames[i]);
           }
-        publication.handler = function(federate, object)
+
+/* ******************************************************************* */
+
+/* objectPubHandler */
+/** (function-valued variable of visit_StaticObjectPublish function)<br><br>
+
+Returned Value: none<br><br>
+
+Called By: ?<br><br>
+
+This adds object data to the publishedobjectdata of the federate.<br><br>
+
+publication is defined in the enclosing function without any LogLevel,
+so it is unclear where publication.LogLevel in the objectdata
+below comes from. Perhaps it is always undefined.
+
+*/
+        objectPubHandler = function( /* ARGUMENTS */
+         /** federate to which data is added      */ federate,
+         /** object from which data is drawn      */ object)
         {
           var objectdata =
             {name: object.name,
@@ -417,35 +521,42 @@ created in another visit_XXX function.
             {
               federate.publishedobjectdata.push(objectdata);
             }
-        }
+        }; // end objectPubHandler
+
+/* ******************************************************************* */
+
+        publication.handler = objectPubHandler;
+
         if (context.pubsubs)
           {
             context.pubsubs.push(publication);
           }
         return {context:context};
-      };
+      }; // end visit_StaticObjectPublish
 
-/***********************************************************************/
+      this.visit_StaticObjectPublish = visit_StaticObjectPublish;
 
-/* this.visit_StaticObjectSubscribe
+/* ******************************************************************* */
+
+/* visit_StaticObjectSubscribe */
+/** (function-valued variable of PubSubVisitors function)<br><br>
 
 Returned Value: a context object whose context property is the context
-  argument, possibly with data added.
+  argument, possibly with data added<br><br>
 
-Called By: See notes at top.
+Called By: atModelNode in ModelTraverserMixin.js<br><br>
 
-This processes data for a StaticObjectSubscribe.
+This processes data for a StaticObjectSubscribe.<br><br>
 
 Where the entry for the object is made in pubSubObjects, a check is
 made whether there is already an entry, because it may have been
-created in another visit_XXX function.
+created in another visit_XXX function.<br>
 
 */
-      this.visit_StaticObjectSubscribe =
-      function( /* ARGUMENTS                                  */
-       node,    /* (webgme node) a StaticObjectSubscribe node */
-       parent,  /* (webgme node)? not used                    */
-       context) /* (object)                                   */
+      visit_StaticObjectSubscribe = function( /* ARGUMENTS */
+       /** (webgme node) a StaticObjectSubscribe node      */ node,
+       /** (webgme node)? not used                         */ parent,
+       /** (object)                                        */ context)
       {
         var self = this;
         var objId = self.core.getPointerPath(node,'src');
@@ -454,9 +565,10 @@ created in another visit_XXX function.
                             federate: fedId};
         var nodeAttrNames = self.core.getAttributeNames(node);
         var pubSubObjs = 0;
+        var objectSubHandler; // function variable
         var federateInfo;
         var i;
-        
+
         if (!objId)
           {
             self.createMessage(node,
@@ -510,7 +622,26 @@ created in another visit_XXX function.
             subscription[nodeAttrNames[i]] =
               self.core.getAttribute(node, nodeAttrNames[i]);
           }   
-        subscription.handler = function(federate, object)
+
+/* ******************************************************************* */
+
+/* objectSubHandler */
+/** (function-valued variable of visit_StaticObjectSubscribe function)<br><br>
+
+Returned Value: none<br><br>
+
+Called By: ?<br><br>
+
+This adds object data to the subscribedobjectdata of the federate.<br><br>
+
+subscription is defined in the enclosing function without any LogLevel,
+so it is unclear where subscription.LogLevel in the objectdata
+below comes from. Perhaps it is always undefined.
+
+*/
+        objectSubHandler = function( /* ARGUMENTS */
+         /** federate to which data is added      */ federate,
+         /** object from which data is drawn      */ object)
         {
           var objectdata =
             {name: object.name,
@@ -534,35 +665,42 @@ created in another visit_XXX function.
             {
               federate.subscribedobjectdata.push(objectdata);
             }
-        }
+        }; // end objectSubHandler
+
+/* ******************************************************************* */
+
+        subscription.handler = objectSubHandler; 
+
         if (context.pubsubs)
           {
             context.pubsubs.push(subscription);
           }
         return {context:context};
-      };
+      }; // end visit_StaticObjectSubscribe
 
-/***********************************************************************/
+      this.visit_StaticObjectSubscribe = visit_StaticObjectSubscribe;
 
-/* this.visit_StaticObjectAttributePublish
+/* ******************************************************************* */
+
+/* visit_StaticObjectAttributePublish */
+/** (function-valued variable of PubSubVisitors function)<br><br>
 
 Returned Value: a context object whose context property is the context
-  argument, possibly with data added.
+  argument, possibly with data added<br><br>
 
-Called By: See notes at top.
+Called By: atModelNode in ModelTraverserMixin.js<br><br>
 
-This processes data for a StaticObjectAttributePublish.
+This processes data for a StaticObjectAttributePublish.<br><br>
 
 Where the entry for the object is made in pubSubObjects, a check is
 made whether there is already an entry, because it may have been
-created in another visit_XXX function.
+created in another visit_XXX function.<br>
 
 */
-      this.visit_StaticObjectAttributePublish =
-      function( /* ARGUMENTS                                         */
-       node,    /* (webgme node) a StaticObjectAttributePublish node */
-       parent,  /* (webgme node)? not used                           */
-       context) /* (object)                                          */
+      visit_StaticObjectAttributePublish = function( /* ARGUMENTS */
+       /** (webgme node) a StaticObjectAttributePublish node      */ node,
+       /** (webgme node)? not used                                */ parent,
+       /** (object)                                               */ context)
       {
         var self = this;
         var fedId = self.core.getPointerPath(node,'src');
@@ -576,9 +714,10 @@ created in another visit_XXX function.
           };
         var nodeAttrNames = self.core.getAttributeNames(node);
         var pubSubObjs = 0;
+        var attPubHandler; // function variable
         var federateInfo;
         var i;
-        
+
         if (!objId)
           {
             self.createMessage(node,
@@ -647,7 +786,26 @@ created in another visit_XXX function.
             publication[nodeAttrNames[i]] =
               self.core.getAttribute(node, nodeAttrNames[i]);
           }
-        publication.handler = function(federate, object)
+
+/* ******************************************************************* */
+
+/* attPubHandler */
+/** (function-valued variable of visit_StaticObjectAttributePublish function)<br><br>
+
+Returned Value: none<br><br>
+
+Called By: ?<br><br>
+
+This adds attribute data to the publishedobjectdata of the federate.<br><br>
+
+publication is defined in the enclosing function without any LogLevel,
+so it is unclear where publication.LogLevel in the objectdata
+below comes from. Perhaps it is always undefined.
+
+*/
+        attPubHandler = function( /* ARGUMENTS */
+         /** federate to which data is added   */ federate,
+         /** object from which data is drawn   */ object)
         {
           var objectdata =
             {name: object.name,
@@ -659,7 +817,7 @@ created in another visit_XXX function.
              publishedLoglevel: publication.LogLevel,
              publishedAttributeData: [],
              logPublishedAttributeData: []};
-          
+
           if (federate.publishedobjectdata)
             {
               var alreadyRegistered = false;
@@ -685,35 +843,43 @@ created in another visit_XXX function.
                   objectdata.logPublishedAttributeData.push(a);
                 }
             };
-        }
+        }; // end attPubHandler
+
+/* ******************************************************************* */
+
+        publication.handler = attPubHandler;
+
         if (context.pubsubs)
           {
             context.pubsubs.push(publication);
           }
         return {context:context};
-      };
+      }; // end visit_StaticObjectAttributePublish
 
-/***********************************************************************/
+      this.visit_StaticObjectAttributePublish =
+        visit_StaticObjectAttributePublish;
 
-/* this.visit_StaticObjectAttributeSubscribe
+/* ******************************************************************* */
+
+/* visit_StaticObjectAttributeSubscribe */
+/** (function-valued variable of PubSubVisitors function)<br><br>
 
 Returned Value: a context object whose context property is the context
-  argument, possibly with data added.
+  argument, possibly with data added<br><br>
 
-Called By: See notes at top.
+Called By: atModelNode in ModelTraverserMixin.js<br><br>
 
-This processes data for a StaticObjectAttributeSubscribe.
+This processes data for a StaticObjectAttributeSubscribe.<br><br>
 
 Where the entry for the object is made in pubSubObjects, a check is
 made whether there is already an entry, because it may have been
-created in another visit_XXX function.
+created in another visit_XXX function.<br>
 
 */
-      this.visit_StaticObjectAttributeSubscribe =
-      function( /* ARGUMENTS                                           */
-       node,    /* (webgme node) a StaticObjectAttributeSubscribe node */
-       parent,  /* (webgme node)? not used                             */
-       context) /* (object)                                            */
+      visit_StaticObjectAttributeSubscribe = function( /* ARGUMENTS */
+       /** (webgme node) a StaticObjectAttributeSubscribe node      */ node,
+       /** (webgme node)? not used                                  */ parent,
+       /** (object)                                                 */ context)
       {
         var self = this;
         var fedId = self.core.getPointerPath(node,'dst');
@@ -727,6 +893,7 @@ created in another visit_XXX function.
             };
         var nodeAttrNames = self.core.getAttributeNames(node);
         var pubSubObjs = 0;
+        var attSubHandler; // function variable
         var federateInfo;
         var i;
 
@@ -798,7 +965,26 @@ created in another visit_XXX function.
             subscription[nodeAttrNames[i]] =
             self.core.getAttribute(node, nodeAttrNames[i]);
           }
-        subscription.handler = function(federate, object)
+
+/* ******************************************************************* */
+
+/* attSubHandler */
+/** (function-valued variable of visit_StaticObjectAttributeSubscribe function)<br><br>
+
+Returned Value: none<br><br>
+
+Called By: ?<br><br>
+
+This adds attribute data to the subscribedobjectdata of the federate.<br><br>
+
+subscription is defined in the enclosing function without any LogLevel,
+so it is unclear where subscription.LogLevel in the objectdata
+below comes from. Perhaps it is always undefined.
+
+*/
+        attSubHandler = function( /* ARGUMENTS */
+         /** federate to which data is added   */ federate,
+         /** object from which data is drawn   */ object)
         {
           var objectdata =
             {name: object.name,
@@ -830,25 +1016,33 @@ created in another visit_XXX function.
           if (self.attributes[attrId])
             {
               var a = self.attributes[attrId];
-              
+
               objectdata.subscribedAttributeData.push(a);
               if (subscription.EnableLogging)
                 {
                   objectdata.logSubscribedAttributeData.push(a);
                 }
             };
-        }
+        } // end attSubHandler
+
+/* ******************************************************************* */
+
+        subscription.handler = attSubHandler;
+
         if (context.pubsubs)
           {
             context.pubsubs.push(subscription);
           }
         return {context:context};
-      };
+      }; // end visit_StaticObjectAttributeSubscribe
 
-/***********************************************************************/
-      
-    };
+      this.visit_StaticObjectAttributeSubscribe =
+        visit_StaticObjectAttributeSubscribe;
+
+/* ******************************************************************* */
+
+    }; // end PubSubVisitors
     return PubSubVisitors;
- });
+ }); // end define
 
-/***********************************************************************/
+/* ******************************************************************* */

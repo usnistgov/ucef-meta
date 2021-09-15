@@ -3,6 +3,7 @@
 # Logs
 logs
 *.log
+*.html
 
 # Runtime data
 pids

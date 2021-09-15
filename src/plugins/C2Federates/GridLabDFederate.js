@@ -9,30 +9,48 @@ define
  {
     'use strict';
     var GridLabDFederateExporter;
-   
-/***********************************************************************/
 
-/* GridLabFederateExporter (function-valued variable of
-   top-level function object)
+/* ******************************************************************* */
 
-Returned Value: none
+/* GridLabDFederateExporter */
+/** (function-valued variable of top-level function object)<br><br>
 
-Called By: FederatesExporter in FederatesExporter.js
+Returned Value: none<br><br>
 
-The top-level function returns this function.
+Called By: FederatesExporter in FederatesExporter.js<br><br>
+
+This is the primary function for a GridLabD federate.<br><br>
+
+The top-level function returns this function.<br>
 
 */
-    
+
     GridLabDFederateExporter = function()
     {
       var gridlabdArtifactId = "gridlabd-federate";
       var gridlabdGroupId = "gov.nist.hla.gridlabd";
       var gridlabdVersion = "1.0.0-SNAPSHOT";
-      var checkBack;
-      
-/***********************************************************************/
-      
-      checkBack = function(err, callBack)
+      var gridLabdCheckBack;           // function
+      var visit_GridLabDFederate;      // function
+      var post_visit_GridLabDFederate; // function
+
+/* ******************************************************************* */
+
+/* gridLabdCheckBack */
+/** (function-valued variable of GridLabFederateExporter)<br><br>
+
+Returned Value: none<br><br>
+
+Called By: the six generator functions in post_visit_GridLabFederate<br><br>
+
+If there is an error, this calls the callback with the error message
+as an argument; otherwise, this calls the callback with no arguments.<br>
+
+*/
+
+      gridLabdCheckBack = function(          /* ARGUMENTS */
+       /** an error message or nullish       */ err,
+       /** function to call if error or done */ callBack)
       {
         if (err)
           {
@@ -45,13 +63,28 @@ The top-level function returns this function.
           }
       };
 
-/***********************************************************************/
-      
+/* ******************************************************************* */
+
       this.federateTypes['GridLabDFederate'] = {includeInExport: false};
 
-/***********************************************************************/
-     
-      this.visit_GridLabDFederate = function(node, parent, context)
+/* ******************************************************************* */
+
+/* visit_GridLabDFederate */
+/** (function-valued variable of GridLabDFederateExporter)<br><br>
+
+Returned Value: a "{context: context}" object<br><br>
+
+Called By: atModelNode in modelTraverserMixin.js in C2Core<br><br>
+
+This is the visitor function for a GridLabD federate. It builds
+the context object.<br>
+
+*/
+
+      this.visit_GridLabDFederate = function(        /* ARGUMENTS */
+       /** a GridLabD federate node                  */ node,
+       /** the parent of the node                    */ parent,
+       /** a data object from which to generate code */ context)
       {
         var self;
         var nodeType;
@@ -72,11 +105,34 @@ The top-level function returns this function.
           gridlabdArtifactId + "-" + gridlabdVersion + ".jar";
         self.federates[self.core.getPath(node)] = context['gldfedspec'];
         return {context: context};
-      }; // end of visit_GridLabDFederate function
+      }; // end visit_GridLabDFederate
 
-/***********************************************************************/
+/* ******************************************************************* */
 
-      this.post_visit_GridLabDFederate = function(node, context)
+/* post_visit_GridLabDFederate */
+/** (function-valued variable of GridLabDFederateExporter)<br><br>
+
+Returned Value: a context object<br><br>
+
+Called By: doneModelNode in ModelTraverserMixin.js<br><br>
+
+This is the post visitor function for a GridLabD federate node.
+It adds file generators for:<br>
+ - the pom.xml that fetches the GridLabD federate code and resources<br>
+ - the script that builds the GridLabD federate<br>
+ - the script that runs the GridLabD federate<br>
+ - the Portico configuration file<br>
+ - the GridLabD federate configuration file<br>
+ - the log4j2 configuration file<br><br>
+
+This is called in doneModelNode in ModelTraverserMixin.js when the
+nodeMetaTypeName in that function is GridLabDFederate.<br>
+
+*/
+
+      post_visit_GridLabDFederate = function(        /* ARGUMENTS */
+       /** a GridLabD federate node                  */ node,
+       /** a data object from which to generate code */ context)
       {
         var self = this;
         var renderContext = context['gldfedspec'];
@@ -84,8 +140,8 @@ The top-level function returns this function.
         var configDirectory = moduleName + "/conf";
         var feder = self.federateInfos[self.core.getPath(node)];
         var gridlabdPOM = new MavenPOM();
-        var gldHelperPOM = new MavenPOM(); // was new MavenPOM(self.mainPom);
-        
+        var gldHelperPOM = new MavenPOM();
+
         // set the SOM.xml output directory
         if (feder)
           {
@@ -96,7 +152,7 @@ The top-level function returns this function.
         gridlabdPOM.artifactId = gridlabdArtifactId;
         gridlabdPOM.groupId = gridlabdGroupId;
         gridlabdPOM.version = gridlabdVersion;
-        
+
         // pom.xml that fetches the resources required to run the GridLAB-D
         // federate. The maven-dependency-plugin will pull in the GridLAB-D
         // wrapper code. The maven-resources-plugin will pull in the
@@ -124,7 +180,7 @@ The top-level function returns this function.
              }
           });
 
-        // generate the pom.xml that fetches the GridLAB-D federate code
+        // generate the pom.xml that fetches the GridLABD federate code
         // and resources
         self.fileGenerators.push(function (artifact, callback)
         {
@@ -136,10 +192,10 @@ The top-level function returns this function.
           self.logger.info('calling addFile for ' + fullPath + ' in post_' +
                            'visit_GridLabDFederate of GridLabDFederate.js');
           artifact.addFile(fullPath, code,
-                           function(err) {checkBack(err, callback);});
+                           function(err) {gridLabdCheckBack(err, callback);});
         });
 
-        // generate the script that builds the GridLAB-D federate
+        // generate the script that builds the GridLABD federate
         self.fileGenerators.push(function (artifact, callback)
         {
           var code;
@@ -152,10 +208,10 @@ The top-level function returns this function.
           self.logger.info('calling addFile for ' + fullPath + ' in post_' +
                            'visit_GridLabDFederate of GridLabDFederate.js');
           artifact.addFile(fullPath, code,
-                           function(err) {checkBack(err, callback);});
+                           function(err) {gridLabdCheckBack(err, callback);});
         });
 
-        // generate the script that runs the GridLAB-D federate
+        // generate the script that runs the GridLABD federate
         self.fileGenerators.push(function (artifact, callback)
         {
           var code;
@@ -171,7 +227,7 @@ The top-level function returns this function.
           self.logger.info('calling addFile for ' + fullPath + ' in post_' +
                            'visit_GridLabDFederate of GridLabDFederate.js');
           artifact.addFile(fullPath, code,
-                           function(err) {checkBack(err, callback);});
+                           function(err) {gridLabdCheckBack(err, callback);});
         });
 
         // generate the Portico configuration file
@@ -184,14 +240,14 @@ The top-level function returns this function.
           fullPath = moduleName + '/RTI.rid';
           template = TEMPLATES['common/rti.rid.ejs'];
           code = ejs.render(template,
-			    {bindAddress: renderContext.bindAddress});
+                            {bindAddress: renderContext.bindAddress});
           self.logger.info('calling addFile for ' + fullPath + ' in post_' +
                            'visit_GridLabDFederate of GridLabDFederate.js');
           artifact.addFile(fullPath, code,
-                           function(err) {checkBack(err, callback);});
+                           function(err) {gridLabdCheckBack(err, callback);});
         });
 
-        // generate the GridLAB-D federate configuration file
+        // generate the GridLABD federate configuration file
         self.fileGenerators.push(function (artifact, callback)
         {
           var code;
@@ -209,7 +265,7 @@ The top-level function returns this function.
           self.logger.info('calling addFile for ' + fullPath + ' in post_' +
                            'visit_GridLabDFederate of GridLabDFederate.js');
           artifact.addFile(fullPath, code,
-                           function(err) {checkBack(err, callback);});
+                           function(err) {gridLabdCheckBack(err, callback);});
         });
 
         // generate the log4j2 configuration file
@@ -225,17 +281,18 @@ The top-level function returns this function.
           self.logger.info('calling addFile for ' + fullPath + ' in post_' +
                            'visit_GridLabDFederate of GridLabDFederate.js');
           artifact.addFile(fullPath, code,
-                           function(err) {checkBack(err, callback);});
+                           function(err) {gridLabdCheckBack(err, callback);});
         });
 
         return {context: context};
-      }; // end of post_visit_GridLabDFederate function
+      }; // end post_visit_GridLabDFederate
+      this.post_visit_GridLabDFederate = post_visit_GridLabDFederate;
 
-/***********************************************************************/
+/* ******************************************************************* */
 
-    }; // end of setting GridLabDFederateExporter function variable
-   
-/***********************************************************************/
+    }; // end GridLabDFederateExporter
+
+/* ******************************************************************* */
 
    return GridLabDFederateExporter;
  }); // end define

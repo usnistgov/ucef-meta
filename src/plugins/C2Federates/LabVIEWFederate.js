@@ -11,29 +11,47 @@ define
 
     var LabVIEWFederateExporter;
 
-/***********************************************************************/
+/* ******************************************************************* */
 
-/* LabVIEWFederateExporter (function-valued variable of
-   top-level function object)
+/* LabVIEWFederateExporter */
+/** (function-valued variable of top-level function object)<br><br>
 
-Returned Value: none
+Returned Value: none<br><br>
 
-Called By: FederatesExporter in FederatesExporter.js
+Called By: FederatesExporter in FederatesExporter.js<br><br>
 
-The top-level function returns this function.
+This is the primary function for a LabVIEW federate.<br><br>
+
+The top-level function returns this function.<br>
 
 */
-    
+
     LabVIEWFederateExporter = function ()
     {
       var labviewArtifactId = "labview-federate";
       var labviewGroupId = "gov.nist.hla";
       var labviewVersion = "1.0.0-SNAPSHOT";
-      var checkBack;
+      var labViewCheckBack;           // function
+      var visit_LabVIEWFederate;      // function
+      var post_visit_LabVIEWFederate; // function
 
-/***********************************************************************/
-      
-      checkBack = function(err, callBack)
+/* ******************************************************************* */
+
+/* labViewCheckBack */
+/** (function-valued variable of LabVIEWFederateExporter)<br><br>
+
+Returned Value: none<br><br>
+
+Called By: the six generator functions in post_visit_LabVIEWFederate<br><br>
+
+If there is an error, this calls the callback with the error message
+as an argument; otherwise, this calls the callback with no arguments.<br>
+
+*/
+
+      labViewCheckBack = function(           /* ARGUMENTS */
+       /** an error message or nullish       */ err,
+       /** function to call if error or done */ callBack)
       {
         if (err)
           {
@@ -46,18 +64,34 @@ The top-level function returns this function.
           }
       };
 
-/***********************************************************************/
-      
+/* ******************************************************************* */
+
       this.federateTypes['LabVIEWFederate'] = {includeInExport: false};
 
-/***********************************************************************/
+/* ******************************************************************* */
 
-      this.visit_LabVIEWFederate = function(node, parent, context)
+/* visit_LabVIEWFederate */
+/** (function-valued variable of LabVIEWFederateExporter)<br><br>
+
+Returned Value: a "{context: context}" object<br><br>
+
+Called By: atModelNode in modelTraverserMixin.js in C2Core<br><br>
+
+This is the visitor function for a LabVIEW federate. It builds
+the context object.<br>
+
+*/
+
+      visit_LabVIEWFederate = function(              /* ARGUMENTS */
+       /** a LabVIEW federate node                   */ node,
+       /** the parent of the node                    */ parent,
+       /** a data object from which to generate code */ context)
       {
-        var self = this;
-        var nodeType =
-          self.core.getAttribute( self.getMetaType(node), 'name' );
+        var self;
+        var nodeType;
 
+        self = this;
+        nodeType = self.core.getAttribute( self.getMetaType(node), 'name' );
         context['labviewfedspec'] = {};
         context['labviewfedspec']['groupId'] = self.mainPom.groupId.trim();
         context['labviewfedspec']['projectName'] = self.projectName;
@@ -82,10 +116,34 @@ The top-level function returns this function.
         self.federates[self.core.getPath(node)] = context['labviewfedspec'];
         return {context: context};
       };
+      this.visit_LabVIEWFederate = visit_LabVIEWFederate;
 
-/***********************************************************************/
+/* ******************************************************************* */
 
-      this.post_visit_LabVIEWFederate = function(node, context)
+/* post_visit_LabVIEWFederate */
+/** (function-valued variable of LabVIEWFederateExporter)<br><br>
+
+Returned Value: a context object<br><br>
+
+Called By: doneModelNode in ModelTraverserMixin.js<br><br>
+
+This is the post visitor function for a LabVIEW federate node.
+It adds file generators for:<br>
+ - the pom.xml that fetches the LabVIEW federate code and resources<br>
+ - the script that installs the LabVIEW federate<br>
+ - the script that runs the LabVIEW federate<br>
+ - the Portico configuration file<br>
+ - the LabVIEW federate configuration file<br>
+ - the log4j2 configuration file<br><br>
+
+This is called in doneModelNode in ModelTraverserMixin.js when the
+nodeMetaTypeName in that function is LabVIEWFederate.<br>
+
+*/
+
+      post_visit_LabVIEWFederate = function(         /* ARGUMENTS */
+       /** a LabVIEW federate node                   */ node,
+       /** a data object from which to generate code */ context)
       {
         var self = this;
         var renderContext = context['labviewfedspec'];
@@ -125,7 +183,7 @@ The top-level function returns this function.
           self.logger.info('calling addFile for ' + fullPath + ' in post_' +
                            'visit_LabVIEWFederate of LabVIEWFederate.js');
           artifact.addFile(fullPath, code, 
-                           function(err) {checkBack(err, callback);});
+                           function(err) {labViewCheckBack(err, callback);});
         });
 
         // generate the script that installs the LabVIEW federate
@@ -141,7 +199,7 @@ The top-level function returns this function.
           self.logger.info('calling addFile for ' + fullPath + ' in post_' +
                            'visit_LabVIEWFederate of LabVIEWFederate.js');
           artifact.addFile(fullPath, code,
-                           function(err) {checkBack(err, callback);});
+                           function(err) {labViewCheckBack(err, callback);});
         });
 
         // generate the script that runs the LabVIEW federate
@@ -160,7 +218,7 @@ The top-level function returns this function.
           self.logger.info('calling addFile for ' + fullPath + ' in post_' +
                            'visit_LabVIEWFederate of LabVIEWFederate.js');
           artifact.addFile(fullPath, code,
-                           function(err) {checkBack(err, callback);});
+                           function(err) {labViewCheckBack(err, callback);});
         });
 
         // generate the Portico configuration file
@@ -177,7 +235,7 @@ The top-level function returns this function.
           self.logger.info('calling addFile for ' + fullPath + ' in post_' +
                            'visit_LabVIEWFederate of LabVIEWFederate.js');
           artifact.addFile(fullPath, code,
-                           function(err) {checkBack(err, callback);});
+                           function(err) {labViewCheckBack(err, callback);});
         });
 
         // generate the LabVIEW federate configuration file
@@ -198,7 +256,7 @@ The top-level function returns this function.
           self.logger.info('calling addFile for ' + fullPath + ' in post_' +
                            'visit_LabVIEWFederate of LabVIEWFederate.js');
           artifact.addFile(fullPath, code,
-                           function(err) {checkBack(err, callback);});
+                           function(err) {labViewCheckBack(err, callback);});
         });
 
         // generate the log4j2 configuration file
@@ -214,17 +272,18 @@ The top-level function returns this function.
           self.logger.info('calling addFile for ' + fullPath + ' in post_' +
                            'visit_LabVIEWFederate of LabVIEWFederate.js');
           artifact.addFile(fullPath, code,
-                           function(err) {checkBack(err, callback);});
+                           function(err) {labViewCheckBack(err, callback);});
         });
-        
-        return {context: context};
-      }; // end of post_visit_LabVIEWFederate function
-      
-/***********************************************************************/
 
-    }; // end of setting LabVIEWFederateExporter function variable
-    
-/***********************************************************************/
+        return {context: context};
+      }; // end post_visit_LabVIEWFederate
+      this.post_visit_LabVIEWFederate = post_visit_LabVIEWFederate;
+
+/* ******************************************************************* */
+
+    }; // end LabVIEWFederateExporter
+
+/* ******************************************************************* */
 
     return LabVIEWFederateExporter;
 }); // end define
